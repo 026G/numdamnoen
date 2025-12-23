@@ -437,6 +437,7 @@
             Swal.fire({ toast: true, position: 'top', icon: 'success', title: 'เพิ่มลงตะกร้าแล้ว', showConfirmButton: false, timer: 1000 });
         }
 
+        // แก้ไขฟังก์ชัน updateCartUI
         function updateCartUI() {
             document.getElementById('footer-count').innerText = cart.length;
             const total = cart.reduce((sum, item) => sum + item.finalPrice, 0);
@@ -444,17 +445,42 @@
             document.getElementById('total-price-cart').innerText = `฿${total}`;
             
             const list = document.getElementById('cart-items');
-            if(cart.length===0) { list.innerHTML = `<p class="text-center text-gray-400 py-8">ว่างเปล่า</p>`; return; }
-            list.innerHTML = cart.map((item, idx) => `
-                <div class="flex justify-between border-b pb-3 last:border-0">
-                    <div>
-                        <span class="font-semibold text-gray-700">${item.name}</span>
-                        ${item.selectedOptions && item.selectedOptions.length > 0 ? `<br><span class="text-xs text-gray-400">+ ${item.selectedOptions.join(', ')}</span>` : ''}
-                        <br><span class="text-xs text-red-400 cursor-pointer hover:underline" onclick="cart.splice(${idx},1);updateCartUI()">ลบ</span>
+            if(cart.length === 0) { 
+                list.innerHTML = `<div class="text-center py-10"><i class="fa-solid fa-basket-shopping text-4xl text-gray-200 mb-2"></i><p class="text-gray-400">ยังไม่มีสินค้าในตะกร้า</p></div>`; 
+                return; 
+            }
+            
+            list.innerHTML = cart.map((item, idx) => {
+                // จัดรูปแบบท็อปปิ้งให้เป็นรายการย่อยๆ
+                let optionsHtml = '';
+                if (item.selectedOptions && item.selectedOptions.length > 0) {
+                    optionsHtml = item.selectedOptions.map(opt => 
+                        `<div class="text-xs text-gray-500 pl-2 flex items-center gap-1">
+                            <span class="w-1 h-1 rounded-full bg-gray-300"></span> ${opt}
+                         </div>`
+                    ).join('');
+                }
+
+                return `
+                <div class="flex justify-between items-start border-b border-gray-100 pb-4 last:border-0 animation-fade-in">
+                    <div class="flex-1 pr-2">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="font-bold text-gray-700 text-sm bg-gray-100 px-1.5 rounded text-[10px] h-fit">${idx + 1}</span>
+                            <span class="font-semibold text-gray-800">${item.name}</span>
+                        </div>
+                        <div class="space-y-0.5 mt-1 border-l-2 border-gray-100 ml-1 pl-1">
+                            ${optionsHtml}
+                        </div>
+                        <div class="mt-2">
+                             <span class="text-xs text-red-500 font-medium cursor-pointer hover:underline flex items-center gap-1 w-fit" onclick="cart.splice(${idx},1);updateCartUI()">
+                                <i class="fa-solid fa-trash-can"></i> ลบรายการ
+                             </span>
+                        </div>
                     </div>
-                    <span class="font-semibold">฿${item.finalPrice}</span>
+                    <span class="font-bold text-gray-800 whitespace-nowrap">฿${item.finalPrice}</span>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         // --- 5. Map & Distance Calculation ---
