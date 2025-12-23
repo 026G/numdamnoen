@@ -369,29 +369,56 @@
 
         // --- 5. Map & Distance Calculation (ไฮไลท์สำคัญ) ---
         function initMap() {
+            // 1. ตั้งค่าแผนที่
             map = L.map('map', { zoomControl: false }).setView(SHOP_LOC, 14);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
             
-            // หมุดร้าน (สีน้ำเงิน)
-            L.marker(SHOP_LOC).addTo(map).bindPopup("ร้านหนุ่มดำเนิน").openPopup();
+            // -----------------------------------------------------------
+            // ส่วนที่ 1: กำหนดหน้าตาไอคอน (ร้าน และ ลูกค้า)
+            // -----------------------------------------------------------
 
-            // หมุดลูกค้า (สีแดง - ลากได้)
-            var redIcon = new L.Icon({
-                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/markers-default/marker-icon-red.png',
-                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+            // 1.1 ไอคอนร้าน (เอารูปร้านมาใส่ที่ iconUrl)
+            var shopIcon = L.icon({
+                iconUrl: 'https://cdn-icons-png.flaticon.com/512/2003/2003183.png', // <-- ใส่ลิงก์รูปร้านตรงนี้
+                iconSize: [45, 45], // ขนาดรูป (กว้าง, สูง)
+                iconAnchor: [22, 45], // จุดที่ชี้ลงแผนที่ (กึ่งกลางแนวนอน, ด้านล่างสุด)
+                popupAnchor: [0, -40] // จุดที่ Popup เด้งขึ้นมา
             });
 
-            marker = L.marker(SHOP_LOC, { draggable: true, icon: redIcon }).addTo(map);
+            // 1.2 ไอคอนลูกค้า (รูปหมุด Pin สีแดง)
+            var customerIcon = L.icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/markers-default/marker-icon-2x-red.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            });
 
+            // -----------------------------------------------------------
+            // ส่วนที่ 2: วางลงบนแผนที่
+            // -----------------------------------------------------------
+
+            // วางหมุดร้าน (ใช้ shopIcon ที่ประกาศไว้ด้านบน)
+            L.marker(SHOP_LOC, { icon: shopIcon }).addTo(map)
+                .bindPopup("<b>ร้านหนุ่มดำเนิน</b><br>ส่งความอร่อยจากตรงนี้").openPopup();
+
+            // วางหมุดลูกค้า (ใช้ customerIcon) - ให้ลากได้ (draggable: true)
+            marker = L.marker(SHOP_LOC, { draggable: true, icon: customerIcon }).addTo(map);
+
+            // -----------------------------------------------------------
+            // ส่วนที่ 3: ระบบคำนวณ (เหมือนเดิม)
+            // -----------------------------------------------------------
             map.on('click', function(e) {
                 marker.setLatLng(e.latlng);
                 calculateDelivery(e.latlng.lat, e.latlng.lng);
+                map.panTo(e.latlng);
             });
             
             marker.on('dragend', function(e) {
                 const pos = marker.getLatLng();
                 calculateDelivery(pos.lat, pos.lng);
+                map.panTo(pos);
             });
         }
 
