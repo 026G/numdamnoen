@@ -613,30 +613,84 @@
             }
         }
 
-        // --- 7. Confirm Order ---
-        function confirmOrder() {
+        // --- 7. Confirm Order (เชื่อมต่อของจริง) ---
+        // ▼ ใส่ URL ของ Web App ที่คุณ Deploy ได้มาตรงนี้
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxjbXOkk-t1Q4EHKbwjte-qtBzu1Z066Lw8-r9AMov6AMDzBtrykZ06Docy7DJXvoGItA/exec"; 
+
+        async function confirmOrder() {
             const method = document.querySelector('input[name="paymentMethod"]:checked').value;
+            const name = document.getElementById('cust-name').value;
+            const phone = document.getElementById('cust-phone').value;
+            const address = document.getElementById('cust-address').value;
+            const landmark = document.getElementById('cust-landmark').value;
             
+            // เช็คข้อมูลครบถ้วน
+            if(!name || !phone || !address) return Swal.fire({icon: 'warning', text: 'กรุณากรอกข้อมูลที่อยู่ให้ครบถ้วน'});
+            if(!userLat) return Swal.fire({icon: 'warning', text: 'กรุณาปักหมุดจุดส่งบนแผนที่'});
+
+            let slipBase64 = "";
+
+            // ถ้าโอนเงิน ต้องเช็คสลิป
             if(method === 'transfer') {
-                const file = document.getElementById('slip-file').files[0];
-                if(!file) return Swal.fire({icon: 'warning', text: 'กรุณาแนบสลิปการโอนเงิน'});
+                const fileInput = document.getElementById('slip-file');
+                if(fileInput.files.length === 0) return Swal.fire({icon: 'warning', text: 'กรุณาแนบสลิปการโอนเงิน'});
+                
+                // แปลงไฟล์เป็น Base64
+                slipBase64 = await toBase64(fileInput.files[0]);
             }
 
             Swal.fire({
-                title: 'กำลังยืนยันออเดอร์',
-                text: 'กรุณารอสักครู่...',
+                title: 'กำลังส่งออเดอร์...',
+                text: 'กรุณารอสักครู่ ระบบกำลังแจ้งเตือนร้านค้า',
+                allowOutsideClick: false,
                 didOpen: () => Swal.showLoading()
             });
 
-            // Simulate API Call
-            setTimeout(() => {
+            // เตรียมข้อมูล (JSON)
+            const orderData = {
+                name: name,
+                phone: phone,
+                address: address,
+                landmark: landmark,
+                location: `${userLat},${userLng}`,
+                // แปลงรายการสินค้าเป็นข้อความสวยๆ
+                items: cart.map(i => `- ${i.name} ${i.selectedOptions && i.selectedOptions.length > 0 ? '('+i.selectedOptions.join(',')+')' : ''} (${i.finalPrice}บ.)`).join('\n'),
+                total: document.getElementById('summary-grand-total').innerText,
+                paymentMethod: method,
+                slipImage: slipBase64 // ส่งรูปไปด้วย
+            };
+
+            // ยิงข้อมูลไป Google Apps Script
+            fetch(WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors', // สำคัญมาก! เพื่อไม่ให้ติด Block
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(orderData)
+            })
+            .then(() => {
                 Swal.fire({
                     icon: 'success',
                     title: 'สั่งซื้อสำเร็จ!',
-                    text: 'ทางร้านได้รับข้อมูลแล้ว จะรีบจัดส่งให้ทันที',
+                    text: 'ทางร้านได้รับข้อมูลเรียบร้อยแล้ว ขอบคุณครับ',
                     confirmButtonColor: '#16a34a'
-                }).then(() => location.reload());
-            }, 2000);
+                }).then(() => {
+                    // เคลียร์ตะกร้าและรีโหลด
+                    location.reload(); 
+                });
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire({ icon: 'error', text: 'เกิดข้อผิดพลาดในการส่งข้อมูล กรุณาลองใหม่' });
+            });
+        }
+
+        // ฟังก์ชันช่วยแปลงไฟล์รูปเป็นตัวหนังสือ (Base64) เพื่อส่งผ่านเน็ต
+        const toBase64 = file => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
         }
 
     </script>
