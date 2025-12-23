@@ -15,12 +15,20 @@
         /* แสดงเฉพาะหน้าที่ถูกเลือก */
         .active-section { display: block; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
         #map { height: 250px; width: 100%; border-radius: 0.5rem; z-index: 0; }
+        
+        /* Animation สำหรับ Modal */
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .animate-slide-up { animation: slideUp 0.3s ease-out; }
     </style>
 </head>
 <body class="bg-gray-100 font-sans pb-20">
 
-    <header class="bg-green-600 text-white p-4 fixed top-0 w-full z-50 shadow-md">
+    <header class="bg-green-600 text-white p-4 fixed top-0 w-full z-40 shadow-md">
         <div class="flex justify-between items-center max-w-md mx-auto">
             <h1 class="text-xl font-bold">🍱 ร้านอร่อยโภชนา</h1>
             <button onclick="showPage('cart')" class="relative">
@@ -39,13 +47,15 @@
 
         <section id="page-cart" class="page-section">
             <h2 class="text-lg font-bold mb-4">ตะกร้าสินค้า</h2>
-            <div id="cart-items" class="bg-white p-4 rounded shadow mb-4">
+            <div id="cart-items" class="bg-white p-4 rounded shadow mb-4 space-y-3">
                 <p class="text-gray-500 text-center">ยังไม่มีสินค้าในตะกร้า</p>
             </div>
+            
             <div class="flex justify-between font-bold text-xl mb-6">
                 <span>รวมทั้งหมด</span>
                 <span id="total-price">0 บาท</span>
             </div>
+            
             <div class="flex gap-2">
                 <button onclick="showPage('menu')" class="w-1/2 bg-gray-300 py-2 rounded">เลือกเพิ่ม</button>
                 <button onclick="goToCheckout()" class="w-1/2 bg-green-600 text-white py-2 rounded">ไปจ่ายเงิน</button>
@@ -60,7 +70,7 @@
                 <input type="text" id="cust-phone" placeholder="เบอร์โทรศัพท์" class="w-full border p-2 rounded">
                 <textarea id="cust-address" placeholder="รายละเอียดที่อยู่ (บ้านเลขที่/ซอย)" class="w-full border p-2 rounded"></textarea>
                 
-                <p class="text-sm text-gray-600">📌 ปักหมุดจุดส่ง:</p>
+                <p class="text-sm text-gray-600">📌 ปักหมุดจุดส่ง (จิ้มที่แผนที่เพื่อย้าย):</p>
                 <div id="map"></div>
                 <input type="hidden" id="latlong">
             </div>
@@ -80,16 +90,118 @@
 
     </main>
 
+    <div id="option-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-end sm:items-center z-50">
+        <div class="bg-white w-full max-w-md rounded-t-xl sm:rounded-xl p-5 shadow-lg animate-slide-up max-h-[90vh] flex flex-col">
+            
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h3 id="modal-item-name" class="text-xl font-bold text-green-700">ชื่อเมนู</h3>
+                <button onclick="closeModal()" class="text-gray-500 text-3xl leading-none">&times;</button>
+            </div>
+
+            <div id="modal-options" class="flex-1 overflow-y-auto mb-4 pr-2">
+                </div>
+
+            <div class="border-t pt-4">
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-gray-600">ราคารวม</span>
+                    <div class="text-2xl font-bold text-green-600" id="modal-total-price">0 บาท</div>
+                </div>
+                <button onclick="confirmAddToCart()" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold shadow hover:bg-green-700">
+                    เพิ่มใส่ตะกร้า
+                </button>
+            </div>
+
+        </div>
+    </div>
+
     <script>
-        // --- 1. ข้อมูลสินค้า (Mock Data) ---
+        // --- 1. ข้อมูลสินค้า (Mock Data พร้อม Options) ---
         const menuDB = [
-            { id: 1, name: "ข้าวมันไก่ตอน", price: 50, img: "https://images.unsplash.com/photo-1602169622262-430932795455?w=200" },
-            { id: 2, name: "ข้าวมันไก่ทอด", price: 55, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=200" },
-            { id: 3, name: "ข้าวยำไก่แซ่บ", price: 60, img: "https://images.unsplash.com/photo-1596797038530-2c107229654b?w=200" }
+            { 
+                id: 1, 
+                name: "ชานมไต้หวัน", 
+                price: 40, 
+                img: "https://images.unsplash.com/photo-1558160074-4d7d8bdf4256?w=200",
+                options: [
+                    {
+                        type: "radio", // บังคับเลือก 1 ข้อ
+                        name: "ระดับความหวาน (เลือก 1 อย่าง)",
+                        choices: [
+                            { label: "หวานน้อยมาก (30%)", price: 0 },
+                            { label: "หวานน้อย (50%)", price: 0 },
+                            { label: "หวานปกติ (100%)", price: 0 }, // default
+                            { label: "หวานมาก (125%)", price: 0 }
+                        ]
+                    },
+                    {
+                        type: "checkbox", // เลือกได้หลายข้อ
+                        name: "เพิ่มพิเศษ (สูงสุด 2 อย่าง)",
+                        max: 2, 
+                        choices: [
+                            { label: "ไข่มุก", price: 5 },
+                            { label: "วิปครีม", price: 10 },
+                            { label: "เฉาก๊วย", price: 5 }
+                        ]
+                    }
+                ]
+            },
+            { 
+                id: 2, 
+                name: "โกโก้ปั่นเข้มข้น", 
+                price: 55, 
+                img: "https://images.unsplash.com/photo-1541167760496-1628856ab772?w=200",
+                options: [
+                    {
+                        type: "radio",
+                        name: "ความหวาน",
+                        choices: [
+                            { label: "หวานน้อย", price: 0 },
+                            { label: "หวานปกติ", price: 0 }
+                        ]
+                    },
+                    {
+                        type: "checkbox",
+                        name: "Topping",
+                        max: 2,
+                        choices: [
+                            { label: "เพิ่มเนื้อปั่นเข้มข้น", price: 15 },
+                            { label: "เพิ่มเนื้อเคี้ยวเพลินๆ", price: 15 }
+                        ]
+                    }
+                ] 
+            },
+            { 
+                id: 3, 
+                name: "ข้าวมันไก่ตอน (ไม่มีตัวเลือก)", 
+                price: 50, 
+                img: "https://images.unsplash.com/photo-1602169622262-430932795455?w=200"
+                // ไม่มี options
+            },
+            {
+                id: 4,
+                name: "ข้าวยำไก่แซ่บ",
+                price: 60,
+                img: "https://images.unsplash.com/photo-1596797038530-2c107229654b?w=200",
+                options: [
+                    {
+                        type: "radio",
+                        name: "ระดับความเผ็ด",
+                        choices: [
+                            { label: "เผ็ดน้อย", price: 0 },
+                            { label: "เผ็ดปกติ", price: 0 },
+                            { label: "เผ็ดปากเบิร์น", price: 0 }
+                        ]
+                    }
+                ]
+            }
         ];
 
-        let cart = []; // เก็บตะกร้า
-        let map, marker; // ตัวแปรแผนที่
+        let cart = []; 
+        let map, marker;
+        
+        // ตัวแปรสำหรับ Modal
+        let currentItem = null;
+        let currentBasePrice = 0;
 
         // --- 2. เริ่มต้นทำงาน ---
         document.addEventListener("DOMContentLoaded", () => {
@@ -97,40 +209,155 @@
             initMap();
         });
 
-        // --- 3. ฟังก์ชันจัดการหน้า (Navigation) ---
+        // --- 3. ฟังก์ชันจัดการหน้า ---
         function showPage(pageId) {
-            // ซ่อนทุกหน้า
             document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active-section'));
-            // แสดงหน้าเป้าหมาย
             document.getElementById('page-' + pageId).classList.add('active-section');
-            
-            // ถ้าเปิดหน้า map ให้รีเฟรช map เพื่อกันบั๊กแสดงผล
             if(pageId === 'checkout') {
                 setTimeout(() => { map.invalidateSize(); }, 200);
             }
         }
 
-        // --- 4. ฟังก์ชันจัดการเมนูและตะกร้า ---
+        // --- 4. ฟังก์ชันจัดการเมนู ---
         function renderMenu() {
             const list = document.getElementById('menu-list');
             list.innerHTML = menuDB.map(item => `
                 <div class="bg-white p-3 rounded shadow flex gap-4 items-center">
-                    <img src="${item.img}" class="w-20 h-20 object-cover rounded">
+                    <img src="${item.img}" class="w-20 h-20 object-cover rounded shadow-sm">
                     <div class="flex-1">
-                        <h3 class="font-bold">${item.name}</h3>
-                        <p class="text-gray-500">${item.price} บาท</p>
+                        <h3 class="font-bold text-lg">${item.name}</h3>
+                        <p class="text-green-600 font-bold">${item.price} บาท</p>
                     </div>
-                    <button onclick="addToCart(${item.id})" class="bg-green-100 text-green-700 px-4 py-2 rounded font-bold hover:bg-green-200">+</button>
+                    <button onclick="addToCart(${item.id})" class="bg-green-100 text-green-700 px-4 py-2 rounded-lg font-bold hover:bg-green-200 transition">
+                        ${item.options ? 'เลือก' : 'เพิ่ม'}
+                    </button>
                 </div>
             `).join('');
         }
 
+        // --- 5. ฟังก์ชัน Modal & Add to Cart ---
         function addToCart(id) {
             const item = menuDB.find(p => p.id === id);
-            cart.push(item);
+            
+            // กรณีไม่มีตัวเลือก -> ลงตะกร้าเลย
+            if (!item.options || item.options.length === 0) {
+                pushToCart(item, [], item.price);
+                return;
+            }
+
+            // กรณีมีตัวเลือก -> เปิด Modal
+            openModal(item);
+        }
+
+        function openModal(item) {
+            currentItem = item;
+            currentBasePrice = item.price;
+            
+            document.getElementById('modal-item-name').innerText = item.name;
+            const container = document.getElementById('modal-options');
+            container.innerHTML = ''; 
+
+            item.options.forEach((opt, idx) => {
+                let html = `<div class="mb-4">
+                    <p class="font-bold mb-2 text-gray-700 border-l-4 border-green-500 pl-2">${opt.name}</p>
+                    <div class="space-y-2">`;
+                
+                if (opt.type === 'radio') {
+                    // Radio buttons
+                    opt.choices.forEach((choice, cIdx) => {
+                        const isChecked = cIdx === 2 ? 'checked' : ''; // (ตัวอย่าง) ให้ตัวเลือกที่ 3 เป็นค่าเริ่มต้น หรือเอาออกถ้าไม่ต้องการ
+                        html += `
+                            <label class="flex items-center p-2 border rounded hover:bg-gray-50 cursor-pointer">
+                                <input type="radio" name="opt-${idx}" value="${choice.label}" data-price="${choice.price}" ${isChecked} class="option-input h-4 w-4 text-green-600 focus:ring-green-500" onchange="calculateModalTotal()">
+                                <span class="ml-2 flex-1">${choice.label}</span>
+                                ${choice.price > 0 ? `<span class="text-green-600">+${choice.price}</span>` : ''}
+                            </label>
+                        `;
+                    });
+                } else if (opt.type === 'checkbox') {
+                    // Checkboxes
+                    opt.choices.forEach((choice) => {
+                        html += `
+                            <label class="flex items-center p-2 border rounded hover:bg-gray-50 cursor-pointer">
+                                <input type="checkbox" name="opt-${idx}" value="${choice.label}" data-price="${choice.price}" class="option-input h-4 w-4 text-green-600 rounded focus:ring-green-500" onchange="checkLimit(this, ${opt.max}); calculateModalTotal()">
+                                <span class="ml-2 flex-1">${choice.label}</span>
+                                ${choice.price > 0 ? `<span class="text-green-600">+${choice.price}</span>` : ''}
+                            </label>
+                        `;
+                    });
+                    if(opt.max) html += `<p class="text-xs text-gray-400 mt-1 pl-1">เลือกได้ไม่เกิน ${opt.max} รายการ</p>`;
+                }
+                
+                html += `</div></div>`;
+                container.innerHTML += html;
+            });
+
+            calculateModalTotal();
+            document.getElementById('option-modal').classList.remove('hidden');
+        }
+
+        function calculateModalTotal() {
+            let total = currentBasePrice;
+            document.querySelectorAll('.option-input:checked').forEach(input => {
+                total += parseInt(input.getAttribute('data-price') || 0);
+            });
+            document.getElementById('modal-total-price').innerText = total + " บาท";
+        }
+
+        function checkLimit(checkbox, max) {
+            if (!max) return;
+            const name = checkbox.name;
+            const checkedCount = document.querySelectorAll(`input[name="${name}"]:checked`).length;
+            if (checkedCount > max) {
+                checkbox.checked = false;
+                Swal.fire({ 
+                    toast: true, position: 'center', icon: 'warning', 
+                    title: `เลือกได้สูงสุด ${max} รายการ`, showConfirmButton: false, timer: 1500 
+                });
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('option-modal').classList.add('hidden');
+        }
+
+        function confirmAddToCart() {
+            const selectedOptions = [];
+            let totalPrice = currentBasePrice;
+            let allRequiredSelected = true;
+
+            // ตรวจสอบ Radio (Required)
+            currentItem.options.forEach((opt, idx) => {
+                if (opt.type === 'radio') {
+                    if (!document.querySelector(`input[name="opt-${idx}"]:checked`)) {
+                        allRequiredSelected = false;
+                    }
+                }
+            });
+
+            if (!allRequiredSelected) {
+                Swal.fire({ icon: 'error', title: 'กรุณาเลือกตัวเลือกให้ครบถ้วน' });
+                return;
+            }
+
+            // เก็บข้อมูลตัวเลือก
+            document.querySelectorAll('.option-input:checked').forEach(input => {
+                selectedOptions.push(input.value);
+                totalPrice += parseInt(input.getAttribute('data-price') || 0);
+            });
+
+            pushToCart(currentItem, selectedOptions, totalPrice);
+            closeModal();
+        }
+
+        function pushToCart(item, options, finalPrice) {
+            cart.push({
+                ...item, // copy item props
+                selectedOptions: options,
+                finalPrice: finalPrice
+            });
             updateCartUI();
             
-            // Effect เล็กน้อย
             Swal.fire({
                 icon: 'success',
                 title: 'เพิ่มลงตะกร้าแล้ว',
@@ -139,28 +366,30 @@
             });
         }
 
+        // --- 6. ตะกร้าสินค้า ---
         function updateCartUI() {
-            // อัปเดตตัวเลขที่ปุ่มตะกร้า
             document.getElementById('cart-count').innerText = cart.length;
 
-            // คำนวณราคารวม
-            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            const total = cart.reduce((sum, item) => sum + item.finalPrice, 0);
             document.getElementById('total-price').innerText = total + " บาท";
 
-            // สร้างลิสต์รายการในตะกร้า
             const cartList = document.getElementById('cart-items');
             if(cart.length === 0) {
-                cartList.innerHTML = '<p class="text-gray-500 text-center">ยังไม่มีสินค้า</p>';
+                cartList.innerHTML = '<p class="text-gray-500 text-center py-4">ยังไม่มีสินค้าในตะกร้า</p>';
                 return;
             }
             
-            // Group รายการที่เหมือนกัน (แบบง่ายๆ)
             cartList.innerHTML = cart.map((item, index) => `
-                <div class="flex justify-between items-center border-b py-2">
-                    <span>${item.name}</span>
-                    <div class="flex items-center gap-2">
-                        <span>${item.price}</span>
-                        <button onclick="removeFromCart(${index})" class="text-red-500 text-sm">ลบ</button>
+                <div class="flex justify-between items-start border-b pb-2 last:border-0">
+                    <div class="flex-1">
+                        <span class="font-bold text-gray-800">${item.name}</span>
+                        ${item.selectedOptions && item.selectedOptions.length > 0 
+                          ? `<p class="text-xs text-gray-500 mt-1">➕ ${item.selectedOptions.join(', ')}</p>` 
+                          : ''}
+                    </div>
+                    <div class="flex flex-col items-end gap-1">
+                        <span class="font-bold">${item.finalPrice} บ.</span>
+                        <button onclick="removeFromCart(${index})" class="text-red-500 text-xs hover:underline">ลบ</button>
                     </div>
                 </div>
             `).join('');
@@ -174,64 +403,45 @@
         function goToCheckout() {
             if(cart.length === 0) return Swal.fire('ตะกร้าว่างเปล่า');
             
-            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            const total = cart.reduce((sum, item) => sum + item.finalPrice, 0);
+            const phone = "0812345678"; // เบอร์พร้อมเพย์ร้าน
             
-            // สร้าง QR PromptPay (เปลี่ยน 0812345678 เป็นเบอร์พร้อมเพย์ร้าน)
-            const phone = "0812345678"; 
             document.getElementById('qr-image').src = `https://promptpay.io/${phone}/${total}`;
             document.getElementById('final-price-display').innerText = total + " บาท";
             
             showPage('checkout');
         }
 
-        // --- 5. ฟังก์ชันแผนที่ (แก้ไข: เริ่มต้นพิกัดใหม่ + จิ้มเพื่อย้ายหมุด) ---
+        // --- 7. แผนที่ (Update พิกัดใหม่ + Click to Move) ---
         function initMap() {
-            // 1. กำหนดพิกัดเริ่มต้นตามที่คุณต้องการ
+            // พิกัดเริ่มต้น
             const defaultLoc = [13.639484, 100.500646];
             
-            // สร้างแผนที่ (Zoom ระดับ 16 ให้เห็นซอยชัดขึ้น)
             map = L.map('map').setView(defaultLoc, 16);
             
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap contributors'
             }).addTo(map);
             
-            // สร้างหมุด (Marker) ไว้ที่จุดเริ่มต้น
             marker = L.marker(defaultLoc).addTo(map);
-
-            // อัปเดตค่าพิกัดลงใน input ทันที (เผื่อลูกค้าไม่กดเปลี่ยน)
             document.getElementById('latlong').value = `${defaultLoc[0]},${defaultLoc[1]}`;
 
-            // 2. เพิ่มระบบ "จิ้มแผนที่เพื่อย้ายหมุด" (Click to Pin)
+            // คลิกเพื่อย้ายหมุด
             map.on('click', function(e) {
                 const coord = e.latlng;
-                
-                // ย้ายหมุดไปตามจุดที่จิ้ม
                 marker.setLatLng(coord);
-                
-                // เก็บค่าพิกัดใหม่เตรียมส่ง
                 document.getElementById('latlong').value = `${coord.lat},${coord.lng}`;
-                
-                // (ลูกเล่นเสริม) ขยับแผนที่ไปหาหมุดนิดนึง ให้ดูสมูท
-                map.panTo(coord);
+                map.panTo(coord); // เลื่อนจอตามหมุด
             });
-
-            // (ส่วนนี้เก็บไว้ได้) ถ้าลูกค้ากดอนุญาตให้ระบุตำแหน่ง ก็จะย้ายหมุดไปหาเขา
-            if (navigator.geolocation) {
-                // สร้างปุ่มกดเพื่อหาตำแหน่งปัจจุบัน (ถ้าต้องการเพิ่มปุ่มค่อยใส่)
-                // หรือจะให้ทำงานอัตโนมัติก็ได้ แต่บางทีลูกค้าอาจจะรำคาญถ้ามันเด้งถาม
-                // ในที่นี้ผมขอปิด Auto ไว้ก่อน เพื่อให้เริ่มที่พิกัด 13.639484 ตามโจทย์ครับ
-            }
         }
 
-        // --- 6. ฟังก์ชันยืนยันคำสั่งซื้อ (ส่งข้อมูล) ---
+        // --- 8. ยืนยันการสั่งซื้อ ---
         function confirmOrder() {
             const name = document.getElementById('cust-name').value;
             const phone = document.getElementById('cust-phone').value;
             
             if(!name || !phone) return Swal.fire('กรุณากรอกชื่อและเบอร์โทร');
 
-            // ตรงนี้คือส่วนที่ต้องแก้เพื่อส่งไป Google Sheets (Backend)
             Swal.fire({
                 title: 'กำลังส่งข้อมูล...',
                 didOpen: () => Swal.showLoading()
@@ -239,24 +449,20 @@
 
             // จำลองการส่งสำเร็จ
             setTimeout(() => {
-                Swal.fire('สำเร็จ!', 'ออเดอร์ถูกส่งไปที่ไลน์กลุ่มแล้ว', 'success').then(() => {
-                    location.reload(); // รีเซ็ตหน้าใหม่
+                Swal.fire('สำเร็จ!', 'ออเดอร์ถูกส่งเรียบร้อยแล้ว', 'success').then(() => {
+                    location.reload(); 
                 });
             }, 1500);
 
-            /* // โค้ดสำหรับส่งจริง (ใช้ fetch)
-            const payload = {
-                name, phone, 
-                address: document.getElementById('cust-address').value,
-                location: document.getElementById('latlong').value,
-                cart: cart,
-                total: cart.reduce((s, i) => s + i.price, 0)
-            };
-            
-            fetch('LINK_GOOGLE_APPS_SCRIPT_WEB_APP', {
-                method: 'POST',
-                body: JSON.stringify(payload)
-            }).then(...) 
+            /* // ส่วนเชื่อมต่อ Google Apps Script
+               const payload = {
+                   name, phone, 
+                   address: document.getElementById('cust-address').value,
+                   location: document.getElementById('latlong').value,
+                   items: cart.map(i => `${i.name} (${i.selectedOptions.join(',')})`).join('\n'),
+                   total: cart.reduce((s, i) => s + i.finalPrice, 0)
+               };
+               // fetch(...)
             */
         }
     </script>
