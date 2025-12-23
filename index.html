@@ -48,7 +48,7 @@
                     <h1 class="font-semibold text-xl text-gray-800 tracking-tight">หนุ่มดำเนิน มะพร้าวปั่น</h1>
                     <div class="flex items-center gap-1 text-xs text-green-600 font-medium">
                         <i class="fa-solid fa-location-dot"></i>
-                        <span id="header-distance">กำลังระบุตำแหน่ง...</span>
+                        <span id="header-distance">กรุณาระบุตำแหน่งส่ง</span>
                     </div>
                 </div>
             </div>
@@ -111,10 +111,10 @@
                 <div class="pt-2">
                     <div class="flex justify-between items-center mb-2">
                         <label class="text-sm font-semibold text-gray-700">📍 ปักหมุดจุดส่ง</label>
-                        <span id="distance-display" class="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded">กำลังคำนวณ...</span>
+                        <span id="distance-display" class="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded">แตะแผนที่เพื่อคำนวณ</span>
                     </div>
                     <div id="map"></div>
-                    <p class="text-xs text-red-500 mt-2 hidden" id="out-of-range-msg"><i class="fa-solid fa-circle-exclamation"></i> ขออภัย อยู่นอกพื้นที่จัดส่ง (เกิน 10 กม.)</p>
+                    <p class="text-xs text-red-500 mt-2 hidden" id="out-of-range-msg"><i class="fa-solid fa-circle-exclamation"></i> ขออภัย อยู่นอกพื้นที่จัดส่ง (เกิน 5 กม.)</p>
                 </div>
             </div>
         </section>
@@ -233,7 +233,7 @@
     <script>
         // --- 1. ข้อมูลร้าน & Config ---
         const SHOP_LOC = [13.639417, 100.499580]; // พิกัดร้าน
-        const MAX_DIST_KM = 5.0;
+        const MAX_DIST_KM = 5.0; // ระยะส่งไกลสุด 5 กม.
         
         // ข้อมูลสินค้า
         const menuDB = [
@@ -305,7 +305,7 @@
             else if(pageId === 'payment') document.getElementById('btn-confirm-order').classList.remove('hidden');
         }
 
-        // --- 4. Logic Menu & Cart (เหมือนเดิม ย่อส่วนนี้) ---
+        // --- 4. Logic Menu & Cart ---
         function renderMenu(cat) {
             const list = document.getElementById('menu-list');
             const items = menuDB.filter(i => i.category === cat);
@@ -329,19 +329,89 @@
             `).join('');
         }
 
-        // ... (Modal Logic & Cart Logic ใช้โค้ดเดิมได้ แต่ปรับ updateCartUI ให้ไม่ต้องโชว์ค่าส่ง) ...
-        // ผมขอข้ามส่วน Modal Logic ที่ยาวๆ ไปเพื่อความกระชับ (ใช้เหมือนอันก่อนหน้า) 
-        // แต่จะใส่ฟังก์ชันที่จำเป็นต้องใช้:
-        
+        // --- Modal & Cart Logic ---
         let currentItem, currentBasePrice;
-        function openModal(id) { /* (ใช้โค้ด Modal เดิม) */ 
-             // เนื่องจากโค้ดมันยาว ผมขอจำลองว่า User add ของลงตะกร้าได้ปกติ 
-             // ในไฟล์จริงคุณสามารถ Copy Modal Logic จากคำตอบที่แล้วมาใส่ได้เลยครับ
+        
+        function openModal(id) {
              const item = menuDB.find(i=>i.id===id);
-             if(!item.options) { addToCart(item, [], item.price); return; }
-             // ... Modal Opening Logic ...
-             // เพื่อให้โค้ดรันได้ในตัวอย่างนี้ ผมขอทำแบบง่าย:
-             addToCart(item, [], item.price);
+             if(!item.options || item.options.length === 0) { 
+                 addToCart(item, [], item.price); 
+                 return; 
+             }
+             
+             currentItem = item;
+             currentBasePrice = item.price;
+             document.getElementById('modal-item-name').innerText = item.name;
+             
+             const container = document.getElementById('modal-options');
+             container.innerHTML = '';
+             
+             item.options.forEach((opt, idx) => {
+                 let html = `<div class="bg-gray-50 border border-gray-100 p-4 rounded-xl">
+                     <p class="font-semibold mb-3 text-gray-700 text-sm flex items-center gap-2">${opt.name}</p>
+                     <div class="space-y-3">`;
+                 
+                 if (opt.type === 'radio') {
+                     opt.choices.forEach((choice, cIdx) => {
+                         const isChecked = cIdx === 0 ? 'checked' : ''; 
+                         html += `<label class="flex items-center justify-between cursor-pointer group">
+                             <div class="flex items-center">
+                                 <input type="radio" name="opt-${idx}" value="${choice.label}" data-price="${choice.price}" ${isChecked} class="option-input text-green-600 focus:ring-green-500 w-4 h-4" onchange="calculateModalTotal()">
+                                 <span class="ml-3 text-sm text-gray-600">${choice.label}</span>
+                             </div>
+                             ${choice.price > 0 ? `<span class="text-xs text-gray-500">+${choice.price}</span>` : ''}
+                         </label>`;
+                     });
+                 } else if (opt.type === 'checkbox') {
+                     opt.choices.forEach((choice) => {
+                         html += `<label class="flex items-center justify-between cursor-pointer group">
+                             <div class="flex items-center">
+                                 <input type="checkbox" name="opt-${idx}" value="${choice.label}" data-price="${choice.price}" class="option-input text-green-600 rounded focus:ring-green-500 w-4 h-4" onchange="checkLimit(this, ${opt.max}); calculateModalTotal()">
+                                 <span class="ml-3 text-sm text-gray-600">${choice.label}</span>
+                             </div>
+                             ${choice.price > 0 ? `<span class="text-xs text-gray-500">+${choice.price}</span>` : ''}
+                         </label>`;
+                     });
+                 }
+                 html += `</div></div>`;
+                 container.innerHTML += html;
+             });
+             
+             calculateModalTotal();
+             document.getElementById('option-modal').classList.remove('hidden');
+        }
+
+        function calculateModalTotal() {
+            let total = currentBasePrice;
+            document.querySelectorAll('.option-input:checked').forEach(input => {
+                total += parseInt(input.getAttribute('data-price') || 0);
+            });
+            document.getElementById('modal-total-price').innerText = `฿${total}`;
+        }
+        
+        function checkLimit(checkbox, max) {
+            if (!max) return;
+            const name = checkbox.name;
+            const checkedCount = document.querySelectorAll(`input[name="${name}"]:checked`).length;
+            if (checkedCount > max) {
+                checkbox.checked = false;
+                Swal.fire({ toast: true, position: 'top', icon: 'info', title: `เลือกได้สูงสุด ${max} อย่าง`, showConfirmButton: false, timer: 1500 });
+            }
+        }
+        
+        function closeModal() {
+            document.getElementById('option-modal').classList.add('hidden');
+        }
+        
+        function confirmAddToCart() {
+            const selectedOptions = [];
+            let totalPrice = currentBasePrice;
+            document.querySelectorAll('.option-input:checked').forEach(input => {
+                selectedOptions.push(input.value);
+                totalPrice += parseInt(input.getAttribute('data-price') || 0);
+            });
+            addToCart(currentItem, selectedOptions, totalPrice);
+            closeModal();
         }
 
         function addToCart(item, opts, price) {
@@ -361,54 +431,42 @@
             if(cart.length===0) { list.innerHTML = `<p class="text-center text-gray-400 py-8">ว่างเปล่า</p>`; return; }
             list.innerHTML = cart.map((item, idx) => `
                 <div class="flex justify-between border-b pb-3 last:border-0">
-                    <div><span class="font-semibold text-gray-700">${item.name}</span><br><span class="text-xs text-red-400 cursor-pointer" onclick="cart.splice(${idx},1);updateCartUI()">ลบ</span></div>
+                    <div>
+                        <span class="font-semibold text-gray-700">${item.name}</span>
+                        ${item.selectedOptions && item.selectedOptions.length > 0 ? `<br><span class="text-xs text-gray-400">+ ${item.selectedOptions.join(', ')}</span>` : ''}
+                        <br><span class="text-xs text-red-400 cursor-pointer hover:underline" onclick="cart.splice(${idx},1);updateCartUI()">ลบ</span>
+                    </div>
                     <span class="font-semibold">฿${item.finalPrice}</span>
                 </div>
             `).join('');
         }
 
-        // --- 5. Map & Distance Calculation (ไฮไลท์สำคัญ) ---
+        // --- 5. Map & Distance Calculation ---
         function initMap() {
-            // 1. ตั้งค่าแผนที่
             map = L.map('map', { zoomControl: false }).setView(SHOP_LOC, 14);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
             
-            // -----------------------------------------------------------
-            // ส่วนที่ 1: กำหนดหน้าตาไอคอน (ร้าน และ ลูกค้า)
-            // -----------------------------------------------------------
-
-            // 1.1 ไอคอนร้าน (เอารูปร้านมาใส่ที่ iconUrl)
+            // ไอคอนร้าน
             var shopIcon = L.icon({
                 iconUrl: 'https://cdn-icons-png.flaticon.com/512/273/273177.png', 
-                iconSize: [50, 50], // ปรับขนาดให้ใหญ่ขึ้นนิดนึงเพื่อให้เห็นรายละเอียดสวยๆ
-                iconAnchor: [25, 50], // จุดชี้ลงพื้น (กึ่งกลางแนวนอน, ล่างสุด)
-                popupAnchor: [0, -50] // จุดที่ Popup เด้งขึ้นเหนือหลังคา
+                iconSize: [50, 50],
+                iconAnchor: [25, 50],
+                popupAnchor: [0, -50]
             });
 
-            // 1.2 ไอคอนลูกค้า (รูปหมุด Pin สีแดง)
+            // ไอคอนลูกค้า
             var customerIcon = L.icon({
                 iconUrl: 'https://cdn-icons-png.flaticon.com/512/2776/2776067.png',
-                
-                iconSize: [40, 40],   // ปรับขนาดความกว้าง, สูง (แก้เลขตรงนี้ถ้าอยากให้ใหญ่/เล็ก)
-                iconAnchor: [20, 40], // จุดที่ชี้ลงแผนที่ (กึ่งกลางแนวนอน, ล่างสุด)
-                popupAnchor: [0, -40], // จุดที่ Popup เด้ง (อยู่เหนือหมุด)
-                shadowUrl: null       // ไม่ใช้เงา
+                iconSize: [40, 40],
+                iconAnchor: [20, 40],
+                popupAnchor: [0, -40],
+                shadowUrl: null
             });
 
-            // -----------------------------------------------------------
-            // ส่วนที่ 2: วางลงบนแผนที่
-            // -----------------------------------------------------------
-
-            // วางหมุดร้าน (ใช้ shopIcon ที่ประกาศไว้ด้านบน)
-            L.marker(SHOP_LOC, { icon: shopIcon }).addTo(map)
-                .bindPopup("<b>ร้านหนุ่มดำเนิน</b><br>ส่งความอร่อยจากตรงนี้").openPopup();
-
-            // วางหมุดลูกค้า (ใช้ customerIcon) - ให้ลากได้ (draggable: true)
+            // วางหมุด
+            L.marker(SHOP_LOC, { icon: shopIcon }).addTo(map).bindPopup("<b>ร้านหนุ่มดำเนิน</b><br>ส่งความอร่อยจากตรงนี้").openPopup();
             marker = L.marker(SHOP_LOC, { draggable: true, icon: customerIcon }).addTo(map);
 
-            // -----------------------------------------------------------
-            // ส่วนที่ 3: ระบบคำนวณ (เหมือนเดิม)
-            // -----------------------------------------------------------
             map.on('click', function(e) {
                 marker.setLatLng(e.latlng);
                 calculateDelivery(e.latlng.lat, e.latlng.lng);
@@ -422,21 +480,19 @@
             });
         }
 
-        // --- ฟังก์ชันคำนวณระยะทางและค่าส่ง (แก้ไขเงื่อนไข) ---
         function calculateDelivery(lat, lng) {
             userLat = lat; userLng = lng;
             distanceKm = getDistanceFromLatLonInKm(SHOP_LOC[0], SHOP_LOC[1], lat, lng);
             
-            // Update UI
             document.getElementById('header-distance').innerText = `ห่างจากร้าน ${distanceKm.toFixed(1)} กม.`;
             document.getElementById('distance-display').innerText = `${distanceKm.toFixed(1)} กม.`;
 
             const btnConfirm = document.getElementById('btn-confirm-address');
             const msgError = document.getElementById('out-of-range-msg');
 
-            // เช็คระยะทางเกินกำหนดหรือไม่
+            // 1. เช็คระยะทาง (ห้ามเกิน 5 กม.)
             if (distanceKm > MAX_DIST_KM) {
-                msgError.innerText = `ขออภัย อยู่นอกพื้นที่จัดส่ง (เกิน ${MAX_DIST_KM} กม.)`; // อัปเดตข้อความเตือน
+                msgError.innerText = `ขออภัย อยู่นอกพื้นที่จัดส่ง (เกิน ${MAX_DIST_KM} กม.)`;
                 msgError.classList.remove('hidden');
                 document.getElementById('distance-display').classList.replace('bg-green-50','bg-red-50');
                 document.getElementById('distance-display').classList.replace('text-green-600','text-red-600');
@@ -448,12 +504,10 @@
                 document.getElementById('distance-display').classList.replace('text-red-600','text-green-600');
                 btnConfirm.disabled = false;
                 
-                // --- คำนวณค่าส่งตามเงื่อนไขใหม่ ---
+                // 2. คำนวณค่าส่ง
                 const foodTotal = cart.reduce((s, i) => s + i.finalPrice, 0);
                 
-                // เงื่อนไข 1: ใกล้บ้าน (<= 1.5 กม. และยอด >= 100)
                 let isFreeByDistance = (distanceKm <= 1.5 && foodTotal >= 100);
-                // เงื่อนไข 2: ยอดซื้อเยอะ (>= 200)
                 let isFreeByTotal = (foodTotal >= 200);
 
                 if (isFreeByDistance || isFreeByTotal) {
@@ -464,7 +518,17 @@
             }
         }
 
-        // --- ฟังก์ชันไปหน้าชำระเงิน (อัปเดตเงื่อนไขให้ตรงกัน) ---
+        function getDistanceFromLatLonInKm(lat1,lon1,lat2,lon2) {
+            var R = 6371; 
+            var dLat = deg2rad(lat2-lat1);  
+            var dLon = deg2rad(lon2-lon1); 
+            var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); 
+            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+            return R * c; 
+        }
+        function deg2rad(deg) { return deg * (Math.PI/180); }
+
+        // --- 6. Validate & Payment ---
         function validateAndGoToPayment() {
             const name = document.getElementById('cust-name').value;
             const phone = document.getElementById('cust-phone').value;
@@ -473,13 +537,12 @@
             if(!name || !phone || !address) return Swal.fire({icon: 'warning', text: 'กรุณากรอกข้อมูลที่อยู่ให้ครบถ้วน'});
             if(!userLat) return Swal.fire({icon: 'warning', text: 'กรุณาปักหมุดจุดส่งบนแผนที่'});
             
-            // เช็คระยะทางอีกครั้งก่อนไปต่อ
             if(distanceKm > MAX_DIST_KM) return Swal.fire({icon: 'error', text: `อยู่นอกพื้นที่จัดส่ง (จำกัด ${MAX_DIST_KM} กม.)`});
 
-            // Prepare Payment Page Data
+            // Prepare Data
             const foodTotal = cart.reduce((s, i) => s + i.finalPrice, 0);
             
-            // --- คำนวณค่าส่งใหม่ (Re-calculate) ---
+            // Re-calculate Fee (เพื่อความชัวร์)
             let isFreeByDistance = (distanceKm <= 1.5 && foodTotal >= 100);
             let isFreeByTotal = (foodTotal >= 200);
             
@@ -496,7 +559,6 @@
             if(deliveryFee === 0) {
                 feeDisplay.innerText = "ฟรี";
                 feeDisplay.className = "text-green-600 font-bold";
-                // แสดงเหตุผลที่ส่งฟรี
                 feeDetail.innerText = (isFreeByDistance) ? "(โปรใกล้บ้าน 1.5km)" : "(ครบ 200บ.)";
             } else {
                 feeDisplay.innerText = `${deliveryFee} บาท`;
@@ -541,7 +603,8 @@
                 didOpen: () => Swal.showLoading()
             });
 
-            // Simulate API Call
+            // ตรงนี้คือจุดเชื่อมต่อกับ Backend (Google Apps Script)
+            // ในอนาคตถ้ามี Link Web App ให้ใช้ fetch ส่งข้อมูลไป
             setTimeout(() => {
                 Swal.fire({
                     icon: 'success',
