@@ -184,30 +184,43 @@
             showPage('checkout');
         }
 
-        // --- 5. ฟังก์ชันแผนที่ (Leaflet Free) ---
+        // --- 5. ฟังก์ชันแผนที่ (แก้ไข: เริ่มต้นพิกัดใหม่ + จิ้มเพื่อย้ายหมุด) ---
         function initMap() {
-            // พิกัดเริ่มต้น (กรุงเทพ)
-            const defaultLoc = [13.7563, 100.5018];
-            map = L.map('map').setView(defaultLoc, 13);
+            // 1. กำหนดพิกัดเริ่มต้นตามที่คุณต้องการ
+            const defaultLoc = [13.639484, 100.500646];
             
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            // สร้างแผนที่ (Zoom ระดับ 16 ให้เห็นซอยชัดขึ้น)
+            map = L.map('map').setView(defaultLoc, 16);
             
-            marker = L.marker(defaultLoc, { draggable: true }).addTo(map);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
             
-            // เมื่อลากหมุด ให้เก็บค่าพิกัด
-            marker.on('dragend', function(e) {
-                const coord = marker.getLatLng();
+            // สร้างหมุด (Marker) ไว้ที่จุดเริ่มต้น
+            marker = L.marker(defaultLoc).addTo(map);
+
+            // อัปเดตค่าพิกัดลงใน input ทันที (เผื่อลูกค้าไม่กดเปลี่ยน)
+            document.getElementById('latlong').value = `${defaultLoc[0]},${defaultLoc[1]}`;
+
+            // 2. เพิ่มระบบ "จิ้มแผนที่เพื่อย้ายหมุด" (Click to Pin)
+            map.on('click', function(e) {
+                const coord = e.latlng;
+                
+                // ย้ายหมุดไปตามจุดที่จิ้ม
+                marker.setLatLng(coord);
+                
+                // เก็บค่าพิกัดใหม่เตรียมส่ง
                 document.getElementById('latlong').value = `${coord.lat},${coord.lng}`;
+                
+                // (ลูกเล่นเสริม) ขยับแผนที่ไปหาหมุดนิดนึง ให้ดูสมูท
+                map.panTo(coord);
             });
 
-            // ขอพิกัดปัจจุบัน
+            // (ส่วนนี้เก็บไว้ได้) ถ้าลูกค้ากดอนุญาตให้ระบุตำแหน่ง ก็จะย้ายหมุดไปหาเขา
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(pos => {
-                    const loc = [pos.coords.latitude, pos.coords.longitude];
-                    map.setView(loc, 15);
-                    marker.setLatLng(loc);
-                    document.getElementById('latlong').value = `${loc[0]},${loc[1]}`;
-                });
+                // สร้างปุ่มกดเพื่อหาตำแหน่งปัจจุบัน (ถ้าต้องการเพิ่มปุ่มค่อยใส่)
+                // หรือจะให้ทำงานอัตโนมัติก็ได้ แต่บางทีลูกค้าอาจจะรำคาญถ้ามันเด้งถาม
+                // ในที่นี้ผมขอปิด Auto ไว้ก่อน เพื่อให้เริ่มที่พิกัด 13.639484 ตามโจทย์ครับ
             }
         }
 
