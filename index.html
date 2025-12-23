@@ -29,6 +29,8 @@
         .tab-inactive { color: #6b7280; border-bottom: 2px solid transparent; }
         .payment-radio:checked + div { border-color: #16a34a; background-color: #f0fdf4; }
         .payment-radio:checked + div .radio-indicator { border-color: #16a34a; background-color: #16a34a; box-shadow: inset 0 0 0 3px white; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body class="pb-32"> 
@@ -69,6 +71,44 @@
         </header>
 
         <section id="page-menu" class="page-section active-section">
+            <div class="mt-4 px-5">
+    <div id="banner-slider" class="flex overflow-x-auto snap-x snap-mandatory gap-3 no-scrollbar rounded-2xl" style="scroll-behavior: smooth;">
+        
+        <div class="snap-center shrink-0 w-full h-40 relative rounded-2xl overflow-hidden shadow-md">
+            <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&q=80" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+            <div class="absolute bottom-3 left-4 text-white">
+                <span class="bg-red-500 text-[10px] font-bold px-2 py-0.5 rounded-full mb-1 inline-block">HOT DEAL</span>
+                <p class="font-bold text-lg">ซื้อคู่ ถูกกว่า!</p>
+                <p class="text-xs opacity-90">จับคู่มะพร้าวปั่น + วุ้นกะทิ</p>
+            </div>
+        </div>
+
+        <div class="snap-center shrink-0 w-full h-40 relative rounded-2xl overflow-hidden shadow-md">
+            <img src="https://images.unsplash.com/photo-1628519592415-3174241e3d3f?w=800&q=80" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+            <div class="absolute bottom-3 left-4 text-white">
+                <span class="bg-green-500 text-[10px] font-bold px-2 py-0.5 rounded-full mb-1 inline-block">NEW</span>
+                <p class="font-bold text-lg">สูตรนมสดฮอกไกโด</p>
+                <p class="text-xs opacity-90">หอม มัน นัว กว่าเดิม</p>
+            </div>
+        </div>
+
+        <div class="snap-center shrink-0 w-full h-40 relative rounded-2xl overflow-hidden shadow-md">
+            <img src="https://images.unsplash.com/photo-1556910103-1c02745a30bf?w=800&q=80" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+            <div class="absolute bottom-3 left-4 text-white">
+                <span class="bg-blue-500 text-[10px] font-bold px-2 py-0.5 rounded-full mb-1 inline-block">DELIVERY</span>
+                <p class="font-bold text-lg">ส่งฟรี 5 กม. แรก</p>
+                <p class="text-xs opacity-90">เมื่อสั่งครบ 200 บาท</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+<div class="px-5 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-end">
+    <h2 id="menu-heading" class="font-semibold text-lg text-gray-700">รายการยอดฮิต 🔥</h2>
+</div>
             <div class="px-5 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-end">
                 <h2 id="menu-heading" class="font-semibold text-lg text-gray-700">รายการยอดฮิต 🔥</h2>
             </div>
@@ -251,6 +291,8 @@
             renderMenu(activeTab);
             initMap();
             updateFooterState('menu');
+            // เริ่มระบบ Auto Slide
+            startBannerAutoSlide();
             
             // 🧠 Remember Me: โหลดข้อมูลลูกค้าจาก LocalStorage
             if(localStorage.getItem('cust_name')) document.getElementById('cust-name').value = localStorage.getItem('cust_name');
@@ -581,6 +623,24 @@
             const reader = new FileReader(); reader.readAsDataURL(file);
             reader.onload = () => resolve(reader.result); reader.onerror = error => reject(error);
         });
+        function startBannerAutoSlide() {
+    const slider = document.getElementById('banner-slider');
+    if (!slider) return;
+    
+    let scrollAmount = 0;
+    setInterval(() => {
+        const cardWidth = slider.offsetWidth + 12; // ความกว้างการ์ด + gap
+        scrollAmount += cardWidth;
+
+        // ถ้าเลื่อนไปสุดแล้ว ให้กลับมาจุดเริ่มต้น
+        if (scrollAmount >= slider.scrollWidth) {
+            scrollAmount = 0;
+            slider.scrollTo({ left: 0, behavior: 'auto' }); // วาร์ปกลับเร็วๆ
+        } else {
+            slider.scrollTo({ left: scrollAmount, behavior: 'smooth' }); // เลื่อนนุ่มๆ
+        }
+    }, 4000); // เลื่อนทุก 4 วินาที
+}
     </script>
 </body>
 </html>
