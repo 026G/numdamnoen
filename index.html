@@ -233,7 +233,7 @@
     <script>
         // --- 1. ข้อมูลร้าน & Config ---
         const SHOP_LOC = [13.639417, 100.499580]; // พิกัดร้าน
-        const MAX_DIST_KM = 10.0;
+        const MAX_DIST_KM = 5.0;
         
         // ข้อมูลสินค้า
         const menuDB = [
@@ -422,6 +422,7 @@
             });
         }
 
+        // --- ฟังก์ชันคำนวณระยะทางและค่าส่ง (แก้ไขเงื่อนไข) ---
         function calculateDelivery(lat, lng) {
             userLat = lat; userLng = lng;
             distanceKm = getDistanceFromLatLonInKm(SHOP_LOC[0], SHOP_LOC[1], lat, lng);
@@ -433,7 +434,9 @@
             const btnConfirm = document.getElementById('btn-confirm-address');
             const msgError = document.getElementById('out-of-range-msg');
 
+            // เช็คระยะทางเกินกำหนดหรือไม่
             if (distanceKm > MAX_DIST_KM) {
+                msgError.innerText = `ขออภัย อยู่นอกพื้นที่จัดส่ง (เกิน ${MAX_DIST_KM} กม.)`; // อัปเดตข้อความเตือน
                 msgError.classList.remove('hidden');
                 document.getElementById('distance-display').classList.replace('bg-green-50','bg-red-50');
                 document.getElementById('distance-display').classList.replace('text-green-600','text-red-600');
@@ -445,11 +448,12 @@
                 document.getElementById('distance-display').classList.replace('text-red-600','text-green-600');
                 btnConfirm.disabled = false;
                 
-                // คำนวณค่าส่งตามเงื่อนไข
-                // กฎ: ค่าสินค้า < 200 ค่าส่ง 40 บาท (ยกเว้นระยะ <= 4 กม. และยอด >= 100 ส่งฟรี)
+                // --- คำนวณค่าส่งตามเงื่อนไขใหม่ ---
                 const foodTotal = cart.reduce((s, i) => s + i.finalPrice, 0);
                 
-                let isFreeByDistance = (distanceKm <= 4.0 && foodTotal >= 100);
+                // เงื่อนไข 1: ใกล้บ้าน (<= 1.5 กม. และยอด >= 100)
+                let isFreeByDistance = (distanceKm <= 1.5 && foodTotal >= 100);
+                // เงื่อนไข 2: ยอดซื้อเยอะ (>= 200)
                 let isFreeByTotal = (foodTotal >= 200);
 
                 if (isFreeByDistance || isFreeByTotal) {
@@ -460,20 +464,7 @@
             }
         }
 
-        // Haversine Formula (คำนวณระยะทาง)
-        function getDistanceFromLatLonInKm(lat1,lon1,lat2,lon2) {
-            var R = 6371; // Radius of the earth in km
-            var dLat = deg2rad(lat2-lat1);  
-            var dLon = deg2rad(lon2-lon1); 
-            var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); 
-            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-            var d = R * c; 
-            return d;
-        }
-        function deg2rad(deg) { return deg * (Math.PI/180); }
-
-        // --- 6. Address Validation & Payment Prep ---
+        // --- ฟังก์ชันไปหน้าชำระเงิน (อัปเดตเงื่อนไขให้ตรงกัน) ---
         function validateAndGoToPayment() {
             const name = document.getElementById('cust-name').value;
             const phone = document.getElementById('cust-phone').value;
@@ -481,14 +472,17 @@
             
             if(!name || !phone || !address) return Swal.fire({icon: 'warning', text: 'กรุณากรอกข้อมูลที่อยู่ให้ครบถ้วน'});
             if(!userLat) return Swal.fire({icon: 'warning', text: 'กรุณาปักหมุดจุดส่งบนแผนที่'});
-            if(distanceKm > MAX_DIST_KM) return Swal.fire({icon: 'error', text: 'อยู่นอกพื้นที่จัดส่ง'});
+            
+            // เช็คระยะทางอีกครั้งก่อนไปต่อ
+            if(distanceKm > MAX_DIST_KM) return Swal.fire({icon: 'error', text: `อยู่นอกพื้นที่จัดส่ง (จำกัด ${MAX_DIST_KM} กม.)`});
 
             // Prepare Payment Page Data
             const foodTotal = cart.reduce((s, i) => s + i.finalPrice, 0);
             
-            // Re-calculate Fee (เผื่อตะกร้าเปลี่ยน)
-            let isFreeByDistance = (distanceKm <= 4.0 && foodTotal >= 100);
+            // --- คำนวณค่าส่งใหม่ (Re-calculate) ---
+            let isFreeByDistance = (distanceKm <= 1.5 && foodTotal >= 100);
             let isFreeByTotal = (foodTotal >= 200);
+            
             deliveryFee = (isFreeByDistance || isFreeByTotal) ? 0 : 40;
 
             const grandTotal = foodTotal + deliveryFee;
@@ -498,10 +492,12 @@
             
             const feeDisplay = document.getElementById('summary-delivery-fee');
             const feeDetail = document.getElementById('delivery-details');
+            
             if(deliveryFee === 0) {
                 feeDisplay.innerText = "ฟรี";
                 feeDisplay.className = "text-green-600 font-bold";
-                feeDetail.innerText = (isFreeByDistance) ? "(ใกล้บ้าน 4km)" : "(ครบ 200บ.)";
+                // แสดงเหตุผลที่ส่งฟรี
+                feeDetail.innerText = (isFreeByDistance) ? "(โปรใกล้บ้าน 1.5km)" : "(ครบ 200บ.)";
             } else {
                 feeDisplay.innerText = `${deliveryFee} บาท`;
                 feeDisplay.className = "text-gray-800";
