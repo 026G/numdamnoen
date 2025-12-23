@@ -35,29 +35,23 @@
 
     <div class="max-w-md mx-auto min-h-screen bg-white shadow-xl relative overflow-hidden sm:border-x sm:border-gray-100">
 
-        <header class="bg-white sticky top-0 z-30 shadow-sm">
-            <div class="h-32 w-full bg-gray-200 relative overflow-hidden">
-                <img src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=800&q=80" class="w-full h-full object-cover opacity-90">
-                <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                <div class="absolute bottom-3 left-4 text-white">
-                     <h1 class="font-bold text-xl drop-shadow-md leading-tight">หนุ่มดำเนิน<br>มะพร้าวปั่น 🥥</h1>
-                     <button onclick="goBack()" id="back-btn" class="absolute -top-24 left-0 w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition backdrop-blur-sm opacity-0 pointer-events-none">
-                        <i class="fa-solid fa-arrow-left text-sm"></i>
-                     </button>
+        <header class="bg-white sticky top-0 z-30 shadow-sm/50 backdrop-blur-md bg-opacity-95">
+            <div class="px-5 py-4 flex items-center gap-4">
+                <button onclick="goBack()" class="w-10 h-10 rounded-full bg-gray-50 text-gray-600 flex items-center justify-center hover:bg-gray-100 transition shadow-sm">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+                <div class="flex-1">
+                    <h1 class="font-semibold text-xl text-gray-800 tracking-tight">หนุ่มดำเนิน มะพร้าวปั่น</h1>
+                    <div class="flex items-center gap-1 text-xs text-green-600 font-medium">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <span id="header-distance">กรุณาระบุตำแหน่งส่ง</span>
+                    </div>
                 </div>
-            </div>
-
-            <div id="category-tabs" class="flex px-2 border-b border-gray-100 bg-white">
-                <div onclick="switchTab('recommend')" id="tab-recommend" class="flex-1 text-center py-3 text-sm font-bold cursor-pointer transition-all tab-active relative">เมนูแนะนำ</div>
-                <div onclick="switchTab('promotion')" id="tab-promotion" class="flex-1 text-center py-3 text-sm font-bold cursor-pointer transition-all tab-inactive relative">โปรโมชั่น</div>
             </div>
             
-            <div class="bg-green-50 px-4 py-1.5 flex justify-between items-center text-xs text-green-700">
-                <div class="flex items-center gap-1">
-                    <i class="fa-solid fa-location-dot"></i>
-                    <span id="header-distance">กำลังระบุพิกัด...</span>
-                </div>
-                <div onclick="showPage('address')" class="underline cursor-pointer font-medium hover:text-green-800">เปลี่ยน</div>
+            <div id="category-tabs" class="flex px-2 border-b border-gray-100">
+                <div onclick="switchTab('recommend')" id="tab-recommend" class="flex-1 text-center py-3 text-sm font-medium cursor-pointer transition-all tab-active">เมนูแนะนำ</div>
+                <div onclick="switchTab('promotion')" id="tab-promotion" class="flex-1 text-center py-3 text-sm font-medium cursor-pointer transition-all tab-inactive">โปรโมชั่น</div>
             </div>
         </header>
 
