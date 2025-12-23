@@ -11,145 +11,191 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap');
+        /* ใช้ฟอนต์ Prompt เพื่อความทันสมัยและดูเป็นมืออาชีพ */
+        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap');
         
-        body { font-family: 'Kanit', sans-serif; background-color: #f3f4f6; }
+        body { 
+            font-family: 'Prompt', sans-serif; 
+            background-color: #f8f9fa; /* พื้นหลังสีเทาอ่อนมากๆ เพื่อความสบายตา */
+            color: #333;
+            -webkit-font-smoothing: antialiased;
+        }
         
         /* ซ่อนหน้าอื่นๆ ไว้ก่อน */
         .page-section { display: none; }
-        .active-section { display: block; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .active-section { display: block; animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
         /* CSS สำหรับ Map */
-        #map { height: 250px; width: 100%; border-radius: 0.5rem; z-index: 0; }
+        #map { height: 250px; width: 100%; border-radius: 12px; z-index: 0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
 
         /* Animation Modal */
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        .animate-slide-up { animation: slideUp 0.3s ease-out; }
+        .animate-slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
 
-        /* ซ่อน Scrollbar แต่ยังเลื่อนได้ */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        /* Tab Active State */
+        .tab-active {
+            color: #16a34a; /* Green-600 */
+            border-bottom: 2px solid #16a34a;
+            background-color: rgba(22, 163, 74, 0.05);
+        }
+        .tab-inactive {
+            color: #6b7280; /* Gray-500 */
+            border-bottom: 2px solid transparent;
+        }
     </style>
 </head>
-<body class="pb-24"> <div class="max-w-md mx-auto min-h-screen bg-white shadow-2xl relative overflow-hidden">
+<body class="pb-28"> <div class="max-w-md mx-auto min-h-screen bg-white shadow-xl relative overflow-hidden sm:border-x sm:border-gray-100">
 
-        <header class="bg-white sticky top-0 z-30 shadow-sm">
-            <div class="p-4 flex items-center gap-3">
-                <button onclick="if(!document.getElementById('page-menu').classList.contains('active-section')) showPage('menu')" class="text-xl text-gray-700">
+        <header class="bg-white sticky top-0 z-30 shadow-sm/50 backdrop-blur-md bg-opacity-95">
+            <div class="px-5 py-4 flex items-center gap-4">
+                <button onclick="if(!document.getElementById('page-menu').classList.contains('active-section')) showPage('menu')" class="w-10 h-10 rounded-full bg-gray-50 text-gray-600 flex items-center justify-center hover:bg-gray-100 transition shadow-sm">
                     <i class="fa-solid fa-arrow-left"></i>
                 </button>
                 <div class="flex-1">
-                    <h1 class="font-bold text-lg text-gray-800">หนุ่มดำเนิน มะพร้าวปั่น</h1>
-                    <p class="text-xs text-green-600"><i class="fa-solid fa-motorcycle"></i> ค่าส่งเริ่มต้น 0 บาท</p>
+                    <h1 class="font-semibold text-xl text-gray-800 tracking-tight">หนุ่มดำเนิน มะพร้าวปั่น</h1>
+                    <div class="flex items-center gap-1 text-xs text-green-600 font-medium">
+                        <i class="fa-solid fa-check-circle"></i>
+                        <span>Verified Store</span>
+                        <span class="text-gray-300 mx-1">|</span>
+                        <span class="text-gray-500">ส่งฟรี 3 กม. แรก</span>
+                    </div>
                 </div>
-                <div class="text-gray-400"><i class="fa-solid fa-share-nodes"></i></div>
+                <div class="w-10 h-10 rounded-full bg-gray-50 text-gray-400 flex items-center justify-center hover:text-green-600 transition cursor-pointer shadow-sm">
+                    <i class="fa-solid fa-share-nodes"></i>
+                </div>
             </div>
             
-            <div class="flex border-b text-gray-500 text-sm font-bold">
-                <div class="flex-1 text-center py-2 border-b-2 border-green-600 text-green-600 cursor-pointer">เมนูแนะนำ</div>
-                <div class="flex-1 text-center py-2 cursor-pointer hover:text-green-600">โปรโมชั่น</div>
-                <div class="flex-1 text-center py-2 cursor-pointer hover:text-green-600">รีวิว</div>
+            <div id="category-tabs" class="flex px-2 border-b border-gray-100">
+                <div onclick="switchTab('recommend')" id="tab-recommend" class="flex-1 text-center py-3 text-sm font-medium cursor-pointer transition-all duration-300 tab-active">
+                    เมนูแนะนำ
+                </div>
+                <div onclick="switchTab('promotion')" id="tab-promotion" class="flex-1 text-center py-3 text-sm font-medium cursor-pointer transition-all duration-300 tab-inactive">
+                    โปรโมชั่น
+                </div>
             </div>
         </header>
 
         <section id="page-menu" class="page-section active-section">
-            <div class="p-4 bg-gray-50">
-                <h2 class="font-bold text-lg mb-2 text-gray-700">โปรโมชั่น <span class="text-red-500 text-sm font-normal">(ขายดี)</span></h2>
+            <div class="px-5 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-end">
+                <h2 id="menu-heading" class="font-semibold text-lg text-gray-700">รายการยอดฮิต 🔥</h2>
+                <span class="text-xs text-gray-400">เลือกความอร่อยได้เลย</span>
             </div>
-            <div id="menu-list" class="divide-y divide-gray-100">
+
+            <div id="menu-list" class="pb-4">
                 </div>
         </section>
 
         <section id="page-cart" class="page-section bg-gray-50 min-h-screen">
-            <div class="bg-white p-4 shadow-sm mb-2">
-                <h2 class="text-lg font-bold">ตะกร้าของฉัน</h2>
+            <div class="bg-white px-5 py-4 shadow-sm mb-2">
+                <h2 class="text-xl font-semibold text-gray-800">ตะกร้าสินค้า</h2>
+                <p class="text-sm text-gray-400">ตรวจสอบรายการก่อนชำระเงิน</p>
             </div>
 
-            <div id="cart-items" class="bg-white p-4 mb-4 space-y-4">
-                <p class="text-gray-500 text-center py-8">ยังไม่มีสินค้าในตะกร้า</p>
+            <div id="cart-items" class="bg-white p-5 mb-3 space-y-4">
+                <p class="text-gray-400 text-center py-10 font-light">ยังไม่มีสินค้าในตะกร้า</p>
             </div>
             
-            <div class="bg-white p-4 mb-24">
-                <div class="flex justify-between text-gray-600 mb-2">
+            <div class="bg-white p-5 mb-24 space-y-3">
+                <div class="flex justify-between text-gray-500 text-sm">
                     <span>ค่าอาหาร</span>
                     <span id="subtotal-price">0 บาท</span>
                 </div>
-                <div class="flex justify-between font-bold text-xl">
+                <div class="flex justify-between text-gray-500 text-sm">
+                    <span>ค่าจัดส่ง</span>
+                    <span class="text-green-600">ฟรี</span>
+                </div>
+                <div class="border-t border-dashed my-2"></div>
+                <div class="flex justify-between font-semibold text-xl text-gray-800">
                     <span>ยอดรวมสุทธิ</span>
                     <span id="total-price-cart" class="text-green-600">0 บาท</span>
                 </div>
             </div>
         </section>
 
-        <section id="page-checkout" class="page-section bg-white min-h-screen p-4">
-            <h2 class="text-lg font-bold mb-4">ข้อมูลจัดส่ง & ชำระเงิน</h2>
+        <section id="page-checkout" class="page-section bg-white min-h-screen px-5 py-6">
+            <h2 class="text-xl font-semibold mb-6 text-gray-800">ข้อมูลการจัดส่ง</h2>
             
-            <div class="space-y-4">
-                <div class="bg-gray-50 p-3 rounded-lg border">
-                    <label class="block text-xs text-gray-500 mb-1">ชื่อผู้รับ</label>
-                    <input type="text" id="cust-name" class="w-full bg-transparent outline-none font-bold" placeholder="ระบุชื่อ">
-                </div>
-                <div class="bg-gray-50 p-3 rounded-lg border">
-                    <label class="block text-xs text-gray-500 mb-1">เบอร์โทรศัพท์</label>
-                    <input type="tel" id="cust-phone" class="w-full bg-transparent outline-none font-bold" placeholder="ระบุเบอร์โทร">
-                </div>
-                <div class="bg-gray-50 p-3 rounded-lg border">
-                    <label class="block text-xs text-gray-500 mb-1">ที่อยู่จัดส่ง</label>
-                    <textarea id="cust-address" class="w-full bg-transparent outline-none" rows="2" placeholder="บ้านเลขที่, ซอย, จุดสังเกต"></textarea>
+            <div class="space-y-5">
+                <div class="space-y-4">
+                    <div class="relative">
+                        <label class="absolute -top-2 left-3 bg-white px-1 text-xs text-green-600 font-medium">ชื่อผู้รับ</label>
+                        <input type="text" id="cust-name" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition" placeholder="ระบุชื่อของคุณ">
+                    </div>
+                    
+                    <div class="relative">
+                        <label class="absolute -top-2 left-3 bg-white px-1 text-xs text-green-600 font-medium">เบอร์โทรศัพท์</label>
+                        <input type="tel" id="cust-phone" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition" placeholder="ระบุเบอร์โทรติดต่อ">
+                    </div>
+
+                    <div class="relative">
+                        <label class="absolute -top-2 left-3 bg-white px-1 text-xs text-green-600 font-medium">ที่อยู่จัดส่ง</label>
+                        <textarea id="cust-address" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition" rows="2" placeholder="บ้านเลขที่, ซอย, จุดสังเกต"></textarea>
+                    </div>
                 </div>
                 
-                <div>
-                    <p class="text-sm font-bold mb-2">📌 ปักหมุดจุดส่ง (จิ้มแผนที่):</p>
+                <div class="pt-2">
+                    <div class="flex justify-between items-center mb-2">
+                        <p class="text-sm font-semibold text-gray-700">📍 ปักหมุดจุดส่ง</p>
+                        <span class="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">แตะที่แผนที่เพื่อเลื่อนหมุด</span>
+                    </div>
                     <div id="map"></div>
                     <input type="hidden" id="latlong">
                 </div>
 
-                <div class="border-t pt-4 text-center">
-                    <p class="font-bold mb-2 text-gray-700">สแกนจ่าย QR Code</p>
-                    <img id="qr-image" src="" class="mx-auto w-40 h-40 object-contain mb-2 border p-2 rounded">
-                    <p class="text-green-600 font-bold text-2xl" id="final-price-display">0 บาท</p>
-                    <p class="text-xs text-gray-400">เมื่อโอนเสร็จแล้ว กดปุ่มยืนยันด้านล่าง</p>
+                <div class="bg-green-50 border border-green-100 rounded-xl p-5 text-center mt-6">
+                    <p class="font-semibold text-gray-700 mb-3">สแกนจ่ายผ่าน QR Code</p>
+                    <div class="bg-white p-2 inline-block rounded-lg shadow-sm border mb-3">
+                        <img id="qr-image" src="" class="w-40 h-40 object-contain">
+                    </div>
+                    <p class="text-green-700 font-bold text-2xl" id="final-price-display">0 บาท</p>
+                    <p class="text-xs text-gray-500 mt-1">กรุณาแนบสลิปในไลน์หลังกดปุ่มยืนยัน</p>
                 </div>
             </div>
         </section>
 
-        <div id="sticky-footer" class="fixed bottom-0 w-full max-w-md bg-white border-t p-4 z-40 hidden">
-            <button id="btn-view-cart" onclick="showPage('cart')" class="w-full bg-green-600 text-white rounded-lg p-3 flex justify-between items-center shadow-lg hover:bg-green-700 transition">
-                <div class="flex items-center gap-2">
-                    <div class="bg-white text-green-600 font-bold w-6 h-6 rounded flex items-center justify-center text-sm" id="footer-count">0</div>
-                    <span class="font-bold">ดูตะกร้า</span>
+        <div id="sticky-footer" class="fixed bottom-0 w-full max-w-md bg-white/90 backdrop-blur-md border-t border-gray-200 p-4 z-40 hidden shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+            
+            <button id="btn-view-cart" onclick="showPage('cart')" class="w-full bg-green-600 text-white rounded-xl p-3.5 flex justify-between items-center shadow-lg shadow-green-200 hover:bg-green-700 hover:shadow-green-300 transition-all transform active:scale-[0.98]">
+                <div class="flex items-center gap-3">
+                    <div class="bg-white/20 backdrop-blur-sm text-white font-bold w-8 h-8 rounded-lg flex items-center justify-center text-sm" id="footer-count">0</div>
+                    <div class="flex flex-col items-start leading-none">
+                        <span class="font-semibold text-base">ตะกร้าสินค้า</span>
+                        <span class="text-[10px] opacity-80 font-light">ตรวจสอบรายการ</span>
+                    </div>
                 </div>
                 <span class="font-bold text-lg" id="footer-total">฿0</span>
             </button>
 
-            <div id="btn-checkout-group" class="hidden flex gap-2 w-full">
-                <button onclick="showPage('menu')" class="w-1/3 bg-gray-200 text-gray-700 rounded-lg font-bold py-3">เพิ่มรายการ</button>
-                <button onclick="goToCheckout()" class="w-2/3 bg-green-600 text-white rounded-lg font-bold py-3 shadow-lg">สั่งเลย</button>
+            <div id="btn-checkout-group" class="hidden flex gap-3 w-full">
+                <button onclick="showPage('menu')" class="flex-1 bg-gray-100 text-gray-600 rounded-xl font-medium py-3.5 hover:bg-gray-200 transition">เพิ่มรายการ</button>
+                <button onclick="goToCheckout()" class="flex-[2] bg-green-600 text-white rounded-xl font-bold py-3.5 shadow-lg shadow-green-200 hover:bg-green-700 transition">สั่งเลย</button>
             </div>
 
-            <div id="btn-confirm-group" class="hidden flex gap-2 w-full">
-                <button onclick="showPage('cart')" class="w-1/3 bg-gray-200 text-gray-700 rounded-lg font-bold py-3">กลับ</button>
-                <button onclick="confirmOrder()" class="w-2/3 bg-green-600 text-white rounded-lg font-bold py-3 shadow-lg">ยืนยันการโอน</button>
+            <div id="btn-confirm-group" class="hidden flex gap-3 w-full">
+                <button onclick="showPage('cart')" class="flex-1 bg-gray-100 text-gray-600 rounded-xl font-medium py-3.5 hover:bg-gray-200 transition">กลับ</button>
+                <button onclick="confirmOrder()" class="flex-[2] bg-green-600 text-white rounded-xl font-bold py-3.5 shadow-lg shadow-green-200 hover:bg-green-700 transition">ยืนยันการโอน</button>
             </div>
         </div>
 
-    </div> <div id="option-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-end sm:items-center z-50">
-        <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-xl p-5 shadow-lg animate-slide-up max-h-[85vh] flex flex-col">
+    </div>
+
+    <div id="option-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex justify-center items-end sm:items-center z-50 transition-opacity">
+        <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-2xl p-6 shadow-2xl animate-slide-up max-h-[85vh] flex flex-col">
             
-            <div class="flex justify-between items-start mb-2">
+            <div class="flex justify-between items-start mb-4 pb-2 border-b border-gray-50">
                 <div>
-                    <h3 id="modal-item-name" class="text-xl font-bold text-gray-800">ชื่อเมนู</h3>
-                    <p class="text-sm text-gray-500" id="modal-item-desc">รายละเอียด</p>
+                    <h3 id="modal-item-name" class="text-xl font-semibold text-gray-800 leading-tight">ชื่อเมนู</h3>
+                    <p class="text-sm text-gray-400 font-light mt-1" id="modal-item-desc">รายละเอียด</p>
                 </div>
-                <button onclick="closeModal()" class="text-gray-400 text-2xl bg-gray-100 w-8 h-8 rounded-full flex items-center justify-center">&times;</button>
+                <button onclick="closeModal()" class="text-gray-400 text-xl bg-gray-50 w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 hover:text-gray-600 transition">&times;</button>
             </div>
 
-            <div id="modal-options" class="flex-1 overflow-y-auto mb-4 pr-1 space-y-4">
+            <div id="modal-options" class="flex-1 overflow-y-auto mb-4 pr-1 space-y-5 custom-scrollbar">
                 </div>
 
-            <div class="border-t pt-4">
-                <button onclick="confirmAddToCart()" class="w-full bg-green-600 text-white py-3 rounded-lg font-bold shadow hover:bg-green-700 flex justify-between px-6">
+            <div class="pt-2">
+                <button onclick="confirmAddToCart()" class="w-full bg-green-600 text-white py-3.5 rounded-xl font-bold shadow-lg shadow-green-200 hover:bg-green-700 hover:shadow-green-300 transition-all flex justify-between px-6">
                     <span>เพิ่มลงตะกร้า</span>
                     <span id="modal-total-price">0 บาท</span>
                 </button>
@@ -158,14 +204,16 @@
     </div>
 
     <script>
-        // --- 1. ข้อมูลสินค้า (เพิ่ม originalPrice และ desc) ---
+        // --- 1. ข้อมูลสินค้า (เพิ่ม Category: recommend / promotion) ---
         const menuDB = [
+            // --- หมวดแนะนำ (Recommend) ---
             { 
                 id: 1, 
+                category: "recommend",
                 name: "มะพร้าวปั่น (ไม่ใส่นม)", 
                 desc: "น้ำมะพร้าวสดปั่นแท้ 100% หอมหวานธรรมชาติ ไม่ผสมน้ำเชื่อม",
                 price: 65,
-                originalPrice: 75, // ราคาเต็ม (เพื่อขีดฆ่า)
+                originalPrice: 75,
                 img: "https://images.unsplash.com/photo-1546171753-97d7676e4602?w=400",
                 badge: "ขายดี #1",
                 options: [
@@ -182,11 +230,11 @@
             },
             { 
                 id: 2, 
+                category: "recommend",
                 name: "มะพร้าวปั่นนมสด", 
                 desc: "สูตรนมสด หอมมัน นัวสุดๆ ใช้มะพร้าวน้ำหอมคัดพิเศษ",
                 price: 119, 
                 originalPrice: 158,
-                badge: "ดีลเดือด",
                 img: "https://images.unsplash.com/photo-1595981267035-7b04ca84a82d?w=400",
                 options: [
                     {
@@ -203,12 +251,46 @@
             },
             { 
                 id: 3, 
-                name: "น้ำมะพร้าวสดขวดใหญ่ (1 ลิตร)", 
+                category: "recommend",
+                name: "น้ำมะพร้าวสด (1 ลิตร)", 
                 desc: "น้ำมะพร้าวสดแท้ 100% ไม่ผสมน้ำตาล แช่เย็นเจี๊ยบ",
                 price: 293, 
                 originalPrice: 390,
-                badge: "คุ้มมาก",
                 img: "https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?w=400"
+            },
+
+            // --- หมวดโปรโมชั่น (Promotion) - สินค้าใหม่ ---
+            {
+                id: 4,
+                category: "promotion",
+                name: "Set คู่หูดูโอ้ (2 แก้ว)",
+                desc: "มะพร้าวปั่นนมสด 2 แก้ว ราคาพิเศษ",
+                price: 220,
+                originalPrice: 238,
+                badge: "ลดราคา 🔥",
+                img: "https://images.unsplash.com/photo-1628519592415-3174241e3d3f?w=400",
+                options: [
+                    {
+                        type: "radio",
+                        name: "ความหวาน (แก้วที่ 1)",
+                        choices: [{ label: "หวานปกติ", price: 0 }, { label: "หวานน้อย", price: 0 }]
+                    },
+                    {
+                        type: "radio",
+                        name: "ความหวาน (แก้วที่ 2)",
+                        choices: [{ label: "หวานปกติ", price: 0 }, { label: "หวานน้อย", price: 0 }]
+                    }
+                ]
+            },
+            {
+                id: 5,
+                category: "promotion",
+                name: "วุ้นมะพร้าวถ้วยยักษ์",
+                desc: "วุ้นมะพร้าวทำเอง เนื้อแน่น หวานน้อย โปรโมชั่นเปิดร้าน",
+                price: 35,
+                originalPrice: 50,
+                badge: "Flash Sale",
+                img: "https://images.unsplash.com/photo-1598211028080-1a65499c089c?w=400"
             }
         ];
 
@@ -216,20 +298,47 @@
         let map, marker;
         let currentItem = null;
         let currentBasePrice = 0;
+        let activeTab = 'recommend'; // Default Tab
 
         // --- 2. เริ่มต้นทำงาน ---
         document.addEventListener("DOMContentLoaded", () => {
-            renderMenu();
+            renderMenu(activeTab); // Render default tab
             initMap();
-            updateFooterState('menu'); // เริ่มต้นที่หน้า Menu
+            updateFooterState('menu');
         });
 
-        // --- 3. จัดการหน้าและ Footer ---
+        // --- 3. ฟังก์ชัน Tab Switching (Logic ใหม่) ---
+        function switchTab(category) {
+            activeTab = category;
+            
+            // 1. Update UI (Visual)
+            document.getElementById('tab-recommend').className = category === 'recommend' 
+                ? 'flex-1 text-center py-3 text-sm font-medium cursor-pointer transition-all duration-300 tab-active' 
+                : 'flex-1 text-center py-3 text-sm font-medium cursor-pointer transition-all duration-300 tab-inactive hover:text-gray-500';
+            
+            document.getElementById('tab-promotion').className = category === 'promotion' 
+                ? 'flex-1 text-center py-3 text-sm font-medium cursor-pointer transition-all duration-300 tab-active' 
+                : 'flex-1 text-center py-3 text-sm font-medium cursor-pointer transition-all duration-300 tab-inactive hover:text-gray-500';
+
+            // 2. Update Heading
+            const heading = document.getElementById('menu-heading');
+            if(category === 'recommend') heading.innerHTML = 'รายการยอดฮิต 🔥';
+            else heading.innerHTML = 'โปรโมชั่นพิเศษ ⚡';
+
+            // 3. Re-render Menu
+            renderMenu(category);
+        }
+
+        // --- 4. จัดการหน้า (Navigation) ---
         function showPage(pageId) {
             document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active-section'));
             document.getElementById('page-' + pageId).classList.add('active-section');
             
-            // จัดการ Footer ตามหน้า
+            // แสดง/ซ่อน Tab Category (โชว์เฉพาะหน้า Menu)
+            const tabHeader = document.getElementById('category-tabs');
+            if(pageId === 'menu') tabHeader.style.display = 'flex';
+            else tabHeader.style.display = 'none';
+
             updateFooterState(pageId);
 
             if(pageId === 'checkout') {
@@ -244,20 +353,15 @@
             const btnCheckout = document.getElementById('btn-checkout-group');
             const btnConfirm = document.getElementById('btn-confirm-group');
 
-            footer.classList.remove('hidden'); // แสดง Footer ตลอด (ยกเว้นว่าง)
+            footer.classList.remove('hidden');
 
-            // ซ่อนทุกปุ่มก่อน
             btnCart.classList.add('hidden');
             btnCheckout.classList.add('hidden');
             btnConfirm.classList.add('hidden');
 
             if (pageId === 'menu') {
-                // ถ้าตะกร้าว่าง ให้ซ่อน Footer ไปเลย
-                if(cart.length === 0) {
-                    footer.classList.add('hidden');
-                } else {
-                    btnCart.classList.remove('hidden');
-                }
+                if(cart.length === 0) footer.classList.add('hidden');
+                else btnCart.classList.remove('hidden');
             } else if (pageId === 'cart') {
                 btnCheckout.classList.remove('hidden');
             } else if (pageId === 'checkout') {
@@ -265,29 +369,38 @@
             }
         }
 
-        // --- 4. Render Menu (ปรับดีไซน์ใหม่) ---
-        function renderMenu() {
+        // --- 5. Render Menu (กรองตาม Category) ---
+        function renderMenu(category) {
             const list = document.getElementById('menu-list');
-            list.innerHTML = menuDB.map(item => `
-                <div class="bg-white p-4 flex gap-4 relative">
-                    <div class="relative">
-                        <img src="${item.img}" class="w-28 h-28 object-cover rounded-lg shadow-sm">
-                        ${item.badge ? `<span class="absolute top-0 left-0 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-tl-lg rounded-br-lg">${item.badge}</span>` : ''}
+            
+            // Filter ข้อมูลตาม Tab ที่เลือก
+            const filteredItems = menuDB.filter(item => item.category === category);
+
+            if (filteredItems.length === 0) {
+                list.innerHTML = `<div class="text-center py-10 text-gray-400">ยังไม่มีสินค้าในหมวดนี้</div>`;
+                return;
+            }
+
+            list.innerHTML = filteredItems.map((item, index) => `
+                <div class="bg-white p-5 border-b border-gray-100 flex gap-4 relative hover:bg-gray-50 transition duration-150">
+                    <div class="relative shrink-0">
+                        <img src="${item.img}" class="w-24 h-24 object-cover rounded-xl shadow-sm">
+                        ${item.badge ? `<span class="absolute top-0 left-0 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-tl-xl rounded-br-lg shadow-sm">${item.badge}</span>` : ''}
                     </div>
 
-                    <div class="flex-1 flex flex-col justify-between">
+                    <div class="flex-1 flex flex-col justify-between h-24">
                         <div>
-                            <h3 class="font-bold text-gray-800 text-lg leading-tight mb-1">${item.name}</h3>
-                            <p class="text-xs text-gray-400 line-clamp-2">${item.desc || ''}</p>
+                            <h3 class="font-semibold text-gray-800 text-base leading-tight mb-1">${item.name}</h3>
+                            <p class="text-xs text-gray-400 font-light line-clamp-2">${item.desc || ''}</p>
                         </div>
                         
-                        <div class="flex items-end justify-between mt-2">
-                            <div>
-                                <span class="text-red-500 font-bold text-lg">฿${item.price}</span>
-                                ${item.originalPrice ? `<span class="text-gray-300 text-sm line-through ml-1">฿${item.originalPrice}</span>` : ''}
+                        <div class="flex items-end justify-between">
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-gray-800 font-bold text-lg">฿${item.price}</span>
+                                ${item.originalPrice ? `<span class="text-gray-300 text-xs line-through">฿${item.originalPrice}</span>` : ''}
                             </div>
-                            <button onclick="addToCart(${item.id})" class="bg-green-600 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg active:scale-90 transition">
-                                <i class="fa-solid fa-plus"></i>
+                            <button onclick="addToCart(${item.id})" class="bg-green-50 text-green-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-green-600 hover:text-white transition shadow-sm active:scale-90">
+                                <i class="fa-solid fa-plus text-sm"></i>
                             </button>
                         </div>
                     </div>
@@ -295,7 +408,7 @@
             `).join('');
         }
 
-        // --- 5. Modal Logic ---
+        // --- 6. Modal & Cart Logic ---
         function addToCart(id) {
             const item = menuDB.find(p => p.id === id);
             if (!item.options || item.options.length === 0) {
@@ -316,32 +429,35 @@
             container.innerHTML = ''; 
 
             item.options.forEach((opt, idx) => {
-                let html = `<div class="bg-gray-50 p-3 rounded-lg">
-                    <p class="font-bold mb-2 text-gray-700 text-sm">${opt.name}</p>
-                    <div class="space-y-2">`;
+                let html = `<div class="bg-gray-50 border border-gray-100 p-4 rounded-xl">
+                    <p class="font-semibold mb-3 text-gray-700 text-sm flex items-center gap-2">
+                        ${opt.name} 
+                        ${opt.type === 'radio' ? '<span class="text-[10px] text-red-400 bg-red-50 px-1.5 py-0.5 rounded">จำเป็น</span>' : ''}
+                    </p>
+                    <div class="space-y-3">`;
                 
                 if (opt.type === 'radio') {
                     opt.choices.forEach((choice, cIdx) => {
                         const isChecked = cIdx === 0 ? 'checked' : ''; 
                         html += `
-                            <label class="flex items-center justify-between cursor-pointer">
+                            <label class="flex items-center justify-between cursor-pointer group">
                                 <div class="flex items-center">
-                                    <input type="radio" name="opt-${idx}" value="${choice.label}" data-price="${choice.price}" ${isChecked} class="option-input text-green-600 focus:ring-green-500 w-4 h-4" onchange="calculateModalTotal()">
-                                    <span class="ml-2 text-sm text-gray-700">${choice.label}</span>
+                                    <input type="radio" name="opt-${idx}" value="${choice.label}" data-price="${choice.price}" ${isChecked} class="option-input text-green-600 focus:ring-green-500 w-4 h-4 border-gray-300" onchange="calculateModalTotal()">
+                                    <span class="ml-3 text-sm text-gray-600 group-hover:text-green-700 transition">${choice.label}</span>
                                 </div>
-                                ${choice.price > 0 ? `<span class="text-sm text-gray-500">+${choice.price}</span>` : ''}
+                                ${choice.price > 0 ? `<span class="text-xs text-gray-500 font-medium">+${choice.price}</span>` : ''}
                             </label>
                         `;
                     });
                 } else if (opt.type === 'checkbox') {
                     opt.choices.forEach((choice) => {
                         html += `
-                            <label class="flex items-center justify-between cursor-pointer">
+                            <label class="flex items-center justify-between cursor-pointer group">
                                 <div class="flex items-center">
-                                    <input type="checkbox" name="opt-${idx}" value="${choice.label}" data-price="${choice.price}" class="option-input text-green-600 rounded focus:ring-green-500 w-4 h-4" onchange="checkLimit(this, ${opt.max}); calculateModalTotal()">
-                                    <span class="ml-2 text-sm text-gray-700">${choice.label}</span>
+                                    <input type="checkbox" name="opt-${idx}" value="${choice.label}" data-price="${choice.price}" class="option-input text-green-600 rounded focus:ring-green-500 w-4 h-4 border-gray-300" onchange="checkLimit(this, ${opt.max}); calculateModalTotal()">
+                                    <span class="ml-3 text-sm text-gray-600 group-hover:text-green-700 transition">${choice.label}</span>
                                 </div>
-                                ${choice.price > 0 ? `<span class="text-sm text-gray-500">+${choice.price}</span>` : ''}
+                                ${choice.price > 0 ? `<span class="text-xs text-gray-500 font-medium">+${choice.price}</span>` : ''}
                             </label>
                         `;
                     });
@@ -359,7 +475,7 @@
             document.querySelectorAll('.option-input:checked').forEach(input => {
                 total += parseInt(input.getAttribute('data-price') || 0);
             });
-            document.getElementById('modal-total-price').innerText = `เพิ่มใส่ตะกร้า - ฿${total}`;
+            document.getElementById('modal-total-price').innerText = `฿${total}`;
         }
 
         function checkLimit(checkbox, max) {
@@ -368,9 +484,8 @@
             const checkedCount = document.querySelectorAll(`input[name="${name}"]:checked`).length;
             if (checkedCount > max) {
                 checkbox.checked = false;
-                // ใช้ Toast แบบเงียบๆ ไม่ขัดจังหวะ
                 const Toast = Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 1500 });
-                Toast.fire({ icon: 'warning', title: `เลือกได้สูงสุด ${max} อย่าง` });
+                Toast.fire({ icon: 'info', title: `เลือกได้สูงสุด ${max} อย่าง` });
             }
         }
 
@@ -382,7 +497,6 @@
             const selectedOptions = [];
             let totalPrice = currentBasePrice;
             
-            // Check Required Radio
             let allRequiredSelected = true;
             currentItem.options.forEach((opt, idx) => {
                 if (opt.type === 'radio') {
@@ -390,7 +504,7 @@
                 }
             });
 
-            if (!allRequiredSelected) return Swal.fire({ icon: 'warning', title: 'กรุณาเลือกตัวเลือกให้ครบ' });
+            if (!allRequiredSelected) return Swal.fire({ icon: 'warning', text: 'กรุณาเลือกตัวเลือกให้ครบถ้วน', confirmButtonColor: '#16a34a' });
 
             document.querySelectorAll('.option-input:checked').forEach(input => {
                 selectedOptions.push(input.value);
@@ -405,45 +519,47 @@
             cart.push({ ...item, selectedOptions: options, finalPrice: finalPrice });
             updateCartUI();
             
-            // Animation เล็กๆ ที่ปุ่ม View Cart
+            // Animation Feedback
             const btn = document.getElementById('btn-view-cart');
-            btn.classList.add('scale-105');
-            setTimeout(() => btn.classList.remove('scale-105'), 200);
+            btn.classList.add('scale-95');
+            setTimeout(() => btn.classList.remove('scale-95'), 150);
             
             if(document.getElementById('page-menu').classList.contains('active-section')) {
                 updateFooterState('menu');
             }
         }
 
-        // --- 6. Cart & UI Updates ---
+        // --- 7. Cart & UI Updates ---
         function updateCartUI() {
-            // Update ตัวเลขที่ Footer
             document.getElementById('footer-count').innerText = cart.length;
             const total = cart.reduce((sum, item) => sum + item.finalPrice, 0);
             document.getElementById('footer-total').innerText = `฿${total}`;
             document.getElementById('total-price-cart').innerText = `฿${total}`;
             document.getElementById('subtotal-price').innerText = `฿${total}`;
 
-            // Render รายการในหน้าตะกร้า
             const cartList = document.getElementById('cart-items');
             if(cart.length === 0) {
-                cartList.innerHTML = '<p class="text-gray-400 text-center py-8 text-sm">ยังไม่มีสินค้าในตะกร้า เลือกเมนูที่ชอบได้เลย!</p>';
+                cartList.innerHTML = `
+                    <div class="text-center py-8 opacity-50">
+                        <i class="fa-solid fa-basket-shopping text-4xl mb-2 text-gray-300"></i>
+                        <p class="text-sm">ตะกร้าว่างเปล่า</p>
+                    </div>`;
                 return;
             }
             
             cartList.innerHTML = cart.map((item, index) => `
-                <div class="flex justify-between items-start border-b pb-4 last:border-0 last:pb-0">
+                <div class="flex justify-between items-start border-b border-gray-100 pb-4 last:border-0 last:pb-0">
                     <div class="flex gap-3">
-                        <div class="bg-green-100 text-green-600 w-6 h-6 rounded flex items-center justify-center text-xs font-bold mt-1">${index + 1}</div>
+                        <div class="bg-green-50 text-green-600 w-6 h-6 rounded-md flex items-center justify-center text-xs font-bold mt-0.5 shadow-sm">${index + 1}</div>
                         <div>
-                            <h4 class="font-bold text-gray-800">${item.name}</h4>
+                            <h4 class="font-semibold text-gray-700 text-sm">${item.name}</h4>
                             ${item.selectedOptions && item.selectedOptions.length > 0 
-                              ? `<p class="text-xs text-gray-500 mt-1">${item.selectedOptions.join(', ')}</p>` 
+                              ? `<p class="text-xs text-gray-400 mt-1 font-light"> + ${item.selectedOptions.join(', ')}</p>` 
                               : ''}
-                            <button onclick="removeFromCart(${index})" class="text-red-500 text-xs mt-2 underline">ลบรายการ</button>
+                            <button onclick="removeFromCart(${index})" class="text-red-400 text-xs mt-2 hover:text-red-600 transition">ลบรายการ</button>
                         </div>
                     </div>
-                    <span class="font-bold text-gray-700">฿${item.finalPrice}</span>
+                    <span class="font-semibold text-gray-700 text-sm">฿${item.finalPrice}</span>
                 </div>
             `).join('');
         }
@@ -452,15 +568,15 @@
             cart.splice(index, 1);
             updateCartUI();
             if(cart.length === 0 && document.getElementById('page-menu').classList.contains('active-section')) {
-                updateFooterState('menu'); // ซ่อน footer ถ้าหมด
+                updateFooterState('menu');
             }
         }
 
         function goToCheckout() {
-            if(cart.length === 0) return Swal.fire('ตะกร้าว่างเปล่า');
+            if(cart.length === 0) return Swal.fire({ icon: 'warning', text: 'ตะกร้าว่างเปล่า', confirmButtonColor: '#16a34a' });
             
             const total = cart.reduce((sum, item) => sum + item.finalPrice, 0);
-            const phone = "0812345678"; // เบอร์พร้อมเพย์
+            const phone = "0812345678"; 
             
             document.getElementById('qr-image').src = `https://promptpay.io/${phone}/${total}`;
             document.getElementById('final-price-display').innerText = `${total} บาท`;
@@ -468,10 +584,10 @@
             showPage('checkout');
         }
 
-        // --- 7. Map & Order ---
+        // --- 8. Map & Order ---
         function initMap() {
             const defaultLoc = [13.639484, 100.500646];
-            map = L.map('map').setView(defaultLoc, 16);
+            map = L.map('map', { zoomControl: false }).setView(defaultLoc, 16); // ปิด Zoom Control แบบเดิมให้ดูคลีน
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
             marker = L.marker(defaultLoc).addTo(map);
             document.getElementById('latlong').value = `${defaultLoc[0]},${defaultLoc[1]}`;
@@ -487,16 +603,14 @@
             const name = document.getElementById('cust-name').value;
             const phone = document.getElementById('cust-phone').value;
             
-            if(!name || !phone) return Swal.fire('กรุณากรอกชื่อและเบอร์โทร');
+            if(!name || !phone) return Swal.fire({ icon: 'warning', text: 'กรุณากรอกชื่อและเบอร์โทร', confirmButtonColor: '#16a34a' });
 
             Swal.fire({
                 title: 'กำลังส่งข้อมูล...',
-                text: 'กรุณารอสักครู่',
                 allowOutsideClick: false,
                 didOpen: () => Swal.showLoading()
             });
 
-            // จำลองการส่ง (ใส่ Fetch จริงที่นี่)
             setTimeout(() => {
                 Swal.fire({
                     icon: 'success',
