@@ -128,7 +128,7 @@
                         <span id="summary-food-total">0 บาท</span>
                     </div>
                     <div class="flex justify-between text-gray-600">
-                        <span>ค่าจัดส่ง <span id="delivery-details" class="text-[10px] text-gray-400"></span></span>
+                        <span>ค่าจัดส่ง <span id="delivery-details" class="ml-2"></span></span>
                         <span id="summary-delivery-fee">0 บาท</span>
                     </div>
                     <div class="border-t border-dashed pt-2 mt-2 flex justify-between text-lg font-bold text-gray-800">
@@ -504,7 +504,7 @@
                 document.getElementById('distance-display').classList.replace('text-red-600','text-green-600');
                 btnConfirm.disabled = false;
                 
-                // 2. คำนวณค่าส่ง
+                // 2. คำนวณค่าส่ง (สำหรับการแสดงผลเบื้องต้น - คำนวณจริงอีกทีตอนกดไปจ่ายเงิน)
                 const foodTotal = cart.reduce((s, i) => s + i.finalPrice, 0);
                 
                 let isFreeByDistance = (distanceKm <= 1.5 && foodTotal >= 100);
@@ -528,7 +528,7 @@
         }
         function deg2rad(deg) { return deg * (Math.PI/180); }
 
-        // --- 6. Validate & Payment ---
+        // --- 6. Validate & Payment (Updated with Warning Logic) ---
         function validateAndGoToPayment() {
             const name = document.getElementById('cust-name').value;
             const phone = document.getElementById('cust-phone').value;
@@ -542,7 +542,7 @@
             // Prepare Data
             const foodTotal = cart.reduce((s, i) => s + i.finalPrice, 0);
             
-            // Re-calculate Fee (เพื่อความชัวร์)
+            // Re-calculate Fee
             let isFreeByDistance = (distanceKm <= 1.5 && foodTotal >= 100);
             let isFreeByTotal = (foodTotal >= 200);
             
@@ -556,15 +556,33 @@
             const feeDisplay = document.getElementById('summary-delivery-fee');
             const feeDetail = document.getElementById('delivery-details');
             
+            // --- Logic แจ้งเตือนยอดขาด ---
             if(deliveryFee === 0) {
+                // ส่งฟรี
                 feeDisplay.innerText = "ฟรี";
                 feeDisplay.className = "text-green-600 font-bold";
                 feeDetail.innerText = (isFreeByDistance) ? "(โปรใกล้บ้าน 1.5km)" : "(ครบ 200บ.)";
+                feeDetail.className = "text-[10px] text-green-600";
             } else {
+                // เสียค่าส่ง -> เช็คว่าขาดอีกกี่บาท
                 feeDisplay.innerText = `${deliveryFee} บาท`;
                 feeDisplay.className = "text-gray-800";
-                feeDetail.innerText = "";
+                
+                if (distanceKm <= 1.5 && foodTotal < 100) {
+                    // ใกล้บ้าน แต่ยอดไม่ถึง 100
+                    const diff = 100 - foodTotal;
+                    feeDetail.innerText = `(สั่งเพิ่มอีก ${diff}บ. ส่งฟรี!)`;
+                    feeDetail.className = "text-xs text-red-500 font-bold animate-pulse"; // สีแดงกระพริบ
+                } else if (foodTotal < 200) {
+                    // ทั่วไป ยอดไม่ถึง 200
+                    const diff = 200 - foodTotal;
+                    feeDetail.innerText = `(สั่งเพิ่มอีก ${diff}บ. ส่งฟรี)`;
+                    feeDetail.className = "text-[10px] text-orange-500"; // สีส้มเตือน
+                } else {
+                    feeDetail.innerText = "";
+                }
             }
+            // ------------------------------
 
             document.getElementById('summary-grand-total').innerText = `${grandTotal} บาท`;
             
@@ -603,8 +621,7 @@
                 didOpen: () => Swal.showLoading()
             });
 
-            // ตรงนี้คือจุดเชื่อมต่อกับ Backend (Google Apps Script)
-            // ในอนาคตถ้ามี Link Web App ให้ใช้ fetch ส่งข้อมูลไป
+            // Simulate API Call
             setTimeout(() => {
                 Swal.fire({
                     icon: 'success',
