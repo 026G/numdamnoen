@@ -379,20 +379,20 @@
 
             // 1.1 ไอคอนร้าน (เอารูปร้านมาใส่ที่ iconUrl)
             var shopIcon = L.icon({
-                iconUrl: 'https://cdn-icons-png.flaticon.com/512/2003/2003183.png', // <-- ใส่ลิงก์รูปร้านตรงนี้
-                iconSize: [45, 45], // ขนาดรูป (กว้าง, สูง)
-                iconAnchor: [22, 45], // จุดที่ชี้ลงแผนที่ (กึ่งกลางแนวนอน, ด้านล่างสุด)
-                popupAnchor: [0, -40] // จุดที่ Popup เด้งขึ้นมา
+                iconUrl: 'https://cdn-icons-png.flaticon.com/512/273/273177.png', 
+                iconSize: [50, 50], // ปรับขนาดให้ใหญ่ขึ้นนิดนึงเพื่อให้เห็นรายละเอียดสวยๆ
+                iconAnchor: [25, 50], // จุดชี้ลงพื้น (กึ่งกลางแนวนอน, ล่างสุด)
+                popupAnchor: [0, -50] // จุดที่ Popup เด้งขึ้นเหนือหลังคา
             });
 
             // 1.2 ไอคอนลูกค้า (รูปหมุด Pin สีแดง)
             var customerIcon = L.icon({
-                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/markers-default/marker-icon-2x-red.png',
-                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41]
+                iconUrl: 'https://cdn-icons-png.flaticon.com/512/2776/2776067.png',
+                
+                iconSize: [40, 40],   // ปรับขนาดความกว้าง, สูง (แก้เลขตรงนี้ถ้าอยากให้ใหญ่/เล็ก)
+                iconAnchor: [20, 40], // จุดที่ชี้ลงแผนที่ (กึ่งกลางแนวนอน, ล่างสุด)
+                popupAnchor: [0, -40], // จุดที่ Popup เด้ง (อยู่เหนือหมุด)
+                shadowUrl: null       // ไม่ใช้เงา
             });
 
             // -----------------------------------------------------------
