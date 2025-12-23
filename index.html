@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ร้านอร่อยสั่งเลย</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        /* ซ่อนหน้าอื่นๆ ไว้ก่อน */
+        .page-section { display: none; }
+        /* แสดงเฉพาะหน้าที่ถูกเลือก */
+        .active-section { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        #map { height: 250px; width: 100%; border-radius: 0.5rem; z-index: 0; }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans pb-20">
+
+    <header class="bg-green-600 text-white p-4 fixed top-0 w-full z-50 shadow-md">
+        <div class="flex justify-between items-center max-w-md mx-auto">
+            <h1 class="text-xl font-bold">🍱 ร้านอร่อยโภชนา</h1>
+            <button onclick="showPage('cart')" class="relative">
+                🛒 <span id="cart-count" class="bg-red-500 text-xs rounded-full px-2 py-0.5 absolute -top-2 -right-2">0</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="mt-20 max-w-md mx-auto p-4">
+
+        <section id="page-menu" class="page-section active-section">
+            <h2 class="text-lg font-bold mb-4">เมนูแนะนำ</h2>
+            <div id="menu-list" class="space-y-4">
+                </div>
+        </section>
+
+        <section id="page-cart" class="page-section">
+            <h2 class="text-lg font-bold mb-4">ตะกร้าสินค้า</h2>
+            <div id="cart-items" class="bg-white p-4 rounded shadow mb-4">
+                <p class="text-gray-500 text-center">ยังไม่มีสินค้าในตะกร้า</p>
+            </div>
+            <div class="flex justify-between font-bold text-xl mb-6">
+                <span>รวมทั้งหมด</span>
+                <span id="total-price">0 บาท</span>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="showPage('menu')" class="w-1/2 bg-gray-300 py-2 rounded">เลือกเพิ่ม</button>
+                <button onclick="goToCheckout()" class="w-1/2 bg-green-600 text-white py-2 rounded">ไปจ่ายเงิน</button>
+            </div>
+        </section>
+
+        <section id="page-checkout" class="page-section">
+            <h2 class="text-lg font-bold mb-4">ข้อมูลจัดส่ง & ชำระเงิน</h2>
+            
+            <div class="bg-white p-4 rounded shadow space-y-3 mb-4">
+                <input type="text" id="cust-name" placeholder="ชื่อลูกค้า" class="w-full border p-2 rounded">
+                <input type="text" id="cust-phone" placeholder="เบอร์โทรศัพท์" class="w-full border p-2 rounded">
+                <textarea id="cust-address" placeholder="รายละเอียดที่อยู่ (บ้านเลขที่/ซอย)" class="w-full border p-2 rounded"></textarea>
+                
+                <p class="text-sm text-gray-600">📌 ปักหมุดจุดส่ง:</p>
+                <div id="map"></div>
+                <input type="hidden" id="latlong">
+            </div>
+
+            <div class="bg-white p-4 rounded shadow mb-4 text-center">
+                <p class="font-bold mb-2">สแกนจ่าย QR Code</p>
+                <img id="qr-image" src="" class="mx-auto w-40 mb-2">
+                <p class="text-green-600 font-bold text-xl" id="final-price-display">0 บาท</p>
+                <p class="text-xs text-gray-500">กรุณาโอนเงินและกดแจ้งโอน</p>
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="showPage('cart')" class="w-1/2 bg-gray-300 py-2 rounded">กลับ</button>
+                <button onclick="confirmOrder()" class="w-1/2 bg-green-600 text-white py-2 rounded">ยืนยันการโอน</button>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // --- 1. ข้อมูลสินค้า (Mock Data) ---
+        const menuDB = [
+            { id: 1, name: "ข้าวมันไก่ตอน", price: 50, img: "https://images.unsplash.com/photo-1602169622262-430932795455?w=200" },
+            { id: 2, name: "ข้าวมันไก่ทอด", price: 55, img: "https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?w=200" },
+            { id: 3, name: "ข้าวยำไก่แซ่บ", price: 60, img: "https://images.unsplash.com/photo-1596797038530-2c107229654b?w=200" }
+        ];
+
+        let cart = []; // เก็บตะกร้า
+        let map, marker; // ตัวแปรแผนที่
+
+        // --- 2. เริ่มต้นทำงาน ---
+        document.addEventListener("DOMContentLoaded", () => {
+            renderMenu();
+            initMap();
+        });
+
+        // --- 3. ฟังก์ชันจัดการหน้า (Navigation) ---
+        function showPage(pageId) {
+            // ซ่อนทุกหน้า
+            document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active-section'));
+            // แสดงหน้าเป้าหมาย
+            document.getElementById('page-' + pageId).classList.add('active-section');
+            
+            // ถ้าเปิดหน้า map ให้รีเฟรช map เพื่อกันบั๊กแสดงผล
+            if(pageId === 'checkout') {
+                setTimeout(() => { map.invalidateSize(); }, 200);
+            }
+        }
+
+        // --- 4. ฟังก์ชันจัดการเมนูและตะกร้า ---
+        function renderMenu() {
+            const list = document.getElementById('menu-list');
+            list.innerHTML = menuDB.map(item => `
+                <div class="bg-white p-3 rounded shadow flex gap-4 items-center">
+                    <img src="${item.img}" class="w-20 h-20 object-cover rounded">
+                    <div class="flex-1">
+                        <h3 class="font-bold">${item.name}</h3>
+                        <p class="text-gray-500">${item.price} บาท</p>
+                    </div>
+                    <button onclick="addToCart(${item.id})" class="bg-green-100 text-green-700 px-4 py-2 rounded font-bold hover:bg-green-200">+</button>
+                </div>
+            `).join('');
+        }
+
+        function addToCart(id) {
+            const item = menuDB.find(p => p.id === id);
+            cart.push(item);
+            updateCartUI();
+            
+            // Effect เล็กน้อย
+            Swal.fire({
+                icon: 'success',
+                title: 'เพิ่มลงตะกร้าแล้ว',
+                showConfirmButton: false,
+                timer: 800
+            });
+        }
+
+        function updateCartUI() {
+            // อัปเดตตัวเลขที่ปุ่มตะกร้า
+            document.getElementById('cart-count').innerText = cart.length;
+
+            // คำนวณราคารวม
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            document.getElementById('total-price').innerText = total + " บาท";
+
+            // สร้างลิสต์รายการในตะกร้า
+            const cartList = document.getElementById('cart-items');
+            if(cart.length === 0) {
+                cartList.innerHTML = '<p class="text-gray-500 text-center">ยังไม่มีสินค้า</p>';
+                return;
+            }
+            
+            // Group รายการที่เหมือนกัน (แบบง่ายๆ)
+            cartList.innerHTML = cart.map((item, index) => `
+                <div class="flex justify-between items-center border-b py-2">
+                    <span>${item.name}</span>
+                    <div class="flex items-center gap-2">
+                        <span>${item.price}</span>
+                        <button onclick="removeFromCart(${index})" class="text-red-500 text-sm">ลบ</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartUI();
+        }
+
+        function goToCheckout() {
+            if(cart.length === 0) return Swal.fire('ตะกร้าว่างเปล่า');
+            
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            
+            // สร้าง QR PromptPay (เปลี่ยน 0812345678 เป็นเบอร์พร้อมเพย์ร้าน)
+            const phone = "0812345678"; 
+            document.getElementById('qr-image').src = `https://promptpay.io/${phone}/${total}`;
+            document.getElementById('final-price-display').innerText = total + " บาท";
+            
+            showPage('checkout');
+        }
+
+        // --- 5. ฟังก์ชันแผนที่ (Leaflet Free) ---
+        function initMap() {
+            // พิกัดเริ่มต้น (กรุงเทพ)
+            const defaultLoc = [13.7563, 100.5018];
+            map = L.map('map').setView(defaultLoc, 13);
+            
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            
+            marker = L.marker(defaultLoc, { draggable: true }).addTo(map);
+            
+            // เมื่อลากหมุด ให้เก็บค่าพิกัด
+            marker.on('dragend', function(e) {
+                const coord = marker.getLatLng();
+                document.getElementById('latlong').value = `${coord.lat},${coord.lng}`;
+            });
+
+            // ขอพิกัดปัจจุบัน
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(pos => {
+                    const loc = [pos.coords.latitude, pos.coords.longitude];
+                    map.setView(loc, 15);
+                    marker.setLatLng(loc);
+                    document.getElementById('latlong').value = `${loc[0]},${loc[1]}`;
+                });
+            }
+        }
+
+        // --- 6. ฟังก์ชันยืนยันคำสั่งซื้อ (ส่งข้อมูล) ---
+        function confirmOrder() {
+            const name = document.getElementById('cust-name').value;
+            const phone = document.getElementById('cust-phone').value;
+            
+            if(!name || !phone) return Swal.fire('กรุณากรอกชื่อและเบอร์โทร');
+
+            // ตรงนี้คือส่วนที่ต้องแก้เพื่อส่งไป Google Sheets (Backend)
+            Swal.fire({
+                title: 'กำลังส่งข้อมูล...',
+                didOpen: () => Swal.showLoading()
+            });
+
+            // จำลองการส่งสำเร็จ
+            setTimeout(() => {
+                Swal.fire('สำเร็จ!', 'ออเดอร์ถูกส่งไปที่ไลน์กลุ่มแล้ว', 'success').then(() => {
+                    location.reload(); // รีเซ็ตหน้าใหม่
+                });
+            }, 1500);
+
+            /* // โค้ดสำหรับส่งจริง (ใช้ fetch)
+            const payload = {
+                name, phone, 
+                address: document.getElementById('cust-address').value,
+                location: document.getElementById('latlong').value,
+                cart: cart,
+                total: cart.reduce((s, i) => s + i.price, 0)
+            };
+            
+            fetch('LINK_GOOGLE_APPS_SCRIPT_WEB_APP', {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            }).then(...) 
+            */
+        }
+    </script>
+</body>
+</html>
