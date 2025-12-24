@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบเพิ่มสินค้า - หนุ่มดำเนิน</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap');
+        body { font-family: 'Prompt', sans-serif; background-color: #f3f4f6; }
+        .input-group { margin-bottom: 1rem; }
+        label { display: block; font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 0.25rem; }
+        input, select, textarea { width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; outline: none; transition: border-color 0.2s; }
+        input:focus, select:focus, textarea:focus { border-color: #16a34a; ring: 2px; ring-color: #bbf7d0; }
+    </style>
+</head>
+<body class="p-6">
+
+    <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <div class="bg-white p-6 rounded-xl shadow-lg">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2"><i class="fa-solid fa-pen-to-square"></i> กรอกข้อมูลสินค้า</h2>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div class="input-group">
+                    <label>ID สินค้า (ห้ามซ้ำ)</label>
+                    <input type="number" id="p_id" placeholder="เช่น 1, 91">
+                </div>
+                <div class="input-group">
+                    <label>หมวดหมู่</label>
+                    <select id="p_category">
+                        <option value="recommend">Recommend (เมนูแนะนำ)</option>
+                        <option value="promotion">Promotion (โปรโมชั่น)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>ชื่อเมนู</label>
+                <input type="text" id="p_name" placeholder="เช่น มะพร้าวปั่นนมสด">
+            </div>
+
+            <div class="input-group">
+                <label>คำอธิบายสั้นๆ</label>
+                <input type="text" id="p_desc" placeholder="เช่น หวานมัน นัวสุดๆ">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="input-group">
+                    <label>ราคาขาย (บาท)</label>
+                    <input type="number" id="p_price" placeholder="100">
+                </div>
+                <div class="input-group">
+                    <label>ราคาเต็ม (ขีดฆ่า) *ไม่ใส่ก็ได้</label>
+                    <input type="number" id="p_originalPrice" placeholder="120">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>ลิงก์รูปภาพ (URL)</label>
+                <input type="text" id="p_img" placeholder="https://...">
+                <p class="text-xs text-gray-400 mt-1">*ถ้าเป็น Google Drive ให้แปลงเป็น Direct Link ก่อน</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="input-group">
+                    <label>ป้ายติดมุม (Badge) *ไม่ใส่ก็ได้</label>
+                    <input type="text" id="p_badge" placeholder="เช่น ขายดี, ลดราคา 🔥">
+                </div>
+                <div class="input-group">
+                    <label>สถานะสินค้า</label>
+                    <select id="p_stock">
+                        <option value="true">✅ มีของ (In Stock)</option>
+                        <option value="false">❌ หมด (Sold Out)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="border-t pt-4 mt-2">
+                <div class="flex justify-between items-center mb-2">
+                    <label class="text-gray-700 font-bold">ตัวเลือกเพิ่มเติม (Options)</label>
+                    <button type="button" onclick="addOptionGroup()" class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded hover:bg-blue-100">+ เพิ่มกลุ่มตัวเลือก</button>
+                </div>
+                <div id="options-container" class="space-y-3">
+                    </div>
+            </div>
+
+            <button onclick="generateCode()" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg mt-6 hover:bg-green-700 transition shadow-md">
+                <i class="fa-solid fa-code"></i> สร้างโค้ด
+            </button>
+        </div>
+
+        <div class="flex flex-col gap-6">
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <h2 class="text-lg font-bold text-gray-800 mb-4">ตัวอย่างการ์ด (Preview)</h2>
+                <div class="border rounded-xl p-4 flex gap-4 relative max-w-sm mx-auto bg-white hover:shadow-sm transition">
+                    <div class="relative shrink-0 w-24 h-24 bg-gray-100 rounded-xl overflow-hidden">
+                        <img id="prev_img" src="https://via.placeholder.com/150" class="w-full h-full object-cover">
+                        <span id="prev_badge" class="absolute top-0 left-0 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-tl-xl rounded-br-lg hidden">Badge</span>
+                    </div>
+                    <div class="flex-1 flex flex-col justify-between py-1">
+                        <div>
+                            <h3 id="prev_name" class="font-bold text-gray-800 text-sm leading-tight mb-1">ชื่อสินค้า...</h3>
+                            <p id="prev_desc" class="text-xs text-gray-500 line-clamp-2">คำอธิบาย...</p>
+                        </div>
+                        <div class="flex items-end gap-2">
+                            <span id="prev_origPrice" class="text-gray-300 text-xs line-through hidden">฿0</span>
+                            <span id="prev_price" class="text-green-600 font-bold text-lg">฿0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-800 p-6 rounded-xl shadow-lg flex-1 flex flex-col">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-lg font-bold text-white">ผลลัพธ์ (Code)</h2>
+                    <button onclick="copyCode()" class="text-xs bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-500">Copy</button>
+                </div>
+                <textarea id="output_code" class="w-full h-full bg-gray-900 text-green-400 font-mono text-sm p-4 rounded-lg border-none focus:ring-0" readonly></textarea>
+                <p class="text-gray-400 text-xs mt-2">ก๊อปปี้โค้ดด้านบน ไปวางต่อท้ายในตัวแปร menuDB ในไฟล์ index.html</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // ฟังก์ชันสร้างกลุ่มตัวเลือก (เช่น ความหวาน, ท็อปปิ้ง)
+        function addOptionGroup() {
+            const container = document.getElementById('options-container');
+            const groupId = Date.now();
+            
+            const html = `
+                <div class="bg-gray-50 p-3 rounded border border-gray-200 relative group" id="group-${groupId}">
+                    <button onclick="this.parentElement.remove()" class="absolute top-2 right-2 text-red-400 hover:text-red-600"><i class="fa-solid fa-times"></i></button>
+                    
+                    <div class="grid grid-cols-2 gap-2 mb-2">
+                        <input type="text" class="opt-name text-sm" placeholder="ชื่อกลุ่ม (เช่น ความหวาน)">
+                        <select class="opt-type text-sm">
+                            <option value="radio">เลือกได้ 1 (Radio)</option>
+                            <option value="checkbox">เลือกได้หลาย (Checkbox)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-2">
+                         <input type="number" class="opt-max text-sm w-full" placeholder="เลือกได้สูงสุดกี่อย่าง (เฉพาะ Checkbox)">
+                    </div>
+
+                    <div class="pl-4 border-l-2 border-gray-300 space-y-2 choices-container">
+                        </div>
+                    <button onclick="addChoice('${groupId}')" class="text-xs text-green-600 mt-2 font-medium">+ เพิ่มตัวเลือกย่อย</button>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
+        }
+
+        // ฟังก์ชันสร้างตัวเลือกย่อย (เช่น หวานน้อย, ลอดช่อง)
+        function addChoice(groupId) {
+            const group = document.getElementById(`group-${groupId}`);
+            const container = group.querySelector('.choices-container');
+            
+            const html = `
+                <div class="flex gap-2 items-center choice-item">
+                    <input type="text" class="choice-label text-sm flex-1" placeholder="ชื่อตัวเลือก (เช่น หวานน้อย)">
+                    <input type="number" class="choice-price text-sm w-20" placeholder="+ราคา" value="0">
+                    <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-minus-circle"></i></button>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
+        }
+
+        // ฟังก์ชันหลัก: สร้าง Code
+        function generateCode() {
+            // 1. ดึงค่าจากฟอร์มหลัก
+            const id = document.getElementById('p_id').value;
+            const category = document.getElementById('p_category').value;
+            const name = document.getElementById('p_name').value;
+            const desc = document.getElementById('p_desc').value;
+            const price = document.getElementById('p_price').value;
+            const originalPrice = document.getElementById('p_originalPrice').value;
+            const img = document.getElementById('p_img').value;
+            const badge = document.getElementById('p_badge').value;
+            const stock = document.getElementById('p_stock').value === 'true';
+
+            if(!id || !name || !price) {
+                alert('กรุณากรอก ID, ชื่อเมนู และราคา ให้ครบถ้วน');
+                return;
+            }
+
+            // 2. ดึงค่า Options
+            const options = [];
+            document.querySelectorAll('#options-container > div').forEach(group => {
+                const optName = group.querySelector('.opt-name').value;
+                const optType = group.querySelector('.opt-type').value;
+                const optMax = group.querySelector('.opt-max').value;
+                
+                if(optName) {
+                    const choices = [];
+                    group.querySelectorAll('.choice-item').forEach(choice => {
+                        const label = choice.querySelector('.choice-label').value;
+                        const cPrice = choice.querySelector('.choice-price').value;
+                        if(label) {
+                            choices.push({ label: label, price: parseInt(cPrice) || 0 });
+                        }
+                    });
+
+                    const optObj = { type: optType, name: optName, choices: choices };
+                    if(optType === 'checkbox' && optMax) optObj.max = parseInt(optMax);
+                    
+                    options.push(optObj);
+                }
+            });
+
+            // 3. สร้าง Object
+            const productObj = {
+                id: parseInt(id),
+                category: category,
+                name: name,
+                desc: desc,
+                price: parseInt(price),
+                originalPrice: originalPrice ? parseInt(originalPrice) : undefined,
+                badge: badge || undefined,
+                stock: stock,
+                img: img || "https://lh3.googleusercontent.com/d/19ro_rUeZkoPNdHJhgccYUDkfhC7G2E8U", // Default Img
+                options: options.length > 0 ? options : undefined
+            };
+
+            // 4. ล้างค่าที่เป็น undefined ออก
+            Object.keys(productObj).forEach(key => productObj[key] === undefined && delete productObj[key]);
+
+            // 5. แปลงเป็น String แบบสวยงาม (Format เหมือนที่คุณต้องการ)
+            // ใช้เทคนิค Regex เพื่อลบเครื่องหมาย " ที่ Key (เช่น "id": 1 => id: 1)
+            let jsonString = JSON.stringify(productObj, null, 4);
+            let formattedString = jsonString.replace(/"(\w+)":/g, '$1:').replace(/\n/g, ' '); // ทำให้เป็นบรรทัดเดียว หรือจัด Format ตามชอบ
+            
+            // จัดรูปแบบให้เป็นบรรทัดเดียวแบบที่คุณชอบ
+            formattedString = `{ ${formattedString.replace(/[{}]/g, '').trim()} },`;
+
+            // แสดงผล
+            document.getElementById('output_code').value = formattedString;
+            
+            // อัปเดต Preview
+            updatePreview(productObj);
+        }
+
+        function updatePreview(obj) {
+            document.getElementById('prev_name').innerText = obj.name;
+            document.getElementById('prev_desc').innerText = obj.desc;
+            document.getElementById('prev_price').innerText = `฿${obj.price}`;
+            document.getElementById('prev_img').src = obj.img;
+            
+            const badgeEl = document.getElementById('prev_badge');
+            if(obj.badge) {
+                badgeEl.innerText = obj.badge;
+                badgeEl.classList.remove('hidden');
+            } else {
+                badgeEl.classList.add('hidden');
+            }
+
+            const origEl = document.getElementById('prev_origPrice');
+            if(obj.originalPrice) {
+                origEl.innerText = `฿${obj.originalPrice}`;
+                origEl.classList.remove('hidden');
+            } else {
+                origEl.classList.add('hidden');
+            }
+        }
+
+        function copyCode() {
+            const copyText = document.getElementById("output_code");
+            copyText.select();
+            document.execCommand("copy");
+            alert("ก๊อปปี้โค้ดเรียบร้อย!");
+        }
+    </script>
+</body>
+</html>
