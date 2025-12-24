@@ -366,40 +366,43 @@
 
         // --- 4. Menu & Cart ---
         function renderMenu(cat) {
-            const list = document.getElementById('menu-list');
-            const items = menuDB.filter(i => i.category === cat);
+    const list = document.getElementById('menu-list');
+    const items = menuDB.filter(i => i.category === cat);
+    
+    list.innerHTML = items.map(item => {
+        const isSoldOut = !item.stock;
+        
+        // 🔥 เพิ่มบรรทัดนี้: เช็คว่ามีราคาเต็มไหม? ถ้ามีให้ใช้สีแดง (Red), ถ้าไม่มีใช้สีเขียว (Green)
+        const priceColorClass = item.originalPrice ? 'text-red-600' : 'text-green-600';
+
+        return `
+        <div class="bg-white p-4 border-b border-gray-100 flex gap-4 relative hover:bg-gray-50 transition active:bg-gray-100 cursor-pointer ${isSoldOut ? 'opacity-60 grayscale pointer-events-none' : ''}" onclick="${!isSoldOut ? `openModal(${item.id})` : ''}">
+            <div class="relative shrink-0 w-28 h-28">
+                <img src="${item.img}" class="w-full h-full object-cover rounded-xl shadow-sm">
+                ${item.badge && !isSoldOut ? `<span class="absolute top-0 left-0 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-tl-xl rounded-br-lg shadow-sm">${item.badge}</span>` : ''}
+                ${isSoldOut ? '<span class="absolute inset-0 flex items-center justify-center bg-black/40 text-white font-bold text-lg rounded-xl z-10">สินค้าหมด</span>' : ''}
+            </div>
             
-            list.innerHTML = items.map(item => {
-                // 🚫 Sold Out Logic
-                const isSoldOut = !item.stock;
-                
-                return `
-                <div class="bg-white p-4 border-b border-gray-100 flex gap-4 relative hover:bg-gray-50 transition active:bg-gray-100 cursor-pointer ${isSoldOut ? 'opacity-60 grayscale pointer-events-none' : ''}" onclick="${!isSoldOut ? `openModal(${item.id})` : ''}">
-                    <div class="relative shrink-0 w-28 h-28">
-                        <img src="${item.img}" class="w-full h-full object-cover rounded-xl shadow-sm">
-                        ${item.badge && !isSoldOut ? `<span class="absolute top-0 left-0 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-tl-xl rounded-br-lg shadow-sm">${item.badge}</span>` : ''}
-                        ${isSoldOut ? '<span class="absolute inset-0 flex items-center justify-center bg-black/40 text-white font-bold text-lg rounded-xl z-10">สินค้าหมด</span>' : ''}
-                    </div>
-                    
-                    <div class="flex-1 flex flex-col justify-between py-1">
-                        <div>
-                            <h3 class="font-bold text-gray-800 text-base leading-tight mb-1">${item.name}</h3>
-                            <p class="text-xs text-gray-500 line-clamp-2 leading-relaxed">${item.desc || 'อร่อย สดชื่น ต้องลอง!'}</p>
-                        </div>
-                        <div class="flex items-end justify-between mt-2">
-                            <div class="flex flex-col">
-                                ${item.originalPrice ? `<span class="text-gray-300 text-xs line-through">฿${item.originalPrice}</span>` : ''}
-                                <span class="text-green-600 font-bold text-lg">฿${item.price}</span>
-                            </div>
-                            ${!isSoldOut ? 
-                            `<button class="bg-green-100 text-green-700 w-9 h-9 rounded-full flex items-center justify-center hover:bg-green-600 hover:text-white transition shadow-sm border border-green-200">
-                                <i class="fa-solid fa-plus text-sm"></i>
-                            </button>` : ''}
-                        </div>
-                    </div>
+            <div class="flex-1 flex flex-col justify-between py-1">
+                <div>
+                    <h3 class="font-bold text-gray-800 text-base leading-tight mb-1">${item.name}</h3>
+                    <p class="text-xs text-gray-500 line-clamp-2 leading-relaxed">${item.desc || 'อร่อย สดชื่น ต้องลอง!'}</p>
                 </div>
-            `}).join('');
-        }
+                <div class="flex items-end justify-between mt-2">
+                    <div class="flex flex-col">
+                        ${item.originalPrice ? `<span class="text-gray-300 text-xs line-through">฿${item.originalPrice}</span>` : ''}
+                        
+                        <span class="${priceColorClass} font-bold text-lg">฿${item.price}</span>
+                    </div>
+                    ${!isSoldOut ? 
+                    `<button class="bg-green-100 text-green-700 w-9 h-9 rounded-full flex items-center justify-center hover:bg-green-600 hover:text-white transition shadow-sm border border-green-200">
+                        <i class="fa-solid fa-plus text-sm"></i>
+                    </button>` : ''}
+                </div>
+            </div>
+        </div>
+    `}).join('');
+}
 
         // Modal Logic
         let currentItem, currentBasePrice;
