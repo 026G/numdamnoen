@@ -78,7 +78,7 @@
     </div>
 
     <script>
-        // 🔴🔴🔴 URL Google Apps Script ของคุณ 🔴🔴🔴
+        // 🔴🔴🔴 URL Google Apps Script ของคุณ (ตรวจสอบให้ถูกต้อง) 🔴🔴🔴
         const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyTEY-RoGL1_LrloWsNiC1nFpy08BQJ3R90xZ8mYJWK65wbFA1E6Wq6TrukplcFs2XV1w/exec";
 
         // ตัวแปร Global
@@ -99,7 +99,7 @@
             const lng = getQueryParam('lng');
             const addr = getQueryParam('addr');
             
-            // ✅ แก้จุดที่ 1: เรียกใช้ฟังก์ชันให้ถูก
+            // รับค่า Note จาก URL
             const note = getQueryParam('note'); 
 
             if (lat && lng) {
@@ -112,9 +112,8 @@
                     document.getElementById('destAddress').value = decodeURIComponent(addr);
                 }
 
-                // ✅ แก้จุดที่ 2: เพิ่มคำสั่งเอาค่า note ไปใส่ในกล่อง (ถ้ามีค่าส่งมา)
+                // เอาค่า note ไปใส่ในกล่อง (ถ้ามีค่าส่งมา)
                 if (note) {
-                     // ต้องมั่นใจว่า id ของช่องกรอกคือ 'destNote' นะครับ (ดูจาก code ด้านล่างคุณใช้ชื่อนี้)
                     document.getElementById('destNote').value = decodeURIComponent(note);
                 }
                 
@@ -150,12 +149,11 @@
             const destLat = document.getElementById('destLat').value;
             const destLng = document.getElementById('destLng').value;
 
-            // 🔴 ดึงค่าที่อยู่จากช่อง Textarea (เพื่อส่งไปให้ GAS)
+            // ดึงค่าที่อยู่จากช่อง Textarea (เพื่อส่งไปให้ GAS)
             const destAddrInput = document.getElementById('destAddress').value;
-            // ถ้าช่องว่าง ให้ใส่ค่า default เป็น Customer Location
             const finalDestAddr = destAddrInput.trim() !== "" ? destAddrInput : "Customer Location";
 
-            // 🔴 ดึงค่าหมายเหตุ (Note)
+            // ดึงค่าหมายเหตุ (Note) ณ ตอนกดเช็คราคา
             const destNoteInput = document.getElementById('destNote').value || "";
 
             // Validation
@@ -218,7 +216,7 @@
                             stopId: stops[1].stopId,
                             name: "Customer Test", 
                             phone: "+66912345678",
-                            remarks: destNoteInput // 🔴🔴🔴 เก็บหมายเหตุไว้ตรงนี้ เพื่อรอส่งตอนกดเรียกรถ
+                            remarks: destNoteInput // เก็บค่าเริ่มต้นไว้ก่อน
                         }
                     };
 
@@ -264,6 +262,13 @@
                 return;
             }
 
+            // ✅✅✅ อัปเดตหมายเหตุล่าสุดจากกล่องข้อความก่อนส่ง (จุดสำคัญที่แก้ไขเพิ่ม)
+            // เผื่อลูกค้ามีการแก้ไขข้อความหลังจากกดเช็คราคาไปแล้ว
+            const latestNote = document.getElementById('destNote').value || "";
+            if (currentStopInfo.drop) {
+                currentStopInfo.drop.remarks = latestNote;
+            }
+
             btn.innerHTML = "⏳ กำลังเรียกไรเดอร์...";
             btn.disabled = true;
 
@@ -275,7 +280,7 @@
                 body: JSON.stringify({
                     action: 'create_order',  // สั่ง GAS ให้สร้างงาน
                     quotationId: currentQuotationId,
-                    stops: currentStopInfo // ข้อมูลนี้จะมี remarks (Note) ติดไปด้วยแล้ว
+                    stops: currentStopInfo 
                 })
             })
             .then(response => response.json())
