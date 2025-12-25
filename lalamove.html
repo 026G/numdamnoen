@@ -29,6 +29,24 @@
             <p class="text-gray-500 text-sm">สำหรับร้านหนุ่มดำเนิน (Sandbox Mode)</p>
         </div>
 
+        <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 mb-4 fade-in">
+            <h3 class="text-blue-800 text-xs font-bold mb-2 uppercase tracking-wide"><i class="fa-solid fa-address-card mr-1"></i> ข้อมูลลูกค้า</h3>
+            
+            <div class="flex justify-between items-center mb-1 border-b border-blue-100 pb-1">
+                <span class="text-gray-500 text-xs">Order ID:</span>
+                <span id="showOrderId" class="font-mono font-bold text-blue-600 text-sm">-</span>
+            </div>
+            
+            <div class="flex justify-between items-center mb-1">
+                <span class="text-gray-500 text-xs">ชื่อ:</span>
+                <span id="showName" class="font-bold text-gray-700 text-sm">-</span>
+            </div>
+            
+            <div class="flex justify-between items-center">
+                <span class="text-gray-500 text-xs">โทร:</span>
+                <span id="showPhone" class="font-bold text-gray-700 text-sm">-</span>
+            </div>
+        </div>
         <div class="space-y-4">
 
             <div class="bg-orange-50 p-4 rounded-xl border border-orange-100">
@@ -78,16 +96,17 @@
     </div>
 
     <script>
-        // 🔴🔴🔴 URL Google Apps Script ของคุณ (ตรวจสอบให้ถูกต้อง) 🔴🔴🔴
+        // 🔴🔴🔴 URL Google Apps Script ของคุณ 🔴🔴🔴
         const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyTEY-RoGL1_LrloWsNiC1nFpy08BQJ3R90xZ8mYJWK65wbFA1E6Wq6TrukplcFs2XV1w/exec";
 
-        // ตัวแปร Global เก็บข้อมูลลูกค้า
+        // ตัวแปร Global เก็บข้อมูลสำคัญ
         let currentQuotationId = "";
         let currentStopInfo = {};
-        let customerName = "";  // ตัวแปรเก็บชื่อ
-        let customerPhone = ""; // ตัวแปรเก็บเบอร์
+        let customerName = "";
+        let customerPhone = "";
+        let orderId = ""; 
 
-        // ฟังก์ชันดึงค่าจาก URL Parameters
+        // ฟังก์ชันดึงค่าจาก URL
         function getQueryParam(param) {
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get(param);
@@ -97,32 +116,36 @@
         // ทำงานอัตโนมัติเมื่อเปิดหน้าเว็บ (Auto Fill)
         // ==========================================
         window.onload = function() {
+            // รับค่าจาก URL
             const lat = getQueryParam('lat');
             const lng = getQueryParam('lng');
             const addr = getQueryParam('addr');
             const note = getQueryParam('note'); 
             
-            // ✅ รับค่าชื่อและเบอร์โทรมาเก็บไว้ (Decode เพื่อแก้ภาษาต่างดาว)
-            customerName = decodeURIComponent(getQueryParam('name') || "");
-            customerPhone = decodeURIComponent(getQueryParam('phone') || "");
+            // ✅ ดึงค่าข้อมูลลูกค้าและ Order ID มาแสดงผล
+            customerName = decodeURIComponent(getQueryParam('name') || "-");
+            customerPhone = decodeURIComponent(getQueryParam('phone') || "-");
+            orderId = decodeURIComponent(getQueryParam('orderId') || "-");
+
+            // อัปเดตกล่องสีฟ้า (ข้อมูลลูกค้า)
+            document.getElementById('showOrderId').innerText = orderId;
+            document.getElementById('showName').innerText = customerName;
+            document.getElementById('showPhone').innerText = customerPhone;
 
             if (lat && lng) {
-                // ✅ กรณี 1: มีข้อมูลส่งมาจาก URL (ใช้งานจริง)
+                // เติมข้อมูลลงในช่อง
                 document.getElementById('destLat').value = lat;
                 document.getElementById('destLng').value = lng;
-                
                 if (addr) document.getElementById('destAddress').value = decodeURIComponent(addr);
                 if (note) document.getElementById('destNote').value = decodeURIComponent(note);
                 
-                // เลื่อนหน้าจอไปหาปุ่ม
+                // เลื่อนหน้าจอไปหาปุ่มตรวจสอบราคา
                 setTimeout(() => {
                     const btn = document.getElementById('checkBtn');
                     if(btn) btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }, 500);
-
             } else {
-                // ✅ กรณี 2: ไม่มีข้อมูล (Test Mode)
-                console.log("Test Mode: Auto-filling data");
+                console.log("Test Mode");
                 document.getElementById('destLat').value = "13.746246"; 
                 document.getElementById('destLng').value = "100.539845";
                 document.getElementById('destAddress').value = "📍 จุดทดสอบ (Central World)";
@@ -139,7 +162,6 @@
             const priceDisplay = document.getElementById('priceDisplay');
             const btnOrder = document.getElementById('btnOrder');
 
-            // ดึงค่าจากหน้าจอ
             const originLat = document.getElementById('originLat').value;
             const originLng = document.getElementById('originLng').value;
             const destLat = document.getElementById('destLat').value;
@@ -148,26 +170,25 @@
             const finalDestAddr = destAddrInput.trim() !== "" ? destAddrInput : "Customer Location";
             const destNoteInput = document.getElementById('destNote').value || "";
 
-            // Validation
             if (!originLat || !originLng || !destLat || !destLng) {
                 alert("❌ กรุณาระบุพิกัดต้นทางและปลายทางให้ครบถ้วน");
                 return;
             }
 
-            // ✅ แปลงเบอร์โทรให้เป็นรูปแบบสากล (+66) ตามข้อกำหนด Lalamove
-            let formattedPhone = "+66800000000"; // ค่า Default (กันระบบพังถ้าไม่มีเบอร์)
-            if (customerPhone) {
-                let cleanPhone = customerPhone.replace(/\D/g, ''); // ลบขีด, วงเล็บ, เว้นวรรคออกให้หมด
+            // ✅ แปลงเบอร์โทรให้เป็นรูปแบบสากล (+66) สำหรับส่ง API
+            let formattedPhone = "+66800000000"; 
+            if (customerPhone && customerPhone !== "-") {
+                let cleanPhone = customerPhone.replace(/\D/g, ''); 
                 if (cleanPhone.startsWith('0')) {
-                    formattedPhone = '+66' + cleanPhone.substring(1); // เปลี่ยน 08x เป็น +668x
+                    formattedPhone = '+66' + cleanPhone.substring(1); 
                 } else if (cleanPhone.startsWith('66')) {
-                    formattedPhone = '+' + cleanPhone; // เติม + ถ้ามาเป็น 66 อยู่แล้ว
+                    formattedPhone = '+' + cleanPhone;
                 } else {
-                     formattedPhone = '+66' + cleanPhone; // กรณีมาแต่ตัวเลขเพียวๆ
+                     formattedPhone = '+66' + cleanPhone;
                 }
             }
 
-            // ปรับ UI
+            // UI Loading...
             btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> กำลังคำนวณ...';
             btn.disabled = true;
             btn.classList.add('opacity-70');
@@ -175,7 +196,6 @@
             if(resultArea) resultArea.classList.add('hidden');
             if(btnOrder) btnOrder.classList.add('hidden');
 
-            // ยิง API เช็คราคา
             fetch(GAS_API_URL, {
                 method: 'POST',
                 redirect: 'follow',
@@ -199,30 +219,28 @@
                     // ✅ ได้ราคาสำเร็จ
                     const stops = data.data.stops; 
                     const price = data.data.priceBreakdown.total;
-                    
                     if(priceDisplay) priceDisplay.innerHTML = `฿${price}`;
                     if(resultArea) resultArea.classList.remove('hidden');
 
                     currentQuotationId = data.data.quotationId; 
                     
-                    // ✅ เตรียมข้อมูลสำหรับสร้าง Order (ใส่ชื่อและเบอร์โทรที่จัด format แล้ว)
+                    // ✅ เตรียมข้อมูลสำหรับสร้าง Order (ใส่ชื่อและเบอร์โทรจริง)
                     currentStopInfo = {
                         pickup: { 
                             stopId: stops[0].stopId,
                             name: "Shop Numdamnoen", 
-                            phone: "+66812345678" // เบอร์ร้าน
+                            phone: "+66812345678"
                         },
                         drop: { 
                             stopId: stops[1].stopId,
-                            name: customerName || "Customer", // ใส่ชื่อลูกค้าที่ดึงมา
-                            phone: formattedPhone, // ใส่เบอร์ลูกค้าที่แปลงแล้ว
-                            remarks: destNoteInput // ใส่หมายเหตุ
+                            // ถ้ามีชื่อลูกค้าให้ใช้ชื่อลูกค้า ถ้าไม่มีใช้คำว่า Customer
+                            name: (customerName && customerName !== "-") ? customerName : "Customer", 
+                            phone: formattedPhone, 
+                            remarks: destNoteInput 
                         }
                     };
 
                     if(btnOrder) btnOrder.classList.remove('hidden');
-                    
-                    // อัปเดต Deep Link สำหรับเปิดแอพ
                     const btnApp = document.getElementById('openLalamoveApp');
                     if(btnApp) btnApp.href = "https://lalamove.app.link/"; 
 
@@ -253,20 +271,15 @@
             const btn = document.getElementById('btnOrder');
             const originalText = btn.innerHTML;
             
-            if(!confirm("ยืนยันการเรียกรถ (Sandbox Mode)?\nระบบจะจำลองการเรียกรถแต่ไม่มีรถจริงมารับ")) {
-                return;
-            }
+            if(!confirm("ยืนยันการเรียกรถ (Sandbox Mode)?\nระบบจะจำลองการเรียกรถแต่ไม่มีรถจริงมารับ")) return;
 
-            // ✅ อัปเดตหมายเหตุล่าสุดจากกล่องข้อความ (เผื่อมีการแก้ไขหลังเช็คราคา)
+            // ✅ อัปเดตหมายเหตุล่าสุดจากกล่องข้อความ (สำคัญ!)
             const latestNote = document.getElementById('destNote').value || "";
-            if (currentStopInfo.drop) {
-                currentStopInfo.drop.remarks = latestNote;
-            }
+            if (currentStopInfo.drop) currentStopInfo.drop.remarks = latestNote;
 
             btn.innerHTML = "⏳ กำลังเรียกไรเดอร์...";
             btn.disabled = true;
 
-            // ยิง API สร้างงาน
             fetch(GAS_API_URL, {
                 method: 'POST',
                 redirect: 'follow',
