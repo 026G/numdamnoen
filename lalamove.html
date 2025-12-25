@@ -1,35 +1,194 @@
-<script>
-    // ฟังก์ชันดึงค่าจาก URL (Query Parameters)
-    function getQueryParam(param) {
-        const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get(param);
-    }
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เช็คราคา Lalamove - หนุ่มดำเนิน</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
-    // ฟังก์ชันรันอัตโนมัติเมื่อเปิดหน้าเว็บ
-    window.onload = function() {
-        // 1. ดึงค่าจาก Link ที่ส่งมาจาก Line
-        const lat = getQueryParam('lat');
-        const lng = getQueryParam('lng');
-        const addr = getQueryParam('addr');
+    <style>
+        body { font-family: 'Prompt', sans-serif; background-color: #f3f4f6; }
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
 
-        // 2. ถ้ามีข้อมูล ให้กรอกลงฟอร์มอัตโนมัติ
-        if (lat && lng) {
-            document.getElementById('destLat').value = lat;
-            document.getElementById('destLng').value = lng;
+    <div class="bg-white p-6 rounded-2xl shadow-xl w-full max-w-md border border-gray-100">
+        
+        <div class="text-center mb-6">
+            <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <img src="https://cdn-icons-png.flaticon.com/512/273/273177.png" class="w-10 h-10">
+            </div>
+            <h1 class="text-2xl font-bold text-gray-800">เช็คค่าส่ง Lalamove</h1>
+            <p class="text-gray-500 text-sm">สำหรับร้านหนุ่มดำเนิน</p>
+        </div>
+
+        <div class="space-y-4">
             
-            // ถ้ามีช่องให้กรอกที่อยู่ด้วย (สมมติว่าคุณเพิ่ม input id="destAddress" ใน html)
-            if(addr && document.getElementById('destAddress')) {
-                document.getElementById('destAddress').value = decodeURIComponent(addr); 
+            <div class="bg-orange-50 p-4 rounded-xl border border-orange-100">
+                <label class="block text-orange-800 text-xs font-bold mb-1">📍 ต้นทาง (ร้านหนุ่มดำเนิน)</label>
+                <div class="flex gap-2 mb-2">
+                    <input type="text" id="originLat" class="w-1/2 text-xs bg-white border border-orange-200 rounded px-2 py-1 text-gray-500" value="13.639417" readonly>
+                    <input type="text" id="originLng" class="w-1/2 text-xs bg-white border border-orange-200 rounded px-2 py-1 text-gray-500" value="100.499580" readonly>
+                </div>
+            </div>
+
+            <div class="bg-green-50 p-4 rounded-xl border border-green-100 relative">
+                <label class="block text-green-800 text-xs font-bold mb-1">🏁 ปลายทาง (ลูกค้า)</label>
+                
+                <textarea id="destAddress" rows="2" class="w-full text-sm bg-white border border-green-200 rounded-lg px-3 py-2 text-gray-700 mb-2 focus:outline-none focus:ring-1 focus:ring-green-500" placeholder="ที่อยู่ลูกค้าจะขึ้นตรงนี้..."></textarea>
+                
+                <div class="flex gap-2">
+                    <input type="text" id="destLat" placeholder="Latitude" class="w-1/2 text-xs bg-white border border-green-200 rounded px-2 py-1 text-gray-600 font-mono">
+                    <input type="text" id="destLng" placeholder="Longitude" class="w-1/2 text-xs bg-white border border-green-200 rounded px-2 py-1 text-gray-600 font-mono">
+                </div>
+                
+                <div class="absolute top-2 right-2">
+                    <span class="text-[10px] bg-green-200 text-green-800 px-2 py-0.5 rounded-full font-bold">Auto</span>
+                </div>
+            </div>
+
+            <button onclick="checkPrice()" id="checkBtn" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 rounded-xl transition duration-200 shadow-lg flex justify-center items-center gap-2 text-lg mt-2">
+                <span>🔍 ตรวจสอบราคา</span>
+            </button>
+        </div>
+
+        <div id="resultArea" class="mt-6 hidden fade-in">
+            <div class="border-t border-dashed border-gray-300 pt-4">
+                <p class="text-center text-gray-500 text-sm mb-2">ผลการคำนวณ (มอเตอร์ไซค์)</p>
+                
+                <div class="bg-gray-800 text-white rounded-xl p-4 flex justify-between items-center shadow-lg">
+                    <div>
+                        <p class="text-xs text-gray-400">ค่าส่งสุทธิ</p>
+                        <p id="priceDisplay" class="text-3xl font-bold text-orange-400">Loading...</p>
+                    </div>
+                    <div class="text-right">
+                        <i class="fa-solid fa-motorcycle text-2xl text-gray-500"></i>
+                    </div>
+                </div>
+
+                <a id="openLalamoveApp" href="#" class="block w-full text-center mt-3 text-orange-600 font-semibold hover:underline text-sm">
+                    เปิดแอป Lalamove (เพื่อเรียกรถจริง)
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 🔴🔴🔴 แก้ไขตรงนี้: เอา URL จาก Google Apps Script (ที่ลงท้าย /exec) มาใส่ครับ 🔴🔴🔴
+        const GAS_API_URL = "https://script.google.com/macros/s/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx/exec"; 
+        
+        // ------------------------------------------------------------------
+
+        // ฟังก์ชันดึงค่าจาก URL Parameters
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        // ทำงานอัตโนมัติเมื่อเปิดหน้าเว็บ
+        window.onload = function() {
+            // 1. ดึงข้อมูลจาก Link Line
+            const lat = getQueryParam('lat');
+            const lng = getQueryParam('lng');
+            const addr = getQueryParam('addr');
+
+            // 2. ถ้ามีข้อมูล กรอกลงฟอร์มให้
+            if (lat && lng) {
+                document.getElementById('destLat').value = lat;
+                document.getElementById('destLng').value = lng;
+                
+                if(addr) {
+                    document.getElementById('destAddress').value = decodeURIComponent(addr); 
+                }
+
+                // แจ้งเตือนเล็กน้อย (Optional)
+                // console.log("Customer location loaded!");
+
+                // เลื่อนจอลงมาที่ปุ่มเช็คราคา
+                setTimeout(() => {
+                    document.getElementById('checkBtn').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 500);
+            }
+        };
+
+        // ฟังก์ชันหลัก: กดปุ่มเพื่อเช็คราคา
+        function checkPrice() {
+            const btn = document.getElementById('checkBtn');
+            const resultArea = document.getElementById('resultArea');
+            const priceDisplay = document.getElementById('priceDisplay');
+
+            // 1. ดึงค่าจากฟอร์ม
+            const originLat = document.getElementById('originLat').value;
+            const originLng = document.getElementById('originLng').value;
+            const destLat = document.getElementById('destLat').value;
+            const destLng = document.getElementById('destLng').value;
+
+            // Validation
+            if(!originLat || !destLat) {
+                alert("❌ กรุณาระบุพิกัดต้นทางและปลายทางให้ครบถ้วน");
+                return;
             }
 
-            // 3. สั่งคำนวณราคาให้เลยทันที (Option)
-            // checkPrice(); // เอา comment ออกถ้าอยากให้มันกดปุ่มคำนวณให้เองเลย
-            
-            // แจ้งเตือนว่าโหลดข้อมูลแล้ว
-            // alert('✅ โหลดข้อมูลลูกค้าเรียบร้อย พร้อมเช็คราคา!');
-            
-            // (ลูกเล่นเสริม) เลื่อนหน้าจอลงมาที่ส่วนแสดงผล
-             document.getElementById('checkBtn').scrollIntoView({ behavior: 'smooth' });
+            // 2. ปรับ UI เป็นสถานะ Loading
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> กำลังคำนวณ...';
+            btn.disabled = true;
+            btn.classList.add('opacity-70');
+            resultArea.classList.add('hidden');
+
+            // 3. ยิงข้อมูลไปหา Google Script
+            fetch(GAS_API_URL, {
+                method: 'POST',
+                redirect: 'follow', 
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // ใช้ text/plain เพื่อหลบ CORS ของ Google
+                body: JSON.stringify({
+                    action: 'check_price',  // คำสั่งเช็คราคา
+                    originLat: originLat,
+                    originLng: originLng,
+                    destLat: destLat,
+                    destLng: destLng
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 4. แสดงผลลัพธ์
+                console.log(data);
+
+                if (data.error) {
+                    alert("⚠️ เกิดข้อผิดพลาดจากระบบ: " + data.error);
+                    resultArea.classList.add('hidden');
+                } else if (data.data) {
+                    // ดึงราคา
+                    const price = data.data.priceBreakdown.total;
+                    
+                    priceDisplay.innerHTML = `฿${price}`;
+                    resultArea.classList.remove('hidden');
+
+                    // (Optional) สร้าง Link เปิดแอป Lalamove (Deep Link) 
+                    // หมายเหตุ: Deep link ของ Lalamove อาจมีการเปลี่ยนแปลง นี่เป็น format มาตรฐาน
+                    // document.getElementById('openLalamoveApp').href = `lalamove://`; 
+                } else {
+                    alert("❌ ไม่สามารถดึงราคาได้ (อาจอยู่นอกพื้นที่ให้บริการ)");
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("❌ เชื่อมต่อ Server ไม่ได้ กรุณาตรวจสอบอินเทอร์เน็ต");
+            })
+            .finally(() => {
+                // คืนค่าปุ่ม
+                btn.innerHTML = '<span>🔍 ตรวจสอบราคา</span>';
+                btn.disabled = false;
+                btn.classList.remove('opacity-70');
+            });
         }
-    };
-</script>
+    </script>
+</body>
+</html>
