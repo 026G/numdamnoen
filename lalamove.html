@@ -95,24 +95,35 @@
     }
 
     // ทำงานอัตโนมัติเมื่อเปิดหน้าเว็บ
-    window.onload = function() {
-        const lat = getQueryParam('lat');
-        const lng = getQueryParam('lng');
-        const addr = getQueryParam('addr');
+        window.onload = function() {
+            const lat = getQueryParam('lat');
+            const lng = getQueryParam('lng');
+            const addr = getQueryParam('addr');
 
-        if (lat && lng) {
-            document.getElementById('destLat').value = lat;
-            document.getElementById('destLng').value = lng;
-            if (addr) {
-                document.getElementById('destAddress').value = decodeURIComponent(addr);
+            if (lat && lng) {
+                // กรณีที่ 1: มีข้อมูลส่งมา (ใช้งานจริง)
+                document.getElementById('destLat').value = lat;
+                document.getElementById('destLng').value = lng;
+                if (addr) {
+                    document.getElementById('destAddress').value = decodeURIComponent(addr);
+                }
+                
+                // เลื่อนหน้าจอไปหาปุ่ม
+                setTimeout(() => {
+                    const btn = document.getElementById('checkBtn');
+                    if(btn) btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 500);
+
+            } else {
+                // 🔴🔴🔴 กรณีที่ 2: ไม่มีข้อมูล (เติมข้อมูลปลอมให้เทส) 🔴🔴🔴
+                console.log("Test Mode: Auto-filling data");
+                
+                // ใส่พิกัดสมมติ (เช่น เซ็นทรัลเวิลด์)
+                document.getElementById('destLat').value = "13.746246"; 
+                document.getElementById('destLng').value = "100.539845";
+                document.getElementById('destAddress').value = "📍 จุดทดสอบ (Central World)";
             }
-            // เลื่อนหน้าจอไปหาปุ่ม
-            setTimeout(() => {
-                const btn = document.getElementById('checkBtn');
-                if(btn) btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 500);
-        }
-    };
+        };
 
     // ==========================================
     // 1. ฟังก์ชันเช็คราคา (Check Price)
