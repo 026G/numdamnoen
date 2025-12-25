@@ -1,0 +1,41 @@
+// แก้ไขฟังก์ชัน updatePreview ใน p.html
+function updatePreview(obj) {
+    document.getElementById('prev_name').innerText = obj.name;
+    document.getElementById('prev_desc').innerText = obj.desc;
+    
+    // จัดการรูปภาพ
+    const imgEl = document.getElementById('prev_img');
+    if(obj.img && obj.img.length > 10) {
+        imgEl.src = obj.img;
+    } else {
+        imgEl.src = "https://via.placeholder.com/150";
+    }
+
+    const priceEl = document.getElementById('prev_price');
+    const origEl = document.getElementById('prev_origPrice');
+
+    // 🔥 Logic เปลี่ยนสี: ถ้ามีราคาเต็ม (originalPrice) ให้ราคาขายเป็นสีแดง
+    if(obj.originalPrice) {
+        origEl.innerText = `฿${obj.originalPrice}`;
+        origEl.classList.remove('hidden');
+        
+        // เป็นโปรโมชั่น -> สีแดง
+        priceEl.innerText = `฿${obj.price}`;
+        priceEl.className = "text-red-600 font-bold text-lg"; 
+    } else {
+        origEl.classList.add('hidden');
+        
+        // ราคาปกติ -> สีเขียว
+        priceEl.innerText = `฿${obj.price}`;
+        priceEl.className = "text-green-600 font-bold text-lg";
+    }
+    
+    // จัดการ Badge
+    const badgeEl = document.getElementById('prev_badge');
+    if(obj.badge) {
+        badgeEl.innerText = obj.badge;
+        badgeEl.classList.remove('hidden');
+    } else {
+        badgeEl.classList.add('hidden');
+    }
+}
