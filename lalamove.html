@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
-
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
     <style>
@@ -26,7 +26,7 @@
                 <img src="https://cdn-icons-png.flaticon.com/512/273/273177.png" class="w-10 h-10">
             </div>
             <h1 class="text-2xl font-bold text-gray-800">เช็คค่าส่ง Lalamove</h1>
-            <p class="text-gray-500 text-sm">สำหรับร้านหนุ่มดำเนิน 5</p>
+            <p class="text-gray-500 text-sm">สำหรับร้านหนุ่มดำเนิน (Sandbox Mode)</p>
         </div>
 
         <div class="space-y-4">
@@ -40,7 +40,10 @@
             </div>
 
             <div class="bg-green-50 p-4 rounded-xl border border-green-100 relative">
-                <label class="block text-green-800 text-xs font-bold mb-1">🏁 ปลายทาง (ลูกค้า)</label>
+                <div class="flex justify-between items-center mb-1">
+                    <label class="block text-green-800 text-xs font-bold">🏁 ปลายทาง (ลูกค้า)</label>
+                    <span class="text-[10px] bg-green-200 text-green-800 px-2 py-0.5 rounded-full font-bold">Auto Fill</span>
+                </div>
 
                 <textarea id="destAddress" rows="2" class="w-full text-sm bg-white border border-green-200 rounded-lg px-3 py-2 text-gray-700 mb-2 focus:outline-none focus:ring-1 focus:ring-green-500" placeholder="ที่อยู่ลูกค้าจะขึ้นตรงนี้..."></textarea>
 
@@ -48,60 +51,54 @@
                     <input type="text" id="destLat" placeholder="Latitude" class="w-1/2 text-xs bg-white border border-green-200 rounded px-2 py-1 text-gray-600 font-mono">
                     <input type="text" id="destLng" placeholder="Longitude" class="w-1/2 text-xs bg-white border border-green-200 rounded px-2 py-1 text-gray-600 font-mono">
                 </div>
-
-                <div class="absolute top-2 right-2">
-                    <span class="text-[10px] bg-green-200 text-green-800 px-2 py-0.5 rounded-full font-bold">Auto</span>
-                </div>
             </div>
 
-            <!-- เดิมคุณใช้ onclick="checkPrice()" ได้เหมือนเดิม -->
             <button onclick="checkPrice()" id="checkBtn" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 rounded-xl transition duration-200 shadow-lg flex justify-center items-center gap-2 text-lg mt-2">
                 <span>🔍 ตรวจสอบราคา</span>
             </button>
+        </div>
+
+        <div id="resultArea" class="hidden mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200 fade-in">
+            <div class="text-center">
+                <p class="text-gray-500 text-sm">ค่าส่งสุทธิ</p>
+                <h2 id="priceDisplay" class="text-4xl font-bold text-gray-800 my-2">฿0</h2>
+            </div>
+
+            <a id="openLalamoveApp" href="#" target="_blank" class="block w-full mt-3 text-center text-orange-600 border border-orange-600 font-bold py-2 px-4 rounded-lg hover:bg-orange-50 transition">
+                📱 เปิดแอป Lalamove
+            </a>
+
             <button id="btnOrder" onclick="placeOrder()" class="hidden w-full mt-3 bg-green-600 text-white font-bold py-3 px-4 rounded-lg shadow hover:bg-green-700 transition duration-300 flex items-center justify-center gap-2">
                 🚀 เรียกไรเดอร์ (Sandbox Test)
             </button>
         </div>
 
-    <div id="resultArea" class="hidden mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-    <div class="text-center">
-        <p class="text-gray-500 text-sm">ค่าส่งสุทธิ</p>
-        <h2 id="priceDisplay" class="text-4xl font-bold text-gray-800 my-2">฿0</h2>
     </div>
 
-    <a id="openLalamoveApp" href="#" target="_blank" class="block w-full mt-3 text-center text-orange-600 border border-orange-600 font-bold py-2 px-4 rounded-lg hover:bg-orange-50 transition">
-        📱 เปิดแอป Lalamove
-    </a>
+    <script>
+        // 🔴🔴🔴 URL Google Apps Script ของคุณ 🔴🔴🔴
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyTEY-RoGL1_LrloWsNiC1nFpy08BQJ3R90xZ8mYJWK65wbFA1E6Wq6TrukplcFs2XV1w/exec";
 
-    <button id="btnOrder" onclick="placeOrder()" class="hidden w-full mt-3 bg-green-600 text-white font-bold py-3 px-4 rounded-lg shadow hover:bg-green-700 transition duration-300 flex items-center justify-center gap-2">
-        🚀 เรียกไรเดอร์ (Sandbox Test)
-    </button>
-    </div>
+        // ตัวแปร Global
+        let currentQuotationId = "";
+        let currentStopInfo = {};
 
-    </div>
+        // ฟังก์ชันดึงค่าจาก URL Parameters
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
 
-<script>
-    // 🔴🔴🔴 URL ของ Google Apps Script (อันเดิมของคุณ) 🔴🔴🔴
-    const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyTEY-RoGL1_LrloWsNiC1nFpy08BQJ3R90xZ8mYJWK65wbFA1E6Wq6TrukplcFs2XV1w/exec";
-
-    // ตัวแปร Global สำหรับเก็บข้อมูลไว้ใช้ตอนกดเรียกรถ
-    let currentQuotationId = "";
-    let currentStopInfo = {};
-
-    // ฟังก์ชันดึงค่าจาก URL Parameters
-    function getQueryParam(param) {
-        const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get(param);
-    }
-
-    // ทำงานอัตโนมัติเมื่อเปิดหน้าเว็บ
+        // ==========================================
+        // ทำงานอัตโนมัติเมื่อเปิดหน้าเว็บ (Auto Fill)
+        // ==========================================
         window.onload = function() {
             const lat = getQueryParam('lat');
             const lng = getQueryParam('lng');
             const addr = getQueryParam('addr');
 
             if (lat && lng) {
-                // กรณีที่ 1: มีข้อมูลส่งมา (ใช้งานจริง)
+                // ✅ กรณี 1: มีข้อมูลส่งมาจาก URL (ใช้งานจริง)
                 document.getElementById('destLat').value = lat;
                 document.getElementById('destLng').value = lng;
                 if (addr) {
@@ -115,176 +112,176 @@
                 }, 500);
 
             } else {
-                // 🔴🔴🔴 กรณีที่ 2: ไม่มีข้อมูล (เติมข้อมูลปลอมให้เทส) 🔴🔴🔴
+                // ✅ กรณี 2: ไม่มีข้อมูล (เติมข้อมูลทดสอบให้อัตโนมัติ เพื่อให้กดเล่นได้)
                 console.log("Test Mode: Auto-filling data");
                 
-                // ใส่พิกัดสมมติ (เช่น เซ็นทรัลเวิลด์)
+                // ใส่พิกัดสมมติ (Central World)
                 document.getElementById('destLat').value = "13.746246"; 
                 document.getElementById('destLng').value = "100.539845";
                 document.getElementById('destAddress').value = "📍 จุดทดสอบ (Central World)";
             }
         };
 
-    // ==========================================
-    // 1. ฟังก์ชันเช็คราคา (Check Price)
-    // ==========================================
-    function checkPrice() {
-        const btn = document.getElementById('checkBtn');
-        const resultArea = document.getElementById('resultArea');
-        const priceDisplay = document.getElementById('priceDisplay');
-        const btnOrder = document.getElementById('btnOrder');
+        // ==========================================
+        // 1. ฟังก์ชันเช็คราคา (Check Price)
+        // ==========================================
+        function checkPrice() {
+            const btn = document.getElementById('checkBtn');
+            const resultArea = document.getElementById('resultArea');
+            const priceDisplay = document.getElementById('priceDisplay');
+            const btnOrder = document.getElementById('btnOrder');
 
-        // ดึงค่าพิกัด
-        const originLat = document.getElementById('originLat').value;
-        const originLng = document.getElementById('originLng').value;
-        const destLat = document.getElementById('destLat').value;
-        const destLng = document.getElementById('destLng').value;
-        // ดึงที่อยู่ (ถ้ามี input ให้ใส่) หรือใช้ค่า Default
-        const destAddrText = document.getElementById('destAddress') ? document.getElementById('destAddress').value : "บ้านลูกค้า";
+            // ดึงค่าพิกัด
+            const originLat = document.getElementById('originLat').value;
+            const originLng = document.getElementById('originLng').value;
+            const destLat = document.getElementById('destLat').value;
+            const destLng = document.getElementById('destLng').value;
 
-        // Validation
-        if (!originLat || !originLng || !destLat || !destLng) {
-            alert("❌ กรุณาระบุพิกัดต้นทางและปลายทางให้ครบถ้วน");
-            return;
-        }
-
-        // ปรับ UI สถานะ Loading
-        btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> กำลังคำนวณ...';
-        btn.disabled = true;
-        btn.classList.add('opacity-70');
-        
-        // ซ่อนผลลัพธ์เก่า และปุ่มเรียกรถ
-        if(resultArea) resultArea.classList.add('hidden');
-        if(btnOrder) btnOrder.classList.add('hidden');
-
-        // ยิง API เช็คราคา
-        fetch(GAS_API_URL, {
-            method: 'POST',
-            redirect: 'follow',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({
-                action: 'check_price', // สั่งให้ GAS เช็คราคา
-                originLat: originLat,
-                originLng: originLng,
-                destLat: destLat,
-                destLng: destLng
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log("Check Price Result:", data);
-
-            if (data.error) {
-                alert("⚠️ เกิดข้อผิดพลาด: " + data.error);
-            } else if (data.data) {
-                // ✅✅✅ สำเร็จ: ได้ราคาแล้ว
-                
-                // 🔴🔴🔴 สำคัญ: ดึงข้อมูล stops ออกมาก่อน 🔴🔴🔴
-                const stops = data.data.stops; 
-
-                // 1. แสดงราคา
-                const price = data.data.priceBreakdown.total;
-                if(priceDisplay) priceDisplay.innerHTML = `฿${price}`;
-                if(resultArea) resultArea.classList.remove('hidden');
-
-                // 2. เก็บข้อมูลสำคัญไว้ใช้สร้าง Order
-                currentQuotationId = data.data.quotationId; // ไอดีใบเสนอราคา
-                
-                currentStopInfo = {
-                    pickup: { 
-                        stopId: stops[0].stopId, // ✅ ดึง ID จุดรับจากระบบ
-                        name: "Shop Numdamnoen", 
-                        phone: "+66812345678"     // ✅ เบอร์มี +66
-                    },
-                    drop: { 
-                        stopId: stops[1].stopId, // ✅ ดึง ID จุดส่งจากระบบ
-                        name: "Customer Test", 
-                        phone: "+66912345678"     // ✅ เบอร์มี +66
-                    }
-                };
-
-                // 3. เปิดปุ่ม "เรียกไรเดอร์"
-                if(btnOrder) btnOrder.classList.remove('hidden');
-
-                // 4. อัปเดตปุ่ม "เปิดแอป" (Universal Link)
-                const btnApp = document.getElementById('openLalamoveApp');
-                if(btnApp) {
-                    btnApp.href = "https://lalamove.app.link/"; 
-                }
-
-            } else {
-                alert("⚠️ Lalamove ตอบกลับผิดปกติ: " + JSON.stringify(data));
+            // Validation
+            if (!originLat || !originLng || !destLat || !destLng) {
+                alert("❌ กรุณาระบุพิกัดต้นทางและปลายทางให้ครบถ้วน");
+                return;
             }
-        .catch(error => {
-            console.error('Error:', error);
-            alert("❌ เชื่อมต่อ Server ไม่ได้");
-        })
-        .finally(() => {
-            // คืนค่าปุ่มกด
-            btn.innerHTML = '<span>🔍 ตรวจสอบราคา</span>';
-            btn.disabled = false;
-            btn.classList.remove('opacity-70');
-        });
-    }
 
-    // ==========================================
-    // 2. ฟังก์ชันเรียกไรเดอร์ (Place Order)
-    // ==========================================
-    function placeOrder() {
-        if (!currentQuotationId) {
-            alert("❌ ไม่พบข้อมูลราคา กรุณากดตรวจสอบราคาใหม่");
-            return;
-        }
-        
-        const btn = document.getElementById('btnOrder');
-        const originalText = btn.innerHTML;
-        
-        // ยืนยันก่อนกด
-        if(!confirm("ยืนยันการเรียกรถ (Sandbox Mode)?\nระบบจะจำลองการเรียกรถแต่ไม่มีรถจริงมารับ")) {
-            return;
-        }
+            // ปรับ UI สถานะ Loading
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> กำลังคำนวณ...';
+            btn.disabled = true;
+            btn.classList.add('opacity-70');
+            
+            // ซ่อนผลลัพธ์เก่า และปุ่มเรียกรถ
+            if(resultArea) resultArea.classList.add('hidden');
+            if(btnOrder) btnOrder.classList.add('hidden');
 
-        btn.innerHTML = "⏳ กำลังเรียกไรเดอร์...";
-        btn.disabled = true;
-
-        // ยิง API สร้างงาน
-        fetch(GAS_API_URL, {
-            method: 'POST',
-            redirect: 'follow',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify({
-                action: 'create_order',  // 🔴 สั่ง GAS ให้สร้างงาน
-                quotationId: currentQuotationId,
-                stops: currentStopInfo
+            // ยิง API เช็คราคา
+            fetch(GAS_API_URL, {
+                method: 'POST',
+                redirect: 'follow',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({
+                    action: 'check_price', // สั่งให้ GAS เช็คราคา
+                    originLat: originLat,
+                    originLng: originLng,
+                    destLat: destLat,
+                    destLng: destLng
+                })
             })
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log("Place Order Result:", data);
+            .then(response => response.json())
+            .then(data => {
+                console.log("Check Price Result:", data);
 
-            if (data.data && data.data.orderId) {
-                // ✅ สำเร็จ
-                alert(`🎉 เรียกรถสำเร็จ!\nOrder ID: ${data.data.orderId}\n(เช็คสถานะในเว็บ Lalamove Partner)`);
-                btn.innerHTML = "✅ เรียกรถแล้ว";
-                btn.classList.remove('bg-green-600', 'hover:bg-green-700');
-                btn.classList.add('bg-gray-400', 'cursor-not-allowed');
-            } else {
-                // ❌ ไม่สำเร็จ
-                alert("⚠️ เรียกรถไม่สำเร็จ: " + (data.message || JSON.stringify(data)));
+                if (data.error) {
+                    alert("⚠️ เกิดข้อผิดพลาด: " + data.error);
+                } else if (data.data) {
+                    // ✅✅✅ สำเร็จ: ได้ราคาแล้ว
+                    
+                    // ดึงข้อมูล stops ที่ Lalamove ส่งกลับมา (สำคัญมาก)
+                    const stops = data.data.stops; 
+
+                    // 1. แสดงราคา
+                    const price = data.data.priceBreakdown.total;
+                    if(priceDisplay) priceDisplay.innerHTML = `฿${price}`;
+                    if(resultArea) resultArea.classList.remove('hidden');
+
+                    // 2. เก็บข้อมูลสำคัญไว้ใช้สร้าง Order
+                    currentQuotationId = data.data.quotationId; 
+                    
+                    // เตรียมข้อมูลสำหรับส่งกลับไปสร้าง Order (Map stopId ให้ตรง)
+                    currentStopInfo = {
+                        pickup: { 
+                            stopId: stops[0].stopId, // ✅ ต้องใส่ stopId ที่ได้จากระบบ
+                            name: "Shop Numdamnoen", 
+                            phone: "+66812345678"     // ✅ เบอร์ต้องมี +66
+                        },
+                        drop: { 
+                            stopId: stops[1].stopId, // ✅ ต้องใส่ stopId ที่ได้จากระบบ
+                            name: "Customer Test", 
+                            phone: "+66912345678"     // ✅ เบอร์ต้องมี +66
+                        }
+                    };
+
+                    // 3. เปิดปุ่ม "เรียกไรเดอร์"
+                    if(btnOrder) btnOrder.classList.remove('hidden');
+
+                    // 4. อัปเดตปุ่ม "เปิดแอป"
+                    const btnApp = document.getElementById('openLalamoveApp');
+                    if(btnApp) {
+                        btnApp.href = "https://lalamove.app.link/"; 
+                    }
+
+                } else {
+                    alert("⚠️ Lalamove ตอบกลับผิดปกติ: " + JSON.stringify(data));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("❌ เชื่อมต่อ Server ไม่ได้");
+            })
+            .finally(() => {
+                // คืนค่าปุ่มกด
+                btn.innerHTML = '<span>🔍 ตรวจสอบราคา</span>';
+                btn.disabled = false;
+                btn.classList.remove('opacity-70');
+            });
+        }
+
+        // ==========================================
+        // 2. ฟังก์ชันเรียกไรเดอร์ (Place Order)
+        // ==========================================
+        function placeOrder() {
+            if (!currentQuotationId) {
+                alert("❌ ไม่พบข้อมูลราคา กรุณากดตรวจสอบราคาใหม่");
+                return;
+            }
+            
+            const btn = document.getElementById('btnOrder');
+            const originalText = btn.innerHTML;
+            
+            // ยืนยันก่อนกด
+            if(!confirm("ยืนยันการเรียกรถ (Sandbox Mode)?\nระบบจะจำลองการเรียกรถแต่ไม่มีรถจริงมารับ")) {
+                return;
+            }
+
+            btn.innerHTML = "⏳ กำลังเรียกไรเดอร์...";
+            btn.disabled = true;
+
+            // ยิง API สร้างงาน
+            fetch(GAS_API_URL, {
+                method: 'POST',
+                redirect: 'follow',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({
+                    action: 'create_order',  // 🔴 สั่ง GAS ให้สร้างงาน
+                    quotationId: currentQuotationId,
+                    stops: currentStopInfo
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Place Order Result:", data);
+
+                if (data.data && data.data.orderId) {
+                    // ✅ สำเร็จ
+                    alert(`🎉 เรียกรถสำเร็จ!\nOrder ID: ${data.data.orderId}\n(เช็คสถานะในเว็บ Lalamove Partner)`);
+                    btn.innerHTML = "✅ เรียกรถแล้ว";
+                    btn.classList.remove('bg-green-600', 'hover:bg-green-700');
+                    btn.classList.add('bg-gray-400', 'cursor-not-allowed');
+                } else {
+                    // ❌ ไม่สำเร็จ
+                    alert("⚠️ เรียกรถไม่สำเร็จ: " + (data.message || JSON.stringify(data)));
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("❌ เชื่อมต่อ Server ไม่ได้");
                 btn.innerHTML = originalText;
                 btn.disabled = false;
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert("❌ เชื่อมต่อ Server ไม่ได้");
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        });
-    }
+            });
+        }
 
-    // กัน Error กรณีเรียกชื่อฟังก์ชันผิด
-    window.checkLalamovePrice = checkPrice;
-</script>
+        // กัน Error กรณีเรียกชื่อฟังก์ชันผิด
+        window.checkLalamovePrice = checkPrice;
+    </script>
 </body>
 </html>
