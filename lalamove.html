@@ -45,7 +45,9 @@
                     <span class="text-[10px] bg-green-200 text-green-800 px-2 py-0.5 rounded-full font-bold">Auto Fill</span>
                 </div>
 
-                <textarea id="destAddress" rows="2" class="w-full text-sm bg-white border border-green-200 rounded-lg px-3 py-2 text-gray-700 mb-2 focus:outline-none focus:ring-1 focus:ring-green-500" placeholder="ระบุบ้านเลขที่/จุดสังเกต (ลองภาษาไทยได้)"></textarea>
+                <textarea id="destAddress" rows="2" class="w-full text-sm bg-white border border-green-200 rounded-lg px-3 py-2 text-gray-700 mb-2 focus:outline-none focus:ring-1 focus:ring-green-500" placeholder="ระบุบ้านเลขที่/หมู่บ้าน (ภาษาไทย)"></textarea>
+
+                <input type="text" id="destNote" class="w-full text-sm bg-white border border-green-200 rounded-lg px-3 py-2 text-gray-700 mb-2 focus:outline-none focus:ring-1 focus:ring-green-500" placeholder="📝 จุดสังเกต (เช่น รั้วสีขาว, ฝากป้อมยาม)">
 
                 <div class="flex gap-2">
                     <input type="text" id="destLat" placeholder="Latitude" class="w-1/2 text-xs bg-white border border-green-200 rounded px-2 py-1 text-gray-600 font-mono">
@@ -119,8 +121,7 @@
                 document.getElementById('destLat').value = "13.746246"; 
                 document.getElementById('destLng').value = "100.539845";
                 document.getElementById('destAddress').value = "📍 จุดทดสอบ (Central World)";
-                document.getElementById('destNote').value = "รอหน้าประตูทางเข้า"; // Test Note
-            }
+                document.getElementById('destNote').value = "รอหน้าประตูทางเข้า ฝั่งพระพิฆเนศ"; // ทดสอบหมายเหตุ
             }
         };
 
@@ -143,6 +144,8 @@
             const destAddrInput = document.getElementById('destAddress').value;
             // ถ้าช่องว่าง ให้ใส่ค่า default เป็น Customer Location
             const finalDestAddr = destAddrInput.trim() !== "" ? destAddrInput : "Customer Location";
+
+            // 🔴 ดึงค่าหมายเหตุ (Note)
             const destNoteInput = document.getElementById('destNote').value || "";
 
             // Validation
@@ -171,7 +174,7 @@
                     originLng: originLng,
                     destLat: destLat,
                     destLng: destLng,
-                    destAddr: finalDestAddr // 🔴 เพิ่มบรรทัดนี้: ส่งที่อยู่จริงไปให้ระบบ
+                    destAddr: finalDestAddr // ส่งที่อยู่จริงไปให้ระบบ
                 })
             })
             .then(response => response.json())
@@ -183,7 +186,7 @@
                 } else if (data.data) {
                     // ✅✅✅ สำเร็จ: ได้ราคาแล้ว
                     
-                    // ดึงข้อมูล stops ที่ Lalamove ส่งกลับมา (สำคัญมาก)
+                    // ดึงข้อมูล stops ที่ Lalamove ส่งกลับมา
                     const stops = data.data.stops; 
 
                     // 1. แสดงราคา
@@ -197,15 +200,15 @@
                     // เตรียมข้อมูลสำหรับส่งกลับไปสร้าง Order (Map stopId ให้ตรง)
                     currentStopInfo = {
                         pickup: { 
-                            stopId: stops[0].stopId, // ✅ ต้องใส่ stopId ที่ได้จากระบบ
+                            stopId: stops[0].stopId,
                             name: "Shop Numdamnoen", 
-                            phone: "+66812345678"     // ✅ เบอร์ต้องมี +66
+                            phone: "+66812345678"
                         },
                         drop: { 
-                            stopId: stops[1].stopId, // ✅ ต้องใส่ stopId ที่ได้จากระบบ
+                            stopId: stops[1].stopId,
                             name: "Customer Test", 
-                            phone: "+66912345678",     // ✅ เบอร์ต้องมี +66
-                            remarks: destNoteInput
+                            phone: "+66912345678",
+                            remarks: destNoteInput // 🔴🔴🔴 เก็บหมายเหตุไว้ตรงนี้ เพื่อรอส่งตอนกดเรียกรถ
                         }
                     };
 
@@ -260,9 +263,9 @@
                 redirect: 'follow',
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({
-                    action: 'create_order',  // 🔴 สั่ง GAS ให้สร้างงาน
+                    action: 'create_order',  // สั่ง GAS ให้สร้างงาน
                     quotationId: currentQuotationId,
-                    stops: currentStopInfo
+                    stops: currentStopInfo // ข้อมูลนี้จะมี remarks (Note) ติดไปด้วยแล้ว
                 })
             })
             .then(response => response.json())
