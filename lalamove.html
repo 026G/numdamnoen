@@ -1,41 +1,35 @@
-// แก้ไขฟังก์ชัน updatePreview ใน p.html
-function updatePreview(obj) {
-    document.getElementById('prev_name').innerText = obj.name;
-    document.getElementById('prev_desc').innerText = obj.desc;
-    
-    // จัดการรูปภาพ
-    const imgEl = document.getElementById('prev_img');
-    if(obj.img && obj.img.length > 10) {
-        imgEl.src = obj.img;
-    } else {
-        imgEl.src = "https://via.placeholder.com/150";
+<script>
+    // ฟังก์ชันดึงค่าจาก URL (Query Parameters)
+    function getQueryParam(param) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(param);
     }
 
-    const priceEl = document.getElementById('prev_price');
-    const origEl = document.getElementById('prev_origPrice');
+    // ฟังก์ชันรันอัตโนมัติเมื่อเปิดหน้าเว็บ
+    window.onload = function() {
+        // 1. ดึงค่าจาก Link ที่ส่งมาจาก Line
+        const lat = getQueryParam('lat');
+        const lng = getQueryParam('lng');
+        const addr = getQueryParam('addr');
 
-    // 🔥 Logic เปลี่ยนสี: ถ้ามีราคาเต็ม (originalPrice) ให้ราคาขายเป็นสีแดง
-    if(obj.originalPrice) {
-        origEl.innerText = `฿${obj.originalPrice}`;
-        origEl.classList.remove('hidden');
-        
-        // เป็นโปรโมชั่น -> สีแดง
-        priceEl.innerText = `฿${obj.price}`;
-        priceEl.className = "text-red-600 font-bold text-lg"; 
-    } else {
-        origEl.classList.add('hidden');
-        
-        // ราคาปกติ -> สีเขียว
-        priceEl.innerText = `฿${obj.price}`;
-        priceEl.className = "text-green-600 font-bold text-lg";
-    }
-    
-    // จัดการ Badge
-    const badgeEl = document.getElementById('prev_badge');
-    if(obj.badge) {
-        badgeEl.innerText = obj.badge;
-        badgeEl.classList.remove('hidden');
-    } else {
-        badgeEl.classList.add('hidden');
-    }
-}
+        // 2. ถ้ามีข้อมูล ให้กรอกลงฟอร์มอัตโนมัติ
+        if (lat && lng) {
+            document.getElementById('destLat').value = lat;
+            document.getElementById('destLng').value = lng;
+            
+            // ถ้ามีช่องให้กรอกที่อยู่ด้วย (สมมติว่าคุณเพิ่ม input id="destAddress" ใน html)
+            if(addr && document.getElementById('destAddress')) {
+                document.getElementById('destAddress').value = decodeURIComponent(addr); 
+            }
+
+            // 3. สั่งคำนวณราคาให้เลยทันที (Option)
+            // checkPrice(); // เอา comment ออกถ้าอยากให้มันกดปุ่มคำนวณให้เองเลย
+            
+            // แจ้งเตือนว่าโหลดข้อมูลแล้ว
+            // alert('✅ โหลดข้อมูลลูกค้าเรียบร้อย พร้อมเช็คราคา!');
+            
+            // (ลูกเล่นเสริม) เลื่อนหน้าจอลงมาที่ส่วนแสดงผล
+             document.getElementById('checkBtn').scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+</script>
