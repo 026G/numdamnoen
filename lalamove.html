@@ -168,6 +168,9 @@
             } else if (data.data) {
                 // ✅✅✅ สำเร็จ: ได้ราคาแล้ว
                 
+                // 🔴🔴🔴 สำคัญ: ดึงข้อมูล stops ออกมาก่อน 🔴🔴🔴
+                const stops = data.data.stops; 
+
                 // 1. แสดงราคา
                 const price = data.data.priceBreakdown.total;
                 if(priceDisplay) priceDisplay.innerHTML = `฿${price}`;
@@ -175,14 +178,17 @@
 
                 // 2. เก็บข้อมูลสำคัญไว้ใช้สร้าง Order
                 currentQuotationId = data.data.quotationId; // ไอดีใบเสนอราคา
+                
                 currentStopInfo = {
                     pickup: { 
-                        lat: originLat, lng: originLng, 
-                        address: "Shop Origin", name: "Shop Numdamnoen", phone: "0812345678" 
+                        stopId: stops[0].stopId, // ✅ ดึง ID จุดรับจากระบบ
+                        name: "Shop Numdamnoen", 
+                        phone: "+66812345678"     // ✅ เบอร์มี +66
                     },
                     drop: { 
-                        lat: destLat, lng: destLng, 
-                        address: "Customer Drop", name: "Customer Test", phone: "0912345678" 
+                        stopId: stops[1].stopId, // ✅ ดึง ID จุดส่งจากระบบ
+                        name: "Customer Test", 
+                        phone: "+66912345678"     // ✅ เบอร์มี +66
                     }
                 };
 
@@ -198,7 +204,6 @@
             } else {
                 alert("⚠️ Lalamove ตอบกลับผิดปกติ: " + JSON.stringify(data));
             }
-        })
         .catch(error => {
             console.error('Error:', error);
             alert("❌ เชื่อมต่อ Server ไม่ได้");
