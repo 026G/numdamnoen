@@ -175,7 +175,7 @@
                     // หมายเหตุ: Deep link ของ Lalamove อาจมีการเปลี่ยนแปลง นี่เป็น format มาตรฐาน
                     // document.getElementById('openLalamoveApp').href = `lalamove://`; 
                 } else {
-                    alert("❌ ไม่สามารถดึงราคาได้ (อาจอยู่นอกพื้นที่ให้บริการ)");
+                    alert("⚠️ Lalamove แจ้งว่า: " + JSON.stringify(data));
                 }
             })
             .catch(error => {
