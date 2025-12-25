@@ -119,6 +119,8 @@
                 document.getElementById('destLat').value = "13.746246"; 
                 document.getElementById('destLng').value = "100.539845";
                 document.getElementById('destAddress').value = "📍 จุดทดสอบ (Central World)";
+                document.getElementById('destNote').value = "รอหน้าประตูทางเข้า"; // Test Note
+            }
             }
         };
 
@@ -141,6 +143,7 @@
             const destAddrInput = document.getElementById('destAddress').value;
             // ถ้าช่องว่าง ให้ใส่ค่า default เป็น Customer Location
             const finalDestAddr = destAddrInput.trim() !== "" ? destAddrInput : "Customer Location";
+            const destNoteInput = document.getElementById('destNote').value || "";
 
             // Validation
             if (!originLat || !originLng || !destLat || !destLng) {
@@ -201,7 +204,8 @@
                         drop: { 
                             stopId: stops[1].stopId, // ✅ ต้องใส่ stopId ที่ได้จากระบบ
                             name: "Customer Test", 
-                            phone: "+66912345678"     // ✅ เบอร์ต้องมี +66
+                            phone: "+66912345678",     // ✅ เบอร์ต้องมี +66
+                            remarks: destNoteInput
                         }
                     };
 
