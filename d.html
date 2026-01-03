@@ -5,106 +5,173 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบจัดการออเดอร์ - หนุ่มดำเนิน</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap');
-        body { font-family: 'Prompt', sans-serif; background-color: #f3f4f6; }
-        /* จัด Style ให้ Dropdown สวยงาม */
-        .status-select { 
-            appearance: none; 
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); 
-            background-repeat: no-repeat; 
-            background-position: right 0.5rem center; 
-            background-size: 1.5em 1.5em; 
+        body { font-family: 'Prompt', sans-serif; background-color: #f8fafc; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Status Badge Colors */
+        .status-badge {
+            padding: 0.35rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: all 0.2s;
+        }
+        select.status-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3e%3cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3e%3c/path%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.5rem center;
+            background-size: 1rem;
+            padding-right: 2rem;
         }
     </style>
 </head>
-<body>
+<body class="text-slate-800">
 
-    <div id="login-overlay" class="fixed inset-0 bg-gray-900 flex items-center justify-center z-50">
-        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm text-center">
-            <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+    <div id="login-overlay" class="fixed inset-0 bg-slate-900/95 backdrop-blur-sm flex items-center justify-center z-50 transition-opacity duration-300">
+        <div class="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-sm text-center border border-slate-100">
+            <div class="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-5 text-3xl shadow-inner">
                 <i class="fa-solid fa-store"></i>
             </div>
-            <h2 class="text-2xl font-bold text-gray-800 mb-2">หนุ่มดำเนิน Dashboard</h2>
-            <p class="text-gray-500 mb-6 text-sm">กรุณาใส่รหัสผ่านเพื่อเข้าใช้งาน</p>
-            <input type="password" id="admin-pass" class="w-full border border-gray-300 px-4 py-3 rounded-xl mb-4 focus:ring-2 focus:ring-green-500 outline-none text-center text-lg tracking-widest" placeholder="Passcode">
-            <button onclick="checkLogin()" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition shadow-lg">เข้าสู่ระบบ</button>
+            <h2 class="text-2xl font-bold text-slate-800 mb-2">หนุ่มดำเนิน Dashboard</h2>
+            <p class="text-slate-500 mb-6 text-sm">กรุณาใส่รหัสผ่านเพื่อเข้าสู่ระบบ</p>
+            
+            <div class="relative mb-4">
+                <input type="password" id="admin-pass" 
+                    class="w-full bg-slate-50 border border-slate-200 px-4 py-3.5 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-center text-lg tracking-widest transition-all placeholder:tracking-normal placeholder:text-slate-400" 
+                    placeholder="รหัสผ่าน (1234)">
+                <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            </div>
+            
+            <button onclick="checkLogin()" class="w-full bg-emerald-600 text-white py-3.5 rounded-xl font-bold hover:bg-emerald-700 active:scale-[0.98] transition shadow-lg shadow-emerald-200">
+                เข้าสู่ระบบ
+            </button>
         </div>
     </div>
 
-    <div id="dashboard-content" class="hidden min-h-screen">
+    <div id="dashboard-content" class="hidden min-h-screen flex flex-col">
         
-        <header class="bg-white shadow-sm sticky top-0 z-40">
+        <header class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
-                <div class="flex items-center gap-2">
-                    <i class="fa-solid fa-chart-pie text-green-600 text-xl"></i>
-                    <h1 class="font-bold text-xl text-gray-800">หนุ่มดำเนิน Dashboard</h1>
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white shadow-sm">
+                        <i class="fa-solid fa-chart-pie"></i>
+                    </div>
+                    <h1 class="font-bold text-lg text-slate-800">หนุ่มดำเนิน <span class="text-slate-400 font-normal">| จัดการร้าน</span></h1>
                 </div>
-                <div class="flex gap-3">
-                    <button onclick="loadOrders()" class="bg-blue-50 text-blue-600 px-3 py-2 rounded-lg font-medium hover:bg-blue-100 transition flex items-center gap-2 text-sm">
-                        <i class="fa-solid fa-rotate"></i> <span class="hidden sm:inline">รีเฟรชข้อมูล</span>
+                
+                <div class="flex items-center gap-2">
+                    <button onclick="loadOrders()" class="text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 px-3 py-2 rounded-lg transition text-sm font-medium flex items-center gap-2">
+                        <i class="fa-solid fa-rotate"></i> <span class="hidden sm:inline">รีเฟรช</span>
                     </button>
-                    <button onclick="logout()" class="bg-red-50 text-red-600 px-3 py-2 rounded-lg font-medium hover:bg-red-100 transition text-sm">
-                        <i class="fa-solid fa-right-from-bracket"></i>
+                    <div class="h-6 w-px bg-slate-200 mx-1"></div>
+                    <button onclick="logout()" class="text-slate-500 hover:text-red-600 hover:bg-red-50 px-3 py-2 rounded-lg transition text-sm font-medium" title="ออกจากระบบ">
+                        <i class="fa-solid fa-power-off"></i>
                     </button>
                 </div>
             </div>
         </header>
 
-        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
             
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-yellow-100 flex flex-col justify-between">
-                    <p class="text-gray-500 text-xs font-semibold uppercase tracking-wider">ออเดอร์รอรับ</p>
-                    <div class="flex justify-between items-end">
-                        <p class="text-3xl font-bold text-yellow-500" id="stat-pending">0</p>
-                        <i class="fa-regular fa-clock text-yellow-200 text-2xl"></i>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col relative overflow-hidden group hover:border-amber-300 transition-colors">
+                    <div class="absolute right-[-10px] top-[-10px] w-20 h-20 bg-amber-50 rounded-full group-hover:scale-110 transition-transform"></div>
+                    <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider relative z-10">ออเดอร์ใหม่</p>
+                    <div class="flex justify-between items-end mt-2 relative z-10">
+                        <p class="text-3xl font-bold text-amber-500" id="stat-pending">0</p>
+                        <div class="w-8 h-8 bg-amber-100 text-amber-600 rounded-lg flex items-center justify-center">
+                            <i class="fa-regular fa-bell"></i>
+                        </div>
                     </div>
-                </div>
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-blue-100 flex flex-col justify-between">
-                    <p class="text-gray-500 text-xs font-semibold uppercase tracking-wider">กำลังปรุง</p>
-                    <div class="flex justify-between items-end">
-                        <p class="text-3xl font-bold text-blue-600" id="stat-cooking">0</p>
-                        <i class="fa-solid fa-fire-burner text-blue-200 text-2xl"></i>
-                    </div>
-                </div>
                 </div>
 
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                    <h3 class="font-bold text-gray-700">รายการออเดอร์ล่าสุด (20 รายการ)</h3>
-                    <span class="text-xs text-gray-400">อัปเดตล่าสุด: <span id="last-update">-</span></span>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col relative overflow-hidden group hover:border-blue-300 transition-colors">
+                    <div class="absolute right-[-10px] top-[-10px] w-20 h-20 bg-blue-50 rounded-full group-hover:scale-110 transition-transform"></div>
+                    <p class="text-slate-500 text-xs font-semibold uppercase tracking-wider relative z-10">กำลังปรุง</p>
+                    <div class="flex justify-between items-end mt-2 relative z-10">
+                        <p class="text-3xl font-bold text-blue-600" id="stat-cooking">0</p>
+                        <div class="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center">
+                            <i class="fa-solid fa-fire-burner"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-span-2 bg-emerald-600 p-5 rounded-2xl shadow-lg shadow-emerald-200 text-white flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+                    <div class="flex justify-between items-start relative z-10">
+                        <div>
+                            <p class="text-emerald-100 text-xs font-medium uppercase mb-1">ยอดขายวันนี้ (ประมาณการ)</p>
+                            <h3 class="text-3xl font-bold" id="stat-total-sales">฿0</h3>
+                        </div>
+                        <div class="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
+                            <i class="fa-solid fa-wallet text-xl"></i>
+                        </div>
+                    </div>
+                    <p class="text-emerald-100 text-xs mt-2 relative z-10 flex items-center gap-1">
+                        <i class="fa-solid fa-arrows-rotate fa-spin text-[10px]"></i> อัปเดตล่าสุด: <span id="last-update" class="font-mono">-</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="px-6 py-4 border-b border-slate-100 flex flex-wrap justify-between items-center gap-4 bg-slate-50/50">
+                    <h3 class="font-bold text-slate-700 text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-list-ul text-slate-400 text-sm"></i> รายการออเดอร์ล่าสุด
+                    </h3>
+                    <div class="flex gap-2">
+                        <span class="px-3 py-1 bg-white border border-slate-200 rounded-full text-xs font-medium text-slate-600 cursor-pointer hover:bg-slate-50">ทั้งหมด</span>
+                        <span class="px-3 py-1 bg-white border border-slate-200 rounded-full text-xs font-medium text-amber-600 cursor-pointer hover:bg-amber-50">รอรับยอด</span>
+                    </div>
                 </div>
                 
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
-                        <thead class="bg-gray-100 text-gray-600 text-xs uppercase">
+                        <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
                             <tr>
-                                <th class="px-6 py-3 font-semibold w-24">เวลา/ID</th>
-                                <th class="px-6 py-3 font-semibold w-40">ลูกค้า</th>
-                                <th class="px-6 py-3 font-semibold">รายการสินค้า</th>
-                                <th class="px-6 py-3 font-semibold text-center w-24">ยอดรวม</th>
-                                <th class="px-6 py-3 font-semibold text-center w-40">สถานะ</th>
-                                <th class="px-6 py-3 font-semibold text-center w-16">จัดการ</th>
+                                <th class="px-6 py-4 font-semibold w-24">Order ID</th>
+                                <th class="px-6 py-4 font-semibold w-48">ลูกค้า</th>
+                                <th class="px-6 py-4 font-semibold">รายการสินค้า</th>
+                                <th class="px-6 py-4 font-semibold text-right w-32">ยอดรวม</th>
+                                <th class="px-6 py-4 font-semibold text-center w-48">สถานะ</th>
+                                <th class="px-6 py-4 font-semibold text-center w-20">โทร</th>
                             </tr>
                         </thead>
-                        <tbody id="order-table-body" class="text-sm text-gray-700">
+                        <tbody id="order-table-body" class="text-sm text-slate-600 divide-y divide-slate-100 bg-white">
                             <tr>
-                                <td colspan="6" class="px-6 py-10 text-center text-gray-400">
-                                    <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><br>กำลังโหลดข้อมูล...
+                                <td colspan="6" class="px-6 py-12 text-center text-slate-400">
+                                    <div class="flex flex-col items-center gap-3">
+                                        <div class="w-10 h-10 border-4 border-slate-200 border-t-emerald-500 rounded-full animate-spin"></div>
+                                        <p class="text-sm font-medium">กำลังโหลดข้อมูล...</p>
+                                    </div>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
                 
-                <div id="connection-status" class="hidden bg-red-50 text-red-600 text-xs p-2 text-center border-t border-red-100">
-                    เชื่อมต่อ Google Sheet ไม่สำเร็จ (กรุณาตรวจสอบ Code.gs)
+                <div id="connection-status" class="hidden bg-rose-50 text-rose-600 text-xs p-3 text-center border-t border-rose-100 flex justify-center items-center gap-2">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span>เชื่อมต่อ Google Sheet ไม่สำเร็จ (กรุณาตรวจสอบ Code.gs ว่ามีฟังก์ชัน doGet หรือไม่)</span>
                 </div>
             </div>
         </main>
+        
+        <footer class="text-center py-6 text-slate-400 text-xs">
+            <p>ระบบจัดการร้านค้า © 2025 หนุ่มดำเนิน</p>
+        </footer>
     </div>
 
     <script>
@@ -112,32 +179,42 @@
         // ⚙️ URL เดียวกับในไฟล์ index.html
         // ============================================
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxdDDXZ3-pmT6nykdkjg7wrh16ZZkPFY5rmF_LsWcoFk5BoULi-lVJJEcsjBi7zKIJwDQ/exec"; 
-        const ADMIN_PASSWORD = "1234"; // รหัสผ่าน (เปลี่ยนได้)
+        const ADMIN_PASSWORD = "1234"; // รหัสผ่าน
         // ============================================
 
         // --- 1. Login Logic ---
         function checkLogin() {
             const pass = document.getElementById('admin-pass').value;
             if(pass === ADMIN_PASSWORD) {
-                document.getElementById('login-overlay').classList.add('hidden');
-                document.getElementById('dashboard-content').classList.remove('hidden');
-                loadOrders(); // โหลดข้อมูลทันทีเมื่อ Login ผ่าน
+                document.getElementById('login-overlay').classList.add('opacity-0', 'pointer-events-none');
+                setTimeout(() => {
+                    document.getElementById('login-overlay').classList.add('hidden');
+                    document.getElementById('dashboard-content').classList.remove('hidden');
+                    loadOrders(); 
+                }, 300);
             } else {
-                Swal.fire({icon: 'error', title: 'รหัสผ่านไม่ถูกต้อง', timer: 1500, showConfirmButton: false});
+                Swal.fire({
+                    icon: 'error', 
+                    title: 'รหัสผ่านไม่ถูกต้อง', 
+                    text: 'กรุณาลองใหม่อีกครั้ง',
+                    confirmButtonColor: '#10b981',
+                    timer: 1500
+                });
             }
         }
         function logout() { location.reload(); }
 
-        // --- 2. Load Orders (GET) ---
+        // --- 2. Load Orders ---
         function loadOrders() {
             const tbody = document.getElementById('order-table-body');
             const statusDiv = document.getElementById('connection-status');
             
-            // UI Loading State
-            document.getElementById('last-update').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-            tbody.style.opacity = '0.5';
+            // Animation หมุน icon
+            const refreshIcon = document.querySelector('.fa-rotate');
+            if(refreshIcon) refreshIcon.classList.add('fa-spin');
 
-            // ยิง GET Request ไปที่ Google Apps Script (?action=admin_get_orders)
+            if(!tbody.innerHTML.includes('fa-spinner')) tbody.style.opacity = '0.5';
+
             fetch(WEB_APP_URL + "?action=admin_get_orders")
             .then(res => res.json())
             .then(data => {
@@ -148,18 +225,20 @@
                     tbody.style.opacity = '1';
                     statusDiv.classList.add('hidden');
                 } else {
-                    throw new Error("No data returned");
+                    throw new Error("No data");
                 }
             })
             .catch(err => {
-                console.error("Fetch Error:", err);
-                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-red-500">
-                    <i class="fa-solid fa-triangle-exclamation text-2xl mb-2"></i><br>
-                    เชื่อมต่อ Google Sheet ไม่สำเร็จ<br>
-                    <span class="text-xs text-gray-400">กรุณาตรวจสอบว่า Deploy Web App เป็น "Anyone" แล้วหรือยัง</span>
+                console.error(err);
+                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-rose-500 bg-rose-50/50">
+                    <i class="fa-solid fa-wifi text-3xl mb-2 opacity-50"></i><br>
+                    เชื่อมต่อข้อมูลไม่สำเร็จ
                 </td></tr>`;
                 statusDiv.classList.remove('hidden');
                 tbody.style.opacity = '1';
+            })
+            .finally(() => {
+                if(refreshIcon) refreshIcon.classList.remove('fa-spin');
             });
         }
 
@@ -168,51 +247,58 @@
             const tbody = document.getElementById('order-table-body');
             
             if(!orders || orders.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-gray-400">ยังไม่มีออเดอร์</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-slate-400">
+                    <i class="fa-regular fa-folder-open text-3xl mb-2 opacity-30"></i><br>ยังไม่มีออเดอร์เข้ามา
+                </td></tr>`;
                 return;
             }
 
             tbody.innerHTML = orders.map(order => {
-                // กำหนดสี Dropdown ตามสถานะ
-                let statusColor = "bg-gray-100 text-gray-600";
-                const s = order.status;
-                if(s.includes("รอ")) statusColor = "bg-yellow-100 text-yellow-700 border-yellow-200";
-                else if(s.includes("ปรุง")) statusColor = "bg-blue-100 text-blue-700 border-blue-200";
-                else if(s.includes("ไรเดอร์") || s.includes("ส่ง")) statusColor = "bg-purple-100 text-purple-700 border-purple-200";
-                else if(s.includes("สำเร็จ")) statusColor = "bg-green-100 text-green-700 border-green-200";
-                else if(s.includes("ยกเลิก")) statusColor = "bg-red-100 text-red-700 border-red-200";
+                // Color Logic
+                let bgClass = "bg-slate-100 text-slate-600 border-slate-200";
+                const s = order.status || "";
+                
+                if(s.includes("รอ")) bgClass = "bg-amber-100 text-amber-700 border-amber-200";
+                else if(s.includes("ปรุง")) bgClass = "bg-blue-100 text-blue-700 border-blue-200";
+                else if(s.includes("ไรเดอร์") || s.includes("ส่ง")) bgClass = "bg-purple-100 text-purple-700 border-purple-200";
+                else if(s.includes("สำเร็จ")) bgClass = "bg-emerald-100 text-emerald-700 border-emerald-200";
+                else if(s.includes("ยกเลิก")) bgClass = "bg-rose-100 text-rose-700 border-rose-200";
 
-                // ตัด Order ID เอา 4 ตัวท้าย
                 const shortId = order.id.includes('-') ? order.id.split('-')[1].slice(-4) : order.id.slice(-4);
 
                 return `
-                <tr class="border-b border-gray-50 hover:bg-gray-50 transition">
+                <tr class="hover:bg-slate-50 transition-colors group">
                     <td class="px-6 py-4 align-top">
-                        <div class="font-bold text-gray-800 text-base">#${shortId}</div>
-                        <div class="text-xs text-gray-400 mt-1">${order.time}</div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-xs">#${shortId}</div>
+                            <div class="text-xs text-slate-400">${order.time}</div>
+                        </div>
                     </td>
                     <td class="px-6 py-4 align-top">
-                        <div class="text-sm font-medium text-gray-900">${order.name}</div>
-                        <div class="text-xs text-gray-500 mt-0.5"><i class="fa-solid fa-phone text-[10px]"></i> ${order.phone || '-'}</div>
+                        <div class="font-medium text-slate-900">${order.name}</div>
+                        <div class="text-xs text-slate-500 mt-1 font-mono">${order.phone || '-'}</div>
                     </td>
                     <td class="px-6 py-4 align-top">
-                        <div class="text-sm text-gray-600 whitespace-pre-line leading-relaxed">${order.items.replace(/\n/g, '<br>')}</div>
+                        <div class="text-sm text-slate-600 whitespace-pre-line leading-relaxed">${order.items.replace(/\n/g, '<br>')}</div>
                     </td>
-                    <td class="px-6 py-4 align-top text-center">
-                        <span class="font-bold text-gray-700 bg-gray-100 px-2 py-1 rounded text-sm">${order.total}</span>
+                    <td class="px-6 py-4 align-top text-right">
+                        <span class="font-bold text-slate-700">${order.total}</span>
                     </td>
                     <td class="px-6 py-4 align-top text-center">
                         <select onchange="updateStatus(${order.row}, this.value)" 
-                                class="status-select cursor-pointer block w-full pl-3 pr-8 py-2 text-xs font-bold rounded-lg border focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-opacity-50 transition-colors ${statusColor}">
+                                class="status-select cursor-pointer block w-full pl-3 pr-8 py-2 text-xs font-bold rounded-lg border focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-opacity-50 transition-all shadow-sm ${bgClass}">
                             <option value="🕒 รอร้านรับยอด" ${s.includes("รอ")?'selected':''}>🕒 รอรับยอด</option>
                             <option value="👨‍🍳 กำลังปรุง" ${s.includes("ปรุง")?'selected':''}>👨‍🍳 กำลังปรุง</option>
-                            <option value="🛵 ไรเดอร์รับแล้ว" ${s.includes("ไรเดอร์")?'selected':''}>🛵 ไรเดอร์รับแล้ว</option>
+                            <option value="🛵 ไรเดอร์รับแล้ว" ${s.includes("ไรเดอร์")?'selected':''}>🛵 ไรเดอร์รับ</option>
                             <option value="✅ จัดส่งสำเร็จ" ${s.includes("สำเร็จ")?'selected':''}>✅ สำเร็จ</option>
                             <option value="❌ ยกเลิก" ${s.includes("ยกเลิก")?'selected':''}>❌ ยกเลิก</option>
                         </select>
                     </td>
                     <td class="px-6 py-4 align-top text-center">
-                        ${order.phone ? `<a href="tel:${order.phone}" class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-green-50 text-green-600 hover:bg-green-100 transition" title="โทรหาลูกค้า"><i class="fa-solid fa-phone"></i></a>` : ''}
+                        ${order.phone ? `
+                        <a href="tel:${order.phone}" class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition shadow-sm border border-emerald-100" title="โทรหาลูกค้า">
+                            <i class="fa-solid fa-phone text-xs"></i>
+                        </a>` : '-'}
                     </td>
                 </tr>
                 `;
@@ -224,9 +310,18 @@
             const pending = orders.filter(o => o.status.includes("รอ")).length;
             const cooking = orders.filter(o => o.status.includes("ปรุง")).length;
             
-            // Animation นับเลข
+            // คำนวณยอดขายรวม (เฉพาะอันที่สำเร็จ หรือทั้งหมดก็ได้ตามโจทย์)
+            // ในที่นี้ลองรวมทั้งหมดที่เป็นตัวเลข
+            let totalSales = 0;
+            orders.forEach(o => {
+                const amount = parseInt(o.total.replace(/[^0-9]/g, '')) || 0;
+                // ถ้าอยากรวมเฉพาะออเดอร์สำเร็จ ให้ใส่เงื่อนไข if (o.status.includes("สำเร็จ"))
+                totalSales += amount;
+            });
+
             animateValue("stat-pending", parseInt(document.getElementById('stat-pending').innerText), pending, 500);
             animateValue("stat-cooking", parseInt(document.getElementById('stat-cooking').innerText), cooking, 500);
+            document.getElementById('stat-total-sales').innerText = '฿' + totalSales.toLocaleString();
         }
 
         function animateValue(id, start, end, duration) {
@@ -245,9 +340,8 @@
 
         // --- 5. Update Status (POST) ---
         function updateStatus(rowIndex, newStatus) {
-            // แสดง Toast แจ้งเตือนมุมขวาบน
             const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true });
-            Toast.fire({ icon: 'info', title: 'กำลังบันทึกสถานะ...' });
+            Toast.fire({ icon: 'info', title: 'กำลังบันทึก...' });
 
             fetch(WEB_APP_URL, {
                 method: 'POST',
@@ -260,14 +354,12 @@
                 })
             }).then(() => {
                 Toast.fire({ icon: 'success', title: 'บันทึกสำเร็จ!' });
-                // โหลดข้อมูลใหม่เพื่อให้สีปุ่มเปลี่ยน (รอแป๊บนึงเพื่อให้ Sheet อัปเดตทัน)
                 setTimeout(loadOrders, 800); 
             }).catch(err => {
                 Swal.fire({icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'ไม่สามารถอัปเดตสถานะได้'});
             });
         }
         
-        // Enter เพื่อ Login
         document.getElementById('admin-pass').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') checkLogin();
         });
