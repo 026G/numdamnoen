@@ -870,7 +870,7 @@
             }
         }
 
-        // ฟังก์ชันแสดงผลสำหรับข้อมูลจาก Server (Format ตรงกับ Code.gs)
+        // ✅ ฟังก์ชันแสดงผลข้อมูลจาก Server (เพิ่มสีพื้นหลัง + ตัด Order ID)
         function renderHistoryFromAdminData(serverOrders) {
             const container = document.getElementById('tracking-result');
             
@@ -899,7 +899,8 @@
                     cardBgColor = "bg-orange-50/20 border-orange-100"; // 🎨 พื้นหลังส้มจางๆ
                 }
 
-                // ใช้ shortId ที่ส่งมาจาก Server หรือตัดเองถ้าไม่มี
+                // ✅ ตัด Order ID ให้เหลือ 4 ตัวท้าย (เช่น ORD-260103 -> #0103)
+                // ถ้ามี shortId จาก Server ก็ใช้เลย ถ้าไม่มีก็ตัดเอง
                 const displayId = order.shortId || (order.id.includes('-') ? order.id.split('-')[1].slice(-4) : order.id.slice(-4));
 
                 return `
@@ -930,7 +931,7 @@
             const container = document.getElementById('tracking-result');
             container.innerHTML = historyData.map(order => {
                  let statusColor = "text-orange-500 bg-orange-50 border-orange-100";
-                 // ... (สามารถ Copy Logic สีพื้นหลังมาใส่ได้ถ้าต้องการ)
+                 // ... (Logic เดิม)
                  return `<div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-2 relative overflow-hidden">
                     <div class="flex justify-between items-start z-10">
                         <div><span class="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-1 rounded border border-gray-200">${order.id}</span><div class="text-xs text-gray-400 mt-1">${order.date}</div></div>
