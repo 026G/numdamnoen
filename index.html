@@ -662,15 +662,19 @@
             const name = document.getElementById('cust-name').value;
             const phone = document.getElementById('cust-phone').value;
             const address = document.getElementById('cust-address').value;
+            
+            // ตรวจสอบข้อมูลเบื้องต้น
             if(!name || !phone || !address) return Swal.fire({icon: 'warning', text: 'กรุณากรอกข้อมูลที่อยู่ให้ครบถ้วน'});
             if(!userLat) return Swal.fire({icon: 'warning', text: 'กรุณาปักหมุดจุดส่งบนแผนที่'});
             if(distanceKm > MAX_DIST_KM) return Swal.fire({icon: 'error', text: `อยู่นอกพื้นที่จัดส่ง (จำกัด ${MAX_DIST_KM} กม.)`});
 
+            // คำนวณยอดเงิน
             const foodTotal = cart.reduce((s, i) => s + i.finalPrice, 0);
             let isFree = (distanceKm <= 1.5 && foodTotal >= 100) || (foodTotal >= 200);
             deliveryFee = isFree ? 0 : 40;
             const grandTotal = foodTotal + deliveryFee;
 
+            // แสดงผลสรุปยอด
             document.getElementById('summary-food-total').innerText = `${foodTotal} บาท`;
             const feeDisplay = document.getElementById('summary-delivery-fee');
             const feeDetail = document.getElementById('delivery-details');
@@ -689,10 +693,17 @@
             }
 
             document.getElementById('summary-grand-total').innerText = `${grandTotal} บาท`;
+            
+            // เตรียม QR Code
             const promptpayNo = "0622467746"; 
             document.getElementById('qr-image').src = `https://promptpay.io/${promptpayNo}/${grandTotal}`;
             document.getElementById('qr-amount-display').innerText = `${grandTotal} บาท`;
             document.getElementById('cod-amount-display').innerText = `${grandTotal}`;
+            
+            // 🔥 เพิ่มบรรทัดนี้: เรียกใช้ฟังก์ชันตรวจสอบสิทธิ์ COD ก่อนไปหน้าชำระเงิน
+            checkCODEligibility();
+
+            // ไปหน้าชำระเงิน
             showPage('payment');
         }
 
