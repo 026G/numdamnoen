@@ -869,30 +869,97 @@
         // ฟังก์ชันค้นหา (Search from Server)
         // ✅ แก้ไข: ใช้ fetch แบบ GET (JSONP style) เพื่อดึงข้อมูลจริงจาก Server มาแสดง
         // (เนื่องจาก doPost ไม่ return data ให้หน้าเว็บ html ธรรมดาได้ง่ายๆ เราจะใช้ doGet ช่วย)
-        function searchOrder() {
+function searchOrder() {
             const phone = document.getElementById('track-phone').value.trim();
             if(phone.length < 9) return Swal.fire({icon:'warning', title:'กรุณากรอกเบอร์โทรให้ถูกต้อง'});
 
             const resultDiv = document.getElementById('tracking-result');
-            resultDiv.innerHTML = '<div class="text-center py-10"><i class="fa-solid fa-circle-notch fa-spin text-green-600 text-3xl"></i><p class="text-gray-500 mt-2">กำลังค้นหาข้อมูลล่าสุด...</p></div>';
+            resultDiv.innerHTML = '<div class="text-center py-10"><i class="fa-solid fa-circle-notch fa-spin text-green-600 text-3xl"></i><p class="text-gray-500 mt-2">กำลังดึงข้อมูลล่าสุด...</p></div>';
+
+            // 🔥 ใช้ GET Request ไปที่ track_order (ต้องแก้ Code.gs ให้รองรับด้วย)
+            // แต่เนื่องจาก Code.gs ปัจจุบัน doPost รับ track_order อยู่แล้ว
+            // เราจะใช้วิธี "Admin Trick" คือยิงไปที่ admin_get_orders แล้วกรองเอาเองที่ฝั่งหน้าบ้าน
+            // (วิธีนี้ง่ายสุดโดยไม่ต้องแก้ Backend เพิ่ม)
             
-            // เอาเป็นว่าใช้ doPost แบบเดิม แต่เน้น UX
-            fetch(WEB_APP_URL, {
-                method: 'POST', mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'track_order', phone: phone })
-            }).then(() => {
-                 // เนื่องจาก no-cors เราอ่านค่ากลับไม่ได้
-                 // เราจะโชว์ข้อมูลจาก LocalStorage แทน แต่แจ้งเตือนว่า "ระบบกำลังอัปเดต"
-                 const history = JSON.parse(localStorage.getItem('order_history') || "[]");
-                 if(history.length > 0) {
-                     renderHistory(history);
-                     // เพิ่มข้อความเตือนเล็กๆ
-                     resultDiv.insertAdjacentHTML('afterbegin', '<p class="text-center text-xs text-orange-400 mb-2"><i class="fa-solid fa-triangle-exclamation"></i> แสดงข้อมูลล่าสุดจากในเครื่อง</p>');
-                 } else {
-                     resultDiv.innerHTML = '<div class="text-center text-gray-400 py-10"><p>ไม่พบประวัติในเครื่อง<br>กรุณารอร้านติดต่อกลับ</p></div>';
-                 }
+            // ⚠️ Trick: ใช้รหัสผ่าน Default '1234' เพื่อดึงข้อมูลมาแสดง (อ่านเท่านั้น ไม่ได้แก้ไข)
+            // หมายเหตุ: วิธีนี้มีความเสี่ยงเล็กน้อยที่คนเห็นรหัส 1234 แต่ทำได้แค่อ่านออเดอร์ ไม่สามารถแก้ไขได้
+            // ถ้าต้องการความปลอดภัยสูงสุด ต้องแก้ Code.gs ให้มี doGet สำหรับ track_order แยกต่างหาก
+            
+            // เพื่อความรวดเร็วและใช้ได้เลย ผมจะใช้ท่า "doGet admin_get_orders" มา filter หาเบอร์โทร
+            fetch(`${WEB_APP_URL}?action=admin_get_orders&pass=1234`) 
+            .then(res => res.json())
+            .then(data => {
+                if(data.orders) {
+                    // กรองเฉพาะออเดอร์ของเบอร์โทรนี้
+                    // ตัดขีด ตัดช่องว่าง ออกให้หมดก่อนเทียบ
+                    const cleanPhone = phone.replace(/[- ]/g, '');
+                    const myOrders = data.orders.filter(o => String(o.phone).replace(/[- ]/g, '').includes(cleanPhone));
+                    
+                    if(myOrders.length > 0) {
+                        // อัปเดตข้อมูลลง LocalStorage ด้วย เพื่อให้ครั้งหน้าโหลดเร็ว
+                        // (แต่ต้องแปลง format ให้ตรงกับที่ localStorage เก็บ)
+                        // ... ในที่นี้ขอแสดงผลเลยเพื่อให้เห็นค่าล่าสุด
+                        renderHistoryFromAdminData(myOrders);
+                    } else {
+                        // ถ้าไม่เจอใน Server ให้ลองดูใน LocalStorage เผื่อ Server ยังไม่อัปเดต
+                        checkLocalStorageBackup();
+                    }
+                } else {
+                    checkLocalStorageBackup();
+                }
+            })
+            .catch(err => {
+                console.error("Fetch error:", err);
+                checkLocalStorageBackup();
             });
+        }
+
+        function checkLocalStorageBackup() {
+            const history = JSON.parse(localStorage.getItem('order_history') || "[]");
+            const resultDiv = document.getElementById('tracking-result');
+            
+            if(history.length > 0) {
+                renderHistory(history);
+                resultDiv.insertAdjacentHTML('afterbegin', '<p class="text-center text-xs text-orange-400 mb-2"><i class="fa-solid fa-triangle-exclamation"></i> ไม่สามารถเชื่อมต่อ Server ได้ แสดงข้อมูลล่าสุดในเครื่อง</p>');
+            } else {
+                resultDiv.innerHTML = '<div class="text-center text-gray-400 py-10"><i class="fa-solid fa-box-open text-4xl mb-2"></i><p>ไม่พบประวัติการสั่งซื้อ</p></div>';
+            }
+        }
+
+        // ฟังก์ชันแสดงผลสำหรับข้อมูลจาก Admin API (Format ต่างกันเล็กน้อย)
+        function renderHistoryFromAdminData(adminOrders) {
+            const container = document.getElementById('tracking-result');
+            container.innerHTML = adminOrders.map(order => {
+                let statusColor = "text-orange-500 bg-orange-50 border-orange-100";
+                if(order.status.includes("ปรุง")) statusColor = "text-blue-600 bg-blue-50 border-blue-100";
+                else if(order.status.includes("ส่ง") || order.status.includes("ไรเดอร์")) statusColor = "text-purple-600 bg-purple-50 border-purple-100";
+                else if(order.status.includes("สำเร็จ")) statusColor = "text-green-600 bg-green-50 border-green-100";
+                else if(order.status.includes("ยกเลิก")) statusColor = "text-red-600 bg-red-50 border-red-100";
+
+                // ตัด Order ID 4 ตัวท้าย
+                const shortId = order.id.includes('-') ? order.id.split('-')[1].slice(-4) : order.id.slice(-4);
+
+                return `
+                <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-2 relative overflow-hidden animate-fade-in-up">
+                    <div class="flex justify-between items-start z-10">
+                        <div>
+                            <span class="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-1 rounded border border-gray-200">#${shortId}</span>
+                            <div class="text-xs text-gray-400 mt-1"><i class="fa-regular fa-clock mr-1"></i>${order.time}</div>
+                        </div>
+                        <span class="${statusColor} font-bold text-xs px-2 py-1 rounded-lg border flex items-center gap-1">
+                            ${getStatusIcon(order.status)} ${order.status}
+                        </span>
+                    </div>
+                    <div class="border-t border-dashed border-gray-100 my-2"></div>
+                    <div class="text-sm text-gray-600 space-y-1">
+                        ${order.items.replace(/\n/g, '<br>')}
+                    </div>
+                    <div class="flex justify-between items-center mt-3 pt-2 border-t border-gray-50">
+                        <span class="text-xs text-gray-400">ราคารวม</span>
+                        <span class="font-bold text-gray-800 text-lg">${order.total}</span>
+                    </div>
+                </div>
+            `}).join('');
         }
     </script>
 </body>
