@@ -328,7 +328,7 @@
         // --- 3. Navigation ---
         function showPage(pageId) {
             // หยุด Auto Refresh เมื่อออกจากหน้า Tracking
-            if (trackingInterval) {
+            if (pageId !== 'tracking' && trackingInterval) {
                 clearInterval(trackingInterval);
                 trackingInterval = null;
             }
@@ -351,9 +351,9 @@
             updateFooterState(pageId);
             if(pageId === 'address') setTimeout(() => map.invalidateSize(), 200);
             
-            // 🔥 เริ่มระบบ Tracking เมื่อเข้าหน้านี้
+            // 🔥 เรียกฟังก์ชันเริ่มต้นหน้า Tracking โดยเฉพาะ
             if(pageId === 'tracking') {
-                handleTrackingClick();
+                initTrackingPage(); 
             }
             
             window.scrollTo(0,0);
@@ -787,22 +787,26 @@
             }
         }
 
+        // 🔥 ปุ่มกดจาก Header (แค่เปลี่ยนหน้า ไม่ไปยุ่งกับ Logic โหลดข้อมูล)
+        function handleTrackingClick() {
+            showPage('tracking'); 
+        }
+        
+        // 🔥 ฟังก์ชันใหม่: สำหรับเปิดหน้า Tracking โดยเฉพาะ
         function openTrackingPage() {
             showPage('tracking');
-            handleTrackingClick(); 
         }
 
         // ----------------------------------------------------
         // 🔥🔥🔥 แก้ไขส่วน Tracking (ลูปหาย + ช่องค้นหามาแล้ว) 🔥🔥🔥
         // ----------------------------------------------------
 
-        function handleTrackingClick() {
-            showPage('tracking'); // เรียกเพื่อเปลี่ยนหน้า (แต่ showPage จะไม่เรียกกลับมาหา function นี้แล้ว)
-
+        // ฟังก์ชันนี้จะถูกเรียกโดย showPage('tracking') เท่านั้น
+        function initTrackingPage() {
             const history = JSON.parse(localStorage.getItem('order_history') || "[]");
             const savedPhone = localStorage.getItem('cust_phone');
             
-            // ✅ บังคับโชว์กล่องค้นหาเสมอ (แก้ปัญหาหายไป)
+            // ✅ บังคับโชว์กล่องค้นหาเสมอ (Remove Class hidden)
             document.getElementById('tracking-search-box').classList.remove('hidden');
 
             if (savedPhone) {
