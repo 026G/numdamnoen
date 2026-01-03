@@ -103,7 +103,7 @@
                     <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
                     <div class="flex justify-between items-start relative z-10">
                         <div>
-                            <p class="text-emerald-100 text-xs font-medium uppercase mb-1">ยอดขายวันนี้ (ประมาณการ)</p>
+                            <p class="text-emerald-100 text-xs font-medium uppercase mb-1">ยอดขายวันนี้ (เฉพาะวันที่ <span id="today-date-display">--/--</span>)</p>
                             <h3 class="text-3xl font-bold" id="stat-total-sales">฿0</h3>
                         </div>
                         <div class="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
@@ -309,17 +309,31 @@
             }).join('');
         }
 
-        // --- 4. Update Stats (Animation) ---
+        // --- 4. Update Stats (Calculate Only Today's Sales) ---
         function updateStats(orders) {
             const pending = orders.filter(o => o.status.includes("รอ")).length;
             const cooking = orders.filter(o => o.status.includes("ปรุง")).length;
             
-            // คำนวณยอดขายรวม
             let totalSales = 0;
+            
+            // 1. หา date string ของวันนี้ (Format: DD/MM) ให้ตรงกับที่ส่งมาจาก API
+            const now = new Date();
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const todayString = `${day}/${month}`; // ผลลัพธ์: "03/01"
+            
+            // อัปเดตวันที่บนหน้าจอ
+            document.getElementById('today-date-display').innerText = todayString;
+
             orders.forEach(o => {
-                const amount = parseInt(o.total.replace(/[^0-9]/g, '')) || 0;
-                // หากต้องการนับเฉพาะยอดที่สำเร็จ ให้ใช้ if(o.status.includes("สำเร็จ"))
-                totalSales += amount;
+                // 2. เช็คว่าเวลาของออเดอร์ ขึ้นต้นด้วยวันที่วันนี้หรือไม่
+                if (o.time.startsWith(todayString)) {
+                    // 3. ถ้าใช่ ให้บวกเงิน (โดยไม่นับออเดอร์ที่ยกเลิก)
+                    if (!o.status.includes("ยกเลิก")) {
+                        const amount = parseInt(o.total.replace(/[^0-9]/g, '')) || 0;
+                        totalSales += amount;
+                    }
+                }
             });
 
             animateValue("stat-pending", parseInt(document.getElementById('stat-pending').innerText), pending, 500);
