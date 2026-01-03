@@ -87,7 +87,7 @@
             
             <div id="category-tabs" class="flex px-4 border-b border-gray-100 gap-4 mt-2">
                 <div onclick="switchTab('recommend')" id="tab-recommend" class="flex-1 text-center py-3 text-sm font-bold cursor-pointer transition-all border-b-2 border-green-600 text-green-700 relative">
-                    เมนู
+                    ดูเมนู
                 </div>
                 <div onclick="switchTab('promotion')" id="tab-promotion" class="flex-1 text-center py-3 text-sm font-medium cursor-pointer transition-all border-b-2 border-transparent text-gray-400 hover:text-gray-600">
                     โปรโมชั่น
@@ -320,26 +320,22 @@
         const SHOP_LOC = [13.639417, 100.499580]; 
         const MAX_DIST_KM = 5.0; 
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxdDDXZ3-pmT6nykdkjg7wrh16ZZkPFY5rmF_LsWcoFk5BoULi-lVJJEcsjBi7zKIJwDQ/exec"; 
+        const OPEN_HOUR = 9;   
+        const CLOSE_HOUR = 24; 
 
-        // ⚙️ ตั้งค่าเวลาเปิด-ปิดร้าน (24H Format)
-        const OPEN_HOUR = 9;   // เปิด 09:00
-        const CLOSE_HOUR = 24; // ปิด 20:00
-
-        // ข้อมูลสินค้า
+        // 🔥 ข้อมูลสินค้า
         const menuDB = [
-            // --- รายการยอดฮิต (Recommend) ---
+            // === RECOMMEND (รวมทุกหมวดที่อยากโชว์ในหน้าแรก) ===
             { id: 1, category: "recommend", subCategory: "🔥 รายการยอดฮิต", name: "[ขวดใหญ่] น้ำมะพร้าวสด100% (1000 ml.)", desc: "น้ำมะพร้าวสดแท้ 100% ไม่ผสม ขวดใหญ่", price: 100, originalPrice: 120, img: "https://lh3.googleusercontent.com/d/1Yz3UIKQHOZcvIrR3ItjCrU7hNcBiVInF",badge: "ขายดี #1", stock: true },
             { id: 2, category: "recommend", subCategory: "🔥 รายการยอดฮิต", name: "(ขวดใหญ่)น้ำมะพร้าวสด 1000ml", desc: "น้ำมะพร้าวสดแท้ 100% ไม่ผสม ขวดใหญ่", price: 100, originalPrice: 75, img: "https://lh3.googleusercontent.com/d/19ro_rUeZkoPNdHJhgccYUDkfhC7G2E8U", badge: "ขายดี", stock: true, options: [{ type: "radio", name: "ระดับความหวาน", choices: [{ label: "หวานธรรมชาติ", price: 0 }, { label: "หวานน้อย", price: 0 }, { label: "หวานปกติ", price: 0 }] }] },
-
-            // --- มะพร้าวปั่น ---
-            { id: 301, category: "recommend", subCategory: "🥥 เมนูมะพร้าวปั่น", name: "มะพร้าวปั่นนมสด", desc: "สูตรนมสด หอมมัน นัวสุดๆ", price: 119, img: "https://images.unsplash.com/photo-1595981267035-7b04ca84a82d?w=400", stock: true, options: [{ type: "checkbox", name: "ท็อปปิ้ง (เลือกได้ 2)", max: 2, choices: [{ label: "ลอดช่องวัดเจษ", price: 15 }, { label: "ทับทิมกรอบ", price: 15 }, { label: "เนื้อมะพร้าวอ่อน", price: 10 }] }] },
+            
+            { id: 301, category: "recommend", subCategory: "🥥 เมนูมะพร้าวปั่น", name: "มะพร้าวปั่นนมสด", desc: "สูตรนมสด หอมมัน นัวสุดๆ", price: 119, originalPrice: 158, img: "https://images.unsplash.com/photo-1595981267035-7b04ca84a82d?w=400", stock: true, options: [{ type: "checkbox", name: "ท็อปปิ้ง (เลือกได้ 2)", max: 2, choices: [{ label: "ลอดช่องวัดเจษ", price: 15 }, { label: "ทับทิมกรอบ", price: 15 }, { label: "เนื้อมะพร้าวอ่อน", price: 10 }] }] },
             { id: 302, category: "recommend", subCategory: "🥥 เมนูมะพร้าวปั่น", name: "มะพร้าวปั่น (ไม่ใส่นม)", desc: "หวานเย็นชื่นใจ แบบไม่ใส่นม", price: 99, img: "https://images.unsplash.com/photo-1546173159-315724a31696?w=400", stock: true },
 
-            // --- น้ำมะพร้าวสด ---
             { id: 401, category: "recommend", subCategory: "🌴 น้ำมะพร้าวสด", name: "[ขวดใหญ่] น้ำมะพร้าวสด (1000 ml.)", desc: "น้ำมะพร้าวสดแท้ 100% ไม่ผสม ขวดใหญ่", price: 100, originalPrice: 120, img: "https://lh3.googleusercontent.com/d/1Yz3UIKQHOZcvIrR3ItjCrU7hNcBiVInF", stock: true },
             { id: 402, category: "recommend", subCategory: "🌴 น้ำมะพร้าวสด", name: "น้ำมะพร้าวสด (ขวดเล็ก 250 ml.)", desc: "น้ำมะพร้าวสดแท้ 100% ไม่ผสม ขวดเล็ก", price: 30,  img: "https://lh3.googleusercontent.com/d/10oBcQVs5OXiWjkDeWCUW_4YAMY-X2DWa", stock: true },
 
-            // --- โปรโมชั่น (Promotion) ---
+            // === PROMOTION (แยกออกมาต่างหาก) ===
             { id: 91, category: "promotion", name: "[Set คุ้ม] 4ขวดเล็ก น้ำมะพร้าวสด100%", desc: "น้ำมะพร้าวสด 4 ขวดเล็ก 250ml.x4 ราคาพิเศษ", price: 100, originalPrice: 120, badge: "ลดราคา 🔥", stock: true, img: "https://lh3.googleusercontent.com/d/11Dv4nyAER160iSp-Luymgp-p4LI39h3Y", stock: true},
             { id: 92, category: "promotion", name: "[Set จุใจ] 4ขวดใหญ่ น้ำมะพร้าวสด100%", desc: "น้ำมะพร้าวสด 4 ขวดใหญ่ 1000ml.x4 ราคาพิเศษ", price: 360, originalPrice: 400, badge: "ลดราคา 🔥", stock: true, img: "https://lh3.googleusercontent.com/d/1_hTuj-qkP1_54Vvoej67MkiH6QRBPlfV", stock: true},
             { id: 5, category: "promotion", name: "Set คู่หูดูโอ้ (2 แก้ว)", desc: "มะพร้าวปั่นนมสด 2 แก้ว ราคาพิเศษ", price: 220, originalPrice: 238, badge: "ลดราคา 🔥", stock: true, img: "https://images.unsplash.com/photo-1628519592415-3174241e3d3f?w=400", options: [{ type: "radio", name: "ความหวาน (แก้ว 1)", choices: [{ label: "ปกติ", price: 0 }, { label: "น้อย", price: 0 }] }, { type: "radio", name: "ความหวาน (แก้ว 2)", choices: [{ label: "ปกติ", price: 0 }, { label: "น้อย", price: 0 }] }] },
@@ -355,7 +351,7 @@
         
         // --- 2. Initial Setup ---
         document.addEventListener("DOMContentLoaded", () => {
-            renderMenu(activeTab);
+            switchTab('recommend');
             initMap();
             updateFooterState('menu');
             startBannerAutoSlide();
@@ -366,10 +362,12 @@
             if(localStorage.getItem('cust_address')) document.getElementById('cust-address').value = localStorage.getItem('cust_address');
 
             updateTrackingButtonState();
+            updateShopStatusUI();
         });
 
         // --- 3. Navigation ---
         function showPage(pageId) {
+            // หยุด Auto Refresh เมื่อออกจากหน้า Tracking
             if (pageId !== 'tracking' && trackingInterval) {
                 clearInterval(trackingInterval);
                 trackingInterval = null;
@@ -379,6 +377,7 @@
             document.getElementById('page-' + pageId).classList.add('active-section');
             document.getElementById('category-tabs').style.display = (pageId === 'menu') ? 'flex' : 'none';
             
+            // จัดการปุ่มย้อนกลับ (ซ่อนเมื่ออยู่หน้าเมนู)
             const backBtn = document.querySelector('header button i.fa-arrow-left')?.parentElement;
             if(backBtn) {
                 if(pageId === 'menu') {
@@ -392,6 +391,7 @@
             updateFooterState(pageId);
             if(pageId === 'address') setTimeout(() => map.invalidateSize(), 200);
             
+            // 🔥 เรียกฟังก์ชันเริ่มต้นหน้า Tracking โดยเฉพาะ
             if(pageId === 'tracking') {
                 initTrackingPage(); 
             }
@@ -412,10 +412,9 @@
 
         function switchTab(cat) {
             activeTab = cat;
-            
-            // เหลือแค่ 2 Tab
             const tabs = ['recommend', 'promotion'];
             
+            // วนลูปเปลี่ยนสีปุ่ม
             tabs.forEach(tabName => {
                 const element = document.getElementById(`tab-${tabName}`);
                 if (cat === tabName) {
@@ -425,12 +424,14 @@
                 }
             });
 
-            // ซ่อนหัวข้อใหญ่ด้านบน (เพราะเราจะไปโชว์หัวข้อย่อยในรายการแทน)
-            document.getElementById('menu-heading').parentElement.style.display = 'none';
+            // ซ่อนหัวข้อเดิม (ถ้ามี)
+            const heading = document.getElementById('menu-heading');
+            if(heading && heading.parentElement) heading.parentElement.style.display = 'none';
 
             renderMenu(cat);
         }
 
+        // เช็คเวลาร้านเปิด-ปิด
         function isShopOpen() {
             const now = new Date();
             const hour = now.getHours();
@@ -439,6 +440,8 @@
 
         function updateFooterState(pageId) {
             const footer = document.getElementById('sticky-footer');
+            
+            // ⏰ Auto Open/Close Logic
             if (!isShopOpen()) {
                 footer.classList.remove('hidden');
                 footer.innerHTML = `
@@ -446,8 +449,10 @@
                         ⛔ ร้านปิด (เปิด ${String(OPEN_HOUR).padStart(2,'0')}:00 - ${String(CLOSE_HOUR).padStart(2,'0')}:00 น.)
                     </div>
                 `;
-                return; 
+                return; // หยุดการทำงาน ไม่โชว์ปุ่มอื่น
             }
+
+            // ถ้าเปิดร้าน ให้โชว์ปุ่มปกติ (ต้อง Reset HTML กลับมาเป็นปุ่มเดิมก่อน)
             if(footer.innerHTML.includes('ร้านปิด')) location.reload(); 
 
             footer.classList.remove('hidden');
@@ -465,54 +470,23 @@
             else if(pageId === 'tracking') footer.classList.add('hidden');
         }
 
+        // --- 4. Menu & Cart (แก้ไข renderMenu) ---
         function renderMenu(cat) {
             const list = document.getElementById('menu-list');
             const items = menuDB.filter(i => i.category === cat);
             
-            // ถ้าเป็นหน้า Promotion ไม่ต้องจัดหมวดหมู่ (แสดงเรียงกันเลย)
-            if (cat === 'promotion') {
-                list.innerHTML = generateItemsHTML(items);
-                return;
-            }
-
-            // ถ้าเป็นหน้า Recommend (ดูเมนู) ให้จัดกลุ่มตาม subCategory
-            // 1. ดึงชื่อหมวดหมู่ทั้งหมดออกมา (ไม่ซ้ำ)
-            const subCats = [...new Set(items.map(i => i.subCategory || 'อื่นๆ'))];
-            
-            let finalHTML = '';
-            
-            subCats.forEach(subCatName => {
-                // กรองสินค้าเฉพาะในหมวดนี้
-                const subItems = items.filter(i => (i.subCategory || 'อื่นๆ') === subCatName);
-                
-                if (subItems.length > 0) {
-                    // สร้างหัวข้อหมวดหมู่ (Sticky Header)
-                    finalHTML += `
-                        <div class="sticky top-0 bg-gray-50/95 backdrop-blur px-5 py-3 border-b border-gray-100 z-10">
-                            <h3 class="font-bold text-gray-700 text-base">${subCatName}</h3>
-                        </div>
-                    `;
-                    // สร้างรายการสินค้า
-                    finalHTML += generateItemsHTML(subItems);
-                }
-            });
-
-            list.innerHTML = finalHTML;
-        }
-
-        // ฟังก์ชันย่อยสำหรับสร้าง HTML สินค้า (แยกออกมาเพื่อความสะอาดของโค้ด)
-        function generateItemsHTML(items) {
-            return items.map(item => {
+            // ฟังก์ชันย่อยสำหรับสร้าง HTML การ์ดสินค้า
+            const createCard = (item) => {
                 const isSoldOut = !item.stock;
                 const priceColorClass = item.originalPrice ? 'text-red-600' : 'text-green-600';
-
+                
                 return `
                 <div class="bg-white p-4 border-b border-gray-100 flex gap-4 relative hover:bg-gray-50 transition active:bg-gray-100 cursor-pointer ${isSoldOut ? 'opacity-60 grayscale pointer-events-none' : ''}" onclick="${!isSoldOut ? `openModal(${item.id})` : ''}">
-                    <div class="relative shrink-0 w-24 h-24"> <img src="${item.img}" class="w-full h-full object-cover rounded-xl shadow-sm">
+                    <div class="relative shrink-0 w-24 h-24">
+                        <img src="${item.img}" class="w-full h-full object-cover rounded-xl shadow-sm">
                         ${item.badge && !isSoldOut ? `<span class="absolute top-0 left-0 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-tl-xl rounded-br-lg shadow-sm">${item.badge}</span>` : ''}
                         ${isSoldOut ? '<span class="absolute inset-0 flex items-center justify-center bg-black/40 text-white font-bold text-sm rounded-xl z-10">หมด</span>' : ''}
                     </div>
-                    
                     <div class="flex-1 flex flex-col justify-between py-0.5">
                         <div>
                             <h3 class="font-bold text-gray-800 text-sm leading-tight mb-1">${item.name}</h3>
@@ -523,14 +497,39 @@
                                 ${item.originalPrice ? `<span class="text-gray-300 text-[10px] line-through">฿${item.originalPrice}</span>` : ''}
                                 <span class="${priceColorClass} font-bold text-base">฿${item.price}</span>
                             </div>
-                            ${!isSoldOut ? 
-                            `<button class="bg-green-50 text-green-600 w-7 h-7 rounded-full flex items-center justify-center hover:bg-green-600 hover:text-white transition shadow-sm border border-green-200">
-                                <i class="fa-solid fa-plus text-xs"></i>
-                            </button>` : ''}
+                            ${!isSoldOut ? `<button class="bg-green-50 text-green-600 w-7 h-7 rounded-full flex items-center justify-center hover:bg-green-600 hover:text-white transition shadow-sm border border-green-200"><i class="fa-solid fa-plus text-xs"></i></button>` : ''}
                         </div>
                     </div>
-                </div>
-            `}).join('');
+                </div>`;
+            };
+
+            // 🔥 กรณี 1: หน้า Promotion (แสดงรายการเลย ไม่ต้องแยกหมวด)
+            if (cat === 'promotion') {
+                if(items.length === 0) {
+                    list.innerHTML = `<div class="text-center py-10 text-gray-400">ไม่มีรายการโปรโมชั่น</div>`;
+                } else {
+                    list.innerHTML = items.map(createCard).join('');
+                }
+                return;
+            }
+
+            // 🔥 กรณี 2: หน้า Recommend (แยกหมวดตาม subCategory)
+            const subCats = [...new Set(items.map(i => i.subCategory || 'อื่นๆ'))];
+            let finalHTML = '';
+            
+            subCats.forEach(subCatName => {
+                const subItems = items.filter(i => (i.subCategory || 'อื่นๆ') === subCatName);
+                if (subItems.length > 0) {
+                    finalHTML += `
+                        <div class="sticky top-0 bg-gray-50/95 backdrop-blur px-5 py-3 border-b border-gray-100 z-10">
+                            <h3 class="font-bold text-gray-700 text-base"> ${subCatName}</h3>
+                        </div>
+                    `;
+                    finalHTML += subItems.map(createCard).join('');
+                }
+            });
+
+            list.innerHTML = finalHTML;
         }
 
         // --- Modal Logic ---
@@ -538,6 +537,8 @@
 
         function openModal(id) {
              const item = menuDB.find(i=>i.id===id);
+             
+             // 🔥 Reset จำนวนเป็น 1 ทุกครั้งที่เปิด
              currentQty = 1;
              currentItem = item; 
              currentBasePrice = item.price;
@@ -546,6 +547,7 @@
              const container = document.getElementById('modal-options'); 
              container.innerHTML = '';
 
+             // 🔥 วนลูปสร้างตัวเลือก (ถ้ามี)
              if(item.options && item.options.length > 0) {
                  item.options.forEach((opt, idx) => {
                      let html = `<div class="bg-gray-50 border border-gray-100 p-4 rounded-xl mb-3"><p class="font-semibold mb-3 text-gray-700 text-sm flex items-center gap-2">${opt.name}</p><div class="space-y-3">`;
@@ -564,6 +566,7 @@
                  container.innerHTML = `<div class="text-center text-gray-400 text-sm py-2"></div>`;
              }
 
+             // 🔥 แทรกปุ่มเลือกจำนวน (+/-) ลงไปใน Modal
              const qtyHtml = `
                 <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
                     <span class="font-bold text-gray-700">จำนวน</span>
@@ -580,6 +583,7 @@
              document.getElementById('option-modal').classList.remove('hidden');
         }
 
+        // 🔥 ฟังก์ชันปรับจำนวน
         function adjustQty(change) {
             const newQty = currentQty + change;
             if(newQty < 1) return;
@@ -593,6 +597,8 @@
             document.querySelectorAll('.option-input:checked').forEach(input => { 
                 pricePerItem += parseInt(input.getAttribute('data-price') || 0); 
             });
+            
+            // 🔥 ราคารวม = (ราคาต่อชิ้น + ตัวเลือก) * จำนวน
             const totalPrice = pricePerItem * currentQty;
             document.getElementById('modal-total-price').innerText = `฿${totalPrice}`;
         }
@@ -609,16 +615,21 @@
         function confirmAddToCart() {
             const selectedOptions = []; 
             let pricePerItem = currentBasePrice;
+            
             document.querySelectorAll('.option-input:checked').forEach(input => { 
                 selectedOptions.push(input.value); 
                 pricePerItem += parseInt(input.getAttribute('data-price') || 0); 
             });
+
+            // 🔥 ราคารวมสุดท้ายที่จะส่งลงตะกร้า (คูณจำนวนแล้ว)
             const finalTotalPrice = pricePerItem * currentQty;
+
             addToCart(currentItem, selectedOptions, finalTotalPrice, currentQty); 
             closeModal();
         }
 
         function addToCart(item, opts, price, qty) {
+            // 🔥 บันทึกจำนวน (qty) ลงไปในตะกร้าด้วย
             cart.push({ ...item, selectedOptions: opts, finalPrice: price, qty: qty });
             updateCartUI();
             if(document.querySelector('.active-section').id === 'page-menu') updateFooterState('menu');
@@ -705,7 +716,7 @@
         function calculateDelivery(lat, lng) {
             userLat = lat; userLng = lng;
             distanceKm = getDistanceFromLatLonInKm(SHOP_LOC[0], SHOP_LOC[1], lat, lng);
-            document.getElementById('header-distance').innerText = `ห่าง ${distanceKm.toFixed(1)} กม. จากร้าน`;
+            document.getElementById('header-distance').innerText = `ห่างจากร้าน ${distanceKm.toFixed(1)} กม.`;
             document.getElementById('distance-display').innerText = `${distanceKm.toFixed(1)} กม.`;
             
             const btnConfirm = document.getElementById('btn-confirm-address');
@@ -732,19 +743,15 @@
             const name = document.getElementById('cust-name').value;
             const phone = document.getElementById('cust-phone').value;
             const address = document.getElementById('cust-address').value;
-            
-            // ตรวจสอบข้อมูลเบื้องต้น
             if(!name || !phone || !address) return Swal.fire({icon: 'warning', text: 'กรุณากรอกข้อมูลที่อยู่ให้ครบถ้วน'});
             if(!userLat) return Swal.fire({icon: 'warning', text: 'กรุณาปักหมุดจุดส่งบนแผนที่'});
             if(distanceKm > MAX_DIST_KM) return Swal.fire({icon: 'error', text: `อยู่นอกพื้นที่จัดส่ง (จำกัด ${MAX_DIST_KM} กม.)`});
 
-            // คำนวณยอดเงิน
             const foodTotal = cart.reduce((s, i) => s + i.finalPrice, 0);
             let isFree = (distanceKm <= 1.5 && foodTotal >= 100) || (foodTotal >= 200);
             deliveryFee = isFree ? 0 : 40;
             const grandTotal = foodTotal + deliveryFee;
 
-            // แสดงผลสรุปยอด
             document.getElementById('summary-food-total').innerText = `${foodTotal} บาท`;
             const feeDisplay = document.getElementById('summary-delivery-fee');
             const feeDetail = document.getElementById('delivery-details');
@@ -764,16 +771,15 @@
 
             document.getElementById('summary-grand-total').innerText = `${grandTotal} บาท`;
             
-            // เตรียม QR Code
+            // ✅ แก้เลขพร้อมเพย์ให้ตรงกับที่แสดงผล
             const promptpayNo = "0622467746"; 
             document.getElementById('qr-image').src = `https://promptpay.io/${promptpayNo}/${grandTotal}`;
             document.getElementById('qr-amount-display').innerText = `${grandTotal} บาท`;
             document.getElementById('cod-amount-display').innerText = `${grandTotal}`;
             
-            // 🔥 เพิ่มบรรทัดนี้: เรียกใช้ฟังก์ชันตรวจสอบสิทธิ์ COD ก่อนไปหน้าชำระเงิน
+            // 🔥 เรียกฟังก์ชันเช็คสิทธิ์ COD ตรงนี้!
             checkCODEligibility();
 
-            // ไปหน้าชำระเงิน
             showPage('payment');
         }
 
@@ -811,7 +817,7 @@
             const orderData = {
                 name: name, phone: phone, address: address, landmark: landmark, location: `${userLat},${userLng}`,
                 items: cart.map((i, index) => {
-                    let detail = `${index + 1}. ${i.name} (x${i.qty})`; 
+                    let detail = `${index + 1}. ${i.name} (x${i.qty})`; // 🔥 เพิ่มจำนวนในรายการที่ส่งไป Line
                     if (i.selectedOptions && i.selectedOptions.length > 0) {
                         detail += i.selectedOptions.map(opt => `\n   └ 🔸 ${opt}`).join(''); 
                     }
@@ -825,9 +831,13 @@
                 method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderData)
             }).then(() => {
                 
+                // ✅ 1. บันทึกประวัติลงเครื่องลูกค้า (History)
                 saveOrderToHistory(orderData);
+                
+                // ✅ 2. อัปเดตปุ่ม Tracking ทันที
                 updateTrackingButtonState();
 
+                // ✅ 3. แสดง Popup สำเร็จ และปุ่มไปดูสถานะ
                 Swal.fire({
                     icon: 'success',
                     title: 'สั่งซื้อสำเร็จ!',
@@ -838,11 +848,11 @@
                     cancelButtonText: 'สั่งเพิ่ม',
                     cancelButtonColor: '#6b7280'
                 }).then((result) => {
-                    cart = []; updateCartUI(); 
+                    cart = []; updateCartUI(); // ล้างตะกร้า
                     if (result.isConfirmed) {
-                        openTrackingPage(); 
+                        openTrackingPage(); // ไปหน้าติดตาม
                     } else {
-                        showPage('menu'); 
+                        showPage('menu'); // กลับไปสั่งต่อ
                     }
                 });
 
@@ -902,32 +912,44 @@
             }
         }
 
+        // 🔥 ปุ่มกดจาก Header (แค่เปลี่ยนหน้า ไม่ไปยุ่งกับ Logic โหลดข้อมูล)
         function handleTrackingClick() {
             showPage('tracking'); 
         }
         
+        // 🔥 ฟังก์ชันใหม่: สำหรับเปิดหน้า Tracking โดยเฉพาะ
         function openTrackingPage() {
             showPage('tracking');
         }
 
+        // ----------------------------------------------------
+        // 🔥🔥🔥 แก้ไขส่วน Tracking (ลูปหาย + ช่องค้นหามาแล้ว) 🔥🔥🔥
+        // ----------------------------------------------------
+
+        // ฟังก์ชันนี้จะถูกเรียกโดย showPage('tracking') เท่านั้น
         function initTrackingPage() {
             const history = JSON.parse(localStorage.getItem('order_history') || "[]");
             const savedPhone = localStorage.getItem('cust_phone');
             
+            // ✅ บังคับโชว์กล่องค้นหาเสมอ (Remove Class hidden)
             document.getElementById('tracking-search-box').classList.remove('hidden');
 
             if (savedPhone) {
+                // กรณีมีเบอร์เดิม: เติมเบอร์ให้ และกดค้นหาให้อัตโนมัติ
                 document.getElementById('track-phone').value = savedPhone;
-                searchOrder(false); 
+                searchOrder(false); // ค้นหาครั้งแรก (โชว์ Loading)
                 
+                // เริ่มระบบ Auto Refresh
                 if (trackingInterval) clearInterval(trackingInterval);
                 trackingInterval = setInterval(() => {
-                    searchOrder(true); 
+                    searchOrder(true); // ค้นหาแบบเงียบ (ไม่โชว์ Loading)
                 }, 10000); 
                 
             } else if (history.length > 0) {
+                // กรณีไม่มีเบอร์ แต่มีประวัติในเครื่อง: โชว์ประวัติเก่า
                 renderHistory(history);
             } else {
+                // กรณีใหม่เอี่ยม: เคลียร์หน้าจอรอค้นหา
                 document.getElementById('tracking-result').innerHTML = `
                     <div class="text-center text-gray-300 py-10">
                         <i class="fa-solid fa-magnifying-glass text-4xl mb-2"></i>
@@ -936,6 +958,7 @@
             }
         }
 
+        // ฟังก์ชันค้นหาออเดอร์ (Search)
         function searchOrder(isSilent = false) { 
             const phone = document.getElementById('track-phone').value.trim();
             if(phone.length < 9) {
@@ -944,6 +967,8 @@
             }
 
             const resultDiv = document.getElementById('tracking-result');
+            
+            // ถ้าไม่ใช่ Silent Mode ให้ขึ้น Loading
             if(!isSilent) {
                 resultDiv.innerHTML = `
                 <div class="text-center py-10 animate-pulse">
@@ -952,14 +977,20 @@
                 </div>`;
             }
 
+            // ยิงไปที่ Google Apps Script
             fetch(`${WEB_APP_URL}?action=get_customer_orders&phone=${encodeURIComponent(phone)}`) 
             .then(res => res.json())
             .then(data => {
                 if(data.orders && data.orders.length > 0) {
+                    // ✅ เจอข้อมูล: แสดงผล
                     renderHistoryFromAdminData(data.orders);
+                    
+                    // บันทึกเบอร์ล่าสุดไว้ด้วย (เผื่อ User พิมพ์ใหม่)
                     localStorage.setItem('cust_phone', phone);
                 } else {
+                    // ❌ ไม่เจอข้อมูลใน Server
                     if(!isSilent) {
+                        // ลองดูในเครื่องตัวเอง (Backup)
                         checkLocalStorageBackup();
                     }
                 }
@@ -1057,7 +1088,8 @@
             if(status.includes("ยกเลิก")) return '<i class="fa-solid fa-circle-xmark"></i>';
             return '<i class="fa-regular fa-clock"></i>';
         }
-    // --- 9. Payment Helpers (Copy, Download, Check COD) ---
+
+        // --- 9. Payment Helpers (Copy, Download, Check COD) ---
 
         // ฟังก์ชันคัดลอกเลขบัญชี
         function copyToClipboard(text) {
@@ -1116,7 +1148,8 @@
                 codWarning.classList.remove('hidden'); // โชว์ข้อความเตือน
             }
         }
-    // --- 10. Shop Status UI ---
+
+        // --- 10. Shop Status UI ---
         function updateShopStatusUI() {
             const badge = document.getElementById('shop-status-badge');
             
@@ -1132,12 +1165,6 @@
                 badge.innerText = "ปิดร้าน";
             }
         }
-
-        // 🔥 อย่าลืมเรียกใช้ฟังก์ชันนี้ตอนโหลดหน้าเว็บ
-        document.addEventListener("DOMContentLoaded", () => {
-            // ... (โค้ดเดิม) ...
-            updateShopStatusUI(); // เรียกใช้ตรงนี้
-        });
     </script>
 </body>
 </html>
