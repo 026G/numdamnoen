@@ -61,11 +61,12 @@
                             <a href="tel:0622467746" class="hover:text-green-700 hover:underline">062-246-7746</a>
                         </div>
                     </div>
+                    
                     <div class="mt-2">
-                        <button onclick="openTrackingPage()" class="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md hover:bg-gray-200 transition border border-gray-200">
-                            <i class="fa-solid fa-clock-rotate-left mr-1"></i> ประวัติการสั่งซื้อ
-                        </button>
+                        <button id="header-tracking-btn" onclick="handleTrackingClick()" class="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md hover:bg-gray-200 transition border border-gray-200 flex items-center gap-1">
+                            </button>
                     </div>
+
                 </div>
             </div>
             
@@ -81,15 +82,12 @@
                     <div class="snap-center shrink-0 w-full h-40 relative rounded-2xl overflow-hidden shadow-md">
                         <img src="https://lh3.googleusercontent.com/d/1LHnoa4svvYWmUIiNUSd5uzK5OWeH00sm" class="w-full h-full object-cover">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                        <div class="absolute bottom-3 left-4 text-white"></div>
                     </div>
             
                     <div class="snap-center shrink-0 w-full h-40 relative rounded-2xl overflow-hidden shadow-md">
                         <img src="https://lh3.googleusercontent.com/d/1ETSCcbns33VmVDTd2bq46Re5WG9pwTZA" class="w-full h-full object-cover">
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                        <div class="absolute bottom-3 left-4 text-white"></div>
                     </div>
-            
                 </div>
             </div>
             <div class="px-5 py-4 bg-gray-50 border-b border-gray-100 flex justify-between items-end">
@@ -215,14 +213,24 @@
         <section id="page-tracking" class="page-section bg-gray-50 min-h-screen">
             <div class="bg-white px-5 py-4 shadow-sm mb-4">
                 <h2 class="text-xl font-bold text-gray-800">ติดตามสถานะ 🚚</h2>
-                <p class="text-gray-500 text-xs mt-1">ประวัติการสั่งซื้อล่าสุดของคุณ</p>
+                <p class="text-gray-500 text-xs mt-1">ตรวจสอบสถานะการจัดส่งของคุณ</p>
             </div>
             
             <div class="px-5">
+                <div id="tracking-search-box" class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 mb-6">
+                    <label class="block text-gray-700 font-bold mb-2">เบอร์โทรศัพท์</label>
+                    <div class="flex gap-2">
+                        <input type="tel" id="track-phone" placeholder="เช่น 0812345678" class="flex-1 bg-gray-50 border border-gray-200 text-gray-800 text-lg rounded-xl focus:ring-green-500 focus:border-green-500 block w-full p-3 transition" maxlength="10">
+                        <button onclick="searchOrder()" class="bg-green-600 text-white rounded-xl px-6 font-bold hover:bg-green-700 transition shadow-lg">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </button>
+                    </div>
+                </div>
+
                 <div id="tracking-result" class="space-y-4 pb-24">
                      <div class="text-center text-gray-300 py-10">
                         <i class="fa-solid fa-box-open text-4xl mb-2"></i>
-                        <p>ยังไม่มีประวัติการสั่งซื้อ</p>
+                        <p>กรุณากรอกเบอร์โทรเพื่อค้นหา</p>
                     </div>
                 </div>
             </div>
@@ -307,13 +315,15 @@
             renderMenu(activeTab);
             initMap();
             updateFooterState('menu');
-            // เริ่มระบบ Auto Slide
             startBannerAutoSlide();
             
             // 🧠 Remember Me: โหลดข้อมูลลูกค้าจาก LocalStorage
             if(localStorage.getItem('cust_name')) document.getElementById('cust-name').value = localStorage.getItem('cust_name');
             if(localStorage.getItem('cust_phone')) document.getElementById('cust-phone').value = localStorage.getItem('cust_phone');
             if(localStorage.getItem('cust_address')) document.getElementById('cust-address').value = localStorage.getItem('cust_address');
+
+            // ✅ อัปเดตปุ่ม Tracking ทันทีที่โหลด
+            updateTrackingButtonState();
         });
 
         // --- 3. Navigation ---
@@ -688,8 +698,11 @@
                 
                 // ✅ 1. บันทึกประวัติลงเครื่องลูกค้า (History)
                 saveOrderToHistory(orderData);
+                
+                // ✅ 2. อัปเดตปุ่ม Tracking ทันที
+                updateTrackingButtonState();
 
-                // ✅ 2. แสดง Popup สำเร็จ และปุ่มไปดูสถานะ
+                // ✅ 3. แสดง Popup สำเร็จ และปุ่มไปดูสถานะ
                 Swal.fire({
                     icon: 'success',
                     title: 'สั่งซื้อสำเร็จ!',
@@ -749,19 +762,51 @@
             localStorage.setItem('order_history', JSON.stringify(history));
         }
 
+        // ✅ ฟังก์ชันอัปเดตปุ่ม Tracking (ตามที่ขอ)
+        function updateTrackingButtonState() {
+            const history = JSON.parse(localStorage.getItem('order_history') || "[]");
+            const btn = document.getElementById('header-tracking-btn');
+            
+            if (history.length > 0) {
+                // ถ้ามีประวัติ -> โชว์ "ประวัติการสั่งซื้อ"
+                btn.innerHTML = '<i class="fa-solid fa-clock-rotate-left mr-1"></i> ประวัติการสั่งซื้อ';
+            } else {
+                // ถ้าไม่มี -> โชว์ "ติดตามสถานะ"
+                btn.innerHTML = '<i class="fa-solid fa-truck-fast mr-1"></i> ติดตามสถานะ';
+            }
+        }
+
         function openTrackingPage() {
             showPage('tracking');
-            renderHistory();
+            // เช็คอีกทีว่ามีประวัติไหมเพื่อตัดสินใจว่าจะโชว์อะไร
+            handleTrackingClick(); 
+        }
+
+        // ✅ ฟังก์ชันกดปุ่ม Tracking
+        function handleTrackingClick() {
+            const history = JSON.parse(localStorage.getItem('order_history') || "[]");
+            showPage('tracking');
+
+            if (history.length > 0) {
+                // ถ้ามีประวัติ -> โชว์รายการ
+                document.getElementById('tracking-search-box').classList.add('hidden'); // ซ่อนกล่องค้นหา
+                renderHistory();
+            } else {
+                // ถ้าไม่มี -> โชว์กล่องค้นหา และเคลียร์ลิสต์
+                document.getElementById('tracking-search-box').classList.remove('hidden');
+                document.getElementById('tracking-result').innerHTML = '<div class="text-center text-gray-300 py-10"><i class="fa-solid fa-magnifying-glass text-4xl mb-2"></i><p>กรุณากรอกเบอร์โทรเพื่อค้นหา</p></div>';
+                
+                // ดึงเบอร์จาก LocalStorage มาใส่ให้ (ถ้ามี)
+                const savedPhone = localStorage.getItem('cust_phone');
+                if(savedPhone) document.getElementById('track-phone').value = savedPhone;
+            }
         }
 
         function renderHistory() {
             const history = JSON.parse(localStorage.getItem('order_history') || "[]");
             const container = document.getElementById('tracking-result');
             
-            if(history.length === 0) {
-                container.innerHTML = '<div class="text-center text-gray-300 py-10"><i class="fa-solid fa-receipt text-4xl mb-2"></i><p>ยังไม่มีประวัติการสั่งซื้อ</p></div>';
-                return;
-            }
+            if(history.length === 0) return;
 
             container.innerHTML = history.map(order => `
                 <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-2">
@@ -780,6 +825,27 @@
                     </div>
                 </div>
             `).join('');
+        }
+        
+        // ฟังก์ชันค้นหา (สำหรับคนไม่มีประวัติในเครื่อง)
+        function searchOrder() {
+            const phone = document.getElementById('track-phone').value.trim();
+            if(phone.length < 9) return Swal.fire({icon:'warning', title:'กรุณากรอกเบอร์โทรให้ถูกต้อง'});
+
+            const resultDiv = document.getElementById('tracking-result');
+            resultDiv.innerHTML = '<div class="text-center py-10"><i class="fa-solid fa-circle-notch fa-spin text-green-600 text-3xl"></i><p class="text-gray-500 mt-2">กำลังค้นหา...</p></div>';
+
+            fetch(WEB_APP_URL, {
+                method: 'POST', mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'track_order', phone: phone })
+            }).then(() => {
+                 // เนื่องจากข้อจำกัดของ no-cors เราจะทำ Mockup แจ้งเตือนให้ลูกค้าทราบ
+                 // (ในระบบจริงต้องใช้ LIFF หรือ Web App แบบ Exec เพื่อ return value)
+                 setTimeout(() => {
+                    resultDiv.innerHTML = '<div class="text-center text-gray-400 py-10"><p>ไม่พบข้อมูล หรือระบบกำลังประมวลผล<br>โปรดลองใหม่อีกครั้ง</p></div>';
+                 }, 1500);
+            });
         }
     </script>
 </body>
