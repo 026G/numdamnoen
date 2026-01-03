@@ -329,21 +329,19 @@
 
         // ข้อมูลสินค้า
         const menuDB = [
-            // Recommend
-            { id: 1, category: "recommend", name: "[ขวดใหญ่] น้ำมะพร้าวสด100% (1000 ml.)", desc: "น้ำมะพร้าวสดแท้ 100% ไม่ผสม ขวดใหญ่", price: 100, originalPrice: 120, img: "https://lh3.googleusercontent.com/d/1Yz3UIKQHOZcvIrR3ItjCrU7hNcBiVInF",badge: "ขายดี #1", stock: true },
-            { id: 2, category: "recommend", name: "(ขวดใหญ่)น้ำมะพร้าวสด 1000ml", desc: "น้ำมะพร้าวสดแท้ 100% ไม่ผสม ขวดใหญ่", price: 100, originalPrice: 75, img: "https://lh3.googleusercontent.com/d/19ro_rUeZkoPNdHJhgccYUDkfhC7G2E8U", badge: "ขายดี", stock: true, options: [{ type: "radio", name: "ระดับความหวาน", choices: [{ label: "หวานธรรมชาติ", price: 0 }, { label: "หวานน้อย", price: 0 }, { label: "หวานปกติ", price: 0 }] }] },
-            { id: 3, category: "recommend", name: "มะพร้าวปั่นนมสด", desc: "สูตรนมสด หอมมัน นัวสุดๆ", price: 119, originalPrice: 158, img: "https://images.unsplash.com/photo-1595981267035-7b04ca84a82d?w=400", stock: true, options: [{ type: "checkbox", name: "ท็อปปิ้ง (เลือกได้ 2)", max: 2, choices: [{ label: "ลอดช่องวัดเจษ", price: 15 }, { label: "ทับทิมกรอบ", price: 15 }, { label: "เนื้อมะพร้าวอ่อน", price: 10 }] }] },
-            { id: 4, category: "recommend", name: "น้ำมะพร้าวสด (1 ลิตร)", desc: "น้ำมะพร้าวสดแท้ 100% แช่เย็นเจี๊ยบ", price: 293, originalPrice: 390, img: "https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?w=400", stock: true },
-            { id: 21, category: "recommend", name: "น้ำมะพร้าวสด (250 ml.)", desc: "น้ำมะพร้าวสดแท้ 100% ไม่ผสม ขวดเล็ก", price: 30,  img: "https://lh3.googleusercontent.com/d/10oBcQVs5OXiWjkDeWCUW_4YAMY-X2DWa", stock: true },
-            // --- มะพร้าวปั่น (Smoothie) ---
-            { id: 301, category: "smoothie", name: "มะพร้าวปั่นนมสด", desc: "สูตรนมสด หอมมัน นัวสุดๆ", price: 119, img: "https://images.unsplash.com/photo-1595981267035-7b04ca84a82d?w=400", stock: true, options: [{ type: "checkbox", name: "ท็อปปิ้ง (เลือกได้ 2)", max: 2, choices: [{ label: "ลอดช่องวัดเจษ", price: 15 }, { label: "ทับทิมกรอบ", price: 15 }, { label: "เนื้อมะพร้าวอ่อน", price: 10 }] }] },
-            { id: 302, category: "smoothie", name: "มะพร้าวปั่น (ไม่ใส่นม)", desc: "หวานเย็นชื่นใจ แบบไม่ใส่นม", price: 99, img: "https://images.unsplash.com/photo-1546173159-315724a31696?w=400", stock: true },
-            
-            // --- น้ำมะพร้าว (Juice) ---
-            { id: 401, category: "juice", name: "[ขวดใหญ่] น้ำมะพร้าวสด (1000 ml.)", desc: "น้ำมะพร้าวสดแท้ 100% ไม่ผสม ขวดใหญ่", price: 100, originalPrice: 120, img: "https://lh3.googleusercontent.com/d/1Yz3UIKQHOZcvIrR3ItjCrU7hNcBiVInF", stock: true },
-            { id: 402, category: "juice", name: "น้ำมะพร้าวสด (ขวดเล็ก 250 ml.)", desc: "น้ำมะพร้าวสดแท้ 100% ไม่ผสม ขวดเล็ก", price: 30,  img: "https://lh3.googleusercontent.com/d/10oBcQVs5OXiWjkDeWCUW_4YAMY-X2DWa", stock: true },
-            { id: 403, category: "juice", name: "น้ำมะพร้าวสด (1 ลิตร)", desc: "น้ำมะพร้าวสดแท้ 100% แช่เย็นเจี๊ยบ", price: 293, originalPrice: 390, img: "https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?w=400", stock: true },
-            // Promotion
+            // --- รายการยอดฮิต (Recommend) ---
+            { id: 1, category: "recommend", subCategory: "🔥 รายการยอดฮิต", name: "[ขวดใหญ่] น้ำมะพร้าวสด100% (1000 ml.)", desc: "น้ำมะพร้าวสดแท้ 100% ไม่ผสม ขวดใหญ่", price: 100, originalPrice: 120, img: "https://lh3.googleusercontent.com/d/1Yz3UIKQHOZcvIrR3ItjCrU7hNcBiVInF",badge: "ขายดี #1", stock: true },
+            { id: 2, category: "recommend", subCategory: "🔥 รายการยอดฮิต", name: "(ขวดใหญ่)น้ำมะพร้าวสด 1000ml", desc: "น้ำมะพร้าวสดแท้ 100% ไม่ผสม ขวดใหญ่", price: 100, originalPrice: 75, img: "https://lh3.googleusercontent.com/d/19ro_rUeZkoPNdHJhgccYUDkfhC7G2E8U", badge: "ขายดี", stock: true, options: [{ type: "radio", name: "ระดับความหวาน", choices: [{ label: "หวานธรรมชาติ", price: 0 }, { label: "หวานน้อย", price: 0 }, { label: "หวานปกติ", price: 0 }] }] },
+
+            // --- มะพร้าวปั่น ---
+            { id: 301, category: "recommend", subCategory: "🥥 เมนูมะพร้าวปั่น", name: "มะพร้าวปั่นนมสด", desc: "สูตรนมสด หอมมัน นัวสุดๆ", price: 119, img: "https://images.unsplash.com/photo-1595981267035-7b04ca84a82d?w=400", stock: true, options: [{ type: "checkbox", name: "ท็อปปิ้ง (เลือกได้ 2)", max: 2, choices: [{ label: "ลอดช่องวัดเจษ", price: 15 }, { label: "ทับทิมกรอบ", price: 15 }, { label: "เนื้อมะพร้าวอ่อน", price: 10 }] }] },
+            { id: 302, category: "recommend", subCategory: "🥥 เมนูมะพร้าวปั่น", name: "มะพร้าวปั่น (ไม่ใส่นม)", desc: "หวานเย็นชื่นใจ แบบไม่ใส่นม", price: 99, img: "https://images.unsplash.com/photo-1546173159-315724a31696?w=400", stock: true },
+
+            // --- น้ำมะพร้าวสด ---
+            { id: 401, category: "recommend", subCategory: "🌴 น้ำมะพร้าวสด", name: "[ขวดใหญ่] น้ำมะพร้าวสด (1000 ml.)", desc: "น้ำมะพร้าวสดแท้ 100% ไม่ผสม ขวดใหญ่", price: 100, originalPrice: 120, img: "https://lh3.googleusercontent.com/d/1Yz3UIKQHOZcvIrR3ItjCrU7hNcBiVInF", stock: true },
+            { id: 402, category: "recommend", subCategory: "🌴 น้ำมะพร้าวสด", name: "น้ำมะพร้าวสด (ขวดเล็ก 250 ml.)", desc: "น้ำมะพร้าวสดแท้ 100% ไม่ผสม ขวดเล็ก", price: 30,  img: "https://lh3.googleusercontent.com/d/10oBcQVs5OXiWjkDeWCUW_4YAMY-X2DWa", stock: true },
+
+            // --- โปรโมชั่น (Promotion) ---
             { id: 91, category: "promotion", name: "[Set คุ้ม] 4ขวดเล็ก น้ำมะพร้าวสด100%", desc: "น้ำมะพร้าวสด 4 ขวดเล็ก 250ml.x4 ราคาพิเศษ", price: 100, originalPrice: 120, badge: "ลดราคา 🔥", stock: true, img: "https://lh3.googleusercontent.com/d/11Dv4nyAER160iSp-Luymgp-p4LI39h3Y", stock: true},
             { id: 92, category: "promotion", name: "[Set จุใจ] 4ขวดใหญ่ น้ำมะพร้าวสด100%", desc: "น้ำมะพร้าวสด 4 ขวดใหญ่ 1000ml.x4 ราคาพิเศษ", price: 360, originalPrice: 400, badge: "ลดราคา 🔥", stock: true, img: "https://lh3.googleusercontent.com/d/1_hTuj-qkP1_54Vvoej67MkiH6QRBPlfV", stock: true},
             { id: 5, category: "promotion", name: "Set คู่หูดูโอ้ (2 แก้ว)", desc: "มะพร้าวปั่นนมสด 2 แก้ว ราคาพิเศษ", price: 220, originalPrice: 238, badge: "ลดราคา 🔥", stock: true, img: "https://images.unsplash.com/photo-1628519592415-3174241e3d3f?w=400", options: [{ type: "radio", name: "ความหวาน (แก้ว 1)", choices: [{ label: "ปกติ", price: 0 }, { label: "น้อย", price: 0 }] }, { type: "radio", name: "ความหวาน (แก้ว 2)", choices: [{ label: "ปกติ", price: 0 }, { label: "น้อย", price: 0 }] }] },
@@ -416,8 +414,22 @@
 
         function switchTab(cat) {
             activeTab = cat;
-            document.getElementById('tab-recommend').className = cat === 'recommend' ? 'flex-1 text-center py-3 text-sm font-bold cursor-pointer transition-all tab-active relative' : 'flex-1 text-center py-3 text-sm font-bold cursor-pointer transition-all tab-inactive relative text-gray-400';
-            document.getElementById('tab-promotion').className = cat === 'promotion' ? 'flex-1 text-center py-3 text-sm font-bold cursor-pointer transition-all tab-active relative' : 'flex-1 text-center py-3 text-sm font-bold cursor-pointer transition-all tab-inactive relative text-gray-400';
+            
+            // เหลือแค่ 2 Tab
+            const tabs = ['recommend', 'promotion'];
+            
+            tabs.forEach(tabName => {
+                const element = document.getElementById(`tab-${tabName}`);
+                if (cat === tabName) {
+                    element.className = 'flex-1 text-center py-3 text-sm font-bold cursor-pointer transition-all border-b-2 border-green-600 text-green-700 relative';
+                } else {
+                    element.className = 'flex-1 text-center py-3 text-sm font-medium cursor-pointer transition-all border-b-2 border-transparent text-gray-400 hover:text-gray-600';
+                }
+            });
+
+            // ซ่อนหัวข้อใหญ่ด้านบน (เพราะเราจะไปโชว์หัวข้อย่อยในรายการแทน)
+            document.getElementById('menu-heading').parentElement.style.display = 'none';
+
             renderMenu(cat);
         }
 
@@ -459,30 +471,63 @@
             const list = document.getElementById('menu-list');
             const items = menuDB.filter(i => i.category === cat);
             
-            list.innerHTML = items.map(item => {
+            // ถ้าเป็นหน้า Promotion ไม่ต้องจัดหมวดหมู่ (แสดงเรียงกันเลย)
+            if (cat === 'promotion') {
+                list.innerHTML = generateItemsHTML(items);
+                return;
+            }
+
+            // ถ้าเป็นหน้า Recommend (ดูเมนู) ให้จัดกลุ่มตาม subCategory
+            // 1. ดึงชื่อหมวดหมู่ทั้งหมดออกมา (ไม่ซ้ำ)
+            const subCats = [...new Set(items.map(i => i.subCategory || 'อื่นๆ'))];
+            
+            let finalHTML = '';
+            
+            subCats.forEach(subCatName => {
+                // กรองสินค้าเฉพาะในหมวดนี้
+                const subItems = items.filter(i => (i.subCategory || 'อื่นๆ') === subCatName);
+                
+                if (subItems.length > 0) {
+                    // สร้างหัวข้อหมวดหมู่ (Sticky Header)
+                    finalHTML += `
+                        <div class="sticky top-0 bg-gray-50/95 backdrop-blur px-5 py-3 border-b border-gray-100 z-10">
+                            <h3 class="font-bold text-gray-700 text-base">${subCatName}</h3>
+                        </div>
+                    `;
+                    // สร้างรายการสินค้า
+                    finalHTML += generateItemsHTML(subItems);
+                }
+            });
+
+            list.innerHTML = finalHTML;
+        }
+
+        // ฟังก์ชันย่อยสำหรับสร้าง HTML สินค้า (แยกออกมาเพื่อความสะอาดของโค้ด)
+        function generateItemsHTML(items) {
+            return items.map(item => {
                 const isSoldOut = !item.stock;
                 const priceColorClass = item.originalPrice ? 'text-red-600' : 'text-green-600';
 
                 return `
                 <div class="bg-white p-4 border-b border-gray-100 flex gap-4 relative hover:bg-gray-50 transition active:bg-gray-100 cursor-pointer ${isSoldOut ? 'opacity-60 grayscale pointer-events-none' : ''}" onclick="${!isSoldOut ? `openModal(${item.id})` : ''}">
-                    <div class="relative shrink-0 w-28 h-28">
-                        <img src="${item.img}" class="w-full h-full object-cover rounded-xl shadow-sm">
-                        ${item.badge && !isSoldOut ? `<span class="absolute top-0 left-0 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-tl-xl rounded-br-lg shadow-sm">${item.badge}</span>` : ''}
-                        ${isSoldOut ? '<span class="absolute inset-0 flex items-center justify-center bg-black/40 text-white font-bold text-lg rounded-xl z-10">สินค้าหมด</span>' : ''}
+                    <div class="relative shrink-0 w-24 h-24"> <img src="${item.img}" class="w-full h-full object-cover rounded-xl shadow-sm">
+                        ${item.badge && !isSoldOut ? `<span class="absolute top-0 left-0 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-tl-xl rounded-br-lg shadow-sm">${item.badge}</span>` : ''}
+                        ${isSoldOut ? '<span class="absolute inset-0 flex items-center justify-center bg-black/40 text-white font-bold text-sm rounded-xl z-10">หมด</span>' : ''}
                     </div>
-                    <div class="flex-1 flex flex-col justify-between py-1">
+                    
+                    <div class="flex-1 flex flex-col justify-between py-0.5">
                         <div>
-                            <h3 class="font-bold text-gray-800 text-base leading-tight mb-1">${item.name}</h3>
-                            <p class="text-xs text-gray-500 line-clamp-2 leading-relaxed">${item.desc || 'อร่อย สดชื่น ต้องลอง!'}</p>
+                            <h3 class="font-bold text-gray-800 text-sm leading-tight mb-1">${item.name}</h3>
+                            <p class="text-[10px] text-gray-500 line-clamp-2 leading-relaxed">${item.desc || ''}</p>
                         </div>
                         <div class="flex items-end justify-between mt-2">
                             <div class="flex flex-col">
-                                ${item.originalPrice ? `<span class="text-gray-300 text-xs line-through">฿${item.originalPrice}</span>` : ''}
-                                <span class="${priceColorClass} font-bold text-lg">฿${item.price}</span>
+                                ${item.originalPrice ? `<span class="text-gray-300 text-[10px] line-through">฿${item.originalPrice}</span>` : ''}
+                                <span class="${priceColorClass} font-bold text-base">฿${item.price}</span>
                             </div>
                             ${!isSoldOut ? 
-                            `<button class="bg-green-100 text-green-700 w-9 h-9 rounded-full flex items-center justify-center hover:bg-green-600 hover:text-white transition shadow-sm border border-green-200">
-                                <i class="fa-solid fa-plus text-sm"></i>
+                            `<button class="bg-green-50 text-green-600 w-7 h-7 rounded-full flex items-center justify-center hover:bg-green-600 hover:text-white transition shadow-sm border border-green-200">
+                                <i class="fa-solid fa-plus text-xs"></i>
                             </button>` : ''}
                         </div>
                     </div>
