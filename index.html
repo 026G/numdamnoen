@@ -470,12 +470,12 @@
             else if(pageId === 'tracking') footer.classList.add('hidden');
         }
 
-        // --- 4. Menu & Cart (แก้ไข renderMenu) ---
+        // --- 4. Menu & Cart (แก้ไข renderMenu และ createCard) ---
         function renderMenu(cat) {
             const list = document.getElementById('menu-list');
             const items = menuDB.filter(i => i.category === cat);
             
-            // ฟังก์ชันย่อยสำหรับสร้าง HTML การ์ดสินค้า
+            // 🔥 ฟังก์ชันสร้าง HTML การ์ดสินค้า (ปรับขนาดตัวหนังสือให้ใหญ่ขึ้นที่นี่)
             const createCard = (item) => {
                 const isSoldOut = !item.stock;
                 const priceColorClass = item.originalPrice ? 'text-red-600' : 'text-green-600';
@@ -489,15 +489,15 @@
                     </div>
                     <div class="flex-1 flex flex-col justify-between py-0.5">
                         <div>
-                            <h3 class="font-bold text-gray-800 text-sm leading-tight mb-1">${item.name}</h3>
-                            <p class="text-[10px] text-gray-500 line-clamp-2 leading-relaxed">${item.desc || ''}</p>
+                            <h3 class="font-bold text-gray-800 text-base leading-tight mb-1">${item.name}</h3>
+                            <p class="text-xs text-gray-500 line-clamp-2 leading-relaxed">${item.desc || ''}</p>
                         </div>
                         <div class="flex items-end justify-between mt-2">
                             <div class="flex flex-col">
-                                ${item.originalPrice ? `<span class="text-gray-300 text-[10px] line-through">฿${item.originalPrice}</span>` : ''}
-                                <span class="${priceColorClass} font-bold text-base">฿${item.price}</span>
+                                ${item.originalPrice ? `<span class="text-gray-300 text-xs line-through">฿${item.originalPrice}</span>` : ''}
+                                <span class="${priceColorClass} font-bold text-lg">฿${item.price}</span>
                             </div>
-                            ${!isSoldOut ? `<button class="bg-green-50 text-green-600 w-7 h-7 rounded-full flex items-center justify-center hover:bg-green-600 hover:text-white transition shadow-sm border border-green-200"><i class="fa-solid fa-plus text-xs"></i></button>` : ''}
+                            ${!isSoldOut ? `<button class="bg-green-50 text-green-600 w-8 h-8 rounded-full flex items-center justify-center hover:bg-green-600 hover:text-white transition shadow-sm border border-green-200"><i class="fa-solid fa-plus text-sm"></i></button>` : ''}
                         </div>
                     </div>
                 </div>`;
@@ -522,7 +522,7 @@
                 if (subItems.length > 0) {
                     finalHTML += `
                         <div class="sticky top-0 bg-gray-50/95 backdrop-blur px-5 py-3 border-b border-gray-100 z-10">
-                            <h3 class="font-bold text-gray-700 text-base"> ${subCatName}</h3>
+                            <h3 class="font-bold text-gray-800 text-lg">${subCatName}</h3>
                         </div>
                     `;
                     finalHTML += subItems.map(createCard).join('');
@@ -743,15 +743,19 @@
             const name = document.getElementById('cust-name').value;
             const phone = document.getElementById('cust-phone').value;
             const address = document.getElementById('cust-address').value;
+            
+            // ตรวจสอบข้อมูลเบื้องต้น
             if(!name || !phone || !address) return Swal.fire({icon: 'warning', text: 'กรุณากรอกข้อมูลที่อยู่ให้ครบถ้วน'});
             if(!userLat) return Swal.fire({icon: 'warning', text: 'กรุณาปักหมุดจุดส่งบนแผนที่'});
             if(distanceKm > MAX_DIST_KM) return Swal.fire({icon: 'error', text: `อยู่นอกพื้นที่จัดส่ง (จำกัด ${MAX_DIST_KM} กม.)`});
 
+            // คำนวณยอดเงิน
             const foodTotal = cart.reduce((s, i) => s + i.finalPrice, 0);
             let isFree = (distanceKm <= 1.5 && foodTotal >= 100) || (foodTotal >= 200);
             deliveryFee = isFree ? 0 : 40;
             const grandTotal = foodTotal + deliveryFee;
 
+            // แสดงผลสรุปยอด
             document.getElementById('summary-food-total').innerText = `${foodTotal} บาท`;
             const feeDisplay = document.getElementById('summary-delivery-fee');
             const feeDetail = document.getElementById('delivery-details');
@@ -771,7 +775,7 @@
 
             document.getElementById('summary-grand-total').innerText = `${grandTotal} บาท`;
             
-            // ✅ แก้เลขพร้อมเพย์ให้ตรงกับที่แสดงผล
+            // เตรียม QR Code
             const promptpayNo = "0622467746"; 
             document.getElementById('qr-image').src = `https://promptpay.io/${promptpayNo}/${grandTotal}`;
             document.getElementById('qr-amount-display').innerText = `${grandTotal} บาท`;
@@ -780,6 +784,7 @@
             // 🔥 เรียกฟังก์ชันเช็คสิทธิ์ COD ตรงนี้!
             checkCODEligibility();
 
+            // ไปหน้าชำระเงิน
             showPage('payment');
         }
 
