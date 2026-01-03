@@ -39,47 +39,59 @@
 
     <div class="max-w-md mx-auto min-h-screen bg-white shadow-xl relative overflow-hidden sm:border-x sm:border-gray-100">
 
-        <header class="bg-white sticky top-0 z-30 shadow-sm/50 backdrop-blur-md bg-opacity-95">
-            <div class="px-5 py-4 flex items-center gap-3">
-                <button onclick="goBack()" class="w-10 h-10 rounded-full bg-gray-50 text-gray-600 flex items-center justify-center hover:bg-gray-100 transition shadow-sm shrink-0">
-                    <i class="fa-solid fa-arrow-left"></i>
+        <header class="bg-white sticky top-0 z-30 shadow-md backdrop-blur-md bg-opacity-98 transition-all duration-300">
+            <div class="px-5 pt-5 pb-4 flex items-start gap-4">
+                
+                <button onclick="goBack()" class="w-10 h-10 rounded-full bg-gray-50 text-gray-500 flex items-center justify-center hover:bg-green-50 hover:text-green-600 transition shadow-sm border border-gray-100 shrink-0 mt-1">
+                    <i class="fa-solid fa-arrow-left text-sm"></i>
                 </button>
                 
-                <div class="flex-1 min-w-0"> <div class="flex items-center gap-3 mb-1">
-                        <img src="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8" class="w-12 h-12 rounded-full shadow-sm border border-gray-100 object-cover bg-white">
+                <div class="flex-1 min-w-0"> 
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="relative">
+                            <img src="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8" class="w-14 h-14 rounded-full shadow-md border-2 border-white object-cover bg-white">
+                            <span class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></span>
+                        </div>
                         <div>
-                            <h1 class="font-bold text-lg text-gray-800 leading-tight">หนุ่มดำเนิน</h1>
-                            <h1 class="font-bold text-base text-green-600 leading-none">มะพร้าวปั่น 🌴</h1>
+                            <h1 class="font-bold text-xl text-gray-800 leading-tight">หนุ่มดำเนิน</h1>
+                            <div class="flex items-center gap-1.5">
+                                <h2 class="font-bold text-base text-green-600">มะพร้าวปั่น 🌴</h2>
+                                <span class="bg-green-100 text-green-700 text-[9px] px-1.5 py-0.5 rounded font-bold">เปิดร้าน</span>
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="flex items-center gap-1 text-xs text-gray-500 font-medium ml-1">
-                        <i class="fa-solid fa-location-dot text-green-500"></i>
-                        <span id="header-distance">กรุณาระบุตำแหน่งส่ง</span>
-                    </div>
-
-                    <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-gray-400 ml-1 mt-0.5">
-                        <div class="flex items-center gap-1">
-                            <i class="fa-regular fa-clock"></i>
-                            <span>09:00 - 20:00 น.</span>
+                    <div class="space-y-1 pl-1">
+                        <div class="flex items-center gap-2 text-xs text-gray-600">
+                            <div class="flex items-center gap-1 bg-gray-100 px-2 py-0.5 rounded-md">
+                                <i class="fa-solid fa-location-dot text-green-500"></i>
+                                <span id="header-distance" class="font-medium">ระบุพิกัดส่ง</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <i class="fa-solid fa-clock text-gray-400"></i>
+                                <span>09:00 - 20:00 น.</span>
+                            </div>
                         </div>
-                        <div class="flex items-center gap-1">
-                            <i class="fa-solid fa-phone"></i>
-                            <a href="tel:0622467746" class="hover:text-green-600 hover:underline">062-246-7746</a>
+
+                        <div class="flex items-center justify-between">
+                            <a href="tel:0622467746" class="text-xs text-gray-500 hover:text-green-600 transition flex items-center gap-1">
+                                <i class="fa-solid fa-phone-volume"></i> 062-246-7746
+                            </a>
+                            
+                            <button id="header-tracking-btn" onclick="handleTrackingClick()" class="text-[10px] bg-green-50 text-green-700 px-3 py-1 rounded-full hover:bg-green-100 transition border border-green-200 font-bold flex items-center gap-1 shadow-sm">
+                                </button>
                         </div>
                     </div>
-                    
-                    <div class="mt-2 ml-1">
-                        <button id="header-tracking-btn" onclick="handleTrackingClick()" class="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md hover:bg-gray-200 transition border border-gray-200 flex items-center gap-1">
-                        </button>
-                    </div>
-
                 </div>
             </div>
             
-            <div id="category-tabs" class="flex px-2 border-b border-gray-100">
-                <div onclick="switchTab('recommend')" id="tab-recommend" class="flex-1 text-center py-3 text-sm font-medium cursor-pointer transition-all tab-active">ดูเมนู</div>
-                <div onclick="switchTab('promotion')" id="tab-promotion" class="flex-1 text-center py-3 text-sm font-medium cursor-pointer transition-all tab-inactive">โปรโมชั่น</div>
+            <div id="category-tabs" class="flex px-4 border-b border-gray-100 gap-4">
+                <div onclick="switchTab('recommend')" id="tab-recommend" class="flex-1 text-center py-3 text-sm font-bold cursor-pointer transition-all border-b-2 border-green-600 text-green-700 relative">
+                    เมนูแนะนำ
+                </div>
+                <div onclick="switchTab('promotion')" id="tab-promotion" class="flex-1 text-center py-3 text-sm font-medium cursor-pointer transition-all border-b-2 border-transparent text-gray-400 hover:text-gray-600">
+                    โปรโมชั่น
+                </div>
             </div>
         </header>
 
