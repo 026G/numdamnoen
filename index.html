@@ -654,7 +654,7 @@
         function calculateDelivery(lat, lng) {
             userLat = lat; userLng = lng;
             distanceKm = getDistanceFromLatLonInKm(SHOP_LOC[0], SHOP_LOC[1], lat, lng);
-            document.getElementById('header-distance').innerText = `ห่างจากร้าน ${distanceKm.toFixed(1)} กม.`;
+            document.getElementById('header-distance').innerText = `${distanceKm.toFixed(1)} กม.`;
             document.getElementById('distance-display').innerText = `${distanceKm.toFixed(1)} กม.`;
             
             const btnConfirm = document.getElementById('btn-confirm-address');
