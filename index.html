@@ -287,7 +287,7 @@
         const OPEN_HOUR = 9;   // เปิด 09:00
         const CLOSE_HOUR = 24; // ปิด 20:00
 
-        // ข้อมูลสินค้า (เพิ่ม stock: true/false)
+        // ข้อมูลสินค้า
         const menuDB = [
             // Recommend
             { id: 1, category: "recommend", name: "[ขวดใหญ่] น้ำมะพร้าวสด100% (1000 ml.)", desc: "น้ำมะพร้าวสดแท้ 100% ไม่ผสม ขวดใหญ่", price: 100, originalPrice: 120, img: "https://lh3.googleusercontent.com/d/1Yz3UIKQHOZcvIrR3ItjCrU7hNcBiVInF",badge: "ขายดี #1", stock: true },
@@ -299,7 +299,7 @@
             { id: 91, category: "promotion", name: "[Set คุ้ม] 4ขวดเล็ก น้ำมะพร้าวสด100%", desc: "น้ำมะพร้าวสด 4 ขวดเล็ก 250ml.x4 ราคาพิเศษ", price: 100, originalPrice: 120, badge: "ลดราคา 🔥", stock: true, img: "https://lh3.googleusercontent.com/d/11Dv4nyAER160iSp-Luymgp-p4LI39h3Y", stock: true},
             { id: 92, category: "promotion", name: "[Set จุใจ] 4ขวดใหญ่ น้ำมะพร้าวสด100%", desc: "น้ำมะพร้าวสด 4 ขวดใหญ่ 1000ml.x4 ราคาพิเศษ", price: 360, originalPrice: 400, badge: "ลดราคา 🔥", stock: true, img: "https://lh3.googleusercontent.com/d/1_hTuj-qkP1_54Vvoej67MkiH6QRBPlfV", stock: true},
             { id: 5, category: "promotion", name: "Set คู่หูดูโอ้ (2 แก้ว)", desc: "มะพร้าวปั่นนมสด 2 แก้ว ราคาพิเศษ", price: 220, originalPrice: 238, badge: "ลดราคา 🔥", stock: true, img: "https://images.unsplash.com/photo-1628519592415-3174241e3d3f?w=400", options: [{ type: "radio", name: "ความหวาน (แก้ว 1)", choices: [{ label: "ปกติ", price: 0 }, { label: "น้อย", price: 0 }] }, { type: "radio", name: "ความหวาน (แก้ว 2)", choices: [{ label: "ปกติ", price: 0 }, { label: "น้อย", price: 0 }] }] },
-            { id: 6, category: "promotion", name: "วุ้นมะพร้าวถ้วยยักษ์", desc: "วุ้นมะพร้าวทำเอง เนื้อแน่น หวานน้อย", price: 35, originalPrice: 50, badge: "Flash Sale", img: "https://images.unsplash.com/photo-1598211028080-1a65499c089c?w=400", stock: false } // ตัวอย่างสินค้าหมด
+            { id: 6, category: "promotion", name: "วุ้นมะพร้าวถ้วยยักษ์", desc: "วุ้นมะพร้าวทำเอง เนื้อแน่น หวานน้อย", price: 35, originalPrice: 50, badge: "Flash Sale", img: "https://images.unsplash.com/photo-1598211028080-1a65499c089c?w=400", stock: false } 
         ];
 
         let cart = [];
@@ -321,13 +321,11 @@
             if(localStorage.getItem('cust_phone')) document.getElementById('cust-phone').value = localStorage.getItem('cust_phone');
             if(localStorage.getItem('cust_address')) document.getElementById('cust-address').value = localStorage.getItem('cust_address');
 
-            // ✅ อัปเดตปุ่ม Tracking ทันทีที่โหลด
             updateTrackingButtonState();
         });
 
         // --- 3. Navigation ---
         function showPage(pageId) {
-            // หยุด Auto Refresh เมื่อออกจากหน้า Tracking
             if (pageId !== 'tracking' && trackingInterval) {
                 clearInterval(trackingInterval);
                 trackingInterval = null;
@@ -337,7 +335,6 @@
             document.getElementById('page-' + pageId).classList.add('active-section');
             document.getElementById('category-tabs').style.display = (pageId === 'menu') ? 'flex' : 'none';
             
-            // จัดการปุ่มย้อนกลับ (ซ่อนเมื่ออยู่หน้าเมนู)
             const backBtn = document.querySelector('header button i.fa-arrow-left')?.parentElement;
             if(backBtn) {
                 if(pageId === 'menu') {
@@ -351,7 +348,6 @@
             updateFooterState(pageId);
             if(pageId === 'address') setTimeout(() => map.invalidateSize(), 200);
             
-            // 🔥 เรียกฟังก์ชันเริ่มต้นหน้า Tracking โดยเฉพาะ
             if(pageId === 'tracking') {
                 initTrackingPage(); 
             }
@@ -377,7 +373,6 @@
             renderMenu(cat);
         }
 
-        // เช็คเวลาร้านเปิด-ปิด
         function isShopOpen() {
             const now = new Date();
             const hour = now.getHours();
@@ -386,8 +381,6 @@
 
         function updateFooterState(pageId) {
             const footer = document.getElementById('sticky-footer');
-            
-            // ⏰ Auto Open/Close Logic
             if (!isShopOpen()) {
                 footer.classList.remove('hidden');
                 footer.innerHTML = `
@@ -395,10 +388,8 @@
                         ⛔ ร้านปิด (เปิด ${String(OPEN_HOUR).padStart(2,'0')}:00 - ${String(CLOSE_HOUR).padStart(2,'0')}:00 น.)
                     </div>
                 `;
-                return; // หยุดการทำงาน ไม่โชว์ปุ่มอื่น
+                return; 
             }
-
-            // ถ้าเปิดร้าน ให้โชว์ปุ่มปกติ (ต้อง Reset HTML กลับมาเป็นปุ่มเดิมก่อน)
             if(footer.innerHTML.includes('ร้านปิด')) location.reload(); 
 
             footer.classList.remove('hidden');
@@ -416,7 +407,6 @@
             else if(pageId === 'tracking') footer.classList.add('hidden');
         }
 
-        // --- 4. Menu & Cart ---
         function renderMenu(cat) {
             const list = document.getElementById('menu-list');
             const items = menuDB.filter(i => i.category === cat);
@@ -432,7 +422,6 @@
                         ${item.badge && !isSoldOut ? `<span class="absolute top-0 left-0 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-tl-xl rounded-br-lg shadow-sm">${item.badge}</span>` : ''}
                         ${isSoldOut ? '<span class="absolute inset-0 flex items-center justify-center bg-black/40 text-white font-bold text-lg rounded-xl z-10">สินค้าหมด</span>' : ''}
                     </div>
-                    
                     <div class="flex-1 flex flex-col justify-between py-1">
                         <div>
                             <h3 class="font-bold text-gray-800 text-base leading-tight mb-1">${item.name}</h3>
@@ -458,8 +447,6 @@
 
         function openModal(id) {
              const item = menuDB.find(i=>i.id===id);
-             
-             // 🔥 Reset จำนวนเป็น 1 ทุกครั้งที่เปิด
              currentQty = 1;
              currentItem = item; 
              currentBasePrice = item.price;
@@ -468,7 +455,6 @@
              const container = document.getElementById('modal-options'); 
              container.innerHTML = '';
 
-             // 🔥 วนลูปสร้างตัวเลือก (ถ้ามี)
              if(item.options && item.options.length > 0) {
                  item.options.forEach((opt, idx) => {
                      let html = `<div class="bg-gray-50 border border-gray-100 p-4 rounded-xl mb-3"><p class="font-semibold mb-3 text-gray-700 text-sm flex items-center gap-2">${opt.name}</p><div class="space-y-3">`;
@@ -487,7 +473,6 @@
                  container.innerHTML = `<div class="text-center text-gray-400 text-sm py-2"></div>`;
              }
 
-             // 🔥 แทรกปุ่มเลือกจำนวน (+/-) ลงไปใน Modal
              const qtyHtml = `
                 <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
                     <span class="font-bold text-gray-700">จำนวน</span>
@@ -504,7 +489,6 @@
              document.getElementById('option-modal').classList.remove('hidden');
         }
 
-        // 🔥 ฟังก์ชันปรับจำนวน
         function adjustQty(change) {
             const newQty = currentQty + change;
             if(newQty < 1) return;
@@ -518,8 +502,6 @@
             document.querySelectorAll('.option-input:checked').forEach(input => { 
                 pricePerItem += parseInt(input.getAttribute('data-price') || 0); 
             });
-            
-            // 🔥 ราคารวม = (ราคาต่อชิ้น + ตัวเลือก) * จำนวน
             const totalPrice = pricePerItem * currentQty;
             document.getElementById('modal-total-price').innerText = `฿${totalPrice}`;
         }
@@ -536,21 +518,16 @@
         function confirmAddToCart() {
             const selectedOptions = []; 
             let pricePerItem = currentBasePrice;
-            
             document.querySelectorAll('.option-input:checked').forEach(input => { 
                 selectedOptions.push(input.value); 
                 pricePerItem += parseInt(input.getAttribute('data-price') || 0); 
             });
-
-            // 🔥 ราคารวมสุดท้ายที่จะส่งลงตะกร้า (คูณจำนวนแล้ว)
             const finalTotalPrice = pricePerItem * currentQty;
-
             addToCart(currentItem, selectedOptions, finalTotalPrice, currentQty); 
             closeModal();
         }
 
         function addToCart(item, opts, price, qty) {
-            // 🔥 บันทึกจำนวน (qty) ลงไปในตะกร้าด้วย
             cart.push({ ...item, selectedOptions: opts, finalPrice: price, qty: qty });
             updateCartUI();
             if(document.querySelector('.active-section').id === 'page-menu') updateFooterState('menu');
@@ -586,16 +563,52 @@
             }).join('');
         }
 
-        // --- 5. Map ---
+        // --- 5. Map (🔥 แก้ไข: ให้จำพิกัดล่าสุด) ---
         function initMap() {
-            map = L.map('map', { zoomControl: false }).setView(SHOP_LOC, 14);
+            map = L.map('map', { zoomControl: false }); // ยังไม่ setView รอเช็คพิกัดก่อน
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            
             var shopIcon = L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/273/273177.png', iconSize: [50, 50], iconAnchor: [25, 50], popupAnchor: [0, -50] });
             var customerIcon = L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/2776/2776067.png', iconSize: [40, 40], iconAnchor: [20, 40], popupAnchor: [0, -40], shadowUrl: null });
+            
+            // ปักหมุดร้าน (คงที่)
             L.marker(SHOP_LOC, { icon: shopIcon }).addTo(map).bindPopup("<b>ร้านหนุ่มดำเนิน</b><br>ส่งความอร่อยจากตรงนี้").openPopup();
-            marker = L.marker(SHOP_LOC, { draggable: true, icon: customerIcon }).addTo(map);
-            map.on('click', function(e) { marker.setLatLng(e.latlng); calculateDelivery(e.latlng.lat, e.latlng.lng); map.panTo(e.latlng); });
-            marker.on('dragend', function(e) { const pos = marker.getLatLng(); calculateDelivery(pos.lat, pos.lng); map.panTo(pos); });
+
+            // 🔥 Check พิกัดที่บันทึกไว้ในเครื่อง
+            const savedLat = localStorage.getItem('cust_lat');
+            const savedLng = localStorage.getItem('cust_lng');
+            
+            let startLoc = SHOP_LOC;
+            let startZoom = 14;
+
+            // ถ้ามีพิกัดเก่า -> ใช้พิกัดเก่า + ซูมเข้าไปใกล้ๆ
+            if (savedLat && savedLng) {
+                startLoc = [parseFloat(savedLat), parseFloat(savedLng)];
+                startZoom = 16; 
+            }
+
+            // Set มุมกล้องแผนที่
+            map.setView(startLoc, startZoom);
+
+            // สร้างหมุดลูกค้า (Draggable)
+            marker = L.marker(startLoc, { draggable: true, icon: customerIcon }).addTo(map);
+            
+            // Events ของแผนที่ (กดเปลี่ยนตำแหน่ง / ลากหมุด)
+            map.on('click', function(e) { 
+                marker.setLatLng(e.latlng); 
+                calculateDelivery(e.latlng.lat, e.latlng.lng); 
+            });
+            
+            marker.on('dragend', function(e) { 
+                const pos = marker.getLatLng(); 
+                calculateDelivery(pos.lat, pos.lng); 
+                map.panTo(pos); 
+            });
+
+            // 🔥 ถ้ามีพิกัดเก่า -> คำนวณค่าส่งให้เลยทันที!
+            if (savedLat && savedLng) {
+                calculateDelivery(startLoc[0], startLoc[1]);
+            }
         }
 
         function calculateDelivery(lat, lng) {
@@ -679,6 +692,10 @@
             localStorage.setItem('cust_name', name);
             localStorage.setItem('cust_phone', phone);
             localStorage.setItem('cust_address', address);
+            
+            // 🔥 NEW: บันทึกพิกัดลูกค้าด้วย
+            localStorage.setItem('cust_lat', userLat);
+            localStorage.setItem('cust_lng', userLng);
 
             let slipBase64 = "";
             if(method === 'transfer') {
@@ -692,7 +709,7 @@
             const orderData = {
                 name: name, phone: phone, address: address, landmark: landmark, location: `${userLat},${userLng}`,
                 items: cart.map((i, index) => {
-                    let detail = `${index + 1}. ${i.name} (x${i.qty})`; // 🔥 เพิ่มจำนวนในรายการที่ส่งไป Line
+                    let detail = `${index + 1}. ${i.name} (x${i.qty})`; 
                     if (i.selectedOptions && i.selectedOptions.length > 0) {
                         detail += i.selectedOptions.map(opt => `\n   └ 🔸 ${opt}`).join(''); 
                     }
@@ -706,13 +723,9 @@
                 method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(orderData)
             }).then(() => {
                 
-                // ✅ 1. บันทึกประวัติลงเครื่องลูกค้า (History)
                 saveOrderToHistory(orderData);
-                
-                // ✅ 2. อัปเดตปุ่ม Tracking ทันที
                 updateTrackingButtonState();
 
-                // ✅ 3. แสดง Popup สำเร็จ และปุ่มไปดูสถานะ
                 Swal.fire({
                     icon: 'success',
                     title: 'สั่งซื้อสำเร็จ!',
@@ -723,11 +736,11 @@
                     cancelButtonText: 'สั่งเพิ่ม',
                     cancelButtonColor: '#6b7280'
                 }).then((result) => {
-                    cart = []; updateCartUI(); // ล้างตะกร้า
+                    cart = []; updateCartUI(); 
                     if (result.isConfirmed) {
-                        openTrackingPage(); // ไปหน้าติดตาม
+                        openTrackingPage(); 
                     } else {
-                        showPage('menu'); // กลับไปสั่งต่อ
+                        showPage('menu'); 
                     }
                 });
 
@@ -787,44 +800,32 @@
             }
         }
 
-        // 🔥 ปุ่มกดจาก Header (แค่เปลี่ยนหน้า ไม่ไปยุ่งกับ Logic โหลดข้อมูล)
         function handleTrackingClick() {
             showPage('tracking'); 
         }
         
-        // 🔥 ฟังก์ชันใหม่: สำหรับเปิดหน้า Tracking โดยเฉพาะ
         function openTrackingPage() {
             showPage('tracking');
         }
 
-        // ----------------------------------------------------
-        // 🔥🔥🔥 แก้ไขส่วน Tracking (ลูปหาย + ช่องค้นหามาแล้ว) 🔥🔥🔥
-        // ----------------------------------------------------
-
-        // ฟังก์ชันนี้จะถูกเรียกโดย showPage('tracking') เท่านั้น
         function initTrackingPage() {
             const history = JSON.parse(localStorage.getItem('order_history') || "[]");
             const savedPhone = localStorage.getItem('cust_phone');
             
-            // ✅ บังคับโชว์กล่องค้นหาเสมอ (Remove Class hidden)
             document.getElementById('tracking-search-box').classList.remove('hidden');
 
             if (savedPhone) {
-                // กรณีมีเบอร์เดิม: เติมเบอร์ให้ และกดค้นหาให้อัตโนมัติ
                 document.getElementById('track-phone').value = savedPhone;
-                searchOrder(false); // ค้นหาครั้งแรก (โชว์ Loading)
+                searchOrder(false); 
                 
-                // เริ่มระบบ Auto Refresh
                 if (trackingInterval) clearInterval(trackingInterval);
                 trackingInterval = setInterval(() => {
-                    searchOrder(true); // ค้นหาแบบเงียบ (ไม่โชว์ Loading)
+                    searchOrder(true); 
                 }, 10000); 
                 
             } else if (history.length > 0) {
-                // กรณีไม่มีเบอร์ แต่มีประวัติในเครื่อง: โชว์ประวัติเก่า
                 renderHistory(history);
             } else {
-                // กรณีใหม่เอี่ยม: เคลียร์หน้าจอรอค้นหา
                 document.getElementById('tracking-result').innerHTML = `
                     <div class="text-center text-gray-300 py-10">
                         <i class="fa-solid fa-magnifying-glass text-4xl mb-2"></i>
@@ -833,7 +834,6 @@
             }
         }
 
-        // ฟังก์ชันค้นหาออเดอร์ (Search)
         function searchOrder(isSilent = false) { 
             const phone = document.getElementById('track-phone').value.trim();
             if(phone.length < 9) {
@@ -842,8 +842,6 @@
             }
 
             const resultDiv = document.getElementById('tracking-result');
-            
-            // ถ้าไม่ใช่ Silent Mode ให้ขึ้น Loading
             if(!isSilent) {
                 resultDiv.innerHTML = `
                 <div class="text-center py-10 animate-pulse">
@@ -852,20 +850,14 @@
                 </div>`;
             }
 
-            // ยิงไปที่ Google Apps Script
             fetch(`${WEB_APP_URL}?action=get_customer_orders&phone=${encodeURIComponent(phone)}`) 
             .then(res => res.json())
             .then(data => {
                 if(data.orders && data.orders.length > 0) {
-                    // ✅ เจอข้อมูล: แสดงผล
                     renderHistoryFromAdminData(data.orders);
-                    
-                    // บันทึกเบอร์ล่าสุดไว้ด้วย (เผื่อ User พิมพ์ใหม่)
                     localStorage.setItem('cust_phone', phone);
                 } else {
-                    // ❌ ไม่เจอข้อมูลใน Server
                     if(!isSilent) {
-                        // ลองดูในเครื่องตัวเอง (Backup)
                         checkLocalStorageBackup();
                     }
                 }
