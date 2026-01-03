@@ -212,16 +212,28 @@
         </section>
 
         <div id="sticky-footer" class="fixed bottom-0 w-full max-w-md bg-white/95 backdrop-blur shadow-[0_-4px_10px_rgba(0,0,0,0.05)] border-t p-4 z-40 hidden">
-            <button id="btn-view-cart" onclick="showPage('cart')" class="w-full bg-green-600 text-white rounded-xl p-3.5 flex justify-between items-center shadow-lg hover:bg-green-700 transition transform active:scale-[0.98]">
-                <div class="flex items-center gap-3">
-                    <div class="bg-white/20 font-bold w-8 h-8 rounded-lg flex items-center justify-center text-sm" id="footer-count">0</div>
-                    <span class="font-semibold">ดูตะกร้าสินค้า</span>
-                </div>
-                <span class="font-bold text-lg" id="footer-total">฿0</span>
-            </button>
-            <button id="btn-go-address" onclick="showPage('address')" class="hidden w-full bg-green-600 text-white rounded-xl p-3.5 font-bold shadow-lg hover:bg-green-700 transition">ยืนยันรายการ</button>
-            <button id="btn-confirm-address" onclick="validateAndGoToPayment()" class="hidden w-full bg-green-600 text-white rounded-xl p-3.5 font-bold shadow-lg hover:bg-green-700 transition disabled:bg-gray-400">ยืนยันที่อยู่ & ไปชำระเงิน</button>
-            <button id="btn-confirm-order" onclick="confirmOrder()" class="hidden w-full bg-green-600 text-white rounded-xl p-3.5 font-bold shadow-lg hover:bg-green-700 transition">ยืนยันการสั่งซื้อ</button>
+    
+    <button id="btn-view-cart" onclick="showPage('cart')" class="w-full bg-green-600 text-white rounded-xl p-3.5 flex justify-between items-center shadow-lg hover:bg-green-700 transition transform active:scale-[0.98]">
+        <div class="flex items-center gap-3">
+            <div class="bg-white/20 font-bold w-8 h-8 rounded-lg flex items-center justify-center text-sm" id="footer-count">0</div>
+            <span class="font-semibold">ดูตะกร้าสินค้า</span>
+        </div>
+        <span class="font-bold text-lg" id="footer-total">฿0</span>
+    </button>
+
+    <div id="btn-go-address" class="hidden w-full flex gap-3">
+        <button onclick="showPage('menu')" 
+                class="shrink-0 w-28 bg-gray-100 text-gray-600 rounded-xl font-bold text-sm hover:bg-gray-200 transition shadow-sm border border-gray-200 flex items-center justify-center gap-2">
+            <i class="fa-solid fa-cart-plus"></i> สั่งเพิ่ม
+        </button>
+        
+        <button onclick="showPage('address')" 
+                class="flex-1 bg-green-600 text-white rounded-xl p-3.5 font-bold shadow-lg hover:bg-green-700 transition flex items-center justify-center gap-2">
+            ยืนยันรายการ <i class="fa-solid fa-arrow-right"></i>
+        </button>
+    </div>
+    <button id="btn-confirm-address" onclick="validateAndGoToPayment()" class="hidden w-full bg-green-600 text-white rounded-xl p-3.5 font-bold shadow-lg hover:bg-green-700 transition disabled:bg-gray-400">ยืนยันที่อยู่ & ไปชำระเงิน</button>
+    <button id="btn-confirm-order" onclick="confirmOrder()" class="hidden w-full bg-green-600 text-white rounded-xl p-3.5 font-bold shadow-lg hover:bg-green-700 transition">ยืนยันการสั่งซื้อ</button>
         </div>
 
     </div>
