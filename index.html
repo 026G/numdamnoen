@@ -829,16 +829,13 @@
 
         // ✅ ฟังก์ชันค้นหา (Search from Server) - ปลอดภัย ไม่ต้องใช้รหัสผ่าน Admin
         // รองรับ Auto Refresh (isSilent)
-        function searchOrder(isSilent = false) {
+        // ฟังก์ชันค้นหา (Search from Server) - ปลอดภัย ไม่ต้องใช้รหัสผ่าน Admin
+        function searchOrder() {
             const phone = document.getElementById('track-phone').value.trim();
-            if(phone.length < 9) return;
+            if(phone.length < 9) return Swal.fire({icon:'warning', title:'กรุณากรอกเบอร์โทรให้ถูกต้อง'});
 
             const resultDiv = document.getElementById('tracking-result');
-            
-            // ถ้าไม่ใช่ Silent (กดเองครั้งแรก) ให้ขึ้น Loading
-            if(!isSilent) {
-                resultDiv.innerHTML = '<div class="text-center py-10"><i class="fa-solid fa-circle-notch fa-spin text-green-600 text-3xl"></i><p class="text-gray-500 mt-2">กำลังค้นหาข้อมูลล่าสุด...</p></div>';
-            }
+            resultDiv.innerHTML = '<div class="text-center py-10"><i class="fa-solid fa-circle-notch fa-spin text-green-600 text-3xl"></i><p class="text-gray-500 mt-2">กำลังค้นหาข้อมูลล่าสุด...</p></div>';
 
             // ✅ ยิงไปที่ action ใหม่: get_customer_orders พร้อมส่งเบอร์โทร
             fetch(`${WEB_APP_URL}?action=get_customer_orders&phone=${encodeURIComponent(phone)}`) 
@@ -847,15 +844,63 @@
                 if(data.orders && data.orders.length > 0) {
                     // ถ้าเจอข้อมูลจาก Server แสดงผลเลย
                     renderHistoryFromAdminData(data.orders);
-                } else if (!isSilent) {
-                    // ถ้าไม่เจอและไม่ใช่ Silent Refresh ให้ลองดูใน LocalStorage
+                } else {
+                    // ถ้าไม่เจอใน Server ให้ลองดูใน LocalStorage (เผื่อระบบขัดข้อง)
                     checkLocalStorageBackup();
                 }
             })
             .catch(err => {
                 console.error("Fetch error:", err);
-                if(!isSilent) checkLocalStorageBackup();
+                checkLocalStorageBackup();
             });
+        }
+
+        function checkLocalStorageBackup() {
+            const history = JSON.parse(localStorage.getItem('order_history') || "[]");
+            const resultDiv = document.getElementById('tracking-result');
+            
+            if(history.length > 0) {
+                renderHistory(history);
+                resultDiv.insertAdjacentHTML('afterbegin', '<p class="text-center text-xs text-orange-400 mb-2"><i class="fa-solid fa-triangle-exclamation"></i> ไม่สามารถเชื่อมต่อ Server ได้ แสดงข้อมูลล่าสุดในเครื่อง</p>');
+            } else {
+                resultDiv.innerHTML = '<div class="text-center text-gray-400 py-10"><i class="fa-solid fa-box-open text-4xl mb-2"></i><p>ไม่พบประวัติการสั่งซื้อ</p></div>';
+            }
+        }
+
+        // ฟังก์ชันแสดงผลสำหรับข้อมูลจาก Server (Format ตรงกับ Code.gs)
+        function renderHistoryFromAdminData(serverOrders) {
+            const container = document.getElementById('tracking-result');
+            container.innerHTML = serverOrders.map(order => {
+                let statusColor = "text-orange-500 bg-orange-50 border-orange-100";
+                if(order.status.includes("ปรุง")) statusColor = "text-blue-600 bg-blue-50 border-blue-100";
+                else if(order.status.includes("ส่ง") || order.status.includes("ไรเดอร์")) statusColor = "text-purple-600 bg-purple-50 border-purple-100";
+                else if(order.status.includes("สำเร็จ")) statusColor = "text-green-600 bg-green-50 border-green-100";
+                else if(order.status.includes("ยกเลิก")) statusColor = "text-red-600 bg-red-50 border-red-100";
+
+                // ใช้ shortId ที่ส่งมาจาก Server หรือตัดเองถ้าไม่มี
+                const displayId = order.shortId || (order.id.includes('-') ? order.id.split('-')[1].slice(-4) : order.id.slice(-4));
+
+                return `
+                <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-2 relative overflow-hidden animate-fade-in-up">
+                    <div class="flex justify-between items-start z-10">
+                        <div>
+                            <span class="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-1 rounded border border-gray-200">#${displayId}</span>
+                            <div class="text-xs text-gray-400 mt-1"><i class="fa-regular fa-clock mr-1"></i>${order.time}</div>
+                        </div>
+                        <span class="${statusColor} font-bold text-xs px-2 py-1 rounded-lg border flex items-center gap-1">
+                            ${getStatusIcon(order.status)} ${order.status}
+                        </span>
+                    </div>
+                    <div class="border-t border-dashed border-gray-100 my-2"></div>
+                    <div class="text-sm text-gray-600 space-y-1">
+                        ${order.items.replace(/\n/g, '<br>')}
+                    </div>
+                    <div class="flex justify-between items-center mt-3 pt-2 border-t border-gray-50">
+                        <span class="text-xs text-gray-400">ราคารวม</span>
+                        <span class="font-bold text-gray-800 text-lg">${order.total}</span>
+                    </div>
+                </div>
+            `}).join('');
         }
 
         function checkLocalStorageBackup() {
