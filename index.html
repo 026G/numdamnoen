@@ -308,6 +308,7 @@
         let activeTab = 'recommend';
         // 🔥 เพิ่มตัวแปรเก็บจำนวนสินค้าใน Modal
         let currentQty = 1;
+        let trackingInterval = null; // สำหรับ Auto Refresh
         
         // --- 2. Initial Setup ---
         document.addEventListener("DOMContentLoaded", () => {
@@ -327,6 +328,12 @@
 
         // --- 3. Navigation ---
         function showPage(pageId) {
+            // หยุด Auto Refresh เมื่อออกจากหน้า Tracking
+            if (trackingInterval) {
+                clearInterval(trackingInterval);
+                trackingInterval = null;
+            }
+
             document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active-section'));
             document.getElementById('page-' + pageId).classList.add('active-section');
             document.getElementById('category-tabs').style.display = (pageId === 'menu') ? 'flex' : 'none';
@@ -344,16 +351,12 @@
             }
             updateFooterState(pageId);
             if(pageId === 'address') setTimeout(() => map.invalidateSize(), 200);
+            
+            // 🔥 เริ่มระบบ Tracking เมื่อเข้าหน้านี้
             if(pageId === 'tracking') {
-                // 🔥 Auto Refresh หน้า Tracking (ถ้ามีเบอร์โทร)
-                const savedPhone = localStorage.getItem('cust_phone');
-                if(savedPhone) {
-                    document.getElementById('track-phone').value = savedPhone;
-                    searchOrder(); // เรียกข้อมูลใหม่จาก Server ทันที
-                } else {
-                    renderHistory(); // หรือแสดง History เก่าไปก่อน
-                }
+                handleTrackingClick();
             }
+            
             window.scrollTo(0,0);
         }
 
@@ -805,7 +808,14 @@
             if (savedPhone) {
                 // ถ้ามีเบอร์ -> ให้ดึงข้อมูลล่าสุดจาก Server ทันที
                 document.getElementById('track-phone').value = savedPhone;
-                searchOrder(); 
+                searchOrder(false); // เรียกครั้งแรก (มี Loading)
+                
+                // 🔥 เริ่ม Auto Refresh ทุก 5 วินาที
+                if (trackingInterval) clearInterval(trackingInterval);
+                trackingInterval = setInterval(() => {
+                    searchOrder(true); // Silent Refresh
+                }, 5000);
+                
             } else if (history.length > 0) {
                 // ถ้าไม่มีเบอร์แต่มีประวัติในเครื่อง -> โชว์ประวัติเก่าไปก่อน
                 document.getElementById('tracking-search-box').classList.add('hidden');
@@ -817,65 +827,18 @@
             }
         }
 
-        function renderHistory(historyData) {
-            const container = document.getElementById('tracking-result');
-            if(!historyData || historyData.length === 0) {
-                 container.innerHTML = '<div class="text-center text-gray-300 py-10"><i class="fa-solid fa-box-open text-4xl mb-2"></i><p>ไม่พบข้อมูลการสั่งซื้อ</p></div>';
-                 return;
-            }
-
-            container.innerHTML = historyData.map(order => {
-                // กำหนดสีสถานะ
-                let statusColor = "text-orange-500 bg-orange-50 border-orange-100";
-                if(order.status.includes("ปรุง")) statusColor = "text-blue-600 bg-blue-50 border-blue-100";
-                else if(order.status.includes("ส่ง") || order.status.includes("ไรเดอร์")) statusColor = "text-purple-600 bg-purple-50 border-purple-100";
-                else if(order.status.includes("สำเร็จ")) statusColor = "text-green-600 bg-green-50 border-green-100";
-                else if(order.status.includes("ยกเลิก")) statusColor = "text-red-600 bg-red-50 border-red-100";
-
-                return `
-                <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-2 relative overflow-hidden">
-                    <div class="flex justify-between items-start z-10">
-                        <div>
-                            <span class="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-1 rounded border border-gray-200">${order.orderId || order.id}</span>
-                            <div class="text-xs text-gray-400 mt-1"><i class="fa-regular fa-clock mr-1"></i>${order.date}</div>
-                        </div>
-                        <span class="${statusColor} font-bold text-xs px-2 py-1 rounded-lg border flex items-center gap-1">
-                            ${getStatusIcon(order.status)} ${order.status}
-                        </span>
-                    </div>
-                    
-                    <div class="border-t border-dashed border-gray-100 my-2"></div>
-                    
-                    <div class="text-sm text-gray-600 space-y-1">
-                        ${order.items}
-                    </div>
-
-                    <div class="flex justify-between items-center mt-3 pt-2 border-t border-gray-50">
-                        <span class="text-xs text-gray-400">ราคารวม</span>
-                        <span class="font-bold text-gray-800 text-lg">${order.total}</span>
-                    </div>
-                </div>
-            `}).join('');
-        }
-
-        function getStatusIcon(status) {
-            if(status.includes("ปรุง")) return '<i class="fa-solid fa-fire-burner"></i>';
-            if(status.includes("ส่ง") || status.includes("ไรเดอร์")) return '<i class="fa-solid fa-motorcycle"></i>';
-            if(status.includes("สำเร็จ")) return '<i class="fa-solid fa-circle-check"></i>';
-            if(status.includes("ยกเลิก")) return '<i class="fa-solid fa-circle-xmark"></i>';
-            return '<i class="fa-regular fa-clock"></i>';
-        }
-        
-        // ฟังก์ชันค้นหา (Search from Server)
-        // ✅ แก้ไข: ใช้ fetch แบบ GET (JSONP style) เพื่อดึงข้อมูลจริงจาก Server มาแสดง
-        // (เนื่องจาก doPost ไม่ return data ให้หน้าเว็บ html ธรรมดาได้ง่ายๆ เราจะใช้ doGet ช่วย)
-// ฟังก์ชันค้นหา (Search from Server) - ปลอดภัย ไม่ต้องใช้รหัสผ่าน Admin
-        function searchOrder() {
+        // ✅ ฟังก์ชันค้นหา (Search from Server) - ปลอดภัย ไม่ต้องใช้รหัสผ่าน Admin
+        // รองรับ Auto Refresh (isSilent)
+        function searchOrder(isSilent = false) {
             const phone = document.getElementById('track-phone').value.trim();
-            if(phone.length < 9) return Swal.fire({icon:'warning', title:'กรุณากรอกเบอร์โทรให้ถูกต้อง'});
+            if(phone.length < 9) return;
 
             const resultDiv = document.getElementById('tracking-result');
-            resultDiv.innerHTML = '<div class="text-center py-10"><i class="fa-solid fa-circle-notch fa-spin text-green-600 text-3xl"></i><p class="text-gray-500 mt-2">กำลังค้นหาข้อมูลล่าสุด...</p></div>';
+            
+            // ถ้าไม่ใช่ Silent (กดเองครั้งแรก) ให้ขึ้น Loading
+            if(!isSilent) {
+                resultDiv.innerHTML = '<div class="text-center py-10"><i class="fa-solid fa-circle-notch fa-spin text-green-600 text-3xl"></i><p class="text-gray-500 mt-2">กำลังค้นหาข้อมูลล่าสุด...</p></div>';
+            }
 
             // ✅ ยิงไปที่ action ใหม่: get_customer_orders พร้อมส่งเบอร์โทร
             fetch(`${WEB_APP_URL}?action=get_customer_orders&phone=${encodeURIComponent(phone)}`) 
@@ -884,14 +847,14 @@
                 if(data.orders && data.orders.length > 0) {
                     // ถ้าเจอข้อมูลจาก Server แสดงผลเลย
                     renderHistoryFromAdminData(data.orders);
-                } else {
-                    // ถ้าไม่เจอใน Server ให้ลองดูใน LocalStorage (เผื่อระบบขัดข้อง)
+                } else if (!isSilent) {
+                    // ถ้าไม่เจอและไม่ใช่ Silent Refresh ให้ลองดูใน LocalStorage
                     checkLocalStorageBackup();
                 }
             })
             .catch(err => {
                 console.error("Fetch error:", err);
-                checkLocalStorageBackup();
+                if(!isSilent) checkLocalStorageBackup();
             });
         }
 
@@ -910,37 +873,82 @@
         // ฟังก์ชันแสดงผลสำหรับข้อมูลจาก Server (Format ตรงกับ Code.gs)
         function renderHistoryFromAdminData(serverOrders) {
             const container = document.getElementById('tracking-result');
+            
+            // ใช้ innerHTML แทนที่ของเดิมเพื่ออัปเดตข้อมูลล่าสุด
             container.innerHTML = serverOrders.map(order => {
                 let statusColor = "text-orange-500 bg-orange-50 border-orange-100";
-                if(order.status.includes("ปรุง")) statusColor = "text-blue-600 bg-blue-50 border-blue-100";
-                else if(order.status.includes("ส่ง") || order.status.includes("ไรเดอร์")) statusColor = "text-purple-600 bg-purple-50 border-purple-100";
-                else if(order.status.includes("สำเร็จ")) statusColor = "text-green-600 bg-green-50 border-green-100";
-                else if(order.status.includes("ยกเลิก")) statusColor = "text-red-600 bg-red-50 border-red-100";
+                let cardBgColor = "bg-white"; // 🎨 สีพื้นหลังเริ่มต้น
+
+                if(order.status.includes("ปรุง")) {
+                    statusColor = "text-blue-600 bg-blue-50 border-blue-100";
+                    cardBgColor = "bg-blue-50/30 border-blue-100"; // 🎨 พื้นหลังฟ้าอ่อน
+                }
+                else if(order.status.includes("ส่ง") || order.status.includes("ไรเดอร์")) {
+                    statusColor = "text-purple-600 bg-purple-50 border-purple-100";
+                    cardBgColor = "bg-purple-50/30 border-purple-100"; // 🎨 พื้นหลังม่วงอ่อน
+                }
+                else if(order.status.includes("สำเร็จ")) {
+                    statusColor = "text-green-600 bg-green-50 border-green-100";
+                    cardBgColor = "bg-green-50/30 border-green-100"; // 🎨 พื้นหลังเขียวอ่อน
+                }
+                else if(order.status.includes("ยกเลิก")) {
+                    statusColor = "text-red-600 bg-red-50 border-red-100";
+                    cardBgColor = "bg-red-50/30 border-red-100"; // 🎨 พื้นหลังแดงอ่อน
+                } else {
+                    // รอร้านรับยอด
+                    cardBgColor = "bg-orange-50/20 border-orange-100"; // 🎨 พื้นหลังส้มจางๆ
+                }
 
                 // ใช้ shortId ที่ส่งมาจาก Server หรือตัดเองถ้าไม่มี
                 const displayId = order.shortId || (order.id.includes('-') ? order.id.split('-')[1].slice(-4) : order.id.slice(-4));
 
                 return `
-                <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-2 relative overflow-hidden animate-fade-in-up">
+                <div class="${cardBgColor} p-4 rounded-xl border shadow-sm flex flex-col gap-2 relative overflow-hidden transition-all duration-300">
                     <div class="flex justify-between items-start z-10">
                         <div>
-                            <span class="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-1 rounded border border-gray-200">#${displayId}</span>
-                            <div class="text-xs text-gray-400 mt-1"><i class="fa-regular fa-clock mr-1"></i>${order.time}</div>
+                            <span class="bg-white/80 text-gray-600 text-[10px] font-bold px-2 py-1 rounded border border-gray-200 shadow-sm">#${displayId}</span>
+                            <div class="text-xs text-gray-500 mt-1 flex items-center gap-1"><i class="fa-regular fa-clock"></i> ${order.time}</div>
                         </div>
-                        <span class="${statusColor} font-bold text-xs px-2 py-1 rounded-lg border flex items-center gap-1">
+                        <span class="${statusColor} font-bold text-xs px-2 py-1 rounded-lg border flex items-center gap-1 shadow-sm">
                             ${getStatusIcon(order.status)} ${order.status}
                         </span>
                     </div>
-                    <div class="border-t border-dashed border-gray-100 my-2"></div>
-                    <div class="text-sm text-gray-600 space-y-1">
+                    <div class="border-t border-dashed border-gray-200/50 my-2"></div>
+                    <div class="text-sm text-gray-700 space-y-1">
                         ${order.items.replace(/\n/g, '<br>')}
                     </div>
-                    <div class="flex justify-between items-center mt-3 pt-2 border-t border-gray-50">
-                        <span class="text-xs text-gray-400">ราคารวม</span>
+                    <div class="flex justify-between items-center mt-3 pt-2 border-t border-gray-200/50">
+                        <span class="text-xs text-gray-500">ราคารวม</span>
                         <span class="font-bold text-gray-800 text-lg">${order.total}</span>
                     </div>
                 </div>
             `}).join('');
+        }
+
+        // Render ข้อมูลจาก LocalStorage (ใช้สีเดิมๆ หรือจะปรับก็ได้)
+        function renderHistory(historyData) {
+            const container = document.getElementById('tracking-result');
+            container.innerHTML = historyData.map(order => {
+                 let statusColor = "text-orange-500 bg-orange-50 border-orange-100";
+                 // ... (สามารถ Copy Logic สีพื้นหลังมาใส่ได้ถ้าต้องการ)
+                 return `<div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-2 relative overflow-hidden">
+                    <div class="flex justify-between items-start z-10">
+                        <div><span class="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-1 rounded border border-gray-200">${order.id}</span><div class="text-xs text-gray-400 mt-1">${order.date}</div></div>
+                        <span class="${statusColor} font-bold text-xs px-2 py-1 rounded-lg border flex items-center gap-1">${getStatusIcon(order.status)} ${order.status}</span>
+                    </div>
+                    <div class="border-t border-dashed border-gray-100 my-2"></div>
+                    <div class="text-sm text-gray-600 space-y-1">${order.items}</div>
+                    <div class="flex justify-between items-center mt-3 pt-2 border-t border-gray-50"><span class="text-xs text-gray-400">ราคารวม</span><span class="font-bold text-gray-800 text-lg">${order.total}</span></div>
+                </div>`;
+            }).join('');
+        }
+
+        function getStatusIcon(status) {
+            if(status.includes("ปรุง")) return '<i class="fa-solid fa-fire-burner"></i>';
+            if(status.includes("ส่ง") || status.includes("ไรเดอร์")) return '<i class="fa-solid fa-motorcycle"></i>';
+            if(status.includes("สำเร็จ")) return '<i class="fa-solid fa-circle-check"></i>';
+            if(status.includes("ยกเลิก")) return '<i class="fa-solid fa-circle-xmark"></i>';
+            return '<i class="fa-regular fa-clock"></i>';
         }
     </script>
 </body>
