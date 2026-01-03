@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>หนุ่มดำเนิน มะพร้าวปั่น</title>
+    <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8"> 
+    <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
@@ -38,31 +40,36 @@
     <div class="max-w-md mx-auto min-h-screen bg-white shadow-xl relative overflow-hidden sm:border-x sm:border-gray-100">
 
         <header class="bg-white sticky top-0 z-30 shadow-sm/50 backdrop-blur-md bg-opacity-95">
-            <div class="px-5 py-4 flex items-center gap-4">
-                <button onclick="goBack()" class="w-10 h-10 rounded-full bg-gray-50 text-gray-600 flex items-center justify-center hover:bg-gray-100 transition shadow-sm">
+            <div class="px-5 py-4 flex items-center gap-3">
+                <button onclick="goBack()" class="w-10 h-10 rounded-full bg-gray-50 text-gray-600 flex items-center justify-center hover:bg-gray-100 transition shadow-sm shrink-0">
                     <i class="fa-solid fa-arrow-left"></i>
                 </button>
                 
-                <div class="flex-1">
-                    <h1 class="font-semibold text-xl text-gray-800 tracking-tight">หนุ่มดำเนิน มะพร้าวปั่น</h1>
+                <div class="flex-1 min-w-0"> <div class="flex items-center gap-3 mb-1">
+                        <img src="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8" class="w-12 h-12 rounded-full shadow-sm border border-gray-100 object-cover bg-white">
+                        <div>
+                            <h1 class="font-bold text-lg text-gray-800 leading-tight">หนุ่มดำเนิน</h1>
+                            <h1 class="font-bold text-base text-green-600 leading-none">มะพร้าวปั่น 🌴</h1>
+                        </div>
+                    </div>
                     
-                    <div class="flex items-center gap-1 text-xs text-green-600 font-medium mb-1">
-                        <i class="fa-solid fa-location-dot"></i>
+                    <div class="flex items-center gap-1 text-xs text-gray-500 font-medium ml-1">
+                        <i class="fa-solid fa-location-dot text-green-500"></i>
                         <span id="header-distance">กรุณาระบุตำแหน่งส่ง</span>
                     </div>
 
-                    <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+                    <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-gray-400 ml-1 mt-0.5">
                         <div class="flex items-center gap-1">
-                            <i class="fa-regular fa-clock text-green-600"></i>
+                            <i class="fa-regular fa-clock"></i>
                             <span>09:00 - 20:00 น.</span>
                         </div>
                         <div class="flex items-center gap-1">
-                            <i class="fa-solid fa-phone text-green-600"></i>
-                            <a href="tel:0622467746" class="hover:text-green-700 hover:underline">062-246-7746</a>
+                            <i class="fa-solid fa-phone"></i>
+                            <a href="tel:0622467746" class="hover:text-green-600 hover:underline">062-246-7746</a>
                         </div>
                     </div>
                     
-                    <div class="mt-2">
+                    <div class="mt-2 ml-1">
                         <button id="header-tracking-btn" onclick="handleTrackingClick()" class="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md hover:bg-gray-200 transition border border-gray-200 flex items-center gap-1">
                         </button>
                     </div>
