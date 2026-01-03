@@ -63,6 +63,14 @@
                 </div>
                 
                 <div class="flex items-center gap-2">
+                    <div class="text-[10px] text-slate-400 mr-2 flex items-center gap-1 bg-slate-50 px-2 py-1 rounded-full border border-slate-100">
+                        <span class="relative flex h-2 w-2">
+                          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                        Auto 8s
+                    </div>
+
                     <button onclick="loadOrders()" class="text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 px-3 py-2 rounded-lg transition text-sm font-medium flex items-center gap-2">
                         <i class="fa-solid fa-rotate"></i> <span class="hidden sm:inline">รีเฟรช</span>
                     </button>
@@ -122,7 +130,7 @@
                         <i class="fa-solid fa-list-ul text-slate-400 text-sm"></i> รายการออเดอร์ล่าสุด
                     </h3>
                     <div class="flex gap-2">
-                        <span class="px-3 py-1 bg-white border border-slate-200 rounded-full text-xs font-medium text-slate-600 cursor-pointer hover:bg-slate-50">แสดง 20 รายการ</span>
+                        <span class="px-3 py-1 bg-white border border-slate-200 rounded-full text-xs font-medium text-slate-600">แสดง 20 รายการล่าสุด</span>
                     </div>
                 </div>
                 
@@ -171,31 +179,35 @@
         // ============================================
 
         let currentPassword = "";
+        let autoRefreshTimer = null; // ตัวแปรเก็บ Timer
 
         // --- 1. Login Logic ---
         function tryLogin() {
             const inputPass = document.getElementById('admin-pass').value;
             if(!inputPass) return;
             
-            // เปลี่ยนสถานะปุ่ม
             const btn = document.querySelector('#login-overlay button');
             const originalText = btn.innerText;
             btn.innerText = "กำลังตรวจสอบ...";
             btn.disabled = true;
 
-            // ลองส่งรหัสไปขอข้อมูล
             currentPassword = inputPass; 
             loadOrders(true, btn, originalText); 
         }
 
         // --- 2. Load Orders ---
-        function loadOrders(isLoggingIn = false, loginBtn = null, btnText = "") {
+        // เพิ่ม Parameter: isAutoRefresh (ถ้า true จะไม่ขึ้น Loading บังหน้าจอ)
+        function loadOrders(isLoggingIn = false, loginBtn = null, btnText = "", isAutoRefresh = false) {
             const tbody = document.getElementById('order-table-body');
             const statusDiv = document.getElementById('connection-status');
             const refreshIcon = document.querySelector('.fa-rotate');
             
             if(refreshIcon) refreshIcon.classList.add('fa-spin');
-            if(!isLoggingIn && !tbody.innerHTML.includes('fa-spinner')) tbody.style.opacity = '0.5';
+            
+            // 🔥 ถ้าเป็น Auto Refresh จะไม่ทำให้ตารางจางลง (เพื่อให้ดูเนียนๆ)
+            if(!isLoggingIn && !isAutoRefresh && !tbody.innerHTML.includes('fa-spinner')) {
+                tbody.style.opacity = '0.5';
+            }
 
             // ส่ง pass ไปกับ URL
             fetch(`${WEB_APP_URL}?action=admin_get_orders&pass=${encodeURIComponent(currentPassword)}`)
@@ -215,6 +227,9 @@
                     if(isLoggingIn) {
                         document.getElementById('login-overlay').classList.add('hidden');
                         document.getElementById('dashboard-content').classList.remove('hidden');
+                        
+                        // 🔥 เริ่ม Auto Refresh ทันทีเมื่อ Login ผ่าน
+                        startAutoRefresh();
                     }
                     renderTable(data.orders);
                     updateStats(data.orders);
@@ -227,21 +242,33 @@
             })
             .catch(err => {
                 console.error(err);
-                if(!isLoggingIn) {
+                // ถ้า Auto Refresh พลาด ไม่ต้องโชว์ Error ใหญ่ แค่ log ก็พอ
+                if(!isLoggingIn && !isAutoRefresh) {
                     tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-rose-500 bg-rose-50/50"><i class="fa-solid fa-wifi text-3xl mb-2 opacity-50"></i><br>เชื่อมต่อไม่สำเร็จ</td></tr>`;
                     statusDiv.classList.remove('hidden');
-                } else {
+                } else if (isLoggingIn) {
                      Swal.fire({icon: 'error', title: 'เชื่อมต่อไม่ได้', text: 'กรุณาเช็คอินเทอร์เน็ต หรือตรวจสอบการ Deploy'});
                      loginBtn.innerText = btnText;
                      loginBtn.disabled = false;
                 }
+                tbody.style.opacity = '1';
             })
             .finally(() => {
                 if(refreshIcon) refreshIcon.classList.remove('fa-spin');
             });
         }
 
+        // --- Auto Refresh Function ---
+        function startAutoRefresh() {
+            if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+            // ตั้งเวลา 8000ms = 8 วินาที
+            autoRefreshTimer = setInterval(() => {
+                loadOrders(false, null, "", true); // ส่ง true เพื่อบอกว่าเป็น Auto
+            }, 8000);
+        }
+
         function logout() { 
+            if (autoRefreshTimer) clearInterval(autoRefreshTimer); // หยุด Timer
             currentPassword = "";
             location.reload(); 
         }
@@ -251,14 +278,15 @@
             const tbody = document.getElementById('order-table-body');
             
             if(!orders || orders.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-slate-400">
-                    <i class="fa-regular fa-folder-open text-3xl mb-2 opacity-30"></i><br>ยังไม่มีออเดอร์
-                </td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-slate-400"><i class="fa-regular fa-folder-open text-3xl mb-2 opacity-30"></i><br>ยังไม่มีออเดอร์</td></tr>`;
                 return;
             }
 
+            // เช็คว่ากำลังเลือก Dropdown ไหนอยู่หรือเปล่า (เพื่อไม่ให้ Re-render ทับตอนกำลังกด)
+            // (ในเวอร์ชันนี้ Re-render ทับเลยเพื่อให้ข้อมูลล่าสุดเสมอ แต่อาจกวนใจถ้ายาวๆ)
+            // เทคนิค: เราจะสร้าง HTML string แล้วแทนที่ innerHTML ซึ่งเร็วและง่ายสุด
+
             tbody.innerHTML = orders.map(order => {
-                // Logic สี Dropdown ตามสถานะ
                 let bgClass = "bg-slate-100 text-slate-600 border-slate-200";
                 const s = order.status || "";
                 
@@ -309,30 +337,22 @@
             }).join('');
         }
 
-        // --- 4. Update Stats (Calculate Only Today's Sales) ---
+        // --- 4. Update Stats ---
         function updateStats(orders) {
             const pending = orders.filter(o => o.status.includes("รอ")).length;
             const cooking = orders.filter(o => o.status.includes("ปรุง")).length;
             
             let totalSales = 0;
-            
-            // 1. หา date string ของวันนี้ (Format: DD/MM) ให้ตรงกับที่ส่งมาจาก API
             const now = new Date();
             const day = String(now.getDate()).padStart(2, '0');
             const month = String(now.getMonth() + 1).padStart(2, '0');
-            const todayString = `${day}/${month}`; // ผลลัพธ์: "03/01"
-            
-            // อัปเดตวันที่บนหน้าจอ
+            const todayString = `${day}/${month}`; 
             document.getElementById('today-date-display').innerText = todayString;
 
             orders.forEach(o => {
-                // 2. เช็คว่าเวลาของออเดอร์ ขึ้นต้นด้วยวันที่วันนี้หรือไม่
-                if (o.time.startsWith(todayString)) {
-                    // 3. ถ้าใช่ ให้บวกเงิน (โดยไม่นับออเดอร์ที่ยกเลิก)
-                    if (!o.status.includes("ยกเลิก")) {
-                        const amount = parseInt(o.total.replace(/[^0-9]/g, '')) || 0;
-                        totalSales += amount;
-                    }
+                if (o.time.startsWith(todayString) && !o.status.includes("ยกเลิก")) {
+                    const amount = parseInt(o.total.replace(/[^0-9]/g, '')) || 0;
+                    totalSales += amount;
                 }
             });
 
@@ -371,13 +391,12 @@
                 })
             }).then(() => {
                 Toast.fire({ icon: 'success', title: 'บันทึกสำเร็จ!' });
-                setTimeout(() => loadOrders(false), 800); // รีโหลดเพื่ออัปเดตสี
+                setTimeout(() => loadOrders(false, null, "", true), 800); // รีโหลดแบบเงียบๆ
             }).catch(err => {
                 Swal.fire({icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'ไม่สามารถอัปเดตสถานะได้'});
             });
         }
         
-        // Enter เพื่อ Login
         document.getElementById('admin-pass').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') tryLogin();
         });
