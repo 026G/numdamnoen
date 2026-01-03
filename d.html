@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจัดการออเดอร์ - หนุ่มดำเนิน</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap');
+        body { font-family: 'Prompt', sans-serif; background-color: #f3f4f6; }
+        .status-select { appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 0.5rem center; background-size: 1.5em 1.5em; }
+    </style>
+</head>
+<body>
+
+    <div id="login-overlay" class="fixed inset-0 bg-gray-900 flex items-center justify-center z-50">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm text-center">
+            <div class="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fa-solid fa-store"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">เข้าสู่ระบบหลังบ้าน</h2>
+            <p class="text-gray-500 mb-6 text-sm">เฉพาะเจ้าของร้านเท่านั้น</p>
+            <input type="password" id="admin-pass" class="w-full border border-gray-300 px-4 py-3 rounded-xl mb-4 focus:ring-2 focus:ring-green-500 outline-none text-center text-lg" placeholder="ระบุรหัสผ่าน">
+            <button onclick="checkLogin()" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700 transition shadow-lg">เข้าใช้งาน</button>
+        </div>
+    </div>
+
+    <div id="dashboard-content" class="hidden min-h-screen">
+        
+        <header class="bg-white shadow-sm sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-chart-pie text-green-600 text-xl"></i>
+                    <h1 class="font-bold text-xl text-gray-800">หนุ่มดำเนิน Dashboard</h1>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="loadOrders()" class="bg-blue-50 text-blue-600 px-4 py-2 rounded-lg font-medium hover:bg-blue-100 transition flex items-center gap-2">
+                        <i class="fa-solid fa-rotate"></i> <span class="hidden sm:inline">รีเฟรชข้อมูล</span>
+                    </button>
+                    <button onclick="logout()" class="bg-red-50 text-red-600 px-4 py-2 rounded-lg font-medium hover:bg-red-100 transition">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-green-100">
+                    <p class="text-gray-500 text-xs">ออเดอร์รอรับ</p>
+                    <p class="text-2xl font-bold text-green-600" id="stat-pending">0</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-blue-100">
+                    <p class="text-gray-500 text-xs">กำลังปรุง</p>
+                    <p class="text-2xl font-bold text-blue-600" id="stat-cooking">0</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                    <h3 class="font-bold text-gray-700">รายการออเดอร์ล่าสุด (20 รายการ)</h3>
+                    <span class="text-xs text-gray-400">อัปเดตล่าสุด: <span id="last-update">-</span></span>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-gray-100 text-gray-600 text-xs uppercase">
+                            <tr>
+                                <th class="px-6 py-3 font-semibold">เวลา/ID</th>
+                                <th class="px-6 py-3 font-semibold">ลูกค้า</th>
+                                <th class="px-6 py-3 font-semibold w-1/3">รายการสินค้า</th>
+                                <th class="px-6 py-3 font-semibold text-center">ยอดรวม</th>
+                                <th class="px-6 py-3 font-semibold text-center">สถานะ</th>
+                                <th class="px-6 py-3 font-semibold text-center">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="order-table-body" class="text-sm text-gray-700">
+                            <tr>
+                                <td colspan="6" class="px-6 py-10 text-center text-gray-400">
+                                    <i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><br>กำลังโหลดข้อมูล...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // ============================================
+        // ⚙️ ตั้งค่า: ต้องตรงกับในไฟล์ index.html
+        // ============================================
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxdDDXZ3-pmT6nykdkjg7wrh16ZZkPFY5rmF_LsWcoFk5BoULi-lVJJEcsjBi7zKIJwDQ/exec"; 
+        const ADMIN_PASSWORD = "1234"; 
+        // ============================================
+
+        // Login Logic
+        function checkLogin() {
+            const pass = document.getElementById('admin-pass').value;
+            if(pass === ADMIN_PASSWORD) {
+                document.getElementById('login-overlay').classList.add('hidden');
+                document.getElementById('dashboard-content').classList.remove('hidden');
+                loadOrders();
+            } else {
+                Swal.fire({icon: 'error', title: 'รหัสผ่านไม่ถูกต้อง'});
+            }
+        }
+        function logout() { location.reload(); }
+
+        // Load Orders (ใช้ GET เพื่อดึงข้อมูล JSON)
+        function loadOrders() {
+            const tbody = document.getElementById('order-table-body');
+            // ทำให้ตารางจางลงระหว่างโหลด
+            if(!tbody.innerHTML.includes('fa-spinner')) {
+                tbody.style.opacity = '0.5';
+            }
+
+            // ยิง GET Request ไปที่ Google Apps Script
+            fetch(WEB_APP_URL + "?action=admin_get_orders")
+            .then(res => res.json())
+            .then(data => {
+                if(data.orders) {
+                    renderTable(data.orders);
+                    updateStats(data.orders);
+                    document.getElementById('last-update').innerText = new Date().toLocaleTimeString('th-TH');
+                    tbody.style.opacity = '1';
+                } else {
+                    console.error("No orders found or error:", data);
+                    tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-red-500">ไม่พบข้อมูล (ตรวจสอบ Code.gs)</td></tr>`;
+                }
+            })
+            .catch(err => {
+                console.error("Fetch Error:", err);
+                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-red-500">
+                    เชื่อมต่อ Google Sheet ไม่สำเร็จ<br>
+                    <span class="text-xs text-gray-400">กรุณาตรวจสอบว่า Deploy Web App เป็น "Anyone" แล้วหรือยัง</span>
+                </td></tr>`;
+            });
+        }
+
+        function renderTable(orders) {
+            const tbody = document.getElementById('order-table-body');
+            if(!orders || orders.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-gray-400">ยังไม่มีออเดอร์</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = orders.map(order => {
+                // กำหนดสีตามสถานะ
+                let statusColor = "bg-gray-100 text-gray-600";
+                if(order.status.includes("รอ")) statusColor = "bg-yellow-100 text-yellow-700";
+                if(order.status.includes("ปรุง")) statusColor = "bg-blue-100 text-blue-700";
+                if(order.status.includes("ไรเดอร์") || order.status.includes("ส่ง")) statusColor = "bg-purple-100 text-purple-700";
+                if(order.status.includes("สำเร็จ")) statusColor = "bg-green-100 text-green-700";
+                if(order.status.includes("ยกเลิก")) statusColor = "bg-red-100 text-red-700";
+
+                // ตัด Order ID เอา 4 ตัวท้าย
+                const shortId = order.id.includes('-') ? order.id.split('-')[1].slice(-4) : order.id.slice(-4);
+
+                return `
+                <tr class="border-b border-gray-50 hover:bg-gray-50 transition">
+                    <td class="px-6 py-4">
+                        <div class="font-bold text-gray-800">#${shortId}</div>
+                        <div class="text-xs text-gray-400">${order.time}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-medium text-gray-900">${order.name}</div>
+                        <div class="text-xs text-gray-500">${order.phone || ''}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm text-gray-600 whitespace-pre-line leading-relaxed">${order.items.replace(/\n/g, '<br>')}</div>
+                    </td>
+                    <td class="px-6 py-4 text-center font-bold text-gray-700">
+                        ${order.total}
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <select onchange="updateStatus(${order.row}, this.value)" 
+                                class="status-select cursor-pointer block w-full pl-3 pr-8 py-1.5 text-xs font-semibold rounded-full border-0 focus:ring-2 focus:ring-offset-2 focus:ring-green-500 ${statusColor}">
+                            <option value="🕒 รอร้านรับยอด" ${order.status.includes("รอ")?'selected':''}>🕒 รอรับยอด</option>
+                            <option value="👨‍🍳 กำลังปรุง" ${order.status.includes("ปรุง")?'selected':''}>👨‍🍳 กำลังปรุง</option>
+                            <option value="🛵 ไรเดอร์รับแล้ว" ${order.status.includes("ไรเดอร์")?'selected':''}>🛵 ไรเดอร์รับแล้ว</option>
+                            <option value="✅ จัดส่งสำเร็จ" ${order.status.includes("สำเร็จ")?'selected':''}>✅ สำเร็จ</option>
+                            <option value="❌ ยกเลิก" ${order.status.includes("ยกเลิก")?'selected':''}>❌ ยกเลิก</option>
+                        </select>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <button class="text-gray-400 hover:text-blue-600 transition mx-1" title="ดูรายละเอียด"><i class="fa-solid fa-eye"></i></button>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        }
+
+        function updateStats(orders) {
+            const pending = orders.filter(o => o.status.includes("รอ")).length;
+            const cooking = orders.filter(o => o.status.includes("ปรุง")).length;
+            document.getElementById('stat-pending').innerText = pending;
+            document.getElementById('stat-cooking').innerText = cooking;
+        }
+
+        function updateStatus(rowIndex, newStatus) {
+            const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000 });
+            Toast.fire({ icon: 'info', title: 'กำลังอัปเดตสถานะ...' });
+
+            fetch(WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    action: 'admin_update_status', 
+                    row: rowIndex, 
+                    status: newStatus 
+                })
+            }).then(() => {
+                Toast.fire({ icon: 'success', title: 'อัปเดตเรียบร้อย!' });
+                // โหลดข้อมูลใหม่เพื่อให้หน้าจออัปเดตสีปุ่ม
+                setTimeout(loadOrders, 1000); 
+            }).catch(err => {
+                Swal.fire({icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'ไม่สามารถอัปเดตสถานะได้'});
+            });
+        }
+        
+        // กด Enter เพื่อ Login
+        document.getElementById('admin-pass').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') checkLogin();
+        });
+
+    </script>
+</body>
+</html>
