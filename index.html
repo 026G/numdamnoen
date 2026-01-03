@@ -164,6 +164,7 @@
 
             <div class="bg-white p-5 shadow-sm">
                 <h2 class="text-lg font-bold text-gray-800 mb-4">เลือกวิธีการชำระเงิน</h2>
+                
                 <label class="block mb-3 cursor-pointer">
                     <input type="radio" name="paymentMethod" value="transfer" class="payment-radio hidden" checked onchange="togglePaymentDetail()">
                     <div class="border rounded-xl p-4 flex items-center justify-between transition-all hover:bg-gray-50">
@@ -174,32 +175,52 @@
                         <i class="fa-solid fa-qrcode text-gray-400 text-xl"></i>
                     </div>
                 </label>
+
                 <div id="payment-transfer-detail" class="ml-2 pl-6 border-l-2 border-gray-200 mb-6 space-y-4">
-                    <div class="bg-green-50 p-4 rounded-lg text-center border border-green-100">
+                    <div class="bg-green-50 p-4 rounded-lg text-center border border-green-100 relative">
                         <p class="text-sm font-bold text-gray-600 mb-2">สแกนเพื่อจ่าย</p>
                         <img id="qr-image" src="" class="w-40 h-40 mx-auto bg-white p-2 rounded shadow-sm">
+                        
+                        <button onclick="downloadQR()" class="mt-2 text-xs bg-white border border-green-200 text-green-700 px-3 py-1 rounded-full shadow-sm hover:bg-green-100 flex items-center gap-1 mx-auto">
+                            <i class="fa-solid fa-download"></i> บันทึกรูป
+                        </button>
+
                         <p class="text-xl font-bold text-green-700 mt-2" id="qr-amount-display">0 บาท</p>
                     </div>
-                    <div class="bg-gray-100 p-3 rounded-lg text-sm text-gray-600">
-                        <p><strong>ธนาคาร:</strong> กสิกรไทย (K-Bank)</p>
-                        <p><strong>ชื่อบัญชี:</strong> นายหนุ่ม ดำเนิน</p>
-                        <p><strong>เลขบัญชี:</strong> 123-4-56789-0</p>
+
+                    <div class="bg-gray-100 p-3 rounded-lg text-sm text-gray-600 space-y-1">
+                        <p><strong>ธนาคาร:</strong> พร้อมเพย์ QR (Prompt QR)</p>
+                        <p><strong>ชื่อบัญชี:</strong> วิวัฒน์ชัย พันธ์วิชัย</p>
+                        <div class="flex items-center gap-2">
+                            <strong>เลขบัญชี:</strong> 
+                            <span id="bank-acc-no" class="font-mono text-gray-800">062-246-7746</span>
+                            <button onclick="copyToClipboard('0622467746')" class="text-xs text-blue-500 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 hover:bg-blue-100">
+                                <i class="fa-regular fa-copy"></i> คัดลอก
+                            </button>
+                        </div>
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">แนบสลิปการโอน</label>
                         <input type="file" id="slip-file" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-l-lg file:border-0 file:text-sm file:font-semibold file:bg-green-600 file:text-white hover:file:bg-green-700 border border-gray-300 rounded-lg cursor-pointer bg-white shadow-sm">
                     </div>
                 </div>
-                <label class="block cursor-pointer">
-                    <input type="radio" name="paymentMethod" value="cod" class="payment-radio hidden" onchange="togglePaymentDetail()">
-                    <div class="border rounded-xl p-4 flex items-center justify-between transition-all hover:bg-gray-50">
+
+                <label id="cod-label" class="block cursor-pointer relative">
+                    <input type="radio" name="paymentMethod" value="cod" id="cod-radio" class="payment-radio hidden" onchange="togglePaymentDetail()">
+                    <div id="cod-box" class="border rounded-xl p-4 flex items-center justify-between transition-all hover:bg-gray-50">
                         <div class="flex items-center gap-3">
                             <div class="w-5 h-5 rounded-full border border-gray-300 radio-indicator flex items-center justify-center"></div>
-                            <span class="font-medium text-gray-700">เก็บเงินปลายทาง (COD)</span>
+                            <div>
+                                <span class="font-medium text-gray-700 block">เก็บเงินปลายทาง (COD)</span>
+                                <span id="cod-warning-text" class="text-[10px] text-red-500 hidden">
+                                    <i class="fa-solid fa-lock"></i> ใช้งานได้เฉพาะลูกค้าเก่าที่เคยสั่งแล้วเท่านั้น
+                                </span>
+                            </div>
                         </div>
                         <i class="fa-solid fa-money-bill-wave text-gray-400 text-xl"></i>
                     </div>
                 </label>
+
                 <div id="payment-cod-detail" class="hidden ml-2 pl-6 border-l-2 border-gray-200 mt-3">
                     <div class="bg-yellow-50 text-yellow-800 p-3 rounded-lg text-sm flex items-start gap-2">
                         <i class="fa-solid fa-circle-info mt-1"></i>
@@ -954,6 +975,65 @@
             if(status.includes("สำเร็จ")) return '<i class="fa-solid fa-circle-check"></i>';
             if(status.includes("ยกเลิก")) return '<i class="fa-solid fa-circle-xmark"></i>';
             return '<i class="fa-regular fa-clock"></i>';
+        }
+    // --- 9. Payment Helpers (Copy, Download, Check COD) ---
+
+        // ฟังก์ชันคัดลอกเลขบัญชี
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                Swal.fire({
+                    toast: true, position: 'top', icon: 'success', 
+                    title: 'คัดลอกเลขบัญชีแล้ว', showConfirmButton: false, timer: 1000 
+                });
+            }).catch(err => {
+                console.error('Copy failed', err);
+            });
+        }
+
+        // ฟังก์ชันดาวน์โหลด QR Code
+        async function downloadQR() {
+            const imgSrc = document.getElementById('qr-image').src;
+            if(!imgSrc) return;
+            
+            try {
+                const image = await fetch(imgSrc);
+                const imageBlog = await image.blob();
+                const imageURL = URL.createObjectURL(imageBlog);
+
+                const link = document.createElement('a');
+                link.href = imageURL;
+                link.download = 'QR-Payment.png';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch(e) {
+                Swal.fire({icon:'error', text:'ไม่สามารถบันทึกรูปได้ กรุณาแคปหน้าจอแทน'});
+            }
+        }
+
+        // ฟังก์ชันตรวจสอบสิทธิ์ COD (ลูกค้าเก่าเท่านั้น)
+        function checkCODEligibility() {
+            const history = JSON.parse(localStorage.getItem('order_history') || "[]");
+            const codRadio = document.getElementById('cod-radio');
+            const codLabel = document.getElementById('cod-label');
+            const codBox = document.getElementById('cod-box');
+            const codWarning = document.getElementById('cod-warning-text');
+
+            if (history.length > 0) {
+                // ✅ ลูกค้าเก่า: เปิดใช้งานปกติ
+                codRadio.disabled = false;
+                codLabel.classList.remove('opacity-50', 'pointer-events-none');
+                codBox.classList.remove('bg-gray-100');
+                codWarning.classList.add('hidden');
+            } else {
+                // 🔒 ลูกค้าใหม่: ปิดใช้งาน + โชว์เตือน
+                codRadio.disabled = true;
+                codLabel.classList.add('opacity-60'); // ทำให้ดูจางๆ
+                // ถ้าอยากให้กดไม่ได้เลย ให้เปิดบรรทัดล่างนี้
+                // codLabel.classList.add('pointer-events-none'); 
+                codBox.classList.add('bg-gray-100'); // พื้นหลังเทา
+                codWarning.classList.remove('hidden'); // โชว์ข้อความเตือน
+            }
         }
     </script>
 </body>
