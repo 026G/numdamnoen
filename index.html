@@ -242,7 +242,7 @@
         </div>
     </div>
 
-    <script>
+<script>
         // --- 1. ข้อมูลร้าน & Config ---
         const SHOP_LOC = [13.639417, 100.499580]; 
         const MAX_DIST_KM = 5.0; 
@@ -271,6 +271,8 @@
         let map, marker, userLat, userLng, distanceKm = 0;
         let deliveryFee = 0;
         let activeTab = 'recommend';
+        // 🔥 เพิ่มตัวแปรเก็บจำนวนสินค้าใน Modal
+        let currentQty = 1;
         
         // --- 2. Initial Setup ---
         document.addEventListener("DOMContentLoaded", () => {
@@ -366,89 +368,144 @@
 
         // --- 4. Menu & Cart ---
         function renderMenu(cat) {
-    const list = document.getElementById('menu-list');
-    const items = menuDB.filter(i => i.category === cat);
-    
-    list.innerHTML = items.map(item => {
-        const isSoldOut = !item.stock;
-        
-        // 🔥 เพิ่มบรรทัดนี้: เช็คว่ามีราคาเต็มไหม? ถ้ามีให้ใช้สีแดง (Red), ถ้าไม่มีใช้สีเขียว (Green)
-        const priceColorClass = item.originalPrice ? 'text-red-600' : 'text-green-600';
-
-        return `
-        <div class="bg-white p-4 border-b border-gray-100 flex gap-4 relative hover:bg-gray-50 transition active:bg-gray-100 cursor-pointer ${isSoldOut ? 'opacity-60 grayscale pointer-events-none' : ''}" onclick="${!isSoldOut ? `openModal(${item.id})` : ''}">
-            <div class="relative shrink-0 w-28 h-28">
-                <img src="${item.img}" class="w-full h-full object-cover rounded-xl shadow-sm">
-                ${item.badge && !isSoldOut ? `<span class="absolute top-0 left-0 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-tl-xl rounded-br-lg shadow-sm">${item.badge}</span>` : ''}
-                ${isSoldOut ? '<span class="absolute inset-0 flex items-center justify-center bg-black/40 text-white font-bold text-lg rounded-xl z-10">สินค้าหมด</span>' : ''}
-            </div>
+            const list = document.getElementById('menu-list');
+            const items = menuDB.filter(i => i.category === cat);
             
-            <div class="flex-1 flex flex-col justify-between py-1">
-                <div>
-                    <h3 class="font-bold text-gray-800 text-base leading-tight mb-1">${item.name}</h3>
-                    <p class="text-xs text-gray-500 line-clamp-2 leading-relaxed">${item.desc || 'อร่อย สดชื่น ต้องลอง!'}</p>
-                </div>
-                <div class="flex items-end justify-between mt-2">
-                    <div class="flex flex-col">
-                        ${item.originalPrice ? `<span class="text-gray-300 text-xs line-through">฿${item.originalPrice}</span>` : ''}
-                        
-                        <span class="${priceColorClass} font-bold text-lg">฿${item.price}</span>
-                    </div>
-                    ${!isSoldOut ? 
-                    `<button class="bg-green-100 text-green-700 w-9 h-9 rounded-full flex items-center justify-center hover:bg-green-600 hover:text-white transition shadow-sm border border-green-200">
-                        <i class="fa-solid fa-plus text-sm"></i>
-                    </button>` : ''}
-                </div>
-            </div>
-        </div>
-    `}).join('');
-}
+            list.innerHTML = items.map(item => {
+                const isSoldOut = !item.stock;
+                
+                // 🔥 เช็คสีราคา
+                const priceColorClass = item.originalPrice ? 'text-red-600' : 'text-green-600';
 
-        // Modal Logic
+                return `
+                <div class="bg-white p-4 border-b border-gray-100 flex gap-4 relative hover:bg-gray-50 transition active:bg-gray-100 cursor-pointer ${isSoldOut ? 'opacity-60 grayscale pointer-events-none' : ''}" onclick="${!isSoldOut ? `openModal(${item.id})` : ''}">
+                    <div class="relative shrink-0 w-28 h-28">
+                        <img src="${item.img}" class="w-full h-full object-cover rounded-xl shadow-sm">
+                        ${item.badge && !isSoldOut ? `<span class="absolute top-0 left-0 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-tl-xl rounded-br-lg shadow-sm">${item.badge}</span>` : ''}
+                        ${isSoldOut ? '<span class="absolute inset-0 flex items-center justify-center bg-black/40 text-white font-bold text-lg rounded-xl z-10">สินค้าหมด</span>' : ''}
+                    </div>
+                    
+                    <div class="flex-1 flex flex-col justify-between py-1">
+                        <div>
+                            <h3 class="font-bold text-gray-800 text-base leading-tight mb-1">${item.name}</h3>
+                            <p class="text-xs text-gray-500 line-clamp-2 leading-relaxed">${item.desc || 'อร่อย สดชื่น ต้องลอง!'}</p>
+                        </div>
+                        <div class="flex items-end justify-between mt-2">
+                            <div class="flex flex-col">
+                                ${item.originalPrice ? `<span class="text-gray-300 text-xs line-through">฿${item.originalPrice}</span>` : ''}
+                                
+                                <span class="${priceColorClass} font-bold text-lg">฿${item.price}</span>
+                            </div>
+                            ${!isSoldOut ? 
+                            `<button class="bg-green-100 text-green-700 w-9 h-9 rounded-full flex items-center justify-center hover:bg-green-600 hover:text-white transition shadow-sm border border-green-200">
+                                <i class="fa-solid fa-plus text-sm"></i>
+                            </button>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        // --- 🔥 ปรับปรุง Modal Logic ให้เลือกจำนวนได้ ---
         let currentItem, currentBasePrice;
+
         function openModal(id) {
              const item = menuDB.find(i=>i.id===id);
-             if(!item.options || item.options.length === 0) { addToCart(item, [], item.price); return; }
              
-             currentItem = item; currentBasePrice = item.price;
+             // 🔥 Reset จำนวนเป็น 1 ทุกครั้งที่เปิด
+             currentQty = 1;
+             currentItem = item; 
+             currentBasePrice = item.price;
              document.getElementById('modal-item-name').innerText = item.name;
              
-             const container = document.getElementById('modal-options'); container.innerHTML = '';
-             item.options.forEach((opt, idx) => {
-                 let html = `<div class="bg-gray-50 border border-gray-100 p-4 rounded-xl"><p class="font-semibold mb-3 text-gray-700 text-sm flex items-center gap-2">${opt.name}</p><div class="space-y-3">`;
-                 opt.choices.forEach((choice, cIdx) => {
-                     if (opt.type === 'radio') {
-                         const isChecked = cIdx === 0 ? 'checked' : ''; 
-                         html += `<label class="flex items-center justify-between cursor-pointer group"><div class="flex items-center"><input type="radio" name="opt-${idx}" value="${choice.label}" data-price="${choice.price}" ${isChecked} class="option-input text-green-600 focus:ring-green-500 w-4 h-4" onchange="calculateModalTotal()"><span class="ml-3 text-sm text-gray-600">${choice.label}</span></div>${choice.price > 0 ? `<span class="text-xs text-gray-500">+${choice.price}</span>` : ''}</label>`;
-                     } else {
-                         html += `<label class="flex items-center justify-between cursor-pointer group"><div class="flex items-center"><input type="checkbox" name="opt-${idx}" value="${choice.label}" data-price="${choice.price}" class="option-input text-green-600 rounded focus:ring-green-500 w-4 h-4" onchange="checkLimit(this, ${opt.max}); calculateModalTotal()"><span class="ml-3 text-sm text-gray-600">${choice.label}</span></div>${choice.price > 0 ? `<span class="text-xs text-gray-500">+${choice.price}</span>` : ''}</label>`;
-                     }
+             const container = document.getElementById('modal-options'); 
+             container.innerHTML = '';
+
+             // 🔥 วนลูปสร้างตัวเลือก (ถ้ามี)
+             if(item.options && item.options.length > 0) {
+                 item.options.forEach((opt, idx) => {
+                     let html = `<div class="bg-gray-50 border border-gray-100 p-4 rounded-xl mb-3"><p class="font-semibold mb-3 text-gray-700 text-sm flex items-center gap-2">${opt.name}</p><div class="space-y-3">`;
+                     opt.choices.forEach((choice, cIdx) => {
+                         if (opt.type === 'radio') {
+                             const isChecked = cIdx === 0 ? 'checked' : ''; 
+                             html += `<label class="flex items-center justify-between cursor-pointer group"><div class="flex items-center"><input type="radio" name="opt-${idx}" value="${choice.label}" data-price="${choice.price}" ${isChecked} class="option-input text-green-600 focus:ring-green-500 w-4 h-4" onchange="calculateModalTotal()"><span class="ml-3 text-sm text-gray-600">${choice.label}</span></div>${choice.price > 0 ? `<span class="text-xs text-gray-500">+${choice.price}</span>` : ''}</label>`;
+                         } else {
+                             html += `<label class="flex items-center justify-between cursor-pointer group"><div class="flex items-center"><input type="checkbox" name="opt-${idx}" value="${choice.label}" data-price="${choice.price}" class="option-input text-green-600 rounded focus:ring-green-500 w-4 h-4" onchange="checkLimit(this, ${opt.max}); calculateModalTotal()"><span class="ml-3 text-sm text-gray-600">${choice.label}</span></div>${choice.price > 0 ? `<span class="text-xs text-gray-500">+${choice.price}</span>` : ''}</label>`;
+                         }
+                     });
+                     html += `</div></div>`; 
+                     container.innerHTML += html;
                  });
-                 html += `</div></div>`; container.innerHTML += html;
-             });
-             calculateModalTotal(); document.getElementById('option-modal').classList.remove('hidden');
+             } else {
+                 // ถ้าไม่มี Option ให้ใส่ข้อความว่างๆ หรือปล่อยโล่ง แต่ยังต้องแสดงส่วนจำนวน
+                 container.innerHTML = `<div class="text-center text-gray-400 text-sm py-2"></div>`;
+             }
+
+             // 🔥 แทรกปุ่มเลือกจำนวน (+/-) ลงไปใน Modal
+             const qtyHtml = `
+                <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+                    <span class="font-bold text-gray-700">จำนวน</span>
+                    <div class="flex items-center gap-3 bg-gray-100 rounded-full p-1">
+                        <button onclick="adjustQty(-1)" class="w-8 h-8 rounded-full bg-white shadow text-green-600 font-bold hover:bg-green-50 flex items-center justify-center transition"><i class="fa-solid fa-minus"></i></button>
+                        <span id="qty-display" class="font-bold text-gray-800 w-8 text-center text-lg">1</span>
+                        <button onclick="adjustQty(1)" class="w-8 h-8 rounded-full bg-white shadow text-green-600 font-bold hover:bg-green-50 flex items-center justify-center transition"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                </div>
+             `;
+             container.insertAdjacentHTML('beforeend', qtyHtml);
+
+             calculateModalTotal(); 
+             document.getElementById('option-modal').classList.remove('hidden');
+        }
+
+        // 🔥 ฟังก์ชันปรับจำนวน
+        function adjustQty(change) {
+            const newQty = currentQty + change;
+            if(newQty < 1) return;
+            currentQty = newQty;
+            document.getElementById('qty-display').innerText = currentQty;
+            calculateModalTotal();
         }
 
         function calculateModalTotal() {
-            let total = currentBasePrice;
-            document.querySelectorAll('.option-input:checked').forEach(input => { total += parseInt(input.getAttribute('data-price') || 0); });
-            document.getElementById('modal-total-price').innerText = `฿${total}`;
+            let pricePerItem = currentBasePrice;
+            document.querySelectorAll('.option-input:checked').forEach(input => { 
+                pricePerItem += parseInt(input.getAttribute('data-price') || 0); 
+            });
+            
+            // 🔥 ราคารวม = (ราคาต่อชิ้น + ตัวเลือก) * จำนวน
+            const totalPrice = pricePerItem * currentQty;
+            document.getElementById('modal-total-price').innerText = `฿${totalPrice}`;
         }
+
         function checkLimit(checkbox, max) {
             if (!max) return;
             const name = checkbox.name;
             const checkedCount = document.querySelectorAll(`input[name="${name}"]:checked`).length;
             if (checkedCount > max) { checkbox.checked = false; Swal.fire({ toast: true, position: 'top', icon: 'info', title: `เลือกได้สูงสุด ${max} อย่าง`, showConfirmButton: false, timer: 1500 }); }
         }
+
         function closeModal() { document.getElementById('option-modal').classList.add('hidden'); }
+
         function confirmAddToCart() {
-            const selectedOptions = []; let totalPrice = currentBasePrice;
-            document.querySelectorAll('.option-input:checked').forEach(input => { selectedOptions.push(input.value); totalPrice += parseInt(input.getAttribute('data-price') || 0); });
-            addToCart(currentItem, selectedOptions, totalPrice); closeModal();
+            const selectedOptions = []; 
+            let pricePerItem = currentBasePrice;
+            
+            document.querySelectorAll('.option-input:checked').forEach(input => { 
+                selectedOptions.push(input.value); 
+                pricePerItem += parseInt(input.getAttribute('data-price') || 0); 
+            });
+
+            // 🔥 ราคารวมสุดท้ายที่จะส่งลงตะกร้า (คูณจำนวนแล้ว)
+            const finalTotalPrice = pricePerItem * currentQty;
+
+            addToCart(currentItem, selectedOptions, finalTotalPrice, currentQty); 
+            closeModal();
         }
 
-        function addToCart(item, opts, price) {
-            cart.push({ ...item, selectedOptions: opts, finalPrice: price });
+        function addToCart(item, opts, price, qty) {
+            // 🔥 บันทึกจำนวน (qty) ลงไปในตะกร้าด้วย
+            cart.push({ ...item, selectedOptions: opts, finalPrice: price, qty: qty });
             updateCartUI();
             if(document.querySelector('.active-section').id === 'page-menu') updateFooterState('menu');
             Swal.fire({ toast: true, position: 'top', icon: 'success', title: 'เพิ่มลงตะกร้าแล้ว', showConfirmButton: false, timer: 1000 });
@@ -473,7 +530,7 @@
                     <div class="flex-1 pr-2">
                         <div class="flex items-center gap-2 mb-1">
                             <span class="font-bold text-gray-700 text-sm bg-gray-100 px-1.5 rounded text-[10px] h-fit">${idx + 1}</span>
-                            <span class="font-semibold text-gray-800">${item.name}</span>
+                            <span class="font-semibold text-gray-800">${item.qty}x ${item.name}</span>
                         </div>
                         <div class="space-y-0.5 mt-1 border-l-2 border-gray-100 ml-1 pl-1">${optionsHtml}</div>
                         <div class="mt-2"><span class="text-xs text-red-500 font-medium cursor-pointer hover:underline flex items-center gap-1 w-fit" onclick="cart.splice(${idx},1);updateCartUI()"><i class="fa-solid fa-trash-can"></i> ลบรายการ</span></div>
@@ -589,7 +646,7 @@
             const orderData = {
                 name: name, phone: phone, address: address, landmark: landmark, location: `${userLat},${userLng}`,
                 items: cart.map((i, index) => {
-                    let detail = `${index + 1}. ${i.name}`; 
+                    let detail = `${index + 1}. ${i.name} (x${i.qty})`; // 🔥 เพิ่มจำนวนในรายการที่ส่งไป Line
                     if (i.selectedOptions && i.selectedOptions.length > 0) {
                         detail += i.selectedOptions.map(opt => `\n   └ 🔸 ${opt}`).join(''); 
                     }
@@ -613,23 +670,23 @@
             reader.onload = () => resolve(reader.result); reader.onerror = error => reject(error);
         });
         function startBannerAutoSlide() {
-    const slider = document.getElementById('banner-slider');
-    if (!slider) return;
-    
-    let scrollAmount = 0;
-    setInterval(() => {
-        const cardWidth = slider.offsetWidth + 12; // ความกว้างการ์ด + gap
-        scrollAmount += cardWidth;
+            const slider = document.getElementById('banner-slider');
+            if (!slider) return;
+            
+            let scrollAmount = 0;
+            setInterval(() => {
+                const cardWidth = slider.offsetWidth + 12; // ความกว้างการ์ด + gap
+                scrollAmount += cardWidth;
 
-        // ถ้าเลื่อนไปสุดแล้ว ให้กลับมาจุดเริ่มต้น
-        if (scrollAmount >= slider.scrollWidth) {
-            scrollAmount = 0;
-            slider.scrollTo({ left: 0, behavior: 'auto' }); // วาร์ปกลับเร็วๆ
-        } else {
-            slider.scrollTo({ left: scrollAmount, behavior: 'smooth' }); // เลื่อนนุ่มๆ
+                // ถ้าเลื่อนไปสุดแล้ว ให้กลับมาจุดเริ่มต้น
+                if (scrollAmount >= slider.scrollWidth) {
+                    scrollAmount = 0;
+                    slider.scrollTo({ left: 0, behavior: 'auto' }); // วาร์ปกลับเร็วๆ
+                } else {
+                    slider.scrollTo({ left: scrollAmount, behavior: 'smooth' }); // เลื่อนนุ่มๆ
+                }
+            }, 9000); // เลื่อนทุก 4 วินาที
         }
-    }, 9000); // เลื่อนทุก 4 วินาที
-}
     </script>
 </body>
 </html>
