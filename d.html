@@ -17,17 +17,7 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
-        /* Status Badge Colors */
-        .status-badge {
-            padding: 0.35rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-            transition: all 0.2s;
-        }
+        /* Custom Select Style */
         select.status-select {
             appearance: none;
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3e%3cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3e%3c/path%3e%3c/svg%3e");
@@ -51,11 +41,11 @@
             <div class="relative mb-4">
                 <input type="password" id="admin-pass" 
                     class="w-full bg-slate-50 border border-slate-200 px-4 py-3.5 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-center text-lg tracking-widest transition-all placeholder:tracking-normal placeholder:text-slate-400" 
-                    placeholder="รหัสผ่าน (1234)">
+                    placeholder="รหัสผ่าน">
                 <i class="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
             </div>
             
-            <button onclick="checkLogin()" class="w-full bg-emerald-600 text-white py-3.5 rounded-xl font-bold hover:bg-emerald-700 active:scale-[0.98] transition shadow-lg shadow-emerald-200">
+            <button onclick="tryLogin()" class="w-full bg-emerald-600 text-white py-3.5 rounded-xl font-bold hover:bg-emerald-700 active:scale-[0.98] transition shadow-lg shadow-emerald-200">
                 เข้าสู่ระบบ
             </button>
         </div>
@@ -132,8 +122,7 @@
                         <i class="fa-solid fa-list-ul text-slate-400 text-sm"></i> รายการออเดอร์ล่าสุด
                     </h3>
                     <div class="flex gap-2">
-                        <span class="px-3 py-1 bg-white border border-slate-200 rounded-full text-xs font-medium text-slate-600 cursor-pointer hover:bg-slate-50">ทั้งหมด</span>
-                        <span class="px-3 py-1 bg-white border border-slate-200 rounded-full text-xs font-medium text-amber-600 cursor-pointer hover:bg-amber-50">รอรับยอด</span>
+                        <span class="px-3 py-1 bg-white border border-slate-200 rounded-full text-xs font-medium text-slate-600 cursor-pointer hover:bg-slate-50">แสดง 20 รายการ</span>
                     </div>
                 </div>
                 
@@ -179,67 +168,82 @@
         // ⚙️ URL เดียวกับในไฟล์ index.html
         // ============================================
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxdDDXZ3-pmT6nykdkjg7wrh16ZZkPFY5rmF_LsWcoFk5BoULi-lVJJEcsjBi7zKIJwDQ/exec"; 
-        const ADMIN_PASSWORD = "1234"; // รหัสผ่าน
         // ============================================
 
+        let currentPassword = "";
+
         // --- 1. Login Logic ---
-        function checkLogin() {
-            const pass = document.getElementById('admin-pass').value;
-            if(pass === ADMIN_PASSWORD) {
-                document.getElementById('login-overlay').classList.add('opacity-0', 'pointer-events-none');
-                setTimeout(() => {
-                    document.getElementById('login-overlay').classList.add('hidden');
-                    document.getElementById('dashboard-content').classList.remove('hidden');
-                    loadOrders(); 
-                }, 300);
-            } else {
-                Swal.fire({
-                    icon: 'error', 
-                    title: 'รหัสผ่านไม่ถูกต้อง', 
-                    text: 'กรุณาลองใหม่อีกครั้ง',
-                    confirmButtonColor: '#10b981',
-                    timer: 1500
-                });
-            }
+        function tryLogin() {
+            const inputPass = document.getElementById('admin-pass').value;
+            if(!inputPass) return;
+            
+            // เปลี่ยนสถานะปุ่ม
+            const btn = document.querySelector('#login-overlay button');
+            const originalText = btn.innerText;
+            btn.innerText = "กำลังตรวจสอบ...";
+            btn.disabled = true;
+
+            // ลองส่งรหัสไปขอข้อมูล
+            currentPassword = inputPass; 
+            loadOrders(true, btn, originalText); 
         }
-        function logout() { location.reload(); }
 
         // --- 2. Load Orders ---
-        function loadOrders() {
+        function loadOrders(isLoggingIn = false, loginBtn = null, btnText = "") {
             const tbody = document.getElementById('order-table-body');
             const statusDiv = document.getElementById('connection-status');
-            
-            // Animation หมุน icon
             const refreshIcon = document.querySelector('.fa-rotate');
+            
             if(refreshIcon) refreshIcon.classList.add('fa-spin');
+            if(!isLoggingIn && !tbody.innerHTML.includes('fa-spinner')) tbody.style.opacity = '0.5';
 
-            if(!tbody.innerHTML.includes('fa-spinner')) tbody.style.opacity = '0.5';
-
-            fetch(WEB_APP_URL + "?action=admin_get_orders")
+            // ส่ง pass ไปกับ URL
+            fetch(`${WEB_APP_URL}?action=admin_get_orders&pass=${encodeURIComponent(currentPassword)}`)
             .then(res => res.json())
             .then(data => {
-                if(data.orders) {
+                if(data.error === 'Wrong Password') {
+                    if(isLoggingIn) {
+                        Swal.fire({icon: 'error', title: 'รหัสผิด!', text: 'กรุณาลองใหม่อีกครั้ง', confirmButtonColor: '#ef4444'});
+                        document.getElementById('admin-pass').value = '';
+                        loginBtn.innerText = btnText;
+                        loginBtn.disabled = false;
+                        currentPassword = ""; 
+                    } else {
+                        logout(); // session หมดอายุ
+                    }
+                } else if(data.orders) {
+                    if(isLoggingIn) {
+                        document.getElementById('login-overlay').classList.add('hidden');
+                        document.getElementById('dashboard-content').classList.remove('hidden');
+                    }
                     renderTable(data.orders);
                     updateStats(data.orders);
                     document.getElementById('last-update').innerText = new Date().toLocaleTimeString('th-TH');
                     tbody.style.opacity = '1';
                     statusDiv.classList.add('hidden');
                 } else {
-                    throw new Error("No data");
+                    throw new Error("Invalid Response");
                 }
             })
             .catch(err => {
                 console.error(err);
-                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-rose-500 bg-rose-50/50">
-                    <i class="fa-solid fa-wifi text-3xl mb-2 opacity-50"></i><br>
-                    เชื่อมต่อข้อมูลไม่สำเร็จ
-                </td></tr>`;
-                statusDiv.classList.remove('hidden');
-                tbody.style.opacity = '1';
+                if(!isLoggingIn) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-rose-500 bg-rose-50/50"><i class="fa-solid fa-wifi text-3xl mb-2 opacity-50"></i><br>เชื่อมต่อไม่สำเร็จ</td></tr>`;
+                    statusDiv.classList.remove('hidden');
+                } else {
+                     Swal.fire({icon: 'error', title: 'เชื่อมต่อไม่ได้', text: 'กรุณาเช็คอินเทอร์เน็ต หรือตรวจสอบการ Deploy'});
+                     loginBtn.innerText = btnText;
+                     loginBtn.disabled = false;
+                }
             })
             .finally(() => {
                 if(refreshIcon) refreshIcon.classList.remove('fa-spin');
             });
+        }
+
+        function logout() { 
+            currentPassword = "";
+            location.reload(); 
         }
 
         // --- 3. Render Table ---
@@ -248,13 +252,13 @@
             
             if(!orders || orders.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-slate-400">
-                    <i class="fa-regular fa-folder-open text-3xl mb-2 opacity-30"></i><br>ยังไม่มีออเดอร์เข้ามา
+                    <i class="fa-regular fa-folder-open text-3xl mb-2 opacity-30"></i><br>ยังไม่มีออเดอร์
                 </td></tr>`;
                 return;
             }
 
             tbody.innerHTML = orders.map(order => {
-                // Color Logic
+                // Logic สี Dropdown ตามสถานะ
                 let bgClass = "bg-slate-100 text-slate-600 border-slate-200";
                 const s = order.status || "";
                 
@@ -305,17 +309,16 @@
             }).join('');
         }
 
-        // --- 4. Update Stats ---
+        // --- 4. Update Stats (Animation) ---
         function updateStats(orders) {
             const pending = orders.filter(o => o.status.includes("รอ")).length;
             const cooking = orders.filter(o => o.status.includes("ปรุง")).length;
             
-            // คำนวณยอดขายรวม (เฉพาะอันที่สำเร็จ หรือทั้งหมดก็ได้ตามโจทย์)
-            // ในที่นี้ลองรวมทั้งหมดที่เป็นตัวเลข
+            // คำนวณยอดขายรวม
             let totalSales = 0;
             orders.forEach(o => {
                 const amount = parseInt(o.total.replace(/[^0-9]/g, '')) || 0;
-                // ถ้าอยากรวมเฉพาะออเดอร์สำเร็จ ให้ใส่เงื่อนไข if (o.status.includes("สำเร็จ"))
+                // หากต้องการนับเฉพาะยอดที่สำเร็จ ให้ใช้ if(o.status.includes("สำเร็จ"))
                 totalSales += amount;
             });
 
@@ -354,14 +357,15 @@
                 })
             }).then(() => {
                 Toast.fire({ icon: 'success', title: 'บันทึกสำเร็จ!' });
-                setTimeout(loadOrders, 800); 
+                setTimeout(() => loadOrders(false), 800); // รีโหลดเพื่ออัปเดตสี
             }).catch(err => {
                 Swal.fire({icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'ไม่สามารถอัปเดตสถานะได้'});
             });
         }
         
+        // Enter เพื่อ Login
         document.getElementById('admin-pass').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') checkLogin();
+            if (e.key === 'Enter') tryLogin();
         });
 
     </script>
