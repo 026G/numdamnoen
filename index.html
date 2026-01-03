@@ -64,7 +64,7 @@
                     
                     <div class="mt-2">
                         <button id="header-tracking-btn" onclick="handleTrackingClick()" class="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md hover:bg-gray-200 transition border border-gray-200 flex items-center gap-1">
-                            </button>
+                        </button>
                     </div>
 
                 </div>
@@ -306,9 +306,8 @@
         let map, marker, userLat, userLng, distanceKm = 0;
         let deliveryFee = 0;
         let activeTab = 'recommend';
-        // 🔥 เพิ่มตัวแปรเก็บจำนวนสินค้าใน Modal
         let currentQty = 1;
-        let trackingInterval = null; // สำหรับ Auto Refresh
+        let trackingInterval = null; 
         
         // --- 2. Initial Setup ---
         document.addEventListener("DOMContentLoaded", () => {
@@ -454,7 +453,7 @@
             `}).join('');
         }
 
-        // --- 🔥 ปรับปรุง Modal Logic ให้เลือกจำนวนได้ ---
+        // --- Modal Logic ---
         let currentItem, currentBasePrice;
 
         function openModal(id) {
@@ -759,28 +758,24 @@
             }, 9000); 
         }
 
-        // --- 8. History & Tracking Logic (Client Side) ---
+        // --- 8. History & Tracking Logic ---
+
         function saveOrderToHistory(order) {
             let history = JSON.parse(localStorage.getItem('order_history') || "[]");
-            
-            // ✅ แก้ไข: ตัด Order ID ให้เหลือแค่ 4 ตัวท้าย (เช่น ORD-111205 -> #1205)
-            // (เป็นการ Mockup ID ชั่วคราว เพราะจริงๆ ต้องรอ Response ID จาก Server แต่ใช้ no-cors เลยไม่ได้ค่ากลับมา)
-            // เราใช้ timestamp จำลองแทนไปก่อน
             const timePart = new Date().toLocaleTimeString('th-TH').replace(/:/g,'');
-            const shortId = timePart.slice(-4); // เอา 4 ตัวท้าย
+            const shortId = timePart.slice(-4); 
 
             const newOrder = {
                 id: 'Order #' + shortId, 
                 date: new Date().toLocaleDateString('th-TH', {day: 'numeric', month: 'short', hour:'2-digit', minute:'2-digit'}),
-                items: order.items.replace(/\n/g, '<br>'), // จัดรูปแบบรายการให้สวย
+                items: order.items.replace(/\n/g, '<br>'),
                 total: document.getElementById('summary-grand-total').innerText,
-                status: '🕒 รอร้านรับยอด' // สถานะเริ่มต้น
+                status: '🕒 รอร้านรับยอด' 
             };
             history.unshift(newOrder); 
             localStorage.setItem('order_history', JSON.stringify(history));
         }
 
-        // ✅ ฟังก์ชันอัปเดตปุ่ม Tracking (ตามที่ขอ)
         function updateTrackingButtonState() {
             const history = JSON.parse(localStorage.getItem('order_history') || "[]");
             const btn = document.getElementById('header-tracking-btn');
@@ -797,61 +792,82 @@
             handleTrackingClick(); 
         }
 
-        // ✅ ฟังก์ชันกดปุ่ม Tracking
-        function handleTrackingClick() {
-            const history = JSON.parse(localStorage.getItem('order_history') || "[]");
-            showPage('tracking');
+        // ----------------------------------------------------
+        // 🔥🔥🔥 แก้ไขส่วน Tracking (ให้ค้นหาอัตโนมัติ) 🔥🔥🔥
+        // ----------------------------------------------------
 
-            // ดึงเบอร์จาก LocalStorage
+        function handleTrackingClick() {
+            showPage('tracking');
+            const history = JSON.parse(localStorage.getItem('order_history') || "[]");
             const savedPhone = localStorage.getItem('cust_phone');
+            
+            // ✅ แสดงกล่องค้นหาเสมอ ให้ลูกค้าเห็นเบอร์และแก้ไขได้
+            document.getElementById('tracking-search-box').classList.remove('hidden');
 
             if (savedPhone) {
-                // ถ้ามีเบอร์ -> ให้ดึงข้อมูลล่าสุดจาก Server ทันที
+                // กรณีมีเบอร์เดิม: เติมเบอร์ให้ และกดค้นหาให้อัตโนมัติ
                 document.getElementById('track-phone').value = savedPhone;
-                searchOrder(false); // เรียกครั้งแรก (มี Loading)
+                searchOrder(false); // ค้นหาครั้งแรก (โชว์ Loading)
                 
-                // 🔥 เริ่ม Auto Refresh ทุก 5 วินาที
+                // เริ่มระบบ Auto Refresh
                 if (trackingInterval) clearInterval(trackingInterval);
                 trackingInterval = setInterval(() => {
-                    searchOrder(true); // Silent Refresh
-                }, 5000);
+                    searchOrder(true); // ค้นหาแบบเงียบ (ไม่โชว์ Loading)
+                }, 10000); 
                 
             } else if (history.length > 0) {
-                // ถ้าไม่มีเบอร์แต่มีประวัติในเครื่อง -> โชว์ประวัติเก่าไปก่อน
-                document.getElementById('tracking-search-box').classList.add('hidden');
+                // กรณีไม่มีเบอร์ แต่มีประวัติในเครื่อง: โชว์ประวัติเก่า
                 renderHistory(history);
             } else {
-                // ถ้าไม่มีอะไรเลย -> โชว์กล่องค้นหา
-                document.getElementById('tracking-search-box').classList.remove('hidden');
-                document.getElementById('tracking-result').innerHTML = '<div class="text-center text-gray-300 py-10"><i class="fa-solid fa-magnifying-glass text-4xl mb-2"></i><p>กรุณากรอกเบอร์โทรเพื่อค้นหา</p></div>';
+                // กรณีใหม่เอี่ยม: เคลียร์หน้าจอรอค้นหา
+                document.getElementById('tracking-result').innerHTML = `
+                    <div class="text-center text-gray-300 py-10">
+                        <i class="fa-solid fa-magnifying-glass text-4xl mb-2"></i>
+                        <p>กรุณากรอกเบอร์โทรเพื่อค้นหา</p>
+                    </div>`;
             }
         }
 
-        // ✅ ฟังก์ชันค้นหา (Search from Server) - ปลอดภัย ไม่ต้องใช้รหัสผ่าน Admin
-        // รองรับ Auto Refresh (isSilent)
-        // ฟังก์ชันค้นหา (Search from Server) - ปลอดภัย ไม่ต้องใช้รหัสผ่าน Admin
-        function searchOrder() {
+        // ฟังก์ชันค้นหาออเดอร์ (Search)
+        function searchOrder(isSilent = false) { 
             const phone = document.getElementById('track-phone').value.trim();
-            if(phone.length < 9) return Swal.fire({icon:'warning', title:'กรุณากรอกเบอร์โทรให้ถูกต้อง'});
+            if(phone.length < 9) {
+                if(!isSilent) Swal.fire({icon:'warning', title:'กรุณากรอกเบอร์โทรให้ถูกต้อง'});
+                return;
+            }
 
             const resultDiv = document.getElementById('tracking-result');
-            resultDiv.innerHTML = '<div class="text-center py-10"><i class="fa-solid fa-circle-notch fa-spin text-green-600 text-3xl"></i><p class="text-gray-500 mt-2">กำลังค้นหาข้อมูลล่าสุด...</p></div>';
+            
+            // ถ้าไม่ใช่ Silent Mode ให้ขึ้น Loading
+            if(!isSilent) {
+                resultDiv.innerHTML = `
+                <div class="text-center py-10 animate-pulse">
+                    <i class="fa-solid fa-circle-notch fa-spin text-green-600 text-3xl"></i>
+                    <p class="text-gray-500 mt-2">กำลังดึงข้อมูลล่าสุด...</p>
+                </div>`;
+            }
 
-            // ✅ ยิงไปที่ action ใหม่: get_customer_orders พร้อมส่งเบอร์โทร
+            // ยิงไปที่ Google Apps Script
             fetch(`${WEB_APP_URL}?action=get_customer_orders&phone=${encodeURIComponent(phone)}`) 
             .then(res => res.json())
             .then(data => {
                 if(data.orders && data.orders.length > 0) {
-                    // ถ้าเจอข้อมูลจาก Server แสดงผลเลย
+                    // ✅ เจอข้อมูล: แสดงผล
                     renderHistoryFromAdminData(data.orders);
+                    
+                    // บันทึกเบอร์ล่าสุดไว้ด้วย (เผื่อ User พิมพ์ใหม่)
+                    localStorage.setItem('cust_phone', phone);
                 } else {
-                    // ถ้าไม่เจอใน Server ให้ลองดูใน LocalStorage (เผื่อระบบขัดข้อง)
-                    checkLocalStorageBackup();
+                    // ❌ ไม่เจอข้อมูลใน Server
+                    if(!isSilent) {
+                        // ลองดูในเครื่องตัวเอง (Backup)
+                        checkLocalStorageBackup();
+                    }
                 }
             })
             .catch(err => {
                 console.error("Fetch error:", err);
-                checkLocalStorageBackup();
+                if(!isSilent) checkLocalStorageBackup();
             });
         }
 
@@ -867,85 +883,32 @@
             }
         }
 
-        // ฟังก์ชันแสดงผลสำหรับข้อมูลจาก Server (Format ตรงกับ Code.gs)
-        function renderHistoryFromAdminData(serverOrders) {
-            const container = document.getElementById('tracking-result');
-            container.innerHTML = serverOrders.map(order => {
-                let statusColor = "text-orange-500 bg-orange-50 border-orange-100";
-                if(order.status.includes("ปรุง")) statusColor = "text-blue-600 bg-blue-50 border-blue-100";
-                else if(order.status.includes("ส่ง") || order.status.includes("ไรเดอร์")) statusColor = "text-purple-600 bg-purple-50 border-purple-100";
-                else if(order.status.includes("สำเร็จ")) statusColor = "text-green-600 bg-green-50 border-green-100";
-                else if(order.status.includes("ยกเลิก")) statusColor = "text-red-600 bg-red-50 border-red-100";
-
-                // ใช้ shortId ที่ส่งมาจาก Server หรือตัดเองถ้าไม่มี
-                const displayId = order.shortId || (order.id.includes('-') ? order.id.split('-')[1].slice(-4) : order.id.slice(-4));
-
-                return `
-                <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-2 relative overflow-hidden animate-fade-in-up">
-                    <div class="flex justify-between items-start z-10">
-                        <div>
-                            <span class="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-1 rounded border border-gray-200">#${displayId}</span>
-                            <div class="text-xs text-gray-400 mt-1"><i class="fa-regular fa-clock mr-1"></i>${order.time}</div>
-                        </div>
-                        <span class="${statusColor} font-bold text-xs px-2 py-1 rounded-lg border flex items-center gap-1">
-                            ${getStatusIcon(order.status)} ${order.status}
-                        </span>
-                    </div>
-                    <div class="border-t border-dashed border-gray-100 my-2"></div>
-                    <div class="text-sm text-gray-600 space-y-1">
-                        ${order.items.replace(/\n/g, '<br>')}
-                    </div>
-                    <div class="flex justify-between items-center mt-3 pt-2 border-t border-gray-50">
-                        <span class="text-xs text-gray-400">ราคารวม</span>
-                        <span class="font-bold text-gray-800 text-lg">${order.total}</span>
-                    </div>
-                </div>
-            `}).join('');
-        }
-
-        function checkLocalStorageBackup() {
-            const history = JSON.parse(localStorage.getItem('order_history') || "[]");
-            const resultDiv = document.getElementById('tracking-result');
-            
-            if(history.length > 0) {
-                renderHistory(history);
-                resultDiv.insertAdjacentHTML('afterbegin', '<p class="text-center text-xs text-orange-400 mb-2"><i class="fa-solid fa-triangle-exclamation"></i> ไม่สามารถเชื่อมต่อ Server ได้ แสดงข้อมูลล่าสุดในเครื่อง</p>');
-            } else {
-                resultDiv.innerHTML = '<div class="text-center text-gray-400 py-10"><i class="fa-solid fa-box-open text-4xl mb-2"></i><p>ไม่พบประวัติการสั่งซื้อ</p></div>';
-            }
-        }
-
-        // ✅ ฟังก์ชันแสดงผลข้อมูลจาก Server (เพิ่มสีพื้นหลัง + ตัด Order ID)
         function renderHistoryFromAdminData(serverOrders) {
             const container = document.getElementById('tracking-result');
             
-            // ใช้ innerHTML แทนที่ของเดิมเพื่ออัปเดตข้อมูลล่าสุด
             container.innerHTML = serverOrders.map(order => {
                 let statusColor = "text-orange-500 bg-orange-50 border-orange-100";
-                let cardBgColor = "bg-white"; // 🎨 สีพื้นหลังเริ่มต้น
+                let cardBgColor = "bg-white"; 
 
                 if(order.status.includes("ปรุง")) {
                     statusColor = "text-blue-600 bg-blue-50 border-blue-100";
-                    cardBgColor = "bg-blue-50/30 border-blue-100"; // 🎨 พื้นหลังฟ้าอ่อน
+                    cardBgColor = "bg-blue-50/30 border-blue-100"; 
                 }
                 else if(order.status.includes("ส่ง") || order.status.includes("ไรเดอร์")) {
                     statusColor = "text-purple-600 bg-purple-50 border-purple-100";
-                    cardBgColor = "bg-purple-50/30 border-purple-100"; // 🎨 พื้นหลังม่วงอ่อน
+                    cardBgColor = "bg-purple-50/30 border-purple-100"; 
                 }
                 else if(order.status.includes("สำเร็จ")) {
                     statusColor = "text-green-600 bg-green-50 border-green-100";
-                    cardBgColor = "bg-green-50/30 border-green-100"; // 🎨 พื้นหลังเขียวอ่อน
+                    cardBgColor = "bg-green-50/30 border-green-100"; 
                 }
                 else if(order.status.includes("ยกเลิก")) {
                     statusColor = "text-red-600 bg-red-50 border-red-100";
-                    cardBgColor = "bg-red-50/30 border-red-100"; // 🎨 พื้นหลังแดงอ่อน
+                    cardBgColor = "bg-red-50/30 border-red-100"; 
                 } else {
-                    // รอร้านรับยอด
-                    cardBgColor = "bg-orange-50/20 border-orange-100"; // 🎨 พื้นหลังส้มจางๆ
+                    cardBgColor = "bg-orange-50/20 border-orange-100"; 
                 }
 
-                // ✅ ตัด Order ID ให้เหลือ 4 ตัวท้าย (เช่น ORD-260103 -> #0103)
-                // ถ้ามี shortId จาก Server ก็ใช้เลย ถ้าไม่มีก็ตัดเอง
                 const displayId = order.shortId || (order.id.includes('-') ? order.id.split('-')[1].slice(-4) : order.id.slice(-4));
 
                 return `
@@ -971,12 +934,11 @@
             `}).join('');
         }
 
-        // Render ข้อมูลจาก LocalStorage (ใช้สีเดิมๆ หรือจะปรับก็ได้)
         function renderHistory(historyData) {
             const container = document.getElementById('tracking-result');
             container.innerHTML = historyData.map(order => {
                  let statusColor = "text-orange-500 bg-orange-50 border-orange-100";
-                 // ... (Logic เดิม)
+                 // ... Logic เดิม
                  return `<div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-2 relative overflow-hidden">
                     <div class="flex justify-between items-start z-10">
                         <div><span class="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-1 rounded border border-gray-200">${order.id}</span><div class="text-xs text-gray-400 mt-1">${order.date}</div></div>
