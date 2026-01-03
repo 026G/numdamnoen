@@ -793,15 +793,16 @@
         }
 
         // ----------------------------------------------------
-        // 🔥🔥🔥 แก้ไขส่วน Tracking (ให้ค้นหาอัตโนมัติ) 🔥🔥🔥
+        // 🔥🔥🔥 แก้ไขส่วน Tracking (ลูปหาย + ช่องค้นหามาแล้ว) 🔥🔥🔥
         // ----------------------------------------------------
 
         function handleTrackingClick() {
-            showPage('tracking');
+            showPage('tracking'); // เรียกเพื่อเปลี่ยนหน้า (แต่ showPage จะไม่เรียกกลับมาหา function นี้แล้ว)
+
             const history = JSON.parse(localStorage.getItem('order_history') || "[]");
             const savedPhone = localStorage.getItem('cust_phone');
             
-            // ✅ แสดงกล่องค้นหาเสมอ ให้ลูกค้าเห็นเบอร์และแก้ไขได้
+            // ✅ บังคับโชว์กล่องค้นหาเสมอ (แก้ปัญหาหายไป)
             document.getElementById('tracking-search-box').classList.remove('hidden');
 
             if (savedPhone) {
