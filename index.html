@@ -112,7 +112,7 @@
                     </div>
                 </div>
             </div>
-           
+            
             <div id="menu-list" class="pb-4"></div>
         </section>
 
@@ -296,7 +296,7 @@
                 </div>
 
                 <div id="tracking-result" class="space-y-4 pb-24">
-                     <div class="text-center text-gray-300 py-10">
+                      <div class="text-center text-gray-300 py-10">
                         <i class="fa-solid fa-box-open text-4xl mb-2"></i>
                         <p>กรุณากรอกเบอร์โทรเพื่อค้นหา</p>
                     </div>
@@ -355,7 +355,7 @@
     from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     // 🔴🔴🔴 1. เอา Config จาก Firebase Console มาวางทับตรงนี้ครับ 🔴🔴🔴
-    const firebaseConfig = {
+        const firebaseConfig = {
       apiKey: "AIzaSyBLo1JKTNOrx6vvh2a6Pl8Zxjll4eoIKAA",
       authDomain: "linenoti-7c04f.firebaseapp.com",
       databaseURL: "https://linenoti-7c04f-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -372,13 +372,11 @@
     // ==========================================
     // 1. ข้อมูลร้าน & Global Variables
     // ==========================================
-    // ใช้ window. เพื่อให้ HTML เรียกใช้ตัวแปรได้ (เพราะอยู่ใน type="module")
     window.SHOP_LOC = [13.639417, 100.499580]; 
     window.MAX_DIST_KM = 5.0; 
-    window.OPEN_HOUR = 9;   
+    window.OPEN_HOUR = 9;    
     window.CLOSE_HOUR = 24; 
 
-    // 🔥 ข้อมูลสินค้า & ระบบตะกร้า
     window.menuDB = [];
     window.cart = [];
     window.map = null;
@@ -391,7 +389,6 @@
     window.currentQty = 1;
     window.trackingInterval = null;
     
-    // ตัวแปรสำหรับ Modal
     window.currentItem = null;
     window.currentBasePrice = 0;
 
@@ -399,14 +396,12 @@
     // 2. Initial Setup (โหลดเมนูจาก Firebase)
     // ==========================================
     document.addEventListener("DOMContentLoaded", async () => {
-        // โชว์ Loading ระหว่างดึงข้อมูล
         Swal.fire({
             title: 'กำลังโหลดเมนู...',
             allowOutsideClick: false,
             didOpen: () => { Swal.showLoading() }
         });
 
-        // 🔥 ดึงข้อมูลจาก Firebase Realtime Database
         try {
             const menuRef = ref(db, 'menu');
             const snapshot = await get(menuRef);
@@ -416,25 +411,20 @@
                 
                 // ✅ 1. แปลงข้อมูลจาก Firebase เป็น Array และใช้ Key เป็น ID
                 window.menuDB = Object.entries(rawData).map(([key, val]) => {
-                    // ถ้า val เป็น null (กรณีเคยลบข้อมูลแหว่งๆ) ให้กัน error ไว้
                     if(!val) return null;
-                    // ใช้ Key จาก Firebase เป็น id เพื่อให้ตรงกับหน้า Admin
                     return { ...val, id: key }; 
-                }).filter(item => item !== null); // กรองตัวว่างทิ้ง
+                }).filter(item => item !== null); 
             
-                // ✅ 2. เรียงลำดับตามที่คุณลากวาง (sortOrder)
+                // ✅ 2. เรียงลำดับตาม sortOrder
                 window.menuDB.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
             
                 Swal.close();
-                // ... (โค้ดด้านล่างเหมือนเดิม)
 
-                // เริ่มรันระบบ UI
                 window.switchTab('recommend');
                 window.initMap();
                 window.updateFooterState('menu');
                 window.startBannerAutoSlide();
 
-                // โหลดข้อมูลลูกค้าเก่า (ถ้ามี)
                 if(localStorage.getItem('cust_name')) document.getElementById('cust-name').value = localStorage.getItem('cust_name');
                 if(localStorage.getItem('cust_phone')) document.getElementById('cust-phone').value = localStorage.getItem('cust_phone');
                 if(localStorage.getItem('cust_address')) document.getElementById('cust-address').value = localStorage.getItem('cust_address');
@@ -443,7 +433,7 @@
                 window.updateShopStatusUI();
             } else {
                 Swal.fire('แจ้งเตือน', 'ไม่พบข้อมูลเมนูในระบบ (Database Empty)', 'warning');
-                window.menuDB = []; // กัน Error
+                window.menuDB = [];
             }
         } catch (error) {
             console.error(error);
@@ -455,7 +445,6 @@
     // 3. Navigation Functions
     // ==========================================
     window.showPage = function(pageId) {
-        // หยุด Auto Refresh เมื่อออกจากหน้า Tracking
         if (pageId !== 'tracking' && window.trackingInterval) {
             clearInterval(window.trackingInterval);
             window.trackingInterval = null;
@@ -465,7 +454,6 @@
         document.getElementById('page-' + pageId).classList.add('active-section');
         document.getElementById('category-tabs').style.display = (pageId === 'menu') ? 'flex' : 'none';
         
-        // จัดการปุ่มย้อนกลับ (ซ่อนเมื่ออยู่หน้าเมนู)
         const backBtn = document.querySelector('header button i.fa-arrow-left')?.parentElement;
         if(backBtn) {
             if(pageId === 'menu') {
@@ -479,7 +467,6 @@
         window.updateFooterState(pageId);
         if(pageId === 'address' && window.map) setTimeout(() => window.map.invalidateSize(), 200);
         
-        // 🔥 เรียกฟังก์ชันเริ่มต้นหน้า Tracking โดยเฉพาะ
         if(pageId === 'tracking') {
             window.initTrackingPage(); 
         }
@@ -502,7 +489,6 @@
         window.activeTab = cat;
         const tabs = ['recommend', 'promotion'];
         
-        // วนลูปเปลี่ยนสีปุ่ม
         tabs.forEach(tabName => {
             const element = document.getElementById(`tab-${tabName}`);
             if (cat === tabName) {
@@ -512,14 +498,12 @@
             }
         });
 
-        // ซ่อนหัวข้อเดิม (ถ้ามี)
         const heading = document.getElementById('menu-heading');
         if(heading && heading.parentElement) heading.parentElement.style.display = 'none';
 
         window.renderMenu(cat);
     }
 
-    // เช็คเวลาร้านเปิด-ปิด
     window.isShopOpen = function() {
         const now = new Date();
         const hour = now.getHours();
@@ -529,7 +513,6 @@
     window.updateFooterState = function(pageId) {
         const footer = document.getElementById('sticky-footer');
         
-        // ⏰ Auto Open/Close Logic
         if (!window.isShopOpen()) {
             footer.classList.remove('hidden');
             footer.innerHTML = `
@@ -537,10 +520,9 @@
                     ⛔ ร้านปิด (เปิด ${String(window.OPEN_HOUR).padStart(2,'0')}:00 - ${String(window.CLOSE_HOUR).padStart(2,'0')}:00 น.)
                 </div>
             `;
-            return; // หยุดการทำงาน ไม่โชว์ปุ่มอื่น
+            return;
         }
 
-        // ถ้าเปิดร้าน ให้โชว์ปุ่มปกติ (Reset HTML)
         if(footer.innerHTML.includes('ร้านปิด')) location.reload(); 
 
         footer.classList.remove('hidden');
@@ -563,14 +545,13 @@
     // ==========================================
     window.renderMenu = function(cat) {
         const list = document.getElementById('menu-list');
-        // กรองสินค้าตามหมวด และต้องไม่ถูกซ่อน (hidden != true)
         const items = window.menuDB.filter(i => i.category === cat && i.hidden !== true);
         
         const createCard = (item) => {
             const isSoldOut = !item.stock;
             const priceColorClass = item.originalPrice ? 'text-red-600' : 'text-green-600';
             
-            // 🔥 แก้ไข: ใส่ '...' ครอบ item.id ตรง onclick เพื่อรองรับ ID ที่เป็นตัวหนังสือ
+            // 🔥 ID เป็น String แล้ว ต้องใส่ '...' ครอบ
             return `
             <div class="bg-white p-4 border-b border-gray-100 flex gap-4 relative hover:bg-gray-50 transition active:bg-gray-100 cursor-pointer ${isSoldOut ? 'opacity-60 grayscale pointer-events-none' : ''}" onclick="${!isSoldOut ? `openModal('${item.id}')` : ''}">
                 <div class="relative shrink-0 w-24 h-24">
@@ -602,24 +583,6 @@
             }
             return;
         }
-
-        const subCats = [...new Set(items.map(i => i.subCategory || 'ราคาพิเศษ'))];
-        let finalHTML = '';
-        
-        subCats.forEach(subCatName => {
-            const subItems = items.filter(i => (i.subCategory || 'ราคาพิเศษ') === subCatName);
-            if (subItems.length > 0) {
-                finalHTML += `
-                    <div class="sticky top-0 bg-gray-50/95 backdrop-blur px-5 py-3 border-b border-gray-100 z-10">
-                        <h3 class="font-bold text-gray-800 text-lg">${subCatName}</h3>
-                    </div>
-                `;
-                finalHTML += subItems.map(createCard).join('');
-            }
-        });
-
-        list.innerHTML = finalHTML;
-    }
 
         const subCats = [...new Set(items.map(i => i.subCategory || 'ราคาพิเศษ'))];
         let finalHTML = '';
@@ -763,7 +726,7 @@
     }
 
     // ==========================================
-    // 5. Map Functions (ใช้ window.map)
+    // 5. Map Functions
     // ==========================================
     window.initMap = function() {
         window.map = L.map('map', { zoomControl: false });
@@ -772,10 +735,8 @@
         var shopIcon = L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/273/273177.png', iconSize: [50, 50], iconAnchor: [25, 50], popupAnchor: [0, -50] });
         var customerIcon = L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/2776/2776067.png', iconSize: [40, 40], iconAnchor: [20, 40], popupAnchor: [0, -40], shadowUrl: null });
         
-        // ปักหมุดร้าน
         L.marker(window.SHOP_LOC, { icon: shopIcon }).addTo(window.map).bindPopup("<b>ร้านหนุ่มดำเนิน</b><br>ส่งความอร่อยจากตรงนี้").openPopup();
 
-        // Check พิกัดเก่า
         const savedLat = localStorage.getItem('cust_lat');
         const savedLng = localStorage.getItem('cust_lng');
         
@@ -834,7 +795,7 @@
     window.deg2rad = function(deg) { return deg * (Math.PI/180); }
 
     // ==========================================
-    // 6. Validate & Confirm (Order to Firebase)
+    // 6. Validate & Confirm
     // ==========================================
     window.validateAndGoToPayment = function() {
         const name = document.getElementById('cust-name').value;
@@ -884,7 +845,6 @@
         document.getElementById('payment-cod-detail').classList.toggle('hidden', method !== 'cod');
     }
 
-    // 🔥🔥 ฟังก์ชันส่งออเดอร์เข้า Firebase 🔥🔥
     window.confirmOrder = async function() {
         const method = document.querySelector('input[name="paymentMethod"]:checked').value;
         const name = document.getElementById('cust-name').value;
@@ -912,7 +872,6 @@
         const shortId = timestamp.getTime().toString().slice(-4);
         const orderId = `ORD-${shortId}`;
         
-        // สร้าง Object Order (JSON)
         const newOrder = {
             id: orderId,
             timestamp: timestamp.toISOString(),
@@ -921,16 +880,14 @@
             items: window.cart,
             total: total,
             paymentMethod: method,
-            slipImage: slipBase64, // (หมายเหตุ: Firebase RTDB เก็บ Base64 ใหญ่ๆ อาจจะช้า แนะนำใช้ Storage ในอนาคต)
+            slipImage: slipBase64,
             status: "🕒 รอร้านรับยอด"
         };
 
         try {
-            // ✅ ยิงเข้า Firebase Realtime Database
             const ordersRef = ref(db, 'orders');
             await push(ordersRef, newOrder);
 
-            // บันทึก History และ Update UI
             window.saveOrderToHistory(newOrder);
             window.updateTrackingButtonState();
 
@@ -971,11 +928,10 @@
     }
 
     // ==========================================
-    // 8. History & Tracking (ดึงจาก Firebase)
+    // 8. History & Tracking
     // ==========================================
     window.saveOrderToHistory = function(order) {
         let history = JSON.parse(localStorage.getItem('order_history') || "[]");
-        // แปลง format ให้เหมือนเดิม เพื่อให้ UI เก่ารองรับ
         const itemsStr = order.items.map(i => `${i.name} (x${i.qty})`).join('<br>');
         
         const newHistoryItem = {
@@ -1018,7 +974,6 @@
         }
     }
 
-    // 🔥🔥 ค้นหาออเดอร์จาก Firebase 🔥🔥
     window.searchOrder = function(isSilent = false) { 
         const phone = document.getElementById('track-phone').value.trim();
         if(phone.length < 9) { if(!isSilent) Swal.fire({icon:'warning', title:'กรุณากรอกเบอร์โทรให้ถูกต้อง'}); return; }
@@ -1026,12 +981,10 @@
         const resultDiv = document.getElementById('tracking-result');
         if(!isSilent) resultDiv.innerHTML = `<div class="text-center py-10 animate-pulse"><i class="fa-solid fa-circle-notch fa-spin text-green-600 text-3xl"></i><p class="text-gray-500 mt-2">กำลังดึงข้อมูลล่าสุด...</p></div>`;
 
-        // ✅ ดึงจาก Firebase
         const ordersRef = ref(db, 'orders');
         get(ordersRef).then((snapshot) => {
              if (snapshot.exists()) {
                  const allOrders = snapshot.val();
-                 // Filter Client-side (ง่ายกว่าสำหรับมือใหม่)
                  const myOrders = Object.values(allOrders)
                      .filter(o => o.customer.phone.includes(phone))
                      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
@@ -1095,7 +1048,6 @@
         return '<i class="fa-regular fa-clock"></i>';
     }
 
-    // --- 9. Payment Helpers ---
     window.copyToClipboard = function(text) {
         navigator.clipboard.writeText(text).then(() => { Swal.fire({ toast: true, position: 'top', icon: 'success', title: 'คัดลอกเลขบัญชีแล้ว', showConfirmButton: false, timer: 1000 }); })
         .catch(err => { console.error('Copy failed', err); });
@@ -1117,27 +1069,19 @@
         } catch(e) { Swal.fire({icon:'error', text:'ไม่สามารถบันทึกรูปได้ กรุณาแคปหน้าจอแทน'}); }
     }
 
-// ✅ แก้ไข: เปิดให้ทุกคนจ่ายปลายทางได้ (COD for All)
+    // ✅ แก้ไข: เปิดให้ทุกคนจ่ายปลายทางได้ (COD for All)
     window.checkCODEligibility = function() {
         const codRadio = document.getElementById('cod-radio');
         const codLabel = document.getElementById('cod-label');
         const codBox = document.getElementById('cod-box');
         const codWarning = document.getElementById('cod-warning-text');
 
-        // 1. บังคับให้กดได้เสมอ
         codRadio.disabled = false;
-
-        // 2. โชว์ปุ่ม และเอาเอฟเฟกต์ "ห้ามกด" ออกให้หมด
         codLabel.classList.remove('hidden', 'opacity-50', 'opacity-60', 'pointer-events-none');
-        
-        // 3. ปรับสีพื้นหลังให้เป็นสีขาวปกติ
         codBox.classList.remove('bg-gray-100');
-
-        // 4. ซ่อนข้อความเตือน "เฉพาะลูกค้าเก่า"
-        codWarning.classList.add('hidden');
+        if(codWarning) codWarning.classList.add('hidden');
     }
 
-    // --- 10. Shop Status UI ---
     window.updateShopStatusUI = function() {
         const badge = document.getElementById('shop-status-badge');
         if (window.isShopOpen()) {
