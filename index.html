@@ -377,7 +377,8 @@
     window.OPEN_HOUR = 9;    
     window.CLOSE_HOUR = 24; 
     
-    // 🔥🔥 URL ของ Google Apps Script (สำหรับส่งไลน์)
+    // 🔥🔥 URL ของ Google Apps Script (สำหรับส่งไลน์ และ Tracking)
+    // ⚠️ ต้องแก้เป็น URL ที่ได้จากการ Deploy รอบล่าสุดนะครับ
     window.WEB_APP_URL = "https://script.google.com/macros/s/AKfycby-CN2vDIOsauP7k1qjiGEm3nPlNV0X9ADKyt_Xzzw1HUY_fzobRJZnTapRUweWu9a3fg/exec"; 
 
     window.menuDB = [];
@@ -892,10 +893,10 @@
             const ordersRef = ref(db, 'orders');
             await push(ordersRef, newOrder);
 
-            // ✅ 2. ยิงเข้า Google Apps Script เพื่อส่ง LINE
+            // ✅ 2. ยิงเข้า Google Apps Script เพื่อส่ง LINE (ไม่ต้องรอ)
             fetch(window.WEB_APP_URL, {
                 method: 'POST',
-                mode: 'no-cors', 
+                mode: 'no-cors', // Important for sending data without CORS error
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newOrder)
             }).then(() => console.log("Sent to LINE")).catch(err => console.error("LINE Error", err));
@@ -940,20 +941,14 @@
     }
 
     // ==========================================
-    // 8. History & Tracking
+    // 8. History & Tracking (Secure Version)
     // ==========================================
     window.saveOrderToHistory = function(order) {
         let history = JSON.parse(localStorage.getItem('order_history') || "[]");
-        // ✅ แก้ไข: เอาขีดออก และเอาจำนวนขึ้นก่อน
+        // 🔥 เปลี่ยนรูปแบบการเก็บใน LocalStorage ให้ตรงกับที่โชว์
         const itemsStr = order.items.map(i => `<div>(x${i.qty}) - ${i.name}</div>`).join('');
         
-        const newHistoryItem = {
-            id: order.id, 
-            date: order.date,
-            items: itemsStr,
-            total: order.total,
-            status: '🕒 รอร้านรับยอด' 
-        };
+        const newHistoryItem = { id: order.id, date: order.date, items: itemsStr, total: order.total, status: '🕒 รอร้านรับยอด' };
         history.unshift(newHistoryItem); 
         localStorage.setItem('order_history', JSON.stringify(history));
     }
@@ -971,22 +966,17 @@
     window.initTrackingPage = function() {
         const savedPhone = localStorage.getItem('cust_phone');
         document.getElementById('tracking-search-box').classList.remove('hidden');
-
         if (savedPhone) {
             document.getElementById('track-phone').value = savedPhone;
             window.searchOrder(false); 
-            
             if (window.trackingInterval) clearInterval(window.trackingInterval);
             window.trackingInterval = setInterval(() => { window.searchOrder(true); }, 10000); 
         } else {
-            document.getElementById('tracking-result').innerHTML = `
-                <div class="text-center text-gray-300 py-10">
-                    <i class="fa-solid fa-magnifying-glass text-4xl mb-2"></i>
-                    <p>กรุณากรอกเบอร์โทรเพื่อค้นหา</p>
-                </div>`;
+            document.getElementById('tracking-result').innerHTML = `<div class="text-center text-gray-300 py-10"><i class="fa-solid fa-magnifying-glass text-4xl mb-2"></i><p>กรุณากรอกเบอร์โทรเพื่อค้นหา</p></div>`;
         }
     }
 
+    // 🔥 Secure Search: Fetch from Server (Apps Script) instead of Firebase Dump
     window.searchOrder = function(isSilent = false) { 
         const phone = document.getElementById('track-phone').value.trim();
         if(phone.length < 9) { if(!isSilent) Swal.fire({icon:'warning', title:'กรุณากรอกเบอร์โทรให้ถูกต้อง'}); return; }
@@ -994,25 +984,21 @@
         const resultDiv = document.getElementById('tracking-result');
         if(!isSilent) resultDiv.innerHTML = `<div class="text-center py-10 animate-pulse"><i class="fa-solid fa-circle-notch fa-spin text-green-600 text-3xl"></i><p class="text-gray-500 mt-2">กำลังดึงข้อมูลล่าสุด...</p></div>`;
 
-        const ordersRef = ref(db, 'orders');
-        get(ordersRef).then((snapshot) => {
-             if (snapshot.exists()) {
-                 const allOrders = snapshot.val();
-                 const myOrders = Object.values(allOrders)
-                     .filter(o => o.customer.phone.includes(phone))
-                     .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-                     .slice(0, 5);
-
-                 if(myOrders.length > 0) {
-                     window.renderHistoryFromAdminData(myOrders);
-                     localStorage.setItem('cust_phone', phone);
-                 } else {
-                     resultDiv.innerHTML = '<div class="text-center text-gray-400 py-10">ไม่พบประวัติการสั่งซื้อ</div>';
-                 }
+        // 🔥 ยิงไปหา Google Apps Script เพื่อค้นหา (ปลอดภัยกว่า)
+        fetch(window.WEB_APP_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'track_order', phone: phone })
+        })
+        .then(response => response.json())
+        .then(data => {
+             if (data.found && data.orders.length > 0) {
+                 window.renderHistoryFromAdminData(data.orders);
+                 localStorage.setItem('cust_phone', phone);
              } else {
-                 resultDiv.innerHTML = '<div class="text-center text-gray-400 py-10">ระบบยังไม่มีข้อมูลออเดอร์</div>';
+                 resultDiv.innerHTML = '<div class="text-center text-gray-400 py-10">ไม่พบประวัติการสั่งซื้อ</div>';
              }
-        }).catch(err => {
+        })
+        .catch(err => {
              console.error(err);
              resultDiv.innerHTML = '<div class="text-center text-red-400 py-10">เกิดข้อผิดพลาดในการโหลด</div>';
         });
@@ -1030,14 +1016,21 @@
             else if(order.status.includes("ยกเลิก")) { statusColor = "text-red-600 bg-red-50 border-red-100"; cardBgColor = "bg-red-50/30 border-red-100"; }
             else { cardBgColor = "bg-orange-50/20 border-orange-100"; }
 
-            // ✅ แก้ไข: เอาขีดออก และเอาจำนวนขึ้นก่อน (ตรงนี้คือส่วนแสดงผลประวัติ)
-            const itemsStr = order.items.map(i => `<div>(x${i.qty}) - ${i.name}</div>`).join('');
+            // 🔥 ตรงนี้เช็คว่าเป็น String (จาก Server) หรือ Array (จาก LocalStorage)
+            let itemsDisplay = order.items;
+            if (typeof order.items === 'string') {
+                // ถ้าเป็น Text ธรรมดาจาก Server (มี \n) แปลงเป็น <br>
+                itemsDisplay = order.items.replace(/\n/g, '<br>');
+            } else if (Array.isArray(order.items)) {
+                // ถ้าเป็น Array (จาก LocalStorage เก่า)
+                itemsDisplay = order.items.map(i => `(x${i.qty}) - ${i.name}`).join('<br>');
+            }
             
             return `
             <div class="${cardBgColor} p-4 rounded-xl border shadow-sm flex flex-col gap-2 relative overflow-hidden transition-all duration-300">
                 <div class="flex justify-between items-start z-10">
                     <div>
-                        <span class="bg-white/80 text-gray-600 text-[10px] font-bold px-2 py-1 rounded border border-gray-200 shadow-sm">#${order.id.slice(-4)}</span>
+                        <span class="bg-white/80 text-gray-600 text-[10px] font-bold px-2 py-1 rounded border border-gray-200 shadow-sm">#${order.shortId || order.id.slice(-4)}</span>
                         <div class="text-xs text-gray-500 mt-1 flex items-center gap-1"><i class="fa-regular fa-clock"></i> ${order.date}</div>
                     </div>
                     <span class="${statusColor} font-bold text-xs px-2 py-1 rounded-lg border flex items-center gap-1 shadow-sm">
@@ -1045,7 +1038,7 @@
                     </span>
                 </div>
                 <div class="border-t border-dashed border-gray-200/50 my-2"></div>
-                <div class="text-sm text-gray-700 space-y-1">${itemsStr}</div>
+                <div class="text-sm text-gray-700 space-y-1">${itemsDisplay}</div>
                 <div class="flex justify-between items-center mt-3 pt-2 border-t border-gray-200/50">
                     <span class="text-xs text-gray-500">ราคารวม</span>
                     <span class="font-bold text-gray-800 text-lg">${order.total}</span>
@@ -1062,48 +1055,10 @@
         return '<i class="fa-regular fa-clock"></i>';
     }
 
-    window.copyToClipboard = function(text) {
-        navigator.clipboard.writeText(text).then(() => { Swal.fire({ toast: true, position: 'top', icon: 'success', title: 'คัดลอกเลขบัญชีแล้ว', showConfirmButton: false, timer: 1000 }); })
-        .catch(err => { console.error('Copy failed', err); });
-    }
-
-    window.downloadQR = async function() {
-        const imgSrc = document.getElementById('qr-image').src;
-        if(!imgSrc) return;
-        try {
-            const image = await fetch(imgSrc);
-            const imageBlog = await image.blob();
-            const imageURL = URL.createObjectURL(imageBlog);
-            const link = document.createElement('a');
-            link.href = imageURL;
-            link.download = 'QR-Payment.png';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        } catch(e) { Swal.fire({icon:'error', text:'ไม่สามารถบันทึกรูปได้ กรุณาแคปหน้าจอแทน'}); }
-    }
-
-    // ✅ แก้ไข: เปิดให้ทุกคนจ่ายปลายทางได้ (COD for All)
-    window.checkCODEligibility = function() {
-        const codRadio = document.getElementById('cod-radio');
-        const codLabel = document.getElementById('cod-label');
-        const codBox = document.getElementById('cod-box');
-        const codWarning = document.getElementById('cod-warning-text');
-
-        codRadio.disabled = false;
-        codLabel.classList.remove('hidden', 'opacity-50', 'opacity-60', 'pointer-events-none');
-        codBox.classList.remove('bg-gray-100');
-        if(codWarning) codWarning.classList.add('hidden');
-    }
-
-    window.updateShopStatusUI = function() {
-        const badge = document.getElementById('shop-status-badge');
-        if (window.isShopOpen()) {
-            badge.classList.remove('hidden', 'bg-red-500'); badge.classList.add('bg-green-500'); badge.innerText = "เปิดร้าน";
-        } else {
-            badge.classList.remove('hidden', 'bg-green-500'); badge.classList.add('bg-red-500'); badge.innerText = "ปิดร้าน";
-        }
-    }
+    window.copyToClipboard = function(text) { navigator.clipboard.writeText(text).then(() => { Swal.fire({ toast: true, position: 'top', icon: 'success', title: 'คัดลอกแล้ว', showConfirmButton: false, timer: 1000 }); }); }
+    window.downloadQR = async function() { const imgSrc = document.getElementById('qr-image').src; if(!imgSrc) return; try { const image = await fetch(imgSrc); const imageBlog = await image.blob(); const imageURL = URL.createObjectURL(imageBlog); const link = document.createElement('a'); link.href = imageURL; link.download = 'QR-Payment.png'; document.body.appendChild(link); link.click(); document.body.removeChild(link); } catch(e) { Swal.fire({icon:'error', text:'บันทึกรูปไม่ได้'}); } }
+    window.checkCODEligibility = function() { document.getElementById('cod-radio').disabled = false; document.getElementById('cod-label').classList.remove('hidden', 'opacity-50', 'pointer-events-none'); document.getElementById('cod-box').classList.remove('bg-gray-100'); if(document.getElementById('cod-warning-text')) document.getElementById('cod-warning-text').classList.add('hidden'); }
+    window.updateShopStatusUI = function() { const badge = document.getElementById('shop-status-badge'); if (window.isShopOpen()) { badge.classList.remove('hidden', 'bg-red-500'); badge.classList.add('bg-green-500'); badge.innerText = "เปิดร้าน"; } else { badge.classList.remove('hidden', 'bg-green-500'); badge.classList.add('bg-red-500'); badge.innerText = "ปิดร้าน"; } }
 </script>
 </body>
 </html>
