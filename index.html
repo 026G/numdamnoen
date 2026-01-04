@@ -1017,7 +1017,7 @@
             else if(order.status.includes("ยกเลิก")) { statusColor = "text-red-600 bg-red-50 border-red-100"; cardBgColor = "bg-red-50/30 border-red-100"; }
             else { cardBgColor = "bg-orange-50/20 border-orange-100"; }
 
-            const itemsStr = order.items.map(i => `<div>- ${i.name} (x${i.qty})</div>`).join('');
+            const itemsStr = order.items.map(i => `<div>(x${i.qty}) - ${i.name}</div>`).join('');
             
             return `
             <div class="${cardBgColor} p-4 rounded-xl border shadow-sm flex flex-col gap-2 relative overflow-hidden transition-all duration-300">
