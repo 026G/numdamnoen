@@ -239,7 +239,7 @@
                                 </div>
                             </div>
                             <button onclick="downloadQR()" class="mt-4 w-full text-xs bg-[#113566] text-white py-2.5 rounded-lg shadow-sm hover:bg-[#0d2a52] transition flex items-center justify-center gap-2 font-bold">
-                                <i class="fa-solid fa-download"></i> บันทึกรูป QR Code
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i> เปิดรูป QR เพื่อบันทึก
                             </button>
                         </div>
                     </div>
@@ -1056,8 +1056,34 @@
     }
 
     window.copyToClipboard = function(text) { navigator.clipboard.writeText(text).then(() => { Swal.fire({ toast: true, position: 'top', icon: 'success', title: 'คัดลอกแล้ว', showConfirmButton: false, timer: 1000 }); }); }
-    window.downloadQR = async function() { const imgSrc = document.getElementById('qr-image').src; if(!imgSrc) return; try { const image = await fetch(imgSrc); const imageBlog = await image.blob(); const imageURL = URL.createObjectURL(imageBlog); const link = document.createElement('a'); link.href = imageURL; link.download = 'QR-Payment.png'; document.body.appendChild(link); link.click(); document.body.removeChild(link); } catch(e) { Swal.fire({icon:'error', text:'บันทึกรูปไม่ได้'}); } }
-    window.checkCODEligibility = function() { document.getElementById('cod-radio').disabled = false; document.getElementById('cod-label').classList.remove('hidden', 'opacity-50', 'pointer-events-none'); document.getElementById('cod-box').classList.remove('bg-gray-100'); if(document.getElementById('cod-warning-text')) document.getElementById('cod-warning-text').classList.add('hidden'); }
+    window.downloadQR = function() { 
+        const imgSrc = document.getElementById('qr-image').src;
+        if(!imgSrc) return;
+        
+        // เปิดรูปในแท็บใหม่ ให้ลูกค้ากด Save เอง
+        window.open(imgSrc, '_blank'); 
+    }
+    // ❌ ปิดระบบเก็บเงินปลายทาง (ซ่อนปุ่ม)
+    window.checkCODEligibility = function() {
+        const codRadio = document.getElementById('cod-radio');
+        const codLabel = document.getElementById('cod-label');
+
+        // 1. ซ่อนปุ่มไม่ให้เห็น
+        if(codLabel) codLabel.classList.add('hidden');
+
+        // 2. ปิดการใช้งานปุ่ม (กันคนแอบกด)
+        if(codRadio) codRadio.disabled = true;
+
+        // 3. เช็คความปลอดภัย: ถ้าลูกค้าเลือก COD ค้างไว้ ให้ดีดกลับไปเลือก "โอนเงิน" อัตโนมัติ
+        if (codRadio && codRadio.checked) {
+            const transferRadio = document.querySelector('input[value="transfer"]');
+            if(transferRadio) {
+                transferRadio.checked = true;
+                // รีเฟรชหน้าจอส่วนชำระเงิน
+                if(typeof window.togglePaymentDetail === 'function') window.togglePaymentDetail();
+            }
+        }
+    }
     window.updateShopStatusUI = function() { const badge = document.getElementById('shop-status-badge'); if (window.isShopOpen()) { badge.classList.remove('hidden', 'bg-red-500'); badge.classList.add('bg-green-500'); badge.innerText = "เปิดร้าน"; } else { badge.classList.remove('hidden', 'bg-green-500'); badge.classList.add('bg-red-500'); badge.innerText = "ปิดร้าน"; } }
 </script>
 </body>
