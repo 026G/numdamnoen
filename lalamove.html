@@ -95,7 +95,6 @@
         // 🔴🔴🔴 URL Google Apps Script (ต้องตรงกับที่ Deploy ล่าสุด) 🔴🔴🔴
         const GAS_API_URL = "https://script.google.com/macros/s/AKfycby-CN2vDIOsauP7k1qjiGEm3nPlNV0X9ADKyt_Xzzw1HUY_fzobRJZnTapRUweWu9a3fg/exec";
 
-        // ตัวแปร Global
         let currentQuotationId = "";
         let currentStopInfo = {};
         let customerName = "";
@@ -117,7 +116,7 @@
             customerName = decodeURIComponent(getQueryParam('name') || "-");
             customerPhone = decodeURIComponent(getQueryParam('phone') || "-");
             orderId = decodeURIComponent(getQueryParam('orderId') || "-");
-            // 🔥 รับค่า secret จาก URL
+            // 🔥 รับค่า secret จาก URL อัตโนมัติ
             secretCode = decodeURIComponent(getQueryParam('secret') || "");
 
             document.getElementById('showOrderId').innerText = orderId;
