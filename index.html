@@ -356,36 +356,7 @@
         const CLOSE_HOUR = 24; 
 
         // 🔥 ข้อมูลสินค้า
-        const menuDB = [
-            // === RECOMMEND (รวมทุกหมวดที่อยากโชว์ในหน้าแรก) ===
-            { id: 1, category: "recommend", subCategory: "🔥 รายการยอดฮิต", name: "[ซื้อคู่คุ้มกว่า] น้ำมะพร้าวสด100% (1000ml.x2)", desc: "2 ขวดใหญ่ น้ำมะพร้าวสดแท้ 100%", price: 239, originalPrice: 270, img: "https://lh3.googleusercontent.com/d/1fUipYqKO3T7rVC-rmpezCI16DP-K-CUQ",badge: "ขายดี #1", stock: true },
-            { id: 11, category: "recommend", name: "[Set คุ้ม] 4ขวดเล็ก น้ำมะพร้าวสด100%", desc: "น้ำมะพร้าวสด 4 ขวดเล็ก 250ml.x4 ราคาพิเศษ", price: 125, originalPrice: 140, badge: "ขายดี", stock: true, img: "https://lh3.googleusercontent.com/d/1MD-cUSJ5ec6PIYcBsW343FLNYBePj2sV", stock: true},
-            { id: 12, category: "recommend", name: "[Set จุใจ] 4ขวดใหญ่ น้ำมะพร้าวสด100%", desc: "น้ำมะพร้าวสด 4 ขวดใหญ่ 1000ml.x4 ราคาพิเศษ", price: 435, originalPrice: 540, badge: "ราคาพิเศษ🔥", stock: true, img: "https://lh3.googleusercontent.com/d/1nxsYcLq3FaHDvS3kjkFoJMrAcEzjtpKj", stock: true},
-
-            { id: 301, category: "recommend", subCategory: "🌴 เมนูมะพร้าวปั่น", name: "มะพร้าวปั่นนมสด 22ออนซ์", desc: "มะพร้าวปั่นนมสด หอมมะพร้าวแท้ ไม่ใส่นมข้นหวาน", price: 45, originalPrice: 50, badge: "ขายดี", stock: true, img: "https://lh3.googleusercontent.com/d/1w3_NDj4YyYchsHfB5snVg2p0MQoBxYhp", options: [{ type: "radio", name: "ระดับความหวาน", choices: [{ label: "หวานน้อยกว่า (30)", price: 0 }, { label: "หวานน้อย (50)", price: 0 }, { label: "หวานปกติ (100)", price: 0 }, { label: "หวานมาก (125)", price: 0 }] }, { type: "checkbox", name: "เพิ่มพิเศษ", max: 2, choices: [{ label: "เพิ่มเนื้อปั่นเข้มข้น (+50%)", price: 15 }, { label: "เพิ่มเนื้อเคี้ยว (เคี้ยวเพลินๆ)", price: 15 }] }] },
-            { id: 301, category: "recommend", subCategory: "🌴 เมนูมะพร้าวปั่น", name: "มะพร้าวปั่น ไม่ใส่นม 22ออนซ์", desc: "มะพร้าวปั่น ไม่ใส่นม หอมมะพร้าวน้ำหอมแท้", price: 45, originalPrice: 50, badge: "ขายดี", stock: true, img: "https://lh3.googleusercontent.com/d/1zfjflet6Jz9dmp6iu6QQSxexwkZa4GZ0", options: [{ type: "radio", name: "ระดับความหวาน", choices: [{ label: "หวานน้อยกว่า (30)", price: 0 }, { label: "หวานน้อย (50)", price: 0 }, { label: "หวานปกติ (100)", price: 0 }, { label: "หวานมาก (125)", price: 0 }] }, { type: "checkbox", name: "เพิ่มพิเศษ", max: 2, choices: [{ label: "เพิ่มเนื้อปั่นเข้มข้น (+50%)", price: 15 }, { label: "เพิ่มเนื้อเคี้ยว (เคี้ยวเพลินๆ)", price: 15 }] }] },
-            { id: 303, category: "recommend", subCategory: "🌴 เมนูมะพร้าวปั่น", name: "มะพร้าวปั่น(รสธรรมชาติ) 22ออนซ์", desc: "มะพร้าวปั่นไม่ใส่น้ำเชื่อม หวาน0%", price: 45, originalPrice: 50, stock: true, img: "https://lh3.googleusercontent.com/d/142Xeckng_6M8vNUFSXRfm_ATzCIhlkQD", options: [{ type: "checkbox", name: "เพิ่มพิเศษ", max: 2, choices: [{ label: "เพิ่มเนื้อปั่นเข้มข้น (+50%)", price: 15 }, { label: "เพิ่มเนื้อเคี้ยว (เคี้ยวเพลินๆ)", price: 15 }] }] },
-            { id: 304, category: "recommend", subCategory: "🌴 เมนูมะพร้าวปั่น", name: "มะพร้าวปั่น(น้ำผึ้ง) 22ออนซ์", desc: "มะพร้าวปั่น+น้ำผึ้ง", price: 55, stock: true, img: "https://lh3.googleusercontent.com/d/1spHTLSz-ZZzFs-XKY6-Gl68sds9NpH3m", options: [{ type: "radio", name: "ระดับความหวาน", choices: [{ label: "หวานน้อยกว่า (30)", price: 0 }, { label: "หวานน้อย (50)", price: 0 }, { label: "หวานปกติ (100)", price: 0 }, { label: "หวานมาก (125)", price: 0 }] }, { type: "checkbox", name: "เพิ่มพิเศษ", max: 2, choices: [{ label: "เพิ่มเนื้อปั่นเข้มข้น (+50%)", price: 15 }, { label: "เพิ่มเนื้อเคี้ยว (เคี้ยวเพลินๆ)", price: 15 }] }] },
-            { id: 305, category: "recommend", subCategory: "🌴 เมนูมะพร้าวปั่น", name: "มะพร้าวปั่น(อะโวคาโด)นมสด 22ออนซ์", desc: "มะพร้าวปั่น+อะโวคาโด นมสด", price: 60, stock: false, img: "https://lh3.googleusercontent.com/d/16gk_wBlyemkw7UyUUMwFudUsOnI-_NsI", options: [{ type: "radio", name: "ระดับความหวาน", choices: [{ label: "หวานน้อยกว่า (30)", price: 0 }, { label: "หวานน้อย (50)", price: 0 }, { label: "หวานปกติ (100)", price: 0 }, { label: "หวานมาก (125)", price: 0 }] }, { type: "checkbox", name: "เพิ่มพิเศษ", max: 2, choices: [{ label: "เพิ่มเนื้อปั่นเข้มข้น (+50%)", price: 15 }, { label: "เพิ่มเนื้อเคี้ยว (เคี้ยวเพลินๆ)", price: 15 }] }] },
-            { id: 306, category: "recommend", subCategory: "🌴 เมนูมะพร้าวปั่น", name: "มะพร้าวปั่น(กาแฟ) 22ออนซ์", desc: "มะพร้าวปั่น+กาแฟ นมสด", price: 60, stock: true, img: "https://lh3.googleusercontent.com/d/1KbuO7vpeXZ4rO2dGF96UUBegBJvAR42I", options: [{ type: "radio", name: "ระดับความหวาน", choices: [{ label: "หวานน้อยกว่า (30)", price: 0 }, { label: "หวานน้อย (50)", price: 0 }, { label: "หวานปกติ (100)", price: 0 }, { label: "หวานมาก (125)", price: 0 }] }, { type: "checkbox", name: "เพิ่มพิเศษ", max: 2, choices: [{ label: "เพิ่มเนื้อปั่นเข้มข้น (+50%)", price: 15 }, { label: "เพิ่มเนื้อเคี้ยว (เคี้ยวเพลินๆ)", price: 15 }] }] },
-            { id: 307, category: "recommend", subCategory: "🌴 เมนูมะพร้าวปั่น", name: "มะพร้าวปั่น(เนสวีต้า) 22ออนซ์", desc: "มะพร้าวปั่น+เนสวีต้า นมสด", price: 60, stock: true, img: "https://lh3.googleusercontent.com/d/1Q-yKVu3si9q1P6PqESIZmepZ0RsQp2DL", options: [{ type: "radio", name: "ระดับความหวาน", choices: [{ label: "หวานน้อยกว่า (30)", price: 0 }, { label: "หวานน้อย (50)", price: 0 }, { label: "หวานปกติ (100)", price: 0 }, { label: "หวานมาก (125)", price: 0 }] }, { type: "checkbox", name: "เพิ่มพิเศษ", max: 2, choices: [{ label: "เพิ่มเนื้อปั่นเข้มข้น (+50%)", price: 15 }, { label: "เพิ่มเนื้อเคี้ยว (เคี้ยวเพลินๆ)", price: 15 }] }] },
-            
-            { id: 401, category: "recommend", subCategory: "🌴 น้ำมะพร้าวสด", name: "น้ำมะพร้าวสด (ขวดเล็ก 250 ml.)", desc: "น้ำมะพร้าวสดแท้ 100% ไม่ผสม ขวดเล็ก", price: 35,  img: "https://lh3.googleusercontent.com/d/12vTzQ5aPo6HdlFvKMtww8E4TLNVYo58x", stock: true },
-            { id: 402, category: "recommend", subCategory: "🌴 น้ำมะพร้าวสด", name: "น้ำมะพร้าวสด พร้อมเนื้อมะพร้าวอ่อน (12ออนซ์)", desc: "น้ำมะพร้าวสดแท้ 100% ใส่เนื้อมะพร้าวอ่อน ไม่ผสม ถ้วยเล็ก", price: 40,  img: "https://lh3.googleusercontent.com/d/1sxFiO7mZOfmI-2-KwayMDjlrxZlhU-eY", stock: true },
-            { id: 403, category: "recommend", subCategory: "🌴 น้ำมะพร้าวสด", name: "[ขวดใหญ่] น้ำมะพร้าวสด (1000 ml.)", desc: "น้ำมะพร้าวสดแท้ 100% ไม่ผสม ขวดใหญ่", price: 135, img: "https://lh3.googleusercontent.com/d/1MH70vUYOsl_NjC_YZeycH6HKVrjVBvco", stock: true },
-            
-            { id: 501, category: "recommend", subCategory: " น้ำมะพร้าวสด(ผสม)", name: "[ซีลฝา] น้ำมะพร้าวสดเย็น 22ออนซ์", desc: "", price: 35, stock: true, img: "https://lh3.googleusercontent.com/d/1ip84vEVkMrrnXOAqEO8CatM0KZOK8SBv" },
-            { id: 502, category: "recommend", subCategory: " น้ำมะพร้าวสด(ผสม)", name: "[ซีลฝา] น้ำมะพร้าว(นม)สดเย็น 22ออนซ์", desc: "", price: 35, stock: true, img: "https://lh3.googleusercontent.com/d/1_dnTVj5hrUpD55JzS27i4L5jUzVlVoNp" },
-
-            { id: 881, category: "recommend", subCategory: " ขนมไทย", name: "ทองม้วนสด(ใบเตยล้วน)มะพร้าวอ่อน", desc: "", price: 35, stock: false, img: "https://lh3.googleusercontent.com/d/1a9RusD_4p0PXmoCim9hWIzk0FGPt1zIk" },
-            { id: 882, category: "recommend", subCategory: " ขนมไทย", name: "ทองม้วนสด(รวมรส)มะพร้าวอ่อน", desc: "", price: 35, stock: false, img: "https://lh3.googleusercontent.com/d/1qW-fvCrMixNSu_6TDTIToPAGtEZYwtnm" },
-            // === PROMOTION (แยกออกมาต่างหาก) ===
-            { id: 101, category: "promotion", name: "[ซื้อคู่คุ้มกว่า] น้ำมะพร้าวสด100% (1000ml.x2)", desc: "2 ขวดใหญ่ น้ำมะพร้าวสดแท้ 100%", price: 239, originalPrice: 270, img: "https://lh3.googleusercontent.com/d/1fUipYqKO3T7rVC-rmpezCI16DP-K-CUQ",badge: "ขายดี #1", stock: true },
-            { id: 91, category: "promotion", name: "[Set คุ้ม] 4ขวดเล็ก น้ำมะพร้าวสด100%", desc: "น้ำมะพร้าวสด 4 ขวดเล็ก 250ml.x4 ราคาพิเศษ", price: 120, originalPrice: 135, badge: "ลดราคา 🔥", stock: true, img: "https://lh3.googleusercontent.com/d/1MD-cUSJ5ec6PIYcBsW343FLNYBePj2sV", stock: true},
-            { id: 92, category: "promotion", name: "[Set จุใจ] 4ขวดใหญ่ น้ำมะพร้าวสด100%", desc: "น้ำมะพร้าวสด 4 ขวดใหญ่ 1000ml.x4 ราคาพิเศษ", price: 435, originalPrice: 540, badge: "ลดราคา 🔥", stock: true, img: "https://lh3.googleusercontent.com/d/1nxsYcLq3FaHDvS3kjkFoJMrAcEzjtpKj", stock: true},
-            { id: 5, category: "promotion", name: "Set คู่หูดูโอ้ (2 แก้ว)", desc: "มะพร้าวปั่นนมสด 2 แก้ว ราคาพิเศษ", price: 220, originalPrice: 238, badge: "ลดราคา 🔥", stock: false, img: "https://lh3.googleusercontent.com/d/1fUipYqKO3T7rVC-rmpezCI16DP-K-CUQ", options: [{ type: "radio", name: "ความหวาน (แก้ว 1)", choices: [{ label: "ปกติ", price: 0 }, { label: "น้อย", price: 0 }] }, { type: "radio", name: "ความหวาน (แก้ว 2)", choices: [{ label: "ปกติ", price: 0 }, { label: "น้อย", price: 0 }] }] },
-            { id: 6, category: "promotion", name: "วุ้นมะพร้าวถ้วยยักษ์", desc: "วุ้นมะพร้าวทำเอง เนื้อแน่น หวานน้อย", price: 35, originalPrice: 50, badge: "Flash Sale", img: "https://images.unsplash.com/photo-1598211028080-1a65499c089c?w=400", stock: false } 
-        ];
+        const menuDB = [];
 
         let cart = [];
         let map, marker, userLat, userLng, distanceKm = 0;
@@ -396,18 +367,37 @@
         
         // --- 2. Initial Setup ---
         document.addEventListener("DOMContentLoaded", () => {
-            switchTab('recommend');
-            initMap();
-            updateFooterState('menu');
-            startBannerAutoSlide();
-            
-            // 🧠 Remember Me: โหลดข้อมูลลูกค้าจาก LocalStorage
-            if(localStorage.getItem('cust_name')) document.getElementById('cust-name').value = localStorage.getItem('cust_name');
-            if(localStorage.getItem('cust_phone')) document.getElementById('cust-phone').value = localStorage.getItem('cust_phone');
-            if(localStorage.getItem('cust_address')) document.getElementById('cust-address').value = localStorage.getItem('cust_address');
+            // โชว์ Loading ระหว่างดึงข้อมูล
+            Swal.fire({
+                title: 'กำลังโหลดเมนู...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading() }
+            });
 
-            updateTrackingButtonState();
-            updateShopStatusUI();
+            // ดึงข้อมูลจาก Google Sheet
+            google.script.run
+                .withSuccessHandler((data) => {
+                    menuDB = data; // รับข้อมูลมาใส่ตัวแปร
+                    Swal.close(); // ปิด Loading
+                    
+                    // เริ่มรันระบบ
+                    switchTab('recommend');
+                    initMap();
+                    updateFooterState('menu');
+                    startBannerAutoSlide();
+                    
+                    // โหลดข้อมูลลูกค้าเก่า (ถ้ามี)
+                    if(localStorage.getItem('cust_name')) document.getElementById('cust-name').value = localStorage.getItem('cust_name');
+                    if(localStorage.getItem('cust_phone')) document.getElementById('cust-phone').value = localStorage.getItem('cust_phone');
+                    if(localStorage.getItem('cust_address')) document.getElementById('cust-address').value = localStorage.getItem('cust_address');
+
+                    updateTrackingButtonState();
+                    updateShopStatusUI();
+                })
+                .withFailureHandler((error) => {
+                    Swal.fire('Error', 'โหลดข้อมูลไม่สำเร็จ กรุณารีเฟรช', 'error');
+                })
+                .getMenuList(); // เรียกฟังก์ชันหลังบ้าน
         });
 
         // --- 3. Navigation ---
