@@ -183,29 +183,14 @@
                 </div>
             </div>
 
-            <div class="bg-white p-5 shadow-sm">
-                <h2 class="text-lg font-bold text-gray-800 mb-4">เลือกวิธีการชำระเงิน</h2>
-                
-                <label class="block mb-3 cursor-pointer">
-                    <input type="radio" name="paymentMethod" value="transfer" class="payment-radio hidden" checked onchange="togglePaymentDetail()">
-                    <div class="border rounded-xl p-4 flex items-center justify-between transition-all hover:bg-gray-50">
-                        <div class="flex items-center gap-3">
-                            <div class="w-5 h-5 rounded-full border border-gray-300 radio-indicator flex items-center justify-center"></div>
-                            <span class="font-medium text-gray-700">โอนเงิน / สแกนจ่าย</span>
-                        </div>
-                        <i class="fa-solid fa-qrcode text-gray-400 text-xl"></i>
-                    </div>
-                </label>
-
-                <div id="payment-transfer-detail" class="ml-2 pl-6 border-l-2 border-gray-200 mb-6 space-y-4">
+            <div id="payment-transfer-detail" class="ml-2 pl-6 border-l-2 border-gray-200 mb-6 space-y-4">
                     
                     <div class="max-w-[280px] mx-auto bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden relative">
                         <div class="bg-[#113566] p-3 flex justify-between items-center">
                             <img src="https://upload.wikimedia.org/wikipedia/commons/c/c5/PromptPay-logo.png" class="h-6 bg-white rounded px-1">
                             <div class="text-right">
                                 <p class="text-white text-[10px] font-light">Thai QR Payment</p>
-                                <img src="https://www.bot.or.th/content/dam/bot/icons/footer/logo-bot-footer.png" class="h-4 opacity-80 ml-auto filter invert">
-                            </div>
+                                </div>
                         </div>
 
                         <div class="p-5 text-center bg-white relative">
@@ -224,17 +209,21 @@
 
                             <div class="text-left space-y-2">
                                 <div class="flex items-center gap-2">
-                                    <img src="https://cdn-icons-png.flaticon.com/512/825/825460.png" class="w-5 h-5 rounded-full border border-gray-100 p-0.5"> <div>
+                                    <div class="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 text-xs">
+                                        <i class="fa-solid fa-user"></i>
+                                    </div>
+                                    <div>
                                         <p class="text-[10px] text-gray-400 leading-none">ชื่อบัญชี</p>
                                         <p class="text-sm font-bold text-gray-700 line-clamp-1">นายวิวัฒน์ชัย พันธ์วิชัย</p>
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <img src="https://i.pinimg.com/originals/c9/62/be/c962be169e5d9972304899990b7999d3.png" class="w-5 h-5 rounded-full"> <div class="flex-1">
-                                        <p class="text-[10px] text-gray-400 leading-none">เลขพร้อมเพย์</p>
+                                    <img src="https://upload.wikimedia.org/wikipedia/en/thumb/5/5a/Kasikornbank_Logo.svg/1200px-Kasikornbank_Logo.svg.png" class="w-6 h-6 rounded-full object-contain border border-gray-100"> 
+                                    <div class="flex-1">
+                                        <p class="text-[10px] text-gray-400 leading-none">เลขพร้อมเพย์ (KBank)</p>
                                         <div class="flex items-center justify-between">
                                             <span id="bank-acc-no" class="text-sm font-bold text-[#113566] font-mono tracking-wide">062-246-7746</span>
-                                            <button onclick="copyToClipboard('0622467746')" class="text-[10px] text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-0.5 rounded transition">
+                                            <button onclick="copyToClipboard('0622467746')" class="text-[10px] text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-0.5 rounded transition flex items-center gap-1">
                                                 <i class="fa-regular fa-copy"></i> คัดลอก
                                             </button>
                                         </div>
@@ -242,7 +231,7 @@
                                 </div>
                             </div>
 
-                            <button onclick="downloadQR()" class="mt-4 w-full text-xs bg-[#113566] text-white py-2 rounded-lg shadow-sm hover:bg-[#0d2a52] transition flex items-center justify-center gap-2">
+                            <button onclick="downloadQR()" class="mt-4 w-full text-xs bg-[#113566] text-white py-2.5 rounded-lg shadow-sm hover:bg-[#0d2a52] transition flex items-center justify-center gap-2 font-bold">
                                 <i class="fa-solid fa-download"></i> บันทึกรูป QR Code
                             </button>
                         </div>
@@ -253,7 +242,7 @@
                             <i class="fa-solid fa-receipt text-green-600"></i> แนบหลักฐานการโอนเงิน
                         </label>
                         <input type="file" id="slip-file" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-l-lg file:border-0 file:text-sm file:font-semibold file:bg-green-600 file:text-white hover:file:bg-green-700 border border-gray-300 rounded-lg cursor-pointer bg-white shadow-sm transition">
-                        <p class="text-[10px] text-gray-400 mt-1">*กรุณาแนบสลิปเพื่อยืนยันการสั่งซื้อ</p>
+                        <p class="text-[10px] text-gray-400 mt-1 flex items-center gap-1"><i class="fa-solid fa-circle-exclamation"></i> กรุณาแนบสลิปเพื่อยืนยันการสั่งซื้อ</p>
                     </div>
                 </div>
 
