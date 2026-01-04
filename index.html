@@ -808,7 +808,7 @@
             
             if(deliveryFee === 0) {
                 feeDisplay.innerText = "ฟรี"; feeDisplay.className = "text-green-600 font-bold";
-                feeDetail.innerText = (distanceKm <= 1.5 && foodTotal >= 100) ? "(โปรใกล้บ้าน 1.5km)" : "(ครบ 200บ.)";
+                feeDetail.innerText = (distanceKm <= 1.5 && foodTotal >= 100) ? "(โปรใกล้บ้าน 1.5km)" : "(โปรสั่ง 200 บาทขึ้นไป)";
                 feeDetail.className = "text-[10px] text-green-600";
             } else {
                 feeDisplay.innerText = `${deliveryFee} บาท`; feeDisplay.className = "text-gray-800";
