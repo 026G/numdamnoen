@@ -412,8 +412,21 @@
             const snapshot = await get(menuRef);
 
             if (snapshot.exists()) {
-                window.menuDB = snapshot.val(); // รับข้อมูลมาใส่ตัวแปร
+                const rawData = snapshot.val();
+                
+                // ✅ 1. แปลงข้อมูลจาก Firebase เป็น Array และใช้ Key เป็น ID
+                window.menuDB = Object.entries(rawData).map(([key, val]) => {
+                    // ถ้า val เป็น null (กรณีเคยลบข้อมูลแหว่งๆ) ให้กัน error ไว้
+                    if(!val) return null;
+                    // ใช้ Key จาก Firebase เป็น id เพื่อให้ตรงกับหน้า Admin
+                    return { ...val, id: key }; 
+                }).filter(item => item !== null); // กรองตัวว่างทิ้ง
+            
+                // ✅ 2. เรียงลำดับตามที่คุณลากวาง (sortOrder)
+                window.menuDB.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+            
                 Swal.close();
+                // ... (โค้ดด้านล่างเหมือนเดิม)
 
                 // เริ่มรันระบบ UI
                 window.switchTab('recommend');
@@ -550,14 +563,16 @@
     // ==========================================
     window.renderMenu = function(cat) {
         const list = document.getElementById('menu-list');
+        // กรองสินค้าตามหมวด และต้องไม่ถูกซ่อน (hidden != true)
         const items = window.menuDB.filter(i => i.category === cat && i.hidden !== true);
         
         const createCard = (item) => {
             const isSoldOut = !item.stock;
             const priceColorClass = item.originalPrice ? 'text-red-600' : 'text-green-600';
             
+            // 🔥 แก้ไข: ใส่ '...' ครอบ item.id ตรง onclick เพื่อรองรับ ID ที่เป็นตัวหนังสือ
             return `
-            <div class="bg-white p-4 border-b border-gray-100 flex gap-4 relative hover:bg-gray-50 transition active:bg-gray-100 cursor-pointer ${isSoldOut ? 'opacity-60 grayscale pointer-events-none' : ''}" onclick="${!isSoldOut ? `openModal(${item.id})` : ''}">
+            <div class="bg-white p-4 border-b border-gray-100 flex gap-4 relative hover:bg-gray-50 transition active:bg-gray-100 cursor-pointer ${isSoldOut ? 'opacity-60 grayscale pointer-events-none' : ''}" onclick="${!isSoldOut ? `openModal('${item.id}')` : ''}">
                 <div class="relative shrink-0 w-24 h-24">
                     <img src="${item.img}" class="w-full h-full object-cover rounded-xl shadow-sm">
                     ${item.badge && !isSoldOut ? `<span class="absolute top-0 left-0 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-tl-xl rounded-br-lg shadow-sm">${item.badge}</span>` : ''}
@@ -587,6 +602,24 @@
             }
             return;
         }
+
+        const subCats = [...new Set(items.map(i => i.subCategory || 'ราคาพิเศษ'))];
+        let finalHTML = '';
+        
+        subCats.forEach(subCatName => {
+            const subItems = items.filter(i => (i.subCategory || 'ราคาพิเศษ') === subCatName);
+            if (subItems.length > 0) {
+                finalHTML += `
+                    <div class="sticky top-0 bg-gray-50/95 backdrop-blur px-5 py-3 border-b border-gray-100 z-10">
+                        <h3 class="font-bold text-gray-800 text-lg">${subCatName}</h3>
+                    </div>
+                `;
+                finalHTML += subItems.map(createCard).join('');
+            }
+        });
+
+        list.innerHTML = finalHTML;
+    }
 
         const subCats = [...new Set(items.map(i => i.subCategory || 'ราคาพิเศษ'))];
         let finalHTML = '';
