@@ -8,9 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
-        /* ป้องกันการเลือกข้อความเพื่อให้กดปุ่มรัวๆ ได้ */
         .no-select { user-select: none; -webkit-user-select: none; }
-        /* เอฟเฟกต์กดปุ่ม PIN */
         .pin-btn:active { background-color: #d1d5db; transform: scale(0.95); }
     </style>
 </head>
@@ -23,17 +21,10 @@
                     <i class="fa-solid fa-store"></i>
                 </div>
                 <h2 class="text-2xl font-bold text-gray-800">เข้าสู่ระบบร้านค้า</h2>
-                <p class="text-gray-500 text-sm">สำหรับเจ้าของร้านเท่านั้น</p>
             </div>
             <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">อีเมล</label>
-                    <input type="email" id="email" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="admin@shop.com">
-                </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">รหัสผ่าน</label>
-                    <input type="password" id="password" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-blue-500 outline-none transition" placeholder="••••••••">
-                </div>
+                <input type="email" id="email" class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none" placeholder="admin@shop.com">
+                <input type="password" id="password" class="w-full border border-gray-300 rounded-xl px-4 py-3 outline-none" placeholder="••••••••">
                 <button onclick="login()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-500/30">เข้าสู่ระบบ</button>
             </div>
         </div>
@@ -41,8 +32,6 @@
 
     <div id="pin-setup-section" class="hidden flex flex-col items-center justify-center min-h-screen p-4 bg-gray-50">
         <h2 class="text-xl font-bold text-gray-800 mb-2">ตั้งรหัส PIN 6 หลัก</h2>
-        <p class="text-gray-500 text-sm mb-6">เพื่อความสะดวกในการเข้าใช้งานครั้งต่อไป</p>
-        
         <div class="flex gap-3 mb-8">
             <div class="w-4 h-4 rounded-full border-2 border-gray-300 pin-dot-setup"></div>
             <div class="w-4 h-4 rounded-full border-2 border-gray-300 pin-dot-setup"></div>
@@ -51,7 +40,6 @@
             <div class="w-4 h-4 rounded-full border-2 border-gray-300 pin-dot-setup"></div>
             <div class="w-4 h-4 rounded-full border-2 border-gray-300 pin-dot-setup"></div>
         </div>
-
         <div class="grid grid-cols-3 gap-4 w-full max-w-xs no-select">
             <button class="pin-btn h-16 w-16 rounded-full bg-white shadow text-xl font-bold text-gray-700 mx-auto flex items-center justify-center" onclick="enterSetupPin(1)">1</button>
             <button class="pin-btn h-16 w-16 rounded-full bg-white shadow text-xl font-bold text-gray-700 mx-auto flex items-center justify-center" onclick="enterSetupPin(2)">2</button>
@@ -71,7 +59,6 @@
     <div id="pin-unlock-section" class="hidden flex flex-col items-center justify-center min-h-screen p-4 bg-blue-600 relative z-50">
         <div class="text-white text-4xl mb-4"><i class="fa-solid fa-lock"></i></div>
         <h2 class="text-xl font-bold text-white mb-8">กรุณาใส่รหัส PIN</h2>
-        
         <div class="flex gap-3 mb-10">
             <div class="w-4 h-4 rounded-full border-2 border-white/50 bg-white/20 pin-dot-unlock"></div>
             <div class="w-4 h-4 rounded-full border-2 border-white/50 bg-white/20 pin-dot-unlock"></div>
@@ -80,7 +67,6 @@
             <div class="w-4 h-4 rounded-full border-2 border-white/50 bg-white/20 pin-dot-unlock"></div>
             <div class="w-4 h-4 rounded-full border-2 border-white/50 bg-white/20 pin-dot-unlock"></div>
         </div>
-
         <div class="grid grid-cols-3 gap-6 w-full max-w-xs no-select">
             <button class="pin-btn h-16 w-16 rounded-full bg-white/10 border border-white/20 text-2xl font-bold text-white mx-auto flex items-center justify-center backdrop-blur-sm" onclick="enterUnlockPin(1)">1</button>
             <button class="pin-btn h-16 w-16 rounded-full bg-white/10 border border-white/20 text-2xl font-bold text-white mx-auto flex items-center justify-center backdrop-blur-sm" onclick="enterUnlockPin(2)">2</button>
@@ -91,9 +77,7 @@
             <button class="pin-btn h-16 w-16 rounded-full bg-white/10 border border-white/20 text-2xl font-bold text-white mx-auto flex items-center justify-center backdrop-blur-sm" onclick="enterUnlockPin(7)">7</button>
             <button class="pin-btn h-16 w-16 rounded-full bg-white/10 border border-white/20 text-2xl font-bold text-white mx-auto flex items-center justify-center backdrop-blur-sm" onclick="enterUnlockPin(8)">8</button>
             <button class="pin-btn h-16 w-16 rounded-full bg-white/10 border border-white/20 text-2xl font-bold text-white mx-auto flex items-center justify-center backdrop-blur-sm" onclick="enterUnlockPin(9)">9</button>
-            <div class="flex items-center justify-center">
-                 <button onclick="forgetPin()" class="text-white/60 text-xs underline">ลืมรหัส?</button>
-            </div>
+            <div class="flex items-center justify-center"><button onclick="forgetPin()" class="text-white/60 text-xs underline">ลืมรหัส?</button></div>
             <button class="pin-btn h-16 w-16 rounded-full bg-white/10 border border-white/20 text-2xl font-bold text-white mx-auto flex items-center justify-center backdrop-blur-sm" onclick="enterUnlockPin(0)">0</button>
             <button class="pin-btn h-16 w-16 rounded-full bg-transparent text-2xl font-bold text-white/80 mx-auto flex items-center justify-center" onclick="deleteUnlockPin()"><i class="fa-solid fa-delete-left"></i></button>
         </div>
@@ -104,7 +88,11 @@
             <h1 class="font-bold text-lg flex items-center gap-2">
                 <i class="fa-solid fa-store"></i> จัดการออเดอร์
             </h1>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2">
+                <button onclick="testSound()" class="text-xs bg-white text-blue-600 px-3 py-1.5 rounded-full shadow font-bold hover:bg-gray-100 active:scale-95 transition">
+                    <i class="fa-solid fa-bell"></i>
+                </button>
+                
                 <button id="wake-lock-btn" onclick="toggleWakeLock()" class="text-xs bg-blue-700 hover:bg-blue-800 px-3 py-1.5 rounded-full shadow border border-blue-500 flex items-center gap-1 transition">
                     <i class="fa-regular fa-lightbulb"></i> จอปกติ
                 </button>
@@ -118,7 +106,7 @@
         </div>
     </div>
 
-    <audio id="notif-sound" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
+    <audio id="notif-sound" src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3?filename=service-bell-ring-14610.mp3" preload="auto"></audio>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -126,25 +114,23 @@
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } 
         from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // 🔴🔴🔴 ใส่ Config เดิมของคุณตรงนี้ 🔴🔴🔴
+        // 🔴🔴🔴 Config ของคุณ (อย่าลืมใส่) 🔴🔴🔴
         const firebaseConfig = {
-          apiKey: "AIzaSyBLo1JKTNOrx6vvh2a6Pl8Zxjll4eoIKAA",
-          authDomain: "linenoti-7c04f.firebaseapp.com",
-          databaseURL: "https://linenoti-7c04f-default-rtdb.asia-southeast1.firebasedatabase.app",
-          projectId: "linenoti-7c04f",
-          storageBucket: "linenoti-7c04f.firebasestorage.app",
-          messagingSenderId: "607844945437",
-          appId: "1:607844945437:web:d5e0229b8c18522cd500f4"
+            apiKey: "AIzaSyDxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+            authDomain: "YOUR-APP.firebaseapp.com",
+            databaseURL: "https://YOUR-APP-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "YOUR-APP",
+            storageBucket: "YOUR-APP.appspot.com",
+            messagingSenderId: "1234567890",
+            appId: "1:1234567890:web:xxxxxxxxxxxxxxxxx"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
 
-        // ตั้งค่าให้จำ User ไว้ในเครื่อง (Local Persistence)
         setPersistence(auth, browserLocalPersistence).catch((error) => console.error(error));
 
-        // --- Logic การสลับหน้าจอ ---
         const pages = {
             login: document.getElementById('login-section'),
             setupPin: document.getElementById('pin-setup-section'),
@@ -157,34 +143,30 @@
             pages[pageName].classList.remove('hidden');
         }
 
-        // ตรวจสอบสถานะล็อกอิน
         let currentUser = null;
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
-                // ถ้าล็อกอินแล้ว เช็คว่าเคยตั้ง PIN ไว้ไหม
                 const savedPin = localStorage.getItem('admin_pin');
                 if (savedPin) {
-                    showPage('unlock'); // มี PIN แล้ว -> ไปหน้าปลดล็อก
+                    showPage('unlock');
                 } else {
-                    showPage('setupPin'); // ยังไม่มี PIN -> ไปหน้าตั้ง PIN
+                    showPage('setupPin');
                 }
             } else {
-                showPage('login'); // ยังไม่ล็อกอิน -> ไปหน้า Login
+                showPage('login');
             }
         });
 
-        // --- 1. Login Logic ---
+        // --- Auth Functions ---
         window.login = function() {
             const email = document.getElementById('email').value;
             const pass = document.getElementById('password').value;
-            
             Swal.showLoading();
             signInWithEmailAndPassword(auth, email, pass)
                 .then(() => {
                     Swal.close();
-                    const toast = Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 1500 });
-                    toast.fire({ icon: 'success', title: 'เข้าสู่ระบบสำเร็จ' });
+                    Swal.fire({ icon: 'success', title: 'เข้าสู่ระบบสำเร็จ', timer: 1000, showConfirmButton: false });
                 })
                 .catch((error) => {
                     Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
@@ -202,7 +184,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     signOut(auth).then(() => {
-                        localStorage.removeItem('admin_pin'); // ลบ PIN ออกด้วยเพื่อความปลอดภัย
+                        localStorage.removeItem('admin_pin');
                         location.reload();
                     });
                 }
@@ -210,30 +192,19 @@
         }
 
         window.forgetPin = function() {
-             Swal.fire({
-                title: 'ลืม PIN?',
-                text: "ระบบจะทำการ Logout เพื่อให้คุณเข้าสู่ระบบใหม่ด้วยอีเมล",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Logout',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    signOut(auth).then(() => location.reload());
-                }
-            });
+             Swal.fire({ title: 'ลืม PIN?', text: "ระบบจะ Logout เพื่อให้เข้าใหม่ด้วยอีเมล", icon: 'question', showCancelButton: true, confirmButtonText: 'Logout' })
+             .then((result) => { if (result.isConfirmed) signOut(auth).then(() => location.reload()); });
         }
 
-        // --- 2. PIN System Logic ---
+        // --- PIN Functions ---
         let setupPinBuffer = "";
         let unlockPinBuffer = "";
 
-        // ฟังก์ชันตั้ง PIN ใหม่
         window.enterSetupPin = function(num) {
             if (setupPinBuffer.length < 6) {
                 setupPinBuffer += num;
                 updatePinDots('setup', setupPinBuffer.length);
                 if (setupPinBuffer.length === 6) {
-                    // บันทึก PIN
                     localStorage.setItem('admin_pin', setupPinBuffer);
                     Swal.fire({ icon: 'success', title: 'ตั้งรหัส PIN สำเร็จ!', timer: 1500, showConfirmButton: false }).then(() => {
                          showPage('dashboard');
@@ -247,24 +218,21 @@
             updatePinDots('setup', setupPinBuffer.length);
         }
 
-        // ฟังก์ชันปลดล็อก PIN
         window.enterUnlockPin = function(num) {
             if (unlockPinBuffer.length < 6) {
                 unlockPinBuffer += num;
                 updatePinDots('unlock', unlockPinBuffer.length);
-                
                 if (unlockPinBuffer.length === 6) {
                     const savedPin = localStorage.getItem('admin_pin');
                     if (unlockPinBuffer === savedPin) {
-                        // รหัสถูก -> เข้าหน้าหลัก
                         showPage('dashboard');
                         startListeningOrders();
-                        // Reset Buffer
+                        // 🔥 กด PIN ผ่าน ถือเป็น Interaction -> ปลดล็อกเสียงได้เลย
+                        window.testSound(true); 
                         unlockPinBuffer = "";
                         updatePinDots('unlock', 0);
                     } else {
-                        // รหัสผิด
-                        navigator.vibrate(200); // สั่นเตือน
+                        navigator.vibrate(200);
                         unlockPinBuffer = "";
                         updatePinDots('unlock', 0);
                         Swal.fire({ toast: true, position: 'top', icon: 'error', title: 'รหัส PIN ไม่ถูกต้อง', showConfirmButton: false, timer: 1000 });
@@ -290,7 +258,7 @@
             });
         }
 
-        // --- 3. Wake Lock (เปิดจอยาวๆ) ---
+        // --- Wake Lock & Sound ---
         let wakeLock = null;
         window.toggleWakeLock = async function() {
             const btn = document.getElementById('wake-lock-btn');
@@ -307,26 +275,35 @@
                         btn.innerHTML = '<i class="fa-solid fa-lightbulb"></i> เปิดจอยาว';
                         btn.classList.remove('bg-blue-700');
                         btn.classList.add('bg-yellow-500', 'border-yellow-300');
-                        
-                        // ถ้าหลุด (เช่น พับหน้าจอ) ให้ขอใหม่
                         wakeLock.addEventListener('release', () => {
                             wakeLock = null;
                             btn.innerHTML = '<i class="fa-regular fa-lightbulb"></i> จอปกติ';
                             btn.classList.remove('bg-yellow-500');
                             btn.classList.add('bg-blue-700');
                         });
+                        window.testSound(true); // กดปุ่มนี้ก็นับเป็น Interaction
                     }
-                } catch (err) {
-                    console.error(`${err.name}, ${err.message}`);
-                    Swal.fire('Error', 'อุปกรณ์นี้ไม่รองรับการล็อคหน้าจอ', 'error');
-                }
-            } else {
-                 Swal.fire('Info', 'Browser นี้ไม่รองรับฟีเจอร์ล็อคหน้าจอ', 'info');
+                } catch (err) { Swal.fire('Error', 'อุปกรณ์นี้ไม่รองรับการล็อคหน้าจอ', 'error'); }
             }
         }
 
-        // --- 4. Database Logic (เหมือนเดิม) ---
-        let audio = document.getElementById('notif-sound');
+        // 🔥 ฟังก์ชันทดสอบเสียง (กดปุ่มกระดิ่ง หรือเรียกใช้เมื่อมี Interaction)
+        window.testSound = function(silent = false) {
+            const audio = document.getElementById('notif-sound');
+            // รีเซ็ตเสียงไปที่เริ่มต้น
+            audio.currentTime = 0;
+            // ปรับระดับเสียง
+            audio.volume = 1.0; 
+            
+            audio.play().then(() => {
+                if(!silent) Swal.fire({ toast: true, position: 'top', icon: 'success', title: 'เสียงทำงานปกติ', showConfirmButton: false, timer: 1000 });
+            }).catch(e => {
+                console.log('Audio Autoplay Blocked:', e);
+                if(!silent) Swal.fire({ icon: 'warning', title: 'เสียงถูกปิดกั้น', text: 'กรุณากดที่หน้าจอ 1 ครั้งเพื่อเปิดใช้งานเสียง' });
+            });
+        }
+
+        // --- Database & Notification ---
         let isFirstLoad = true;
         let lastOrderCount = 0;
 
@@ -345,7 +322,8 @@
                 const orders = Object.values(data).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
                 if (!isFirstLoad && orders.length > lastOrderCount) {
-                    audio.play().catch(e => console.log('Audio Blocked'));
+                    // 🔥 เล่นเสียงเมื่อมีออเดอร์ใหม่
+                    window.testSound(true); 
                     const toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 });
                     toast.fire({ icon: 'success', title: 'มีออเดอร์ใหม่!' });
                 }
