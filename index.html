@@ -183,30 +183,39 @@
                 </div>
             </div>
 
-            <div id="payment-transfer-detail" class="ml-2 pl-6 border-l-2 border-gray-200 mb-6 space-y-4">
+            <div class="bg-white p-5 shadow-sm mb-20"> <h2 class="text-lg font-bold text-gray-800 mb-4">เลือกวิธีการชำระเงิน</h2>
+                
+                <label class="block mb-3 cursor-pointer">
+                    <input type="radio" name="paymentMethod" value="transfer" class="payment-radio hidden" checked onchange="togglePaymentDetail()">
+                    <div class="border rounded-xl p-4 flex items-center justify-between transition-all hover:bg-gray-50">
+                        <div class="flex items-center gap-3">
+                            <div class="w-5 h-5 rounded-full border border-gray-300 radio-indicator flex items-center justify-center"></div>
+                            <span class="font-medium text-gray-700">โอนเงิน / สแกนจ่าย</span>
+                        </div>
+                        <i class="fa-solid fa-qrcode text-gray-400 text-xl"></i>
+                    </div>
+                </label>
+
+                <div id="payment-transfer-detail" class="ml-2 pl-6 border-l-2 border-gray-200 mb-6 space-y-4">
                     
                     <div class="max-w-[280px] mx-auto bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden relative">
                         <div class="bg-[#113566] p-3 flex justify-between items-center">
                             <img src="https://upload.wikimedia.org/wikipedia/commons/c/c5/PromptPay-logo.png" class="h-6 bg-white rounded px-1">
                             <div class="text-right">
                                 <p class="text-white text-[10px] font-light">Thai QR Payment</p>
-                                </div>
+                            </div>
                         </div>
 
                         <div class="p-5 text-center bg-white relative">
                             <p class="text-xs text-gray-500 mb-2">สแกน QR เพื่อชำระเงิน</p>
-                            
                             <div class="border-2 border-[#113566] rounded-lg p-1 inline-block mb-2">
                                 <img id="qr-image" src="" class="w-40 h-40 object-contain">
                             </div>
-
                             <div class="mt-1 mb-3">
                                 <p class="text-xs text-gray-400">ยอดชำระรวม</p>
                                 <p class="text-2xl font-bold text-[#113566]" id="qr-amount-display">0 บาท</p>
                             </div>
-
                             <div class="border-t-2 border-dashed border-gray-200 my-3 w-full"></div>
-
                             <div class="text-left space-y-2">
                                 <div class="flex items-center gap-2">
                                     <div class="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 text-xs">
@@ -218,7 +227,7 @@
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <img src="https://upload.wikimedia.org/wikipedia/en/thumb/5/5a/Kasikornbank_Logo.svg/1200px-Kasikornbank_Logo.svg.png" class="w-6 h-6 rounded-full object-contain border border-gray-100"> 
+                                    <img src="https://upload.wikimedia.org/wikipedia/en/thumb/5/5a/Kasikornbank_Logo.svg/1200px-Kasikornbank_Logo.svg.png" class="w-6 h-6 rounded-full object-contain border border-gray-100">
                                     <div class="flex-1">
                                         <p class="text-[10px] text-gray-400 leading-none">เลขพร้อมเพย์ (KBank)</p>
                                         <div class="flex items-center justify-between">
@@ -230,7 +239,6 @@
                                     </div>
                                 </div>
                             </div>
-
                             <button onclick="downloadQR()" class="mt-4 w-full text-xs bg-[#113566] text-white py-2.5 rounded-lg shadow-sm hover:bg-[#0d2a52] transition flex items-center justify-center gap-2 font-bold">
                                 <i class="fa-solid fa-download"></i> บันทึกรูป QR Code
                             </button>
@@ -253,8 +261,8 @@
                             <div class="w-5 h-5 rounded-full border border-gray-300 radio-indicator flex items-center justify-center"></div>
                             <div>
                                 <span class="font-medium text-gray-700 block">เก็บเงินปลายทาง (COD)</span>
-                                <span id="cod-warning-text" class="text-[10px] text-red-500 hidden">
-                                    <i class="fa-solid fa-lock"></i> ใช้งานได้เฉพาะลูกค้าเก่าที่เคยสั่งแล้วเท่านั้น
+                                <span id="cod-warning-text" class="text-[10px] text-red-500 hidden flex items-center gap-1 mt-0.5">
+                                    <i class="fa-solid fa-lock text-[9px]"></i> เฉพาะลูกค้าเก่าที่เคยสั่งแล้ว
                                 </span>
                             </div>
                         </div>
@@ -264,10 +272,11 @@
 
                 <div id="payment-cod-detail" class="hidden ml-2 pl-6 border-l-2 border-gray-200 mt-3">
                     <div class="bg-yellow-50 text-yellow-800 p-3 rounded-lg text-sm flex items-start gap-2">
-                        <i class="fa-solid fa-circle-info mt-1"></i>
+                        <i class="fa-solid fa-circle-info mt-1 shrink-0"></i>
                         <p>กรุณาเตรียมเงินสดให้พอดีกับยอด <strong><span id="cod-amount-display"></span></strong> บาท</p>
                     </div>
                 </div>
+
             </div>
         </section>
         
