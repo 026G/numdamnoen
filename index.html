@@ -550,7 +550,7 @@
     // ==========================================
     window.renderMenu = function(cat) {
         const list = document.getElementById('menu-list');
-        const items = window.menuDB.filter(i => i.category === cat);
+        const items = window.menuDB.filter(i => i.category === cat && i.hidden !== true);
         
         const createCard = (item) => {
             const isSoldOut = !item.stock;
