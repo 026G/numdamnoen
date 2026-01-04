@@ -239,7 +239,7 @@
                                 </div>
                             </div>
                             <button onclick="downloadQR()" class="mt-4 w-full text-xs bg-[#113566] text-white py-2.5 rounded-lg shadow-sm hover:bg-[#0d2a52] transition flex items-center justify-center gap-2 font-bold">
-                                <i class="fa-solid fa-arrow-up-right-from-square"></i> เปิดรูป QR เพื่อบันทึก
+                                <i class="fa-solid fa-download"></i> บันทึกรูป QR Code
                             </button>
                         </div>
                     </div>
@@ -1056,12 +1056,63 @@
     }
 
     window.copyToClipboard = function(text) { navigator.clipboard.writeText(text).then(() => { Swal.fire({ toast: true, position: 'top', icon: 'success', title: 'คัดลอกแล้ว', showConfirmButton: false, timer: 1000 }); }); }
-    window.downloadQR = function() { 
+    window.downloadQR = async function() {
         const imgSrc = document.getElementById('qr-image').src;
         if(!imgSrc) return;
-        
-        // เปิดรูปในแท็บใหม่ ให้ลูกค้ากด Save เอง
-        window.open(imgSrc, '_blank'); 
+
+        // 1. แสดงสถานะกำลังทำงาน
+        Swal.fire({
+            title: 'กำลังบันทึกรูป...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        try {
+            // 2. พยายามดึงรูปมาแปลงเป็นไฟล์
+            const response = await fetch(imgSrc, {
+                mode: 'cors', // ร้องขอข้ามโดเมน
+                cache: 'no-cache'
+            });
+            
+            if (!response.ok) throw new Error('Network response was not ok');
+
+            const blob = await response.blob();
+            const blobUrl = URL.createObjectURL(blob);
+
+            // 3. สร้างลิงก์หลอกๆ เพื่อกดดาวน์โหลด
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = 'PromptPay-QR-' + new Date().getTime() + '.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // ล้างเมมโมรี่
+            URL.revokeObjectURL(blobUrl);
+            
+            Swal.close();
+            Swal.fire({
+                icon: 'success',
+                title: 'บันทึกรูปสำเร็จ',
+                toast: true,
+                position: 'top',
+                showConfirmButton: false,
+                timer: 2000
+            });
+
+        } catch (e) {
+            console.error("Save failed:", e);
+            Swal.close();
+            
+            // 4. ❌ ถ้าดาวน์โหลดไม่ได้ ให้แจ้งเตือนแคปหน้าจอ
+            Swal.fire({
+                icon: 'info',
+                title: 'ไม่สามารถบันทึกไฟล์ได้',
+                html: '<br><b>กรุณา "แคปหน้าจอ" (Screenshot) เพื่อบันทึก QR Code ครับ</b>',
+                confirmButtonText: 'ตกลง',
+                confirmButtonColor: '#16a34a'
+            });
+        }
     }
     // ❌ ปิดระบบเก็บเงินปลายทาง (ซ่อนปุ่ม)
     window.checkCODEligibility = function() {
