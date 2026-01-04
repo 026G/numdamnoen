@@ -4,13 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>เช็คราคา Lalamove - หนุ่มดำเนิน</title>
-
     <script src="https://cdn.tailwindcss.com"></script>
-
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-
     <style>
         body { font-family: 'Prompt', sans-serif; background-color: #f3f4f6; }
         .fade-in { animation: fadeIn 0.5s ease-in-out; }
@@ -96,50 +92,44 @@
     </div>
 
     <script>
-        // 🔴🔴🔴 URL Google Apps Script ของคุณ 🔴🔴🔴
-        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbxdDDXZ3-pmT6nykdkjg7wrh16ZZkPFY5rmF_LsWcoFk5BoULi-lVJJEcsjBi7zKIJwDQ/exec";
+        // 🔴🔴🔴 URL Google Apps Script (ต้องตรงกับที่ Deploy ล่าสุด) 🔴🔴🔴
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycby-CN2vDIOsauP7k1qjiGEm3nPlNV0X9ADKyt_Xzzw1HUY_fzobRJZnTapRUweWu9a3fg/exec";
 
-        // ตัวแปร Global เก็บข้อมูลสำคัญ
+        // ตัวแปร Global
         let currentQuotationId = "";
         let currentStopInfo = {};
         let customerName = "";
         let customerPhone = "";
         let orderId = ""; 
+        let secretCode = ""; // 🔥 ตัวแปรเก็บรหัสลับ
 
-        // ฟังก์ชันดึงค่าจาก URL
         function getQueryParam(param) {
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get(param);
         }
 
-        // ==========================================
-        // ทำงานอัตโนมัติเมื่อเปิดหน้าเว็บ (Auto Fill)
-        // ==========================================
         window.onload = function() {
-            // รับค่าจาก URL
             const lat = getQueryParam('lat');
             const lng = getQueryParam('lng');
             const addr = getQueryParam('addr');
             const note = getQueryParam('note'); 
             
-            // ✅ ดึงค่าข้อมูลลูกค้าและ Order ID มาแสดงผล
             customerName = decodeURIComponent(getQueryParam('name') || "-");
             customerPhone = decodeURIComponent(getQueryParam('phone') || "-");
             orderId = decodeURIComponent(getQueryParam('orderId') || "-");
+            // 🔥 รับค่า secret จาก URL
+            secretCode = decodeURIComponent(getQueryParam('secret') || "");
 
-            // อัปเดตกล่องสีฟ้า (ข้อมูลลูกค้า)
             document.getElementById('showOrderId').innerText = orderId;
             document.getElementById('showName').innerText = customerName;
             document.getElementById('showPhone').innerText = customerPhone;
 
             if (lat && lng) {
-                // เติมข้อมูลลงในช่อง
                 document.getElementById('destLat').value = lat;
                 document.getElementById('destLng').value = lng;
                 if (addr) document.getElementById('destAddress').value = decodeURIComponent(addr);
                 if (note) document.getElementById('destNote').value = decodeURIComponent(note);
                 
-                // เลื่อนหน้าจอไปหาปุ่มตรวจสอบราคา
                 setTimeout(() => {
                     const btn = document.getElementById('checkBtn');
                     if(btn) btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -153,9 +143,6 @@
             }
         };
 
-        // ==========================================
-        // 1. ฟังก์ชันเช็คราคา (Check Price)
-        // ==========================================
         function checkPrice() {
             const btn = document.getElementById('checkBtn');
             const resultArea = document.getElementById('resultArea');
@@ -175,7 +162,6 @@
                 return;
             }
 
-            // ✅ แปลงเบอร์โทรให้เป็นรูปแบบสากล (+66) สำหรับส่ง API
             let formattedPhone = "+66800000000"; 
             if (customerPhone && customerPhone !== "-") {
                 let cleanPhone = customerPhone.replace(/\D/g, ''); 
@@ -188,7 +174,6 @@
                 }
             }
 
-            // UI Loading...
             btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> กำลังคำนวณ...';
             btn.disabled = true;
             btn.classList.add('opacity-70');
@@ -202,6 +187,7 @@
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({
                     action: 'check_price', 
+                    secret: secretCode, // 🔥 ส่งรหัสลับไปด้วย
                     originLat: originLat,
                     originLng: originLng,
                     destLat: destLat,
@@ -216,7 +202,6 @@
                 if (data.error) {
                     alert("⚠️ เกิดข้อผิดพลาด: " + data.error);
                 } else if (data.data) {
-                    // ✅ ได้ราคาสำเร็จ
                     const stops = data.data.stops; 
                     const price = data.data.priceBreakdown.total;
                     if(priceDisplay) priceDisplay.innerHTML = `฿${price}`;
@@ -224,7 +209,6 @@
 
                     currentQuotationId = data.data.quotationId; 
                     
-                    // ✅ เตรียมข้อมูลสำหรับสร้าง Order (ใส่ชื่อและเบอร์โทรจริง)
                     currentStopInfo = {
                         pickup: { 
                             stopId: stops[0].stopId,
@@ -233,7 +217,6 @@
                         },
                         drop: { 
                             stopId: stops[1].stopId,
-                            // ถ้ามีชื่อลูกค้าให้ใช้ชื่อลูกค้า ถ้าไม่มีใช้คำว่า Customer
                             name: (customerName && customerName !== "-") ? customerName : "Customer", 
                             phone: formattedPhone, 
                             remarks: destNoteInput 
@@ -259,9 +242,6 @@
             });
         }
 
-        // ==========================================
-        // 2. ฟังก์ชันเรียกไรเดอร์ (Place Order)
-        // ==========================================
         function placeOrder() {
             if (!currentQuotationId) {
                 alert("❌ ไม่พบข้อมูลราคา กรุณากดตรวจสอบราคาใหม่");
@@ -273,7 +253,6 @@
             
             if(!confirm("ยืนยันการเรียกรถ (Sandbox Mode)?\nระบบจะจำลองการเรียกรถแต่ไม่มีรถจริงมารับ")) return;
 
-            // ✅ อัปเดตหมายเหตุล่าสุดจากกล่องข้อความ (สำคัญ!)
             const latestNote = document.getElementById('destNote').value || "";
             if (currentStopInfo.drop) currentStopInfo.drop.remarks = latestNote;
 
@@ -286,6 +265,7 @@
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({
                     action: 'create_order',  
+                    secret: secretCode, // 🔥 ส่งรหัสลับไปด้วย
                     quotationId: currentQuotationId,
                     stops: currentStopInfo 
                 })
@@ -313,7 +293,6 @@
             });
         }
 
-        // กัน Error กรณีเรียกชื่อฟังก์ชันผิด
         window.checkLalamovePrice = checkPrice;
     </script>
 </body>
