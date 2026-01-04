@@ -17,6 +17,7 @@
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         .tab-active { color: #2563eb; border-top: 2px solid #2563eb; }
         .tab-inactive { color: #9ca3af; border-top: 2px solid transparent; }
+        
         /* สไตล์ตอนลากของ */
         .sortable-ghost { opacity: 0.4; background-color: #f3f4f6; border: 2px dashed #cbd5e1; }
         .sortable-drag { cursor: grabbing; opacity: 1; background: white; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
@@ -203,7 +204,7 @@
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } 
         from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // 🔴🔴🔴 Config ของคุณ (อย่าลืมใส่) 🔴🔴🔴
+        // 🔴🔴🔴 Config ของคุณ 🔴🔴🔴
         const firebaseConfig = {
           apiKey: "AIzaSyBLo1JKTNOrx6vvh2a6Pl8Zxjll4eoIKAA",
           authDomain: "linenoti-7c04f.firebaseapp.com",
@@ -220,6 +221,7 @@
 
         setPersistence(auth, browserLocalPersistence).catch((error) => console.error(error));
 
+        // --- Page Navigation & Auth ---
         const pages = {
             login: document.getElementById('login-section'),
             setupPin: document.getElementById('pin-setup-section'),
@@ -386,33 +388,73 @@
             });
         }
 
+        // 🔥 แก้ไข: เพิ่มปุ่มจัดการ (ขาย/หมด/ซ่อน) ในการ์ดสินค้า
         function createAdminProductCard(item) {
             const isHidden = item.hidden === true;
             const isSoldOut = item.stock === false;
             let statusClass = isHidden ? "opacity-60 bg-gray-50 grayscale" : "bg-white";
-            let statusText = isHidden ? "👁️ ซ่อน" : (isSoldOut ? "🔴 หมด" : "🟢 ขาย");
 
             return `
-            <div class="${statusClass} p-3 rounded-xl shadow-sm border border-gray-200 flex gap-3 items-center relative transition-all" data-key="${item.key}">
-                <div class="drag-handle text-gray-400 px-2 cursor-grab active:cursor-grabbing">
-                    <i class="fa-solid fa-grip-vertical text-lg"></i>
-                </div>
-
-                <img src="${item.img || 'https://via.placeholder.com/100'}" class="w-14 h-14 rounded-lg object-cover bg-gray-200">
-                
-                <div class="flex-1 min-w-0">
-                    <div class="flex justify-between items-start">
-                        <h3 class="font-bold text-gray-800 text-sm truncate">${item.name}</h3>
-                        <span class="text-[10px] bg-gray-100 px-1.5 py-0.5 rounded text-gray-500">${statusText}</span>
+            <div class="${statusClass} p-3 rounded-xl shadow-sm border border-gray-200 relative transition-all mb-3" data-key="${item.key}">
+                <div class="flex gap-3">
+                    <div class="drag-handle text-gray-400 py-4 px-1 cursor-grab active:cursor-grabbing">
+                        <i class="fa-solid fa-grip-vertical text-lg"></i>
                     </div>
-                    <div class="text-xs text-gray-500">฿${item.price} <span class="text-gray-300">|</span> ${item.category}</div>
-                </div>
 
-                <button onclick="window.editProduct('${item.key}')" class="w-8 h-8 rounded-full bg-gray-50 text-blue-600 hover:bg-blue-50 flex items-center justify-center border border-gray-200 shadow-sm">
-                    <i class="fa-solid fa-pen text-xs"></i>
-                </button>
+                    <img src="${item.img || 'https://via.placeholder.com/100'}" class="w-16 h-16 rounded-lg object-cover bg-gray-200 shrink-0">
+                    
+                    <div class="flex-1 min-w-0">
+                        <div class="flex justify-between items-start">
+                            <h3 class="font-bold text-gray-800 text-sm truncate pr-6">${item.name}</h3>
+                            <button onclick="window.editProduct('${item.key}')" class="absolute top-2 right-2 text-gray-400 hover:text-blue-600 p-2">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="text-xs text-gray-500 mb-2">฿${item.price} <span class="text-gray-300">|</span> ${item.category}</div>
+
+                        <div class="flex gap-1">
+                            <button onclick="updateProductStatus('${item.key}', 'active')" 
+                                class="flex-1 py-1 text-[10px] rounded border ${!isSoldOut && !isHidden ? 'bg-green-500 text-white border-green-500 font-bold' : 'bg-white text-gray-500 border-gray-200'}">
+                                ขาย
+                            </button>
+                            <button onclick="updateProductStatus('${item.key}', 'soldout')" 
+                                class="flex-1 py-1 text-[10px] rounded border ${isSoldOut && !isHidden ? 'bg-red-500 text-white border-red-500 font-bold' : 'bg-white text-gray-500 border-gray-200'}">
+                                หมด
+                            </button>
+                            <button onclick="updateProductStatus('${item.key}', 'hidden')" 
+                                class="flex-1 py-1 text-[10px] rounded border ${isHidden ? 'bg-gray-600 text-white border-gray-600 font-bold' : 'bg-white text-gray-500 border-gray-200'}">
+                                ซ่อน
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
             `;
+        }
+
+        // 🔥 ฟังก์ชันอัปเดตสถานะ (ขาย/หมด/ซ่อน)
+        window.updateProductStatus = function(key, type) {
+            const updates = {};
+            if (type === 'active') {
+                updates.stock = true;
+                updates.hidden = false;
+            } else if (type === 'soldout') {
+                updates.stock = false;
+                updates.hidden = false;
+            } else if (type === 'hidden') {
+                updates.hidden = true;
+            }
+
+            update(ref(db, `menu/${key}`), updates)
+            .then(() => {
+                // อัปเดตเงียบๆ ไม่ต้องเด้ง Popup รบกวน
+                // const toast = Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 500 });
+                // toast.fire({ icon: 'success', title: 'อัปเดตแล้ว' });
+            })
+            .catch(err => {
+                Swal.fire('Error', 'ไม่สามารถแก้ไขได้', 'error');
+            });
         }
 
         // --- Modal & CRUD Functions ---
@@ -422,7 +464,6 @@
             const delBtn = document.getElementById('btn-delete-prod');
             
             if(reset) {
-                // โหมดเพิ่มสินค้าใหม่
                 title.innerText = 'เพิ่มสินค้าใหม่';
                 document.getElementById('prod-id').value = '';
                 document.getElementById('prod-name').value = '';
@@ -482,13 +523,11 @@
             };
 
             if (key) {
-                // แก้ไขของเดิม
                 update(ref(db, `menu/${key}`), data).then(() => {
                     Swal.fire({icon:'success',title:'บันทึกแล้ว',timer:1000,showConfirmButton:false});
                     window.closeProductModal();
                 });
             } else {
-                // สร้างใหม่ (Auto ID)
                 onValue(ref(db, 'menu'), (snapshot) => {
                     let maxOrder = 0;
                     snapshot.forEach(child => {
@@ -523,6 +562,7 @@
         window.editProduct = editProduct;
         window.saveProduct = saveProduct;
         window.deleteProduct = deleteProduct;
+        window.updateProductStatus = updateProductStatus;
 
     </script>
 </body>
