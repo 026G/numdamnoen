@@ -198,31 +198,62 @@
                 </label>
 
                 <div id="payment-transfer-detail" class="ml-2 pl-6 border-l-2 border-gray-200 mb-6 space-y-4">
-                    <div class="bg-green-50 p-4 rounded-lg text-center border border-green-100 relative">
-                        <p class="text-sm font-bold text-gray-600 mb-2">สแกนเพื่อจ่าย</p>
-                        <img id="qr-image" src="" class="w-40 h-40 mx-auto bg-white p-2 rounded shadow-sm">
-                        
-                        <button onclick="downloadQR()" class="mt-2 text-xs bg-white border border-green-200 text-green-700 px-3 py-1 rounded-full shadow-sm hover:bg-green-100 flex items-center gap-1 mx-auto">
-                            <i class="fa-solid fa-download"></i> บันทึกรูป
-                        </button>
+                    
+                    <div class="max-w-[280px] mx-auto bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden relative">
+                        <div class="bg-[#113566] p-3 flex justify-between items-center">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c5/PromptPay-logo.png" class="h-6 bg-white rounded px-1">
+                            <div class="text-right">
+                                <p class="text-white text-[10px] font-light">Thai QR Payment</p>
+                                <img src="https://www.bot.or.th/content/dam/bot/icons/footer/logo-bot-footer.png" class="h-4 opacity-80 ml-auto filter invert">
+                            </div>
+                        </div>
 
-                        <p class="text-xl font-bold text-green-700 mt-2" id="qr-amount-display">0 บาท</p>
-                    </div>
+                        <div class="p-5 text-center bg-white relative">
+                            <p class="text-xs text-gray-500 mb-2">สแกน QR เพื่อชำระเงิน</p>
+                            
+                            <div class="border-2 border-[#113566] rounded-lg p-1 inline-block mb-2">
+                                <img id="qr-image" src="" class="w-40 h-40 object-contain">
+                            </div>
 
-                    <div class="bg-gray-100 p-3 rounded-lg text-sm text-gray-600 space-y-1">
-                        <p><strong>ธนาคาร:</strong> พร้อมเพย์ QR (Prompt QR)</p>
-                        <p><strong>ชื่อบัญชี:</strong> วิวัฒน์ชัย พันธ์วิชัย</p>
-                        <div class="flex items-center gap-2">
-                            <strong>เลขพร้อมเพย์:</strong> 
-                            <span id="bank-acc-no" class="font-mono text-gray-800">062-246-7746</span>
-                            <button onclick="copyToClipboard('0622467746')" class="text-xs text-blue-500 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 hover:bg-blue-100">
-                                <i class="fa-regular fa-copy"></i> คัดลอก
+                            <div class="mt-1 mb-3">
+                                <p class="text-xs text-gray-400">ยอดชำระรวม</p>
+                                <p class="text-2xl font-bold text-[#113566]" id="qr-amount-display">0 บาท</p>
+                            </div>
+
+                            <div class="border-t-2 border-dashed border-gray-200 my-3 w-full"></div>
+
+                            <div class="text-left space-y-2">
+                                <div class="flex items-center gap-2">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/825/825460.png" class="w-5 h-5 rounded-full border border-gray-100 p-0.5"> <div>
+                                        <p class="text-[10px] text-gray-400 leading-none">ชื่อบัญชี</p>
+                                        <p class="text-sm font-bold text-gray-700 line-clamp-1">นายวิวัฒน์ชัย พันธ์วิชัย</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <img src="https://i.pinimg.com/originals/c9/62/be/c962be169e5d9972304899990b7999d3.png" class="w-5 h-5 rounded-full"> <div class="flex-1">
+                                        <p class="text-[10px] text-gray-400 leading-none">เลขพร้อมเพย์</p>
+                                        <div class="flex items-center justify-between">
+                                            <span id="bank-acc-no" class="text-sm font-bold text-[#113566] font-mono tracking-wide">062-246-7746</span>
+                                            <button onclick="copyToClipboard('0622467746')" class="text-[10px] text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-0.5 rounded transition">
+                                                <i class="fa-regular fa-copy"></i> คัดลอก
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button onclick="downloadQR()" class="mt-4 w-full text-xs bg-[#113566] text-white py-2 rounded-lg shadow-sm hover:bg-[#0d2a52] transition flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-download"></i> บันทึกรูป QR Code
                             </button>
                         </div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">แนบสลิปการโอน</label>
-                        <input type="file" id="slip-file" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-l-lg file:border-0 file:text-sm file:font-semibold file:bg-green-600 file:text-white hover:file:bg-green-700 border border-gray-300 rounded-lg cursor-pointer bg-white shadow-sm">
+
+                    <div class="mt-4 pt-4 border-t border-gray-100">
+                        <label class="block text-xs font-bold text-gray-700 mb-2 flex items-center gap-1">
+                            <i class="fa-solid fa-receipt text-green-600"></i> แนบหลักฐานการโอนเงิน
+                        </label>
+                        <input type="file" id="slip-file" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-l-lg file:border-0 file:text-sm file:font-semibold file:bg-green-600 file:text-white hover:file:bg-green-700 border border-gray-300 rounded-lg cursor-pointer bg-white shadow-sm transition">
+                        <p class="text-[10px] text-gray-400 mt-1">*กรุณาแนบสลิปเพื่อยืนยันการสั่งซื้อ</p>
                     </div>
                 </div>
 
