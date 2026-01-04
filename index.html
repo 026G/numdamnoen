@@ -1085,24 +1085,24 @@
         } catch(e) { Swal.fire({icon:'error', text:'ไม่สามารถบันทึกรูปได้ กรุณาแคปหน้าจอแทน'}); }
     }
 
+// ✅ แก้ไข: เปิดให้ทุกคนจ่ายปลายทางได้ (COD for All)
     window.checkCODEligibility = function() {
-        const history = JSON.parse(localStorage.getItem('order_history') || "[]");
         const codRadio = document.getElementById('cod-radio');
         const codLabel = document.getElementById('cod-label');
         const codBox = document.getElementById('cod-box');
         const codWarning = document.getElementById('cod-warning-text');
 
-        if (history.length > 0) {
-            codRadio.disabled = false;
-            codLabel.classList.remove('opacity-50', 'pointer-events-none');
-            codBox.classList.remove('bg-gray-100');
-            codWarning.classList.add('hidden');
-        } else {
-            codRadio.disabled = true;
-            codLabel.classList.add('opacity-60');
-            codBox.classList.add('bg-gray-100');
-            codWarning.classList.remove('hidden');
-        }
+        // 1. บังคับให้กดได้เสมอ
+        codRadio.disabled = false;
+
+        // 2. โชว์ปุ่ม และเอาเอฟเฟกต์ "ห้ามกด" ออกให้หมด
+        codLabel.classList.remove('hidden', 'opacity-50', 'opacity-60', 'pointer-events-none');
+        
+        // 3. ปรับสีพื้นหลังให้เป็นสีขาวปกติ
+        codBox.classList.remove('bg-gray-100');
+
+        // 4. ซ่อนข้อความเตือน "เฉพาะลูกค้าเก่า"
+        codWarning.classList.add('hidden');
     }
 
     // --- 10. Shop Status UI ---
