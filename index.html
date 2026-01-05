@@ -183,6 +183,7 @@
                         </div>
                     </div>
                 </div>
+
             </div>
         </section>
         
@@ -232,7 +233,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, get, push, set, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const firebaseConfig = {
+       const firebaseConfig = {
   apiKey: "AIzaSyBLo1JKTNOrx6vvh2a6Pl8Zxjll4eoIKAA",
   authDomain: "linenoti-7c04f.firebaseapp.com",
   databaseURL: "https://linenoti-7c04f-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -495,7 +496,7 @@
         }).join('');
     }
 
-    // 🔥 FIX: Separate Function for Delete
+    // 🔥 Fix: ฟังก์ชันลบสินค้าในตะกร้า
     window.removeCartItem = function(index) {
         window.cart.splice(index, 1);
         saveCartToStorage();
@@ -516,7 +517,7 @@
         window.map.setView(startLoc, startZoom);
         window.marker = L.marker(startLoc, { draggable: true, icon: customerIcon }).addTo(window.map);
         
-        // 🔥 FIX: Calculate immediately
+        // 🔥 Fix: บังคับคำนวณพิกัดเริ่มต้นทันที (แก้ปุ่มกดไม่ได้)
         if (savedLat && savedLng) {
             window.calculateDelivery(startLoc[0], startLoc[1]);
         } else {
@@ -534,17 +535,14 @@
         document.getElementById('distance-display').innerText = `${window.distanceKm.toFixed(1)} กม.`;
         const btnConfirm = document.getElementById('btn-confirm-address');
         
-        // Remove disabled completely logic here, just handle styles if you want
         if (window.distanceKm > window.MAX_DIST_KM) {
             document.getElementById('out-of-range-msg').classList.remove('hidden');
             document.getElementById('distance-display').classList.replace('bg-green-50','bg-red-50');
             document.getElementById('distance-display').classList.replace('text-green-600','text-red-600');
-            // btnConfirm.disabled = true; // Optional: Keep it enabled but show error
         } else {
             document.getElementById('out-of-range-msg').classList.add('hidden');
             document.getElementById('distance-display').classList.replace('bg-red-50','bg-green-50');
             document.getElementById('distance-display').classList.replace('text-red-600','text-green-600');
-            // btnConfirm.disabled = false;
         }
     }
     
@@ -558,8 +556,6 @@
         
         if(!name || !phone || !address) return Swal.fire({icon: 'warning', text: 'กรุณากรอกข้อมูลที่อยู่ให้ครบถ้วน'});
         if(!window.userLat) return Swal.fire({icon: 'warning', text: 'กรุณาปักหมุดจุดส่งบนแผนที่'});
-        
-        // Logic check only when clicking
         if(window.distanceKm > window.MAX_DIST_KM) return Swal.fire({icon: 'error', text: `อยู่นอกพื้นที่จัดส่ง (จำกัด ${window.MAX_DIST_KM} กม.)`});
         
         const foodTotal = window.cart.reduce((s, i) => s + i.finalPrice, 0);
@@ -582,24 +578,17 @@
             else { feeDetail.innerText = ""; }
         }
         document.getElementById('summary-grand-total').innerText = `${grandTotal} บาท`;
-        document.getElementById('qr-image').src = `https://promptpay.io/0622467746/${grandTotal}`;
-        document.getElementById('qr-amount-display').innerText = `${grandTotal} บาท`;
-        document.getElementById('cod-amount-display').innerText = `${grandTotal}`;
-        window.checkCODEligibility();
+        
+        // 🔥 Fix: ถ้า element มีอยู่จริงค่อยใส่ค่า (กัน error)
+        if(document.getElementById('qr-image')) document.getElementById('qr-image').src = `https://promptpay.io/0622467746/${grandTotal}`;
+        if(document.getElementById('qr-amount-display')) document.getElementById('qr-amount-display').innerText = `${grandTotal} บาท`;
+        
         window.showPage('payment');
-    }
-
-    window.checkCODEligibility = function() {
-        const codRadio = document.getElementById('cod-radio');
-        const codLabel = document.getElementById('cod-label');
-        if(codLabel) codLabel.classList.add('hidden');
-        if(codRadio) codRadio.disabled = true;
     }
 
     window.togglePaymentDetail = function() {
         const method = document.querySelector('input[name="paymentMethod"]:checked').value;
         document.getElementById('payment-transfer-detail').classList.toggle('hidden', method !== 'transfer');
-        document.getElementById('payment-cod-detail').classList.toggle('hidden', method !== 'cod');
         document.getElementById('payment-chat-pay-detail').classList.toggle('hidden', method !== 'chat_pay');
     }
 
@@ -765,6 +754,7 @@
             else if(order.status.includes("ส่ง") || order.status.includes("ไรเดอร์")) { statusColor = "text-purple-600 bg-purple-50 border-purple-100"; cardBgColor = "bg-purple-50/30 border-purple-100"; }
             else if(order.status.includes("สำเร็จ")) { statusColor = "text-green-600 bg-green-50 border-green-100"; cardBgColor = "bg-green-50/30 border-green-100"; }
             else if(order.status.includes("ยกเลิก")) { statusColor = "text-red-600 bg-red-50 border-red-100"; cardBgColor = "bg-red-50/30 border-red-100"; }
+            else if(order.status.includes("แจ้งยอด")) { statusColor = "text-yellow-600 bg-yellow-50 border-yellow-100 animate-pulse"; cardBgColor = "bg-yellow-50/20 border-yellow-100"; }
             else { cardBgColor = "bg-orange-50/20 border-orange-100"; }
 
             let itemsDisplay = order.items;
@@ -800,12 +790,12 @@
         if(status.includes("ส่ง") || status.includes("ไรเดอร์")) return '<i class="fa-solid fa-motorcycle"></i>';
         if(status.includes("สำเร็จ")) return '<i class="fa-solid fa-circle-check"></i>';
         if(status.includes("ยกเลิก")) return '<i class="fa-solid fa-circle-xmark"></i>';
+        if(status.includes("แจ้งยอด")) return '<i class="fa-regular fa-comment-dots"></i>';
         return '<i class="fa-regular fa-clock"></i>';
     }
 
     window.copyToClipboard = function(text) { navigator.clipboard.writeText(text).then(() => { Swal.fire({ toast: true, position: 'top', icon: 'success', title: 'คัดลอกแล้ว', showConfirmButton: false, timer: 1000 }); }); }
     
-    // 🔥🔥 3. บันทึกรูป: พยายามโหลดก่อน ถ้าไม่ได้ให้แจ้งเตือน 🔥🔥
     window.downloadQR = async function() {
         const imgSrc = document.getElementById('qr-image').src;
         if(!imgSrc) return;
@@ -833,7 +823,6 @@
         } catch (e) {
             console.error("Save failed:", e);
             Swal.close();
-            // ถ้าโหลดไม่ได้จริงๆ ให้เด้ง Popup บอกให้แคปจอ
             Swal.fire({
                 icon: 'info',
                 title: 'ไม่สามารถบันทึกไฟล์ได้',
