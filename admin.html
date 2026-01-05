@@ -100,6 +100,10 @@
                 <i class="fa-solid fa-store"></i> จัดการออเดอร์
             </h1>
             <div class="flex items-center gap-2">
+                <button onclick="openManualOrder()" class="text-xs bg-white text-blue-600 px-3 py-1.5 rounded-full shadow font-bold hover:bg-gray-100 transition active:scale-95">
+                    <i class="fa-solid fa-phone"></i> โทรสั่ง
+                </button>
+
                 <button onclick="testSound()" class="text-xs bg-white text-blue-600 px-3 py-1.5 rounded-full shadow font-bold hover:bg-gray-100 active:scale-95 transition">
                     <i class="fa-solid fa-bell"></i>
                 </button>
@@ -153,51 +157,79 @@
             </div>
             <div class="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
                 <input type="hidden" id="prod-id">
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">ชื่อสินค้า</label>
-                    <input type="text" id="prod-name" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="เช่น น้ำมะพร้าวปั่น">
-                </div>
-                
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">ชื่อสินค้า</label><input type="text" id="prod-name" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="เช่น น้ำมะพร้าวปั่น"></div>
                 <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">ราคา (บาท)</label>
-                        <input type="number" id="prod-price" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" placeholder="0">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">ราคาเต็ม (ถ้ามี)</label>
-                        <input type="number" id="prod-orig-price" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" placeholder="ขีดฆ่า">
-                    </div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">ราคา (บาท)</label><input type="number" id="prod-price" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" placeholder="0"></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">ราคาเต็ม (ถ้ามี)</label><input type="number" id="prod-orig-price" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" placeholder="ขีดฆ่า"></div>
                 </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">หมวดหมู่</label>
-                    <input list="category-list" id="prod-category" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" placeholder="เช่น recommend, promotion">
-                    <datalist id="category-list">
-                        <option value="recommend">recommend (แนะนำ)</option>
-                        <option value="promotion">promotion (โปรโมชั่น)</option>
-                    </datalist>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">หัวข้อย่อย (Sub-Category)</label>
-                    <input type="text" id="prod-sub-cat" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" placeholder="เช่น 🔥 รายการยอดฮิต">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">ลิงก์รูปภาพ</label>
-                    <input type="text" id="prod-img" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none text-sm" placeholder="https://...">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">คำอธิบาย</label>
-                    <textarea id="prod-desc" rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none text-sm"></textarea>
-                </div>
-
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">หมวดหมู่</label><input list="category-list" id="prod-category" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" placeholder="เช่น recommend, promotion"><datalist id="category-list"><option value="recommend">recommend (แนะนำ)</option><option value="promotion">promotion (โปรโมชั่น)</option></datalist></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">หัวข้อย่อย (Sub-Category)</label><input type="text" id="prod-sub-cat" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none" placeholder="เช่น 🔥 รายการยอดฮิต"></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">ลิงก์รูปภาพ</label><input type="text" id="prod-img" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none text-sm" placeholder="https://..."></div>
+                <div><label class="block text-sm font-medium text-gray-700 mb-1">คำอธิบาย</label><textarea id="prod-desc" rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 outline-none text-sm"></textarea></div>
             </div>
             <div class="p-4 border-t border-gray-100 bg-gray-50 flex gap-3">
                 <button onclick="deleteProduct()" id="btn-delete-prod" class="hidden px-4 py-2 bg-red-100 text-red-600 rounded-lg font-bold hover:bg-red-200"><i class="fa-solid fa-trash"></i></button>
                 <button onclick="saveProduct()" class="flex-1 py-2 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 shadow">บันทึก</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="manual-order-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl w-full max-w-4xl h-[90vh] shadow-2xl overflow-hidden flex flex-col md:flex-row">
+            
+            <div class="flex-1 bg-gray-50 flex flex-col h-1/2 md:h-full border-b md:border-b-0 md:border-r border-gray-200">
+                <div class="p-4 bg-white border-b border-gray-200 flex justify-between items-center shadow-sm">
+                    <h3 class="font-bold text-gray-700"><i class="fa-solid fa-utensils mr-2"></i> เลือกสินค้า</h3>
+                    <button onclick="document.getElementById('manual-order-modal').classList.add('hidden')" class="md:hidden text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+                <div id="admin-menu-list" class="flex-1 overflow-y-auto p-4 space-y-2">
+                    <div class="text-center py-10 text-gray-400">กำลังโหลดเมนู...</div>
+                </div>
+            </div>
+
+            <div class="w-full md:w-96 bg-white flex flex-col h-1/2 md:h-full">
+                <div class="p-4 bg-blue-600 text-white flex justify-between items-center shadow-md">
+                    <h3 class="font-bold"><i class="fa-solid fa-cart-shopping mr-2"></i> สรุปออเดอร์</h3>
+                    <button onclick="document.getElementById('manual-order-modal').classList.add('hidden')" class="text-white/80 hover:text-white hidden md:block"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+                
+                <div id="admin-cart-items" class="flex-1 overflow-y-auto p-4 space-y-2 bg-gray-50 border-b border-gray-200">
+                    <div class="text-center text-gray-400 text-sm py-4">ยังไม่มีสินค้าในตะกร้า</div>
+                </div>
+
+                <div class="p-4 space-y-3 bg-white">
+                    <div class="flex gap-2">
+                        <input type="tel" id="manual-phone" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="เบอร์โทร (จำเป็น)">
+                        <input type="text" id="manual-name" class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="ชื่อลูกค้า (ถ้ามี)">
+                    </div>
+                    
+                    <div class="flex gap-2 bg-gray-100 p-1 rounded-lg">
+                        <button onclick="toggleDeliveryMode('pickup')" id="btn-mode-pickup" class="flex-1 py-1.5 rounded-md text-xs font-bold transition bg-white text-blue-600 shadow-sm">รับหน้าร้าน</button>
+                        <button onclick="toggleDeliveryMode('delivery')" id="btn-mode-delivery" class="flex-1 py-1.5 rounded-md text-xs font-bold transition text-gray-500 hover:bg-white/50">เดลิเวอรี่</button>
+                    </div>
+
+                    <div id="manual-address-box" class="hidden space-y-2">
+                        <textarea id="manual-address" rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="ระบุที่อยู่จัดส่ง..."></textarea>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-gray-600 shrink-0">ค่าส่ง:</span>
+                            <input type="number" id="manual-delivery-fee" class="w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="0" oninput="updateAdminCartUI()">
+                            <span class="text-xs text-gray-500 shrink-0">บาท</span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center pt-2 border-t border-gray-100">
+                        <div class="text-sm font-bold text-gray-700">ยอดรวมสุทธิ</div>
+                        <div class="text-xl font-bold text-blue-600" id="manual-total-price">0.-</div>
+                    </div>
+
+                    <div class="flex gap-2 pt-2">
+                        <select id="manual-payment" class="border border-gray-300 rounded-lg px-2 py-2 text-sm bg-gray-50">
+                            <option value="cash">💵 เงินสด</option>
+                            <option value="transfer">🏦 โอนแล้ว</option>
+                        </select>
+                        <button onclick="confirmManualOrder()" class="flex-1 bg-green-600 text-white rounded-lg py-2.5 font-bold shadow hover:bg-green-700 transition">บันทึกออเดอร์</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -230,6 +262,10 @@
 
         setPersistence(auth, browserLocalPersistence).catch((error) => console.error(error));
 
+        // --- Global Variables for Admin Cart ---
+        window.adminCart = [];
+        window.adminDeliveryMode = 'pickup'; // 'pickup' or 'delivery'
+
         // --- Page Navigation & Auth ---
         const pages = {
             login: document.getElementById('login-section'),
@@ -243,28 +279,14 @@
             pages[pageName].classList.remove('hidden');
         }
 
-        let currentUser = null;
-        
-        // 🔥 แก้ไข Logic การตรวจสอบ Login ให้จำสถานะได้ 24 ชม. 🔥
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                currentUser = user;
                 const savedPin = localStorage.getItem('admin_pin');
                 const unlockedUntil = localStorage.getItem('pin_unlocked_until');
-
-                if (!savedPin) {
-                    showPage('setupPin');
-                } else if (unlockedUntil && Date.now() < parseInt(unlockedUntil)) {
-                    // ถ้าเวลายังไม่หมดอายุ -> ข้ามไปหน้า Dashboard เลย
-                    showPage('dashboard');
-                    startListeningOrders();
-                } else {
-                    // ถ้าหมดอายุ หรือยังไม่เคย unlock -> ไปหน้าใส่ PIN
-                    showPage('unlock');
-                }
-            } else {
-                showPage('login');
-            }
+                if (!savedPin) { showPage('setupPin'); } 
+                else if (unlockedUntil && Date.now() < parseInt(unlockedUntil)) { showPage('dashboard'); startListeningOrders(); } 
+                else { showPage('unlock'); }
+            } else { showPage('login'); }
         });
 
         // --- Auth Functions ---
@@ -274,56 +296,18 @@
             Swal.showLoading();
             signInWithEmailAndPassword(auth, email, pass).then(() => { Swal.close(); Swal.fire({ icon: 'success', title: 'เข้าสู่ระบบสำเร็จ', timer: 1000, showConfirmButton: false }); }).catch(() => { Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' }); });
         }
-        
-        window.logout = function() { 
-            Swal.fire({ title: 'ออกจากระบบ?', icon: 'warning', showCancelButton: true, confirmButtonText: 'ออกเลย', confirmButtonColor: '#ef4444' }).then((result) => { 
-                if (result.isConfirmed) { 
-                    signOut(auth).then(() => { 
-                        localStorage.removeItem('admin_pin'); 
-                        localStorage.removeItem('pin_unlocked_until'); // ลบสถานะ Unlock ด้วย
-                        location.reload(); 
-                    }); 
-                } 
-            }); 
-        }
+        window.logout = function() { Swal.fire({ title: 'ออกจากระบบ?', icon: 'warning', showCancelButton: true, confirmButtonText: 'ออกเลย', confirmButtonColor: '#ef4444' }).then((result) => { if (result.isConfirmed) { signOut(auth).then(() => { localStorage.removeItem('admin_pin'); localStorage.removeItem('pin_unlocked_until'); location.reload(); }); } }); }
         window.forgetPin = function() { Swal.fire({ title: 'ลืม PIN?', text: "ระบบจะ Logout เพื่อให้เข้าใหม่ด้วยอีเมล", icon: 'question', showCancelButton: true, confirmButtonText: 'Logout' }).then((result) => { if (result.isConfirmed) signOut(auth).then(() => location.reload()); }); }
 
         // --- PIN Functions ---
         let setupPinBuffer = "", unlockPinBuffer = "";
-        
         window.enterSetupPin = function(num) {
             if (setupPinBuffer.length < 6) { setupPinBuffer += num; updatePinDots('setup', setupPinBuffer.length); if (setupPinBuffer.length === 6) { localStorage.setItem('admin_pin', setupPinBuffer); Swal.fire({ icon: 'success', title: 'ตั้งรหัส PIN สำเร็จ!', timer: 1500, showConfirmButton: false }).then(() => { showPage('dashboard'); startListeningOrders(); }); } }
         }
-        
         window.deleteSetupPin = function() { setupPinBuffer = setupPinBuffer.slice(0, -1); updatePinDots('setup', setupPinBuffer.length); }
-        
-        // 🔥 แก้ไขการใส่รหัส PIN: ถ้าถูก ให้จำเวลาไว้ 24 ชม. 🔥
         window.enterUnlockPin = function(num) {
-            if (unlockPinBuffer.length < 6) { 
-                unlockPinBuffer += num; 
-                updatePinDots('unlock', unlockPinBuffer.length); 
-                
-                if (unlockPinBuffer.length === 6) { 
-                    const savedPin = localStorage.getItem('admin_pin'); 
-                    if (unlockPinBuffer === savedPin) { 
-                        // ✅ จำสถานะ Unlock 24 ชั่วโมง
-                        localStorage.setItem('pin_unlocked_until', Date.now() + (24 * 60 * 60 * 1000));
-                        
-                        showPage('dashboard'); 
-                        startListeningOrders(); 
-                        window.testSound(true); 
-                        unlockPinBuffer = ""; 
-                        updatePinDots('unlock', 0); 
-                    } else { 
-                        navigator.vibrate(200); 
-                        unlockPinBuffer = ""; 
-                        updatePinDots('unlock', 0); 
-                        Swal.fire({ toast: true, position: 'top', icon: 'error', title: 'รหัส PIN ไม่ถูกต้อง', showConfirmButton: false, timer: 1000 }); 
-                    } 
-                } 
-            } 
+            if (unlockPinBuffer.length < 6) { unlockPinBuffer += num; updatePinDots('unlock', unlockPinBuffer.length); if (unlockPinBuffer.length === 6) { const savedPin = localStorage.getItem('admin_pin'); if (unlockPinBuffer === savedPin) { localStorage.setItem('pin_unlocked_until', Date.now() + (24 * 60 * 60 * 1000)); showPage('dashboard'); startListeningOrders(); window.testSound(true); unlockPinBuffer = ""; updatePinDots('unlock', 0); } else { navigator.vibrate(200); unlockPinBuffer = ""; updatePinDots('unlock', 0); Swal.fire({ toast: true, position: 'top', icon: 'error', title: 'รหัส PIN ไม่ถูกต้อง', showConfirmButton: false, timer: 1000 }); } } }
         }
-        
         window.deleteUnlockPin = function() { unlockPinBuffer = unlockPinBuffer.slice(0, -1); updatePinDots('unlock', unlockPinBuffer.length); }
         function updatePinDots(type, length) { const dots = document.querySelectorAll(`.pin-dot-${type}`); dots.forEach((dot, idx) => { if (idx < length) { dot.classList.add(type === 'unlock' ? 'bg-white' : 'bg-gray-800'); dot.classList.remove(type === 'unlock' ? 'bg-white/20' : 'bg-transparent'); } else { dot.classList.remove(type === 'unlock' ? 'bg-white' : 'bg-gray-800'); dot.classList.add(type === 'unlock' ? 'bg-white/20' : 'bg-transparent'); } }); }
 
@@ -342,11 +326,11 @@
         // --- Navigation Logic ---
         window.switchView = function(viewName) {
             document.getElementById('view-orders').classList.add('hidden');
-            document.getElementById('view-history').classList.add('hidden'); 
+            document.getElementById('view-history').classList.add('hidden');
             document.getElementById('view-products').classList.add('hidden');
             
             document.getElementById('nav-orders').classList.replace('tab-active','tab-inactive');
-            document.getElementById('nav-history').classList.replace('tab-active','tab-inactive'); 
+            document.getElementById('nav-history').classList.replace('tab-active','tab-inactive');
             document.getElementById('nav-products').classList.replace('tab-active','tab-inactive');
 
             document.getElementById(`view-${viewName}`).classList.remove('hidden');
@@ -368,7 +352,7 @@
             }
         }
 
-        // --- Orders Logic (Active + History) ---
+        // --- Orders Logic ---
         let isFirstLoad = true, lastOrderCount = 0;
         function startListeningOrders() {
             const ordersRef = ref(db, 'orders');
@@ -379,10 +363,7 @@
                 containerOrders.innerHTML = '';
                 containerHistory.innerHTML = '';
                 
-                if (!snapshot.exists()) { 
-                    containerOrders.innerHTML = '<div class="text-center text-gray-400 mt-10">ยังไม่มีออเดอร์</div>'; 
-                    return; 
-                }
+                if (!snapshot.exists()) { containerOrders.innerHTML = '<div class="text-center text-gray-400 mt-10">ยังไม่มีออเดอร์</div>'; return; }
 
                 const data = snapshot.val();
                 const orders = Object.values(data).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
@@ -572,6 +553,177 @@
             else { onValue(ref(db, 'menu'), (snapshot) => { let maxOrder = 0; snapshot.forEach(child => { const val = child.val(); if(val.sortOrder > maxOrder) maxOrder = val.sortOrder; }); data.sortOrder = maxOrder + 1; data.id = Date.now(); push(ref(db, 'menu'), data).then(() => { Swal.fire({icon:'success',title:'เพิ่มสินค้าแล้ว',timer:1000,showConfirmButton:false}); window.closeProductModal(); }); }, { onlyOnce: true }); }
         }
         window.deleteProduct = function() { const key = document.getElementById('prod-id').value; if(!key) return; Swal.fire({ title: 'ลบสินค้า?', text: "ไม่สามารถกู้คืนได้", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'ลบเลย' }).then((result) => { if (result.isConfirmed) { remove(ref(db, `menu/${key}`)).then(() => { window.closeProductModal(); Swal.fire('ลบแล้ว', '', 'success'); }); } }); }
+
+        // ==========================================
+        // 🔥🔥 Manual Order Logic (New) 🔥🔥
+        // ==========================================
+        window.openManualOrder = function() {
+            document.getElementById('manual-order-modal').classList.remove('hidden');
+            window.adminCart = [];
+            window.adminDeliveryMode = 'pickup';
+            window.updateAdminCartUI();
+            
+            // Toggle Delivery Mode UI
+            window.toggleDeliveryMode('pickup');
+
+            // Render Menu
+            const container = document.getElementById('admin-menu-list');
+            container.innerHTML = '<div class="text-center text-gray-400 py-10"><i class="fa-solid fa-circle-notch fa-spin"></i> กำลังโหลด...</div>';
+            
+            onValue(ref(db, 'menu'), (snapshot) => {
+                if(!snapshot.exists()) { container.innerHTML = 'ไม่พบสินค้า'; return; }
+                const data = snapshot.val();
+                const items = Object.entries(data).map(([key, val]) => ({ key, ...val })).sort((a,b) => (a.sortOrder||0) - (b.sortOrder||0));
+                
+                container.innerHTML = items.map(item => `
+                    <div class="flex justify-between items-center bg-white p-3 rounded-lg border border-gray-100 shadow-sm hover:bg-blue-50 cursor-pointer transition" onclick="window.addToAdminCart('${item.key}', '${item.name}', ${item.price})">
+                        <div class="flex items-center gap-3">
+                            <div class="font-bold text-gray-700">${item.name}</div>
+                        </div>
+                        <div class="font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded text-xs">+ ${item.price}</div>
+                    </div>
+                `).join('');
+            }, { onlyOnce: true });
+        }
+
+        window.addToAdminCart = function(key, name, price) {
+            const existing = window.adminCart.find(i => i.id === key);
+            if(existing) existing.qty++;
+            else window.adminCart.push({ id: key, name: name, price: price, qty: 1 });
+            window.updateAdminCartUI();
+        }
+
+        window.updateAdminCartUI = function() {
+            const container = document.getElementById('admin-cart-items');
+            if(window.adminCart.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-400 text-sm py-4">ยังไม่มีสินค้าในตะกร้า</div>';
+                document.getElementById('manual-total-price').innerText = '0.-';
+                return;
+            }
+            
+            let total = 0;
+            container.innerHTML = window.adminCart.map((item, idx) => {
+                total += item.price * item.qty;
+                return `
+                <div class="flex justify-between items-center bg-white p-2 rounded border border-gray-100 text-sm">
+                    <div class="flex items-center gap-2">
+                        <button onclick="window.adjustAdminQty(${idx}, -1)" class="w-5 h-5 bg-gray-200 rounded text-xs font-bold text-gray-600 hover:bg-gray-300">-</button>
+                        <span class="font-bold w-4 text-center">${item.qty}</span>
+                        <button onclick="window.adjustAdminQty(${idx}, 1)" class="w-5 h-5 bg-gray-200 rounded text-xs font-bold text-gray-600 hover:bg-gray-300">+</button>
+                        <span class="text-gray-700 ml-1">${item.name}</span>
+                    </div>
+                    <span class="font-bold text-gray-800">${item.price * item.qty}</span>
+                </div>`;
+            }).join('');
+
+            // Add Delivery Fee
+            const deliveryFee = parseInt(document.getElementById('manual-delivery-fee').value) || 0;
+            total += deliveryFee;
+            document.getElementById('manual-total-price').innerText = `${total}.-`;
+        }
+
+        window.adjustAdminQty = function(index, change) {
+            window.adminCart[index].qty += change;
+            if(window.adminCart[index].qty <= 0) window.adminCart.splice(index, 1);
+            window.updateAdminCartUI();
+        }
+
+        window.toggleDeliveryMode = function(mode) {
+            window.adminDeliveryMode = mode;
+            const btnPickup = document.getElementById('btn-mode-pickup');
+            const btnDelivery = document.getElementById('btn-mode-delivery');
+            const addressBox = document.getElementById('manual-address-box');
+            const deliveryFeeInput = document.getElementById('manual-delivery-fee');
+
+            if(mode === 'pickup') {
+                btnPickup.classList.replace('text-gray-500', 'text-blue-600');
+                btnPickup.classList.replace('hover:bg-white/50', 'bg-white');
+                btnPickup.classList.add('shadow-sm');
+                
+                btnDelivery.classList.replace('text-blue-600', 'text-gray-500');
+                btnDelivery.classList.replace('bg-white', 'hover:bg-white/50');
+                btnDelivery.classList.remove('shadow-sm');
+
+                addressBox.classList.add('hidden');
+                deliveryFeeInput.value = 0;
+            } else {
+                btnDelivery.classList.replace('text-gray-500', 'text-blue-600');
+                btnDelivery.classList.replace('hover:bg-white/50', 'bg-white');
+                btnDelivery.classList.add('shadow-sm');
+
+                btnPickup.classList.replace('text-blue-600', 'text-gray-500');
+                btnPickup.classList.replace('bg-white', 'hover:bg-white/50');
+                btnPickup.classList.remove('shadow-sm');
+
+                addressBox.classList.remove('hidden');
+            }
+            window.updateAdminCartUI();
+        }
+
+        window.confirmManualOrder = async function() {
+            const phone = document.getElementById('manual-phone').value;
+            const name = document.getElementById('manual-name').value || 'ลูกค้าทั่วไป';
+            const address = window.adminDeliveryMode === 'delivery' ? document.getElementById('manual-address').value : 'รับหน้าร้าน';
+            const deliveryFee = parseInt(document.getElementById('manual-delivery-fee').value) || 0;
+            const paymentMethod = document.getElementById('manual-payment').value;
+            
+            if(!phone) return Swal.fire('แจ้งเตือน', 'กรุณากรอกเบอร์โทรลูกค้า', 'warning');
+            if(window.adminCart.length === 0) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกสินค้า', 'warning');
+
+            const total = parseInt(document.getElementById('manual-total-price').innerText.replace('.-',''));
+            const timestamp = new Date();
+            const shortId = timestamp.getTime().toString().slice(-4);
+            const orderId = `ORD-${shortId}`;
+
+            // Transform Cart Items for DB
+            const cartItems = window.adminCart.map(i => ({
+                id: i.id, name: i.name, price: i.price, qty: i.qty, finalPrice: i.price * i.qty, selectedOptions: []
+            }));
+
+            // Add Delivery Fee as an item if exists
+            if(deliveryFee > 0) {
+                cartItems.push({ name: 'ค่าจัดส่ง', qty: 1, finalPrice: deliveryFee, price: deliveryFee });
+            }
+
+            const newOrder = {
+                id: orderId,
+                timestamp: timestamp.toISOString(),
+                date: timestamp.toLocaleDateString('th-TH', {day: 'numeric', month: 'short', hour:'2-digit', minute:'2-digit'}),
+                customer: { name, phone, address, landmark: '-', location: '' }, // No GPS for manual
+                items: cartItems,
+                total: `${total} บาท`,
+                paymentMethod: paymentMethod,
+                slipImage: '-',
+                status: "🍳 กำลังปรุง" // Manual order goes straight to cooking
+            };
+
+            try {
+                // 1. Save to Firebase
+                await push(ref(db, 'orders'), newOrder);
+                
+                // 2. Sync to Sheet (Optional but recommended)
+                fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newOrder)
+                });
+
+                Swal.fire({ icon: 'success', title: 'บันทึกออเดอร์แล้ว', timer: 1500, showConfirmButton: false });
+                document.getElementById('manual-order-modal').classList.add('hidden');
+            } catch (e) {
+                Swal.fire('Error', e.message, 'error');
+            }
+        }
+
+        // Export functions to window
+        window.openManualOrder = openManualOrder;
+        window.addToAdminCart = addToAdminCart;
+        window.adjustAdminQty = adjustAdminQty;
+        window.updateAdminCartUI = updateAdminCartUI;
+        window.toggleDeliveryMode = toggleDeliveryMode;
+        window.confirmManualOrder = confirmManualOrder;
+
     </script>
 </body>
 </html>
