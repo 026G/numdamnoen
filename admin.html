@@ -642,8 +642,8 @@
                 container.innerHTML = window.adminCart.map((item, idx) => {
                     total += item.price * item.qty;
                     count += item.qty;
-                    const optionsHtml = item.selectedOptions && item.selectedOptions.length > 0 
-                        ? `<div class="text-xs text-gray-500 mt-1 pl-2 border-l-2 border-gray-200">${item.selectedOptions.join(', ')}</div>` 
+                    const optionsHtml = item.selectedOptions && item.selectedOptions.length > 0 
+                        ? `<div class="text-xs text-gray-500 mt-1 pl-2 border-l-2 border-gray-200">${item.selectedOptions.join(', ')}</div>` 
                         : '';
                     return `
                     <div class="flex justify-between items-start bg-white p-2 rounded-lg border border-gray-100 text-sm shadow-sm">
@@ -711,11 +711,11 @@
             const orderId = `ORD-${shortId}`;
 
             const cartItems = window.adminCart.map(i => ({
-                id: i.id || 'manual', 
-                name: i.name, 
+                id: i.id || 'manual', 
+                name: i.name, 
                 price: i.price, // This price is per unit (base + options)
-                qty: i.qty, 
-                finalPrice: i.price * i.qty, 
+                qty: i.qty, 
+                finalPrice: i.price * i.qty, 
                 selectedOptions: i.selectedOptions || []
             }));
 
@@ -732,7 +732,7 @@
                 total: `${total} บาท`,
                 paymentMethod: paymentMethod,
                 slipImage: '-',
-                status: "🍳 กำลังปรุง" 
+                status: "🍳 กำลังปรุง" 
             };
 
             try {
