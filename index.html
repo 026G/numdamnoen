@@ -1047,7 +1047,9 @@
   const container = document.getElementById('tracking-result');
   const orders = Array.isArray(serverOrders) ? serverOrders : [];
 
-  // ---------- Helpers ----------
+  // =========================
+  // Helpers
+  // =========================
   const escapeHtml = (s) => {
     const str = String(s ?? '');
     return str.replace(/[&<>"']/g, (c) => ({
@@ -1062,112 +1064,88 @@
   const normalizeTotal = (val) => {
     if (val === null || val === undefined) return "-";
     const s = String(val).trim();
-    // ถ้าเป็นตัวเลขล้วน ให้โชว์เป็น ฿xxx
-    if (/^\d+(\.\d+)?$/.test(s)) return `฿${s}`;
-    // ถ้ามี "บาท" หรือ "฿" อยู่แล้ว ปล่อย
-    if (s.includes("บาท") || s.includes("฿")) return s;
-    return `฿${s}`;
+    if (/^\d+(\.\d+)?$/.test(s)) return `${s} บาท`;
+    if (s.includes("บาท")) return s;
+    if (s.includes("฿")) return s.replace("฿", "") + " บาท";
+    return `${s} บาท`;
   };
 
   const getStatusMeta = (statusTextRaw) => {
     const statusText = String(statusTextRaw || "🕒 รอร้านรับยอด");
 
-    // default = waiting
+    // default (waiting)
     let badgeClass = "text-orange-700 bg-orange-50 border-orange-100";
-    let cardClass  = "bg-white border-gray-100";
-    let barClass   = "bg-orange-500";
-    let iconHtml   = `<i class="fa-solid fa-hourglass-half"></i>`;
-    let progress   = 25;
+    let cardBorder = "border-orange-100";
+    let barClass = "bg-orange-500";
+    let iconHtml = `<i class="fa-solid fa-hourglass-half"></i>`;
+    let progress = 25;
 
     if (statusText.includes("ปรุง")) {
       badgeClass = "text-blue-700 bg-blue-50 border-blue-100";
-      cardClass  = "bg-white border-blue-100";
-      barClass   = "bg-blue-600";
-      iconHtml   = `<i class="fa-solid fa-fire-burner"></i>`;
-      progress   = 55;
+      cardBorder = "border-blue-100";
+      barClass = "bg-blue-600";
+      iconHtml = `<i class="fa-solid fa-fire-burner"></i>`;
+      progress = 55;
     } else if (statusText.includes("ส่ง") || statusText.includes("ไรเดอร์")) {
       badgeClass = "text-purple-700 bg-purple-50 border-purple-100";
-      cardClass  = "bg-white border-purple-100";
-      barClass   = "bg-purple-600";
-      iconHtml   = `<i class="fa-solid fa-motorcycle"></i>`;
-      progress   = 85;
+      cardBorder = "border-purple-100";
+      barClass = "bg-purple-600";
+      iconHtml = `<i class="fa-solid fa-motorcycle"></i>`;
+      progress = 85;
     } else if (statusText.includes("สำเร็จ")) {
       badgeClass = "text-green-700 bg-green-50 border-green-100";
-      cardClass  = "bg-white border-green-100";
-      barClass   = "bg-green-600";
-      iconHtml   = `<i class="fa-solid fa-circle-check"></i>`;
-      progress   = 100;
+      cardBorder = "border-green-100";
+      barClass = "bg-green-600";
+      iconHtml = `<i class="fa-solid fa-circle-check"></i>`;
+      progress = 100;
     } else if (statusText.includes("ยกเลิก")) {
       badgeClass = "text-red-700 bg-red-50 border-red-100";
-      cardClass  = "bg-white border-red-100";
-      barClass   = "bg-red-600";
-      iconHtml   = `<i class="fa-solid fa-circle-xmark"></i>`;
-      progress   = 100;
-    } else if (statusText.includes("รอร้าน") || statusText.includes("รอ")) {
-      badgeClass = "text-orange-700 bg-orange-50 border-orange-100";
-      cardClass  = "bg-white border-orange-100";
-      barClass   = "bg-orange-500";
-      iconHtml   = `<i class="fa-solid fa-hourglass-half"></i>`;
-      progress   = 25;
+      cardBorder = "border-red-100";
+      barClass = "bg-red-600";
+      iconHtml = `<i class="fa-solid fa-circle-xmark"></i>`;
+      progress = 100;
     }
 
-    return { statusText, badgeClass, cardClass, barClass, iconHtml, progress };
+    return { statusText, badgeClass, cardBorder, barClass, iconHtml, progress };
   };
 
-  const toastCopied = () => {
-    if (window.Swal) {
-      const toast = Swal.mixin({
-        toast: true,
-        position: 'top',
-        showConfirmButton: false,
-        timer: 1200,
-        timerProgressBar: true
-      });
-      toast.fire({ icon: 'success', title: 'คัดลอกแล้ว' });
-    } else {
-      alert("คัดลอกแล้ว");
-    }
+  const getDisplayTime = (order) => {
+    // บางฝั่งใช้ date บางฝั่งใช้ time
+    return order.date || order.time || "-";
   };
 
-  const copyText = async (text) => {
-    try {
-      await navigator.clipboard.writeText(String(text || ""));
-      toastCopied();
-    } catch (e) {
-      // fallback
-      const ta = document.createElement("textarea");
-      ta.value = String(text || "");
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
-      toastCopied();
-    }
-  };
-
-  // ---------- Empty State ----------
+  // =========================
+  // Empty State
+  // =========================
   if (!orders.length) {
     container.innerHTML = `
-      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 text-center text-gray-400">
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 text-center">
         <div class="w-14 h-14 rounded-2xl bg-gray-50 mx-auto flex items-center justify-center mb-3 text-gray-400">
           <i class="fa-solid fa-box-open text-2xl"></i>
         </div>
-        <div class="font-bold text-gray-700">ไม่พบประวัติการสั่งซื้อ</div>
-        <div class="text-xs text-gray-500 mt-1">ลองตรวจสอบเบอร์โทรอีกครั้ง</div>
+        <div class="font-extrabold text-gray-800">ไม่พบประวัติการสั่งซื้อ</div>
+        <div class="text-xs text-gray-500 mt-1">ตรวจสอบเบอร์โทรอีกครั้ง แล้วลองค้นหาใหม่</div>
       </div>
     `;
     return;
   }
 
-  // ---------- Render Cards ----------
-  container.innerHTML = orders.map((order, idx) => {
+  // =========================
+  // Render Cards (VIEW-ONLY)
+  // =========================
+  container.innerHTML = orders.map((order) => {
     const meta = getStatusMeta(order.status);
-    const shortId = order.shortId || (order.id ? String(order.id).slice(-4) : "-");
-    const fullId  = order.id ? String(order.id) : "-";
-    const timeStr = order.date || order.time || "-";
+
+    const shortId = order.shortId
+      ? String(order.shortId)
+      : (order.id ? String(order.id).slice(-4) : "-");
+
+    const fullId = order.id ? String(order.id) : "";
+
+    const timeStr = getDisplayTime(order);
     const totalStr = normalizeTotal(order.total);
 
-    // Items
+    // ----- Items -----
     let itemsHtml = "";
     if (typeof order.items === "string") {
       const lines = String(order.items)
@@ -1186,7 +1164,7 @@
     } else if (Array.isArray(order.items)) {
       itemsHtml = order.items.map(i => `
         <div class="flex items-start gap-2">
-          <span class="mt-1 px-2 py-0.5 rounded-lg bg-green-50 text-green-700 text-xs font-extrabold border border-green-100">
+          <span class="mt-0.5 px-2 py-0.5 rounded-lg bg-green-50 text-green-700 text-xs font-extrabold border border-green-100">
             x${escapeHtml(i.qty)}
           </span>
           <div class="text-sm text-gray-700 leading-relaxed">${escapeHtml(i.name)}</div>
@@ -1196,12 +1174,12 @@
       itemsHtml = `<div class="text-sm text-gray-400">ข้อมูลรายการสินค้าไม่ถูกต้อง</div>`;
     }
 
-    // Quick copy message template (สำหรับแอดมิน/ใช้เอง)
-    const copyMsg = `สวัสดีครับ 😊\nออเดอร์ #${shortId} (ID: ${fullId})\nยอดรวม: ${totalStr}\nสถานะล่าสุด: ${meta.statusText}\n\nหากต้องการสอบถามเพิ่มเติม พิมพ์ข้อความตอบกลับได้เลยครับ`;
+    // หมายเหตุ: หน้าลูกค้า แนะนำ “ไม่ต้องโชว์ Order ID เต็ม”
+    // ถ้าอยากโชว์เต็ม ให้เอา comment ออก
+    const showFullOrderId = false;
 
     return `
-      <div class="rounded-2xl border ${meta.cardClass} shadow-sm overflow-hidden transition-all duration-300">
-        <!-- Top progress bar -->
+      <div class="bg-white rounded-2xl border ${meta.cardBorder} shadow-sm overflow-hidden">
         <div class="h-1 ${meta.barClass}" style="width:${meta.progress}%;"></div>
 
         <div class="p-4">
@@ -1217,45 +1195,28 @@
                 </div>
               </div>
 
-              <div class="mt-1 text-[11px] text-gray-400">
-                Order ID: <span class="font-bold text-gray-500">${escapeHtml(fullId)}</span>
-              </div>
+              ${showFullOrderId && fullId ? `
+                <div class="mt-1 text-[11px] text-gray-400">
+                  Order ID: <span class="font-bold text-gray-500">${escapeHtml(fullId)}</span>
+                </div>
+              ` : `
+                <div class="mt-1 text-[11px] text-gray-400">
+                  * แสดงเฉพาะเลขออเดอร์เพื่อความเป็นส่วนตัว
+                </div>
+              `}
             </div>
 
-            <div class="shrink-0 flex flex-col items-end gap-2">
-              <span class="${meta.badgeClass} font-extrabold text-xs px-3 py-1 rounded-xl border inline-flex items-center gap-2">
-                ${meta.iconHtml}
-                <span class="whitespace-nowrap">${escapeHtml(meta.statusText)}</span>
-              </span>
-
-              <div class="flex gap-2">
-                <button
-                  type="button"
-                  class="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-gray-900 text-white hover:bg-gray-800 active:scale-95 transition"
-                  data-copy-order="${escapeHtml(fullId)}"
-                  title="คัดลอก Order ID"
-                >
-                  <i class="fa-regular fa-copy mr-1"></i> คัดลอกเลข
-                </button>
-
-                <button
-                  type="button"
-                  class="px-3 py-1.5 rounded-xl text-xs font-extrabold bg-blue-50 text-blue-700 border border-blue-100 hover:bg-blue-100 active:scale-95 transition"
-                  data-copy-msg="${escapeHtml(copyMsg)}"
-                  title="คัดลอกข้อความทัก"
-                >
-                  <i class="fa-regular fa-comment-dots mr-1"></i> คัดลอกข้อความ
-                </button>
-              </div>
-            </div>
+            <span class="${meta.badgeClass} font-extrabold text-xs px-3 py-1 rounded-xl border inline-flex items-center gap-2 shrink-0">
+              ${meta.iconHtml}
+              <span class="whitespace-nowrap">${escapeHtml(meta.statusText)}</span>
+            </span>
           </div>
 
-          <div class="mt-4 space-y-2">
+          <div class="mt-4">
             <div class="text-xs font-extrabold text-gray-500 flex items-center gap-2">
               <i class="fa-solid fa-bag-shopping"></i> รายการสินค้า
             </div>
-
-            <div class="space-y-2">
+            <div class="mt-2 space-y-2">
               ${itemsHtml}
             </div>
           </div>
@@ -1272,32 +1233,7 @@
       </div>
     `;
   }).join('');
-
-  // ---------- Bind events after render ----------
-  container.querySelectorAll('[data-copy-order]').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const text = btn.getAttribute('data-copy-order') || '';
-      await copyText(text);
-    });
-  });
-
-  container.querySelectorAll('[data-copy-msg]').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const text = btn.getAttribute('data-copy-msg') || '';
-      // data attribute จะถูก escapeHtml แล้ว (มี \n เป็นตัวอักษรจริง)
-      // แปลงกลับเป็น newline จริงเพื่อให้คัดลอกสวย
-      const decoded = text
-        .replace(/\\n/g, "\n")
-        .replace(/&amp;/g, "&")
-        .replace(/&lt;/g, "<")
-        .replace(/&gt;/g, ">")
-        .replace(/&quot;/g, "\"")
-        .replace(/&#39;/g, "'");
-      await copyText(decoded);
-    });
-  });
 };
-
 
     window.getStatusIcon = function(status) {
         if(status.includes("ปรุง")) return '<i class="fa-solid fa-fire-burner"></i>';
