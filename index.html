@@ -865,60 +865,46 @@
 
     window.searchOrder = function(isSilent = false) { 
     const phone = document.getElementById('track-phone').value.trim();
-    if (phone.length < 9) { 
-        if (!isSilent) Swal.fire({ icon:'warning', title:'กรุณากรอกเบอร์โทรให้ถูกต้อง' }); 
+    
+    // ตรวจสอบเบอร์โทร
+    if(phone.length < 9) { 
+        if(!isSilent) Swal.fire({icon:'warning', title:'กรุณากรอกเบอร์โทรให้ถูกต้อง'}); 
         return; 
     }
 
     const resultDiv = document.getElementById('tracking-result');
-    if (!isSilent) {
-        resultDiv.innerHTML = `
-            <div class="text-center py-10 animate-pulse">
-                <i class="fa-solid fa-circle-notch fa-spin text-green-600 text-3xl"></i>
-                <p class="text-gray-500 mt-2">กำลังดึงข้อมูลล่าสุด...</p>
-            </div>`;
-    }
+    if(!isSilent) resultDiv.innerHTML = `<div class="text-center py-10 animate-pulse"><i class="fa-solid fa-circle-notch fa-spin text-green-600 text-3xl"></i><p class="text-gray-500 mt-2">กำลังดึงข้อมูลล่าสุด...</p></div>`;
 
-    fetch(window.WEB_APP_URL, {
-        method: 'POST',
-        headers: {
-            // สำคัญ: ใช้ text/plain เพื่อเลี่ยง CORS preflight กับ Apps Script
-            'Content-Type': 'text/plain;charset=utf-8'
-        },
-        body: JSON.stringify({ action: 'track_order', phone: phone })
-    })
-    .then(async (response) => {
-        const raw = await response.text(); // อ่านเป็น text ก่อนเพื่อกัน JSON พัง
-        if (!response.ok) {
-            console.error('HTTP Error:', response.status, raw);
-            throw new Error('HTTP ' + response.status);
-        }
+    // -----------------------------------------------------
+    // 🟢 แก้ไขจุดที่ 1: เปลี่ยน URL ให้ส่งค่าไปกับ Link (Query String)
+    // 🟢 แก้ไขจุดที่ 2: เปลี่ยน action ให้ตรงกับ Google Apps Script ('get_customer_orders')
+    // -----------------------------------------------------
+    const apiUrl = window.WEB_APP_URL + `?action=get_customer_orders&phone=${phone}`;
 
-        // ลอง parse เป็น JSON
-        let data;
-        try {
-            data = JSON.parse(raw);
-        } catch (e) {
-            // ถ้า raw เป็น HTML/หน้า error จะเห็นตรงนี้ชัดมาก
-            console.error('Response is not JSON:', raw);
-            throw new Error('NOT_JSON');
-        }
-        return data;
+    fetch(apiUrl, {
+        method: 'GET' // 🟢 เปลี่ยนเป็น GET ให้ตรงกับ doGet
     })
+    .then(response => response.json())
     .then(data => {
-        // Debug ดูหน้าตาจริง
-        // console.log('track_order data:', data);
-
-        if (data && data.found && Array.isArray(data.orders) && data.orders.length > 0) {
-            window.renderHistoryFromAdminData(data.orders);
-            localStorage.setItem('cust_phone', phone);
+        // 🟢 แก้ไขจุดที่ 3: เช็ค data.orders โดยตรง (Script ไม่ได้ส่ง data.found มา)
+        if (data.orders && data.orders.length > 0) {
+             // เรียกฟังก์ชันแสดงผล (ตรวจสอบว่า function นี้มีอยู่จริงในโค้ดส่วนอื่น)
+             if (typeof window.renderHistoryFromAdminData === 'function') {
+                 window.renderHistoryFromAdminData(data.orders);
+             } else {
+                 console.error("ไม่พบฟังก์ชัน window.renderHistoryFromAdminData");
+                 // เขียนโค้ดแสดงผลง่ายๆ แทนถ้ายังไม่มีฟังก์ชัน render
+                 resultDiv.innerHTML = `<div class="text-center text-green-600 py-10">พบ ${data.orders.length} รายการ (ดู Console)</div>`;
+                 console.log(data.orders);
+             }
+             localStorage.setItem('cust_phone', phone);
         } else {
-            resultDiv.innerHTML = '<div class="text-center text-gray-400 py-10">ไม่พบประวัติการสั่งซื้อ</div>';
+             resultDiv.innerHTML = '<div class="text-center text-gray-400 py-10">ไม่พบประวัติการสั่งซื้อ</div>';
         }
     })
     .catch(err => {
-        console.error('searchOrder error:', err);
-        resultDiv.innerHTML = '<div class="text-center text-red-400 py-10">เกิดข้อผิดพลาดในการโหลด</div>';
+         console.error(err);
+         resultDiv.innerHTML = '<div class="text-center text-red-400 py-10">เกิดข้อผิดพลาดในการโหลด</div>';
     });
 }
 
