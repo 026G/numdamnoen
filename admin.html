@@ -15,7 +15,7 @@
         .pin-btn:active { background-color: #d1d5db; transform: scale(0.95); }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .tab-active { color: #2563eb; border-top: 2px solid #2563eb; }
+        .tab-active { color: #2563eb; border-top: 2px solid #2563eb; background-color: rgba(37, 99, 235, 0.05); }
         .tab-inactive { color: #9ca3af; border-top: 2px solid transparent; }
         .sortable-ghost { opacity: 0.4; background-color: #f3f4f6; border: 2px dashed #cbd5e1; }
         .sortable-drag { cursor: grabbing; opacity: 1; background: white; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
@@ -210,22 +210,22 @@
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } 
         from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // 🔴🔴🔴 Config ของคุณ 🔴🔴🔴
+        // 🔴🔴🔴 Config 🔴🔴🔴
         const firebaseConfig = {
-            apiKey: "AIzaSyBLo1JKTNOrx6vvh2a6Pl8Zxjll4eoIKAA",
-            authDomain: "linenoti-7c04f.firebaseapp.com",
-            databaseURL: "https://linenoti-7c04f-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "linenoti-7c04f",
-            storageBucket: "linenoti-7c04f.firebasestorage.app",
-            messagingSenderId: "607844945437",
-            appId: "1:607844945437:web:d5e0229b8c18522cd500f4"
+          apiKey: "AIzaSyBLo1JKTNOrx6vvh2a6Pl8Zxjll4eoIKAA",
+          authDomain: "linenoti-7c04f.firebaseapp.com",
+          databaseURL: "https://linenoti-7c04f-default-rtdb.asia-southeast1.firebasedatabase.app",
+          projectId: "linenoti-7c04f",
+          storageBucket: "linenoti-7c04f.firebasestorage.app",
+          messagingSenderId: "607844945437",
+          appId: "1:607844945437:web:d5e0229b8c18522cd500f4"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
 
-        // 🔥🔥 URL ของ Google Apps Script (สำหรับ Update สถานะไปที่ Sheet) 🔥🔥
+        // 🔥🔥 URL Google Apps Script 🔥🔥
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby-CN2vDIOsauP7k1qjiGEm3nPlNV0X9ADKyt_Xzzw1HUY_fzobRJZnTapRUweWu9a3fg/exec"; 
 
         setPersistence(auth, browserLocalPersistence).catch((error) => console.error(error));
@@ -244,11 +244,24 @@
         }
 
         let currentUser = null;
+        
+        // 🔥 แก้ไข Logic การตรวจสอบ Login ให้จำสถานะได้ 24 ชม. 🔥
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
                 const savedPin = localStorage.getItem('admin_pin');
-                if (savedPin) { showPage('unlock'); } else { showPage('setupPin'); }
+                const unlockedUntil = localStorage.getItem('pin_unlocked_until');
+
+                if (!savedPin) {
+                    showPage('setupPin');
+                } else if (unlockedUntil && Date.now() < parseInt(unlockedUntil)) {
+                    // ถ้าเวลายังไม่หมดอายุ -> ข้ามไปหน้า Dashboard เลย
+                    showPage('dashboard');
+                    startListeningOrders();
+                } else {
+                    // ถ้าหมดอายุ หรือยังไม่เคย unlock -> ไปหน้าใส่ PIN
+                    showPage('unlock');
+                }
             } else {
                 showPage('login');
             }
@@ -261,18 +274,56 @@
             Swal.showLoading();
             signInWithEmailAndPassword(auth, email, pass).then(() => { Swal.close(); Swal.fire({ icon: 'success', title: 'เข้าสู่ระบบสำเร็จ', timer: 1000, showConfirmButton: false }); }).catch(() => { Swal.fire({ icon: 'error', title: 'ผิดพลาด', text: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' }); });
         }
-        window.logout = function() { Swal.fire({ title: 'ออกจากระบบ?', icon: 'warning', showCancelButton: true, confirmButtonText: 'ออกเลย', confirmButtonColor: '#ef4444' }).then((result) => { if (result.isConfirmed) { signOut(auth).then(() => { localStorage.removeItem('admin_pin'); location.reload(); }); } }); }
+        
+        window.logout = function() { 
+            Swal.fire({ title: 'ออกจากระบบ?', icon: 'warning', showCancelButton: true, confirmButtonText: 'ออกเลย', confirmButtonColor: '#ef4444' }).then((result) => { 
+                if (result.isConfirmed) { 
+                    signOut(auth).then(() => { 
+                        localStorage.removeItem('admin_pin'); 
+                        localStorage.removeItem('pin_unlocked_until'); // ลบสถานะ Unlock ด้วย
+                        location.reload(); 
+                    }); 
+                } 
+            }); 
+        }
         window.forgetPin = function() { Swal.fire({ title: 'ลืม PIN?', text: "ระบบจะ Logout เพื่อให้เข้าใหม่ด้วยอีเมล", icon: 'question', showCancelButton: true, confirmButtonText: 'Logout' }).then((result) => { if (result.isConfirmed) signOut(auth).then(() => location.reload()); }); }
 
-        // --- PIN Functions (Setup & Unlock) ---
+        // --- PIN Functions ---
         let setupPinBuffer = "", unlockPinBuffer = "";
+        
         window.enterSetupPin = function(num) {
             if (setupPinBuffer.length < 6) { setupPinBuffer += num; updatePinDots('setup', setupPinBuffer.length); if (setupPinBuffer.length === 6) { localStorage.setItem('admin_pin', setupPinBuffer); Swal.fire({ icon: 'success', title: 'ตั้งรหัส PIN สำเร็จ!', timer: 1500, showConfirmButton: false }).then(() => { showPage('dashboard'); startListeningOrders(); }); } }
         }
+        
         window.deleteSetupPin = function() { setupPinBuffer = setupPinBuffer.slice(0, -1); updatePinDots('setup', setupPinBuffer.length); }
+        
+        // 🔥 แก้ไขการใส่รหัส PIN: ถ้าถูก ให้จำเวลาไว้ 24 ชม. 🔥
         window.enterUnlockPin = function(num) {
-            if (unlockPinBuffer.length < 6) { unlockPinBuffer += num; updatePinDots('unlock', unlockPinBuffer.length); if (unlockPinBuffer.length === 6) { const savedPin = localStorage.getItem('admin_pin'); if (unlockPinBuffer === savedPin) { showPage('dashboard'); startListeningOrders(); window.testSound(true); unlockPinBuffer = ""; updatePinDots('unlock', 0); } else { navigator.vibrate(200); unlockPinBuffer = ""; updatePinDots('unlock', 0); Swal.fire({ toast: true, position: 'top', icon: 'error', title: 'รหัส PIN ไม่ถูกต้อง', showConfirmButton: false, timer: 1000 }); } } }
+            if (unlockPinBuffer.length < 6) { 
+                unlockPinBuffer += num; 
+                updatePinDots('unlock', unlockPinBuffer.length); 
+                
+                if (unlockPinBuffer.length === 6) { 
+                    const savedPin = localStorage.getItem('admin_pin'); 
+                    if (unlockPinBuffer === savedPin) { 
+                        // ✅ จำสถานะ Unlock 24 ชั่วโมง
+                        localStorage.setItem('pin_unlocked_until', Date.now() + (24 * 60 * 60 * 1000));
+                        
+                        showPage('dashboard'); 
+                        startListeningOrders(); 
+                        window.testSound(true); 
+                        unlockPinBuffer = ""; 
+                        updatePinDots('unlock', 0); 
+                    } else { 
+                        navigator.vibrate(200); 
+                        unlockPinBuffer = ""; 
+                        updatePinDots('unlock', 0); 
+                        Swal.fire({ toast: true, position: 'top', icon: 'error', title: 'รหัส PIN ไม่ถูกต้อง', showConfirmButton: false, timer: 1000 }); 
+                    } 
+                } 
+            } 
         }
+        
         window.deleteUnlockPin = function() { unlockPinBuffer = unlockPinBuffer.slice(0, -1); updatePinDots('unlock', unlockPinBuffer.length); }
         function updatePinDots(type, length) { const dots = document.querySelectorAll(`.pin-dot-${type}`); dots.forEach((dot, idx) => { if (idx < length) { dot.classList.add(type === 'unlock' ? 'bg-white' : 'bg-gray-800'); dot.classList.remove(type === 'unlock' ? 'bg-white/20' : 'bg-transparent'); } else { dot.classList.remove(type === 'unlock' ? 'bg-white' : 'bg-gray-800'); dot.classList.add(type === 'unlock' ? 'bg-white/20' : 'bg-transparent'); } }); }
 
@@ -291,11 +342,11 @@
         // --- Navigation Logic ---
         window.switchView = function(viewName) {
             document.getElementById('view-orders').classList.add('hidden');
-            document.getElementById('view-history').classList.add('hidden'); // ✅ เพิ่ม History
+            document.getElementById('view-history').classList.add('hidden'); 
             document.getElementById('view-products').classList.add('hidden');
             
             document.getElementById('nav-orders').classList.replace('tab-active','tab-inactive');
-            document.getElementById('nav-history').classList.replace('tab-active','tab-inactive'); // ✅ เพิ่ม History Nav
+            document.getElementById('nav-history').classList.replace('tab-active','tab-inactive'); 
             document.getElementById('nav-products').classList.replace('tab-active','tab-inactive');
 
             document.getElementById(`view-${viewName}`).classList.remove('hidden');
@@ -334,10 +385,8 @@
                 }
 
                 const data = snapshot.val();
-                // เรียงตามเวลาล่าสุดก่อน
                 const orders = Object.values(data).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
                 
-                // แจ้งเตือนเฉพาะออเดอร์ใหม่ที่ยังไม่จบ
                 const activeOrders = orders.filter(o => !o.status.includes('สำเร็จ') && !o.status.includes('ยกเลิก'));
                 if (!isFirstLoad && activeOrders.length > lastOrderCount) { 
                     window.testSound(true); 
@@ -346,7 +395,6 @@
                 }
                 lastOrderCount = activeOrders.length; isFirstLoad = false;
 
-                // แยกการ์ดลง 2 หน้า (Active / History)
                 orders.forEach(order => { 
                     const card = createOrderCard(order);
                     if (order.status.includes('สำเร็จ') || order.status.includes('ยกเลิก')) {
@@ -376,7 +424,6 @@
             const lalamoveButton = order.lalamoveCheckLink ? 
                 `<a href="${order.lalamoveCheckLink}" target="_blank" class="flex-1 bg-white border border-orange-200 text-orange-600 py-2 rounded text-xs font-bold hover:bg-orange-50 shadow-sm whitespace-nowrap text-center flex items-center justify-center gap-1"><i class="fa-solid fa-truck-fast"></i> เรียก Lalamove</a>` : '';
 
-            // ถ้าจบงานแล้ว ไม่ต้องโชว์ปุ่มจัดการ
             let actionButtons = '';
             if (!isFinished) {
                 actionButtons = `
@@ -445,7 +492,7 @@
 
         window.viewSlip = function(img) { Swal.fire({ imageUrl: img, imageAlt: 'Slip', showCloseButton: true, showConfirmButton: false }); }
 
-        // --- Products Management (เหมือนเดิม) ---
+        // --- Products Management ---
         let productListener = null; let sortable = null;
         function startListeningProducts() {
             if(productListener) return;
