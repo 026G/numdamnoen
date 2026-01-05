@@ -16,16 +16,11 @@
 
     <div class="grid grid-cols-2 gap-2">
       <button id="copy" class="bg-green-600 text-white rounded-xl py-3 font-bold">คัดลอกข้อความ</button>
-      <a id="sms" class="bg-blue-600 text-white rounded-xl py-3 font-bold text-center">ส่ง SMS</a>
     </div>
 
-    <!-- ปุ่มเปิดแชท LINE OA (แชทกับ OA) -->
-    <a id="oa" class="block bg-gray-900 text-white rounded-xl py-3 font-bold text-center">
-      เปิดแชท LINE OA
-    </a>
 
     <p class="text-xs text-gray-500">
-      * ถ้าต้องการ “ทักใน LINE OA ไปหาลูกค้า” แบบส่งเข้าลูกค้าเลย ต้องใช้แบบ B (LIFF + userId)
+     
     </p>
   </div>
 
@@ -40,9 +35,9 @@
     `ออเดอร์ <b>#${orderId}</b><br>ลูกค้า: <b>${name}</b> (${phone})<br>ยอด: <b>${total}</b>`;
 
   const text =
-`สวัสดีครับคุณ${name} 😊
+`สวัสดีครับ คุณ${name} 😊
 ออเดอร์ #${orderId} ทางร้านกำลังสรุปยอดให้ครับ
-สะดวกให้ส่ง QR ทางแชทนี้ได้เลยนะครับ`;
+ชำระผ่าน QR ด้านล่างนี้ได้เลยครับ`;
 
   const msg = document.getElementById("msg");
   msg.value = text;
