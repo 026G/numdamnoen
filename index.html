@@ -645,12 +645,14 @@
         localStorage.setItem('cust_address', address);
         localStorage.setItem('cust_lat', window.userLat);
         localStorage.setItem('cust_lng', window.userLng);
-        let slipBase64 = "-";
-        
-        if(method === 'transfer') {
-            const fileInput = document.getElementById('slip-file');
-            if(fileInput.files.length === 0) return Swal.fire({icon: 'warning', text: 'กรุณาแนบสลิปการโอนเงิน'});
-            slipBase64 = await window.toBase64(fileInput.files[0]);
+        let slipBase64 = "";
+
+        if (method === 'transfer') {
+          const fileInput = document.getElementById('slip-file');
+          if (fileInput.files.length === 0) {
+            return Swal.fire({ icon: 'warning', text: 'กรุณาแนบสลิปการโอนเงิน' });
+          }
+          slipBase64 = await window.toBase64(fileInput.files[0]);
         }
 
         Swal.fire({ title: 'กำลังส่งออเดอร์...', text: 'กรุณารอสักครู่', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
