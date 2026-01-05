@@ -203,6 +203,17 @@
         </section>
 
         <div id="sticky-footer" class="fixed bottom-0 w-full max-w-md bg-white/95 backdrop-blur shadow-[0_-4px_10px_rgba(0,0,0,0.05)] border-t p-4 z-40 hidden">
+            <!-- ✅ ✅ ✅ Free Shipping Progress (NEW) -->
+            <div id="free-ship-box" class="mb-3 hidden">
+                <div class="flex items-center justify-between mb-1">
+                    <div class="text-[11px] font-semibold text-gray-700" id="free-ship-text">ส่งฟรีเมื่อครบ 200 บาท</div>
+                    <div class="text-[11px] font-bold text-green-700" id="free-ship-remaining">เหลืออีก 200 บาท</div>
+                </div>
+                <div class="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
+                    <div id="free-ship-bar" class="h-full bg-green-600 rounded-full" style="width:0%"></div>
+                </div>
+            </div>
+
             <button id="btn-view-cart" onclick="showPage('cart')" class="w-full bg-green-600 text-white rounded-xl p-3.5 flex justify-between items-center shadow-lg hover:bg-green-700 transition transform active:scale-[0.98]">
                 <div class="flex items-center gap-3"><div class="bg-white/20 font-bold w-8 h-8 rounded-lg flex items-center justify-center text-sm" id="footer-count">0</div><span class="font-semibold">ดูตะกร้าสินค้า</span></div><span class="font-bold text-lg" id="footer-total">฿0</span>
             </button>
@@ -233,14 +244,14 @@
     import { getDatabase, ref, get, push, set, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyBLo1JKTNOrx6vvh2a6Pl8Zxjll4eoIKAA",
-      authDomain: "linenoti-7c04f.firebaseapp.com",
-      databaseURL: "https://linenoti-7c04f-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "linenoti-7c04f",
-      storageBucket: "linenoti-7c04f.firebasestorage.app",
-      messagingSenderId: "607844945437",
-      appId: "1:607844945437:web:d5e0229b8c18522cd500f4"
-    };
+  apiKey: "AIzaSyBLo1JKTNOrx6vvh2a6Pl8Zxjll4eoIKAA",
+  authDomain: "linenoti-7c04f.firebaseapp.com",
+  databaseURL: "https://linenoti-7c04f-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "linenoti-7c04f",
+  storageBucket: "linenoti-7c04f.firebasestorage.app",
+  messagingSenderId: "607844945437",
+  appId: "1:607844945437:web:d5e0229b8c18522cd500f4"
+};
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
@@ -265,6 +276,10 @@
     window.trackingInterval = null;
     window.currentItem = null;
     window.currentBasePrice = 0;
+
+    // ✅ ✅ ✅ NEW: flag ว่ามีตำแหน่งลูกค้าจริง (เพื่อไม่ให้ระบบคิดว่าระยะ 0 = ใกล้บ้านทันที)
+    window.hasUserLocation = false;
+    window.currentPage = 'menu';
 
     function loadCartFromStorage() {
         const savedData = localStorage.getItem('shopping_cart');
@@ -314,11 +329,14 @@
                 if(localStorage.getItem('cust_address')) document.getElementById('cust-address').value = localStorage.getItem('cust_address');
                 window.updateTrackingButtonState();
                 window.updateShopStatusUI();
+                window.updateFreeShippingProgress();
             } else { Swal.fire('แจ้งเตือน', 'ไม่พบข้อมูลเมนูในระบบ', 'warning'); window.menuDB = []; }
         } catch (error) { console.error(error); Swal.fire('Error', 'ไม่สามารถเชื่อมต่อ Firebase ได้', 'error'); }
     });
 
     window.showPage = function(pageId) {
+        window.currentPage = pageId;
+
         if (pageId !== 'tracking' && window.trackingInterval) { clearInterval(window.trackingInterval); window.trackingInterval = null; }
         document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active-section'));
         document.getElementById('page-' + pageId).classList.add('active-section');
@@ -332,6 +350,9 @@
         if(pageId === 'address' && window.map) setTimeout(() => window.map.invalidateSize(), 200);
         if(pageId === 'tracking') window.initTrackingPage();
         window.scrollTo(0,0);
+
+        // ✅ Update progress bar ทุกครั้งที่เปลี่ยนหน้า
+        window.updateFreeShippingProgress();
     }
 
     window.goBack = function() {
@@ -358,37 +379,82 @@
         return hour >= window.OPEN_HOUR && hour < window.CLOSE_HOUR;
     }
 
+    // ✅ ✅ ✅ NEW: Free shipping progress (เหลืออีก XX บาท ส่งฟรี + progress bar)
+    window.updateFreeShippingProgress = function() {
+        const box = document.getElementById('free-ship-box');
+        const textEl = document.getElementById('free-ship-text');
+        const remainEl = document.getElementById('free-ship-remaining');
+        const barEl = document.getElementById('free-ship-bar');
+
+        if (!box || !textEl || !remainEl || !barEl) return;
+
+        // ไม่โชว์ถ้าร้านปิด หรือไม่มีสินค้าในตะกร้า หรือ footer ถูกซ่อน
+        if (!window.isShopOpen() || window.cart.length === 0) {
+            box.classList.add('hidden');
+            return;
+        }
+
+        // หน้า tracking ซ่อน footer อยู่แล้ว
+        if (window.currentPage === 'tracking') {
+            box.classList.add('hidden');
+            return;
+        }
+
+        const total = window.cart.reduce((sum, item) => sum + item.finalPrice, 0);
+
+        // ถ้ายังไม่มีตำแหน่งลูกค้าจริง ให้ใช้ threshold 200 เป็นค่าเริ่มต้น
+        const nearEligible = (window.hasUserLocation === true && window.distanceKm <= 1.5);
+        const target = nearEligible ? 100 : 200;
+
+        if (window.hasUserLocation !== true) {
+            textEl.innerText = 'ส่งฟรีเมื่อครบ 200 บาท (ปักหมุดเพื่อเช็คโปรใกล้บ้าน)';
+        } else {
+            textEl.innerText = nearEligible ? 'ใกล้บ้าน ส่งฟรีเมื่อครบ 100 บาท' : 'ส่งฟรีเมื่อครบ 200 บาท';
+        }
+
+        const remaining = Math.max(0, target - total);
+
+        if (total >= target) {
+            remainEl.innerText = 'ส่งฟรีแล้ว 🎉';
+            remainEl.classList.remove('text-green-700', 'text-red-600', 'text-orange-600');
+            remainEl.classList.add('text-green-700');
+            barEl.style.width = '100%';
+        } else {
+            remainEl.innerText = `เหลืออีก ${remaining} บาท`;
+            remainEl.classList.remove('text-green-700');
+            // โทนสีตามความใกล้เป้า
+            const pct = (total / target) * 100;
+            if (pct >= 70) {
+                remainEl.classList.add('text-orange-600');
+                remainEl.classList.remove('text-red-600');
+            } else {
+                remainEl.classList.add('text-red-600');
+                remainEl.classList.remove('text-orange-600');
+            }
+            barEl.style.width = `${Math.max(0, Math.min(100, pct))}%`;
+        }
+
+        box.classList.remove('hidden');
+    }
+
     window.updateFooterState = function(pageId) {
         const footer = document.getElementById('sticky-footer');
-        if (!footer) return;
-
         if (!window.isShopOpen()) {
             footer.classList.remove('hidden');
             footer.innerHTML = `<div class="w-full bg-gray-400 text-white rounded-xl p-3.5 text-center font-bold shadow-lg">⛔ ร้านปิด (เปิด ${String(window.OPEN_HOUR).padStart(2,'0')}:00 - ${String(window.CLOSE_HOUR).padStart(2,'0')}:00 น.)</div>`;
             return;
         }
-
         if(footer.innerHTML.includes('ร้านปิด')) location.reload(); 
         footer.classList.remove('hidden');
-
-        ['btn-view-cart', 'btn-go-address', 'btn-confirm-address', 'btn-confirm-order'].forEach(id => {
-            const el = document.getElementById(id);
-            if(el) el.classList.add('hidden');
-        });
-
-        const btnViewCart = document.getElementById('btn-view-cart');
-        const btnGoAddress = document.getElementById('btn-go-address');
-        const btnConfirmAddress = document.getElementById('btn-confirm-address');
-        const btnConfirmOrder = document.getElementById('btn-confirm-order');
-
-        if(pageId === 'menu') {
-            if (window.cart.length > 0) { if(btnViewCart) btnViewCart.classList.remove('hidden'); }
-            else footer.classList.add('hidden');
-        }
-        else if(pageId === 'cart') { if(btnGoAddress) btnGoAddress.classList.remove('hidden'); }
-        else if(pageId === 'address') { if(btnConfirmAddress) btnConfirmAddress.classList.remove('hidden'); }
-        else if(pageId === 'payment') { if(btnConfirmOrder) btnConfirmOrder.classList.remove('hidden'); }
+        ['btn-view-cart', 'btn-go-address', 'btn-confirm-address', 'btn-confirm-order'].forEach(id => document.getElementById(id).classList.add('hidden'));
+        if(pageId === 'menu') window.cart.length > 0 ? document.getElementById('btn-view-cart').classList.remove('hidden') : footer.classList.add('hidden');
+        else if(pageId === 'cart') document.getElementById('btn-go-address').classList.remove('hidden');
+        else if(pageId === 'address') document.getElementById('btn-confirm-address').classList.remove('hidden');
+        else if(pageId === 'payment') document.getElementById('btn-confirm-order').classList.remove('hidden');
         else if(pageId === 'tracking') footer.classList.add('hidden');
+
+        // ✅ Update progress bar (NEW)
+        window.updateFreeShippingProgress();
     }
 
     window.renderMenu = function(cat) {
@@ -497,6 +563,9 @@
         window.updateCartUI();
         if(document.querySelector('.active-section').id === 'page-menu') window.updateFooterState('menu');
         Swal.fire({ toast: true, position: 'top', icon: 'success', title: 'เพิ่มลงตะกร้าแล้ว', showConfirmButton: false, timer: 1000 });
+
+        // ✅ Update progress bar after add
+        window.updateFreeShippingProgress();
     }
     window.updateCartUI = function() {
         document.getElementById('footer-count').innerText = window.cart.length;
@@ -504,11 +573,14 @@
         document.getElementById('footer-total').innerText = `฿${total}`;
         document.getElementById('total-price-cart').innerText = `฿${total}`;
         const list = document.getElementById('cart-items');
-        if(window.cart.length === 0) { list.innerHTML = `<div class="text-center py-10"><i class="fa-solid fa-basket-shopping text-4xl text-gray-200 mb-2"></i><p class="text-gray-400">ยังไม่มีสินค้าในตะกร้า</p></div>`; return; }
+        if(window.cart.length === 0) { list.innerHTML = `<div class="text-center py-10"><i class="fa-solid fa-basket-shopping text-4xl text-gray-200 mb-2"></i><p class="text-gray-400">ยังไม่มีสินค้าในตะกร้า</p></div>`; window.updateFreeShippingProgress(); return; }
         list.innerHTML = window.cart.map((item, idx) => {
             let optionsHtml = item.selectedOptions && item.selectedOptions.length > 0 ? item.selectedOptions.map(opt => `<div class="text-xs text-gray-500 pl-2 flex items-center gap-1"><span class="w-1 h-1 rounded-full bg-gray-300"></span> ${opt}</div>`).join('') : '';
             return `<div class="flex justify-between items-start border-b border-gray-100 pb-4 last:border-0 animation-fade-in"><div class="flex-1 pr-2"><div class="flex items-center gap-2 mb-1"><span class="font-bold text-gray-700 text-sm bg-gray-100 px-1.5 rounded text-[10px] h-fit">${idx + 1}</span><span class="font-semibold text-gray-800">${item.qty}x ${item.name}</span></div><div class="space-y-0.5 mt-1 border-l-2 border-gray-100 ml-1 pl-1">${optionsHtml}</div><div class="mt-2"><span class="text-xs text-red-500 font-medium cursor-pointer hover:underline flex items-center gap-1 w-fit" onclick="window.removeCartItem(${idx})"><i class="fa-solid fa-trash-can"></i> ลบรายการ</span></div></div><span class="font-bold text-gray-800 whitespace-nowrap">฿${item.finalPrice}</span></div>`;
         }).join('');
+
+        // ✅ Update progress bar after render
+        window.updateFreeShippingProgress();
     }
 
     // 🔥 FIX: Separate Function for Delete
@@ -517,6 +589,7 @@
         saveCartToStorage();
         window.updateCartUI();
         if(window.cart.length === 0) window.updateFooterState('menu');
+        window.updateFreeShippingProgress();
     }
 
     window.initMap = function() {
@@ -527,88 +600,121 @@
         L.marker(window.SHOP_LOC, { icon: shopIcon }).addTo(window.map).bindPopup("<b>ร้านหนุ่มดำเนิน</b><br>ส่งความอร่อยจากตรงนี้").openPopup();
         const savedLat = localStorage.getItem('cust_lat');
         const savedLng = localStorage.getItem('cust_lng');
+
+        // ✅ ✅ ✅ NEW: มีตำแหน่งจริงเฉพาะเมื่อมีค่าเดิม (ลูกค้าคนเดิมไม่ต้องปักใหม่)
+        window.hasUserLocation = !!(savedLat && savedLng);
+
         let startLoc = savedLat && savedLng ? [parseFloat(savedLat), parseFloat(savedLng)] : window.SHOP_LOC;
         let startZoom = savedLat && savedLng ? 16 : 14;
         window.map.setView(startLoc, startZoom);
         window.marker = L.marker(startLoc, { draggable: true, icon: customerIcon }).addTo(window.map);
         
         // 🔥 FIX: Calculate immediately
-        window.calculateDelivery(startLoc[0], startLoc[1]);
+        if (savedLat && savedLng) {
+            window.calculateDelivery(startLoc[0], startLoc[1]);
+        } else {
+            window.calculateDelivery(startLoc[0], startLoc[1]);
+        }
 
-        window.map.on('click', function(e) { window.marker.setLatLng(e.latlng); window.calculateDelivery(e.latlng.lat, e.latlng.lng); });
-        window.marker.on('dragend', function(e) { const pos = window.marker.getLatLng(); window.calculateDelivery(pos.lat, pos.lng); window.map.panTo(pos); });
+        window.map.on('click', function(e) {
+            window.hasUserLocation = true; // ✅ user เลือกเองแล้ว
+            window.marker.setLatLng(e.latlng);
+            window.calculateDelivery(e.latlng.lat, e.latlng.lng);
+        });
+
+        window.marker.on('dragend', function(e) {
+            window.hasUserLocation = true; // ✅ user เลือกเองแล้ว
+            const pos = window.marker.getLatLng();
+            window.calculateDelivery(pos.lat, pos.lng);
+            window.map.panTo(pos);
+        });
     }
 
     window.calculateDelivery = function(lat, lng) {
+        // ✅ ถ้ายังไม่ได้ปักจริง (ไม่มี saved และยังไม่ click/drag) ให้คงเป็นโหมด "ยังไม่ระบุพิกัด"
+        if (window.hasUserLocation !== true) {
+            window.userLat = null;
+            window.userLng = null;
+            window.distanceKm = 0;
+
+            document.getElementById('header-distance').innerText = `ระบุพิกัดส่ง`;
+            document.getElementById('distance-display').innerText = `แตะแผนที่เพื่อคำนวณ`;
+            document.getElementById('out-of-range-msg').classList.add('hidden');
+
+            const dd = document.getElementById('distance-display');
+            dd.classList.remove('bg-green-50','bg-red-50','text-green-600','text-red-600');
+            dd.classList.add('bg-gray-100','text-gray-400');
+
+            window.updateFreeShippingProgress();
+            return;
+        }
+
         window.userLat = lat; window.userLng = lng;
         window.distanceKm = window.getDistanceFromLatLonInKm(window.SHOP_LOC[0], window.SHOP_LOC[1], lat, lng);
         document.getElementById('header-distance').innerText = `ห่าง ${window.distanceKm.toFixed(1)} กม. จากร้าน`;
-
-        const distEl = document.getElementById('distance-display');
-        distEl.innerText = `${window.distanceKm.toFixed(1)} กม.`;
-
-        // ทำสีให้ชัวร์ ไม่ใช้ replace ที่อาจไม่เจอ class เดิม
-        distEl.classList.remove('bg-gray-100','text-gray-400','bg-green-50','text-green-600','bg-red-50','text-red-600');
-
+        document.getElementById('distance-display').innerText = `${window.distanceKm.toFixed(1)} กม.`;
+        const btnConfirm = document.getElementById('btn-confirm-address');
+        
+        // Remove disabled completely logic here, just handle styles if you want
         if (window.distanceKm > window.MAX_DIST_KM) {
             document.getElementById('out-of-range-msg').classList.remove('hidden');
-            distEl.classList.add('bg-red-50','text-red-600');
+            document.getElementById('distance-display').classList.remove('bg-gray-100','text-gray-400');
+            document.getElementById('distance-display').classList.add('bg-red-50','text-red-600');
+            // btnConfirm.disabled = true; // Optional: Keep it enabled but show error
         } else {
             document.getElementById('out-of-range-msg').classList.add('hidden');
-            distEl.classList.add('bg-green-50','text-green-600');
+            document.getElementById('distance-display').classList.remove('bg-gray-100','text-gray-400');
+            document.getElementById('distance-display').classList.add('bg-green-50','text-green-600');
+            // btnConfirm.disabled = false;
         }
+
+        // ✅ Update free shipping progress เมื่อระยะเปลี่ยน
+        window.updateFreeShippingProgress();
     }
     
     window.getDistanceFromLatLonInKm = function(lat1,lon1,lat2,lon2) { var R = 6371; var dLat = window.deg2rad(lat2-lat1); var dLon = window.deg2rad(lon2-lon1); var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(window.deg2rad(lat1)) * Math.cos(window.deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); return R * c; }
     window.deg2rad = function(deg) { return deg * (Math.PI/180); }
 
     window.validateAndGoToPayment = function() {
-        try {
-            const name = document.getElementById('cust-name').value;
-            const phone = document.getElementById('cust-phone').value;
-            const address = document.getElementById('cust-address').value;
-            
-            if(!name || !phone || !address) return Swal.fire({icon: 'warning', text: 'กรุณากรอกข้อมูลที่อยู่ให้ครบถ้วน'});
-            if(window.userLat === null || window.userLng === null) return Swal.fire({icon: 'warning', text: 'กรุณาปักหมุดจุดส่งบนแผนที่'});
-            
-            // Logic check only when clicking
-            if(window.distanceKm > window.MAX_DIST_KM) return Swal.fire({icon: 'error', text: `อยู่นอกพื้นที่จัดส่ง (จำกัด ${window.MAX_DIST_KM} กม.)`});
-            
-            const foodTotal = window.cart.reduce((s, i) => s + i.finalPrice, 0);
-            let isFree = (window.distanceKm <= 1.5 && foodTotal >= 100) || (foodTotal >= 200);
-            window.deliveryFee = isFree ? 0 : 40;
-            const grandTotal = foodTotal + window.deliveryFee;
-            
-            document.getElementById('summary-food-total').innerText = `${foodTotal} บาท`;
-            const feeDisplay = document.getElementById('summary-delivery-fee');
-            const feeDetail = document.getElementById('delivery-details');
-            
-            if(window.deliveryFee === 0) {
-                feeDisplay.innerText = "ฟรี"; feeDisplay.className = "text-green-600 font-bold";
-                feeDetail.innerText = (window.distanceKm <= 1.5 && foodTotal >= 100) ? "(โปรใกล้บ้าน 1.5km)" : "(โปรสั่ง 200 บาทขึ้นไป)";
-                feeDetail.className = "text-[10px] text-green-600";
-            } else {
-                feeDisplay.innerText = `${window.deliveryFee} บาท`; feeDisplay.className = "text-gray-800";
-                if (window.distanceKm <= 1.5 && foodTotal < 100) { feeDetail.innerText = `(สั่งเพิ่มอีก ${100 - foodTotal}บ. ส่งฟรี!)`; feeDetail.className = "text-xs text-red-500 font-bold animate-pulse"; } 
-                else if (foodTotal < 200) { feeDetail.innerText = `(สั่งเพิ่มอีก ${200 - foodTotal}บ. ส่งฟรี)`; feeDetail.className = "text-[10px] text-orange-500"; } 
-                else { feeDetail.innerText = ""; }
-            }
-            document.getElementById('summary-grand-total').innerText = `${grandTotal} บาท`;
-            document.getElementById('qr-image').src = `https://promptpay.io/0622467746/${grandTotal}`;
-            document.getElementById('qr-amount-display').innerText = `${grandTotal} บาท`;
-
-            // ✅ FIX: เอา cod-amount-display ออก (ไม่มี element นี้ในหน้า)
-            // document.getElementById('cod-amount-display').innerText = `${grandTotal}`;
-
-            window.checkCODEligibility();
-            window.showPage('payment');
-
-            // ปรับรายละเอียดการจ่ายให้ตรงกับ radio ที่เลือก
-            window.togglePaymentDetail();
-        } catch (err) {
-            console.error("validateAndGoToPayment error:", err);
-            Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'ระบบเจอ error ในขั้นตอนสรุปยอด กรุณารีเฟรชหน้าแล้วลองใหม่' });
+        const name = document.getElementById('cust-name').value;
+        const phone = document.getElementById('cust-phone').value;
+        const address = document.getElementById('cust-address').value;
+        
+        if(!name || !phone || !address) return Swal.fire({icon: 'warning', text: 'กรุณากรอกข้อมูลที่อยู่ให้ครบถ้วน'});
+        if(!window.userLat) return Swal.fire({icon: 'warning', text: 'กรุณาปักหมุดจุดส่งบนแผนที่'});
+        
+        // Logic check only when clicking
+        if(window.distanceKm > window.MAX_DIST_KM) return Swal.fire({icon: 'error', text: `อยู่นอกพื้นที่จัดส่ง (จำกัด ${window.MAX_DIST_KM} กม.)`});
+        
+        const foodTotal = window.cart.reduce((s, i) => s + i.finalPrice, 0);
+        let isFree = (window.distanceKm <= 1.5 && foodTotal >= 100) || (foodTotal >= 200);
+        window.deliveryFee = isFree ? 0 : 40;
+        const grandTotal = foodTotal + window.deliveryFee;
+        
+        document.getElementById('summary-food-total').innerText = `${foodTotal} บาท`;
+        const feeDisplay = document.getElementById('summary-delivery-fee');
+        const feeDetail = document.getElementById('delivery-details');
+        
+        if(window.deliveryFee === 0) {
+            feeDisplay.innerText = "ฟรี"; feeDisplay.className = "text-green-600 font-bold";
+            feeDetail.innerText = (window.distanceKm <= 1.5 && foodTotal >= 100) ? "(โปรใกล้บ้าน 1.5km)" : "(โปรสั่ง 200 บาทขึ้นไป)";
+            feeDetail.className = "text-[10px] text-green-600";
+        } else {
+            feeDisplay.innerText = `${window.deliveryFee} บาท`; feeDisplay.className = "text-gray-800";
+            if (window.distanceKm <= 1.5 && foodTotal < 100) { feeDetail.innerText = `(สั่งเพิ่มอีก ${100 - foodTotal}บ. ส่งฟรี!)`; feeDetail.className = "text-xs text-red-500 font-bold animate-pulse"; } 
+            else if (foodTotal < 200) { feeDetail.innerText = `(สั่งเพิ่มอีก ${200 - foodTotal}บ. ส่งฟรี)`; feeDetail.className = "text-[10px] text-orange-500"; } 
+            else { feeDetail.innerText = ""; }
         }
+        document.getElementById('summary-grand-total').innerText = `${grandTotal} บาท`;
+        document.getElementById('qr-image').src = `https://promptpay.io/0622467746/${grandTotal}`;
+        document.getElementById('qr-amount-display').innerText = `${grandTotal} บาท`;
+
+        // ✅ ✅ ✅ FIX: กัน error ถ้าไม่มี element (cod-amount-display ไม่ได้ใช้)
+        const codAmtEl = document.getElementById('cod-amount-display');
+        if (codAmtEl) codAmtEl.innerText = `${grandTotal}`;
+
+        window.checkCODEligibility();
+        window.showPage('payment');
     }
 
     window.checkCODEligibility = function() {
@@ -620,17 +726,13 @@
 
     window.togglePaymentDetail = function() {
         const method = document.querySelector('input[name="paymentMethod"]:checked').value;
+        document.getElementById('payment-transfer-detail').classList.toggle('hidden', method !== 'transfer');
 
-        const transferEl = document.getElementById('payment-transfer-detail');
-        const chatEl = document.getElementById('payment-chat-pay-detail');
+        // ✅ ✅ ✅ FIX: กัน error ถ้าไม่มี payment-cod-detail
+        const codDetail = document.getElementById('payment-cod-detail');
+        if (codDetail) codDetail.classList.toggle('hidden', method !== 'cod');
 
-        if(transferEl) transferEl.classList.toggle('hidden', method !== 'transfer');
-
-        // ✅ FIX: ไม่มี COD section ใน HTML → ไม่ไปเรียก payment-cod-detail อีกแล้ว
-        // const codEl = document.getElementById('payment-cod-detail');
-        // if(codEl) codEl.classList.toggle('hidden', method !== 'cod');
-
-        if(chatEl) chatEl.classList.toggle('hidden', method !== 'chat_pay');
+        document.getElementById('payment-chat-pay-detail').classList.toggle('hidden', method !== 'chat_pay');
     }
 
     window.confirmOrder = async function() {
@@ -645,14 +747,12 @@
         localStorage.setItem('cust_address', address);
         localStorage.setItem('cust_lat', window.userLat);
         localStorage.setItem('cust_lng', window.userLng);
-        let slipBase64 = "";
-
-        if (method === 'transfer') {
-          const fileInput = document.getElementById('slip-file');
-          if (fileInput.files.length === 0) {
-            return Swal.fire({ icon: 'warning', text: 'กรุณาแนบสลิปการโอนเงิน' });
-          }
-          slipBase64 = await window.toBase64(fileInput.files[0]);
+        let slipBase64 = "-";
+        
+        if(method === 'transfer') {
+            const fileInput = document.getElementById('slip-file');
+            if(fileInput.files.length === 0) return Swal.fire({icon: 'warning', text: 'กรุณาแนบสลิปการโอนเงิน'});
+            slipBase64 = await window.toBase64(fileInput.files[0]);
         }
 
         Swal.fire({ title: 'กำลังส่งออเดอร์...', text: 'กรุณารอสักครู่', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
@@ -806,13 +906,11 @@
                 itemsDisplay = order.items.map(i => `<span class="font-bold text-green-600 mr-2">x${i.qty}</span>${i.name}`).join('<br>');
             }
             
-            const safeId = (order.shortId || (order.id ? order.id.slice(-4) : '----'));
-            
             return `
             <div class="${cardBgColor} p-4 rounded-xl border shadow-sm flex flex-col gap-2 relative overflow-hidden transition-all duration-300">
                 <div class="flex justify-between items-start z-10">
                     <div>
-                        <span class="bg-white/80 text-gray-600 text-[10px] font-bold px-2 py-1 rounded border border-gray-200 shadow-sm">#${safeId}</span>
+                        <span class="bg-white/80 text-gray-600 text-[10px] font-bold px-2 py-1 rounded border border-gray-200 shadow-sm">#${order.shortId || order.id.slice(-4)}</span>
                         <div class="text-xs text-gray-500 mt-1 flex items-center gap-1"><i class="fa-regular fa-clock"></i> ${order.date}</div>
                     </div>
                     <span class="${statusColor} font-bold text-xs px-2 py-1 rounded-lg border flex items-center gap-1 shadow-sm">
@@ -867,6 +965,7 @@
         } catch (e) {
             console.error("Save failed:", e);
             Swal.close();
+            // ถ้าโหลดไม่ได้จริงๆ ให้เด้ง Popup บอกให้แคปจอ
             Swal.fire({
                 icon: 'info',
                 title: 'ไม่สามารถบันทึกไฟล์ได้',
