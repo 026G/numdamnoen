@@ -6,33 +6,32 @@
   <title>Admin Chat Helper</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="bg-gray-50 p-4">
   <div class="max-w-md mx-auto bg-white rounded-2xl shadow p-4 space-y-3">
     <h1 class="text-lg font-bold">💬 ทักลูกค้า (ช่วยแอดมิน)</h1>
 
     <div id="info" class="text-sm text-gray-700"></div>
 
-    <textarea id="msg" class="w-full border rounded-xl p-3 bg-gray-50" rows="5"></textarea>
+    <textarea id="msg" class="w-full border rounded-xl p-3 bg-gray-50" rows="6"></textarea>
 
-    <div class="grid grid-cols-2 gap-2">
-      <button id="copy" class="bg-green-600 text-white rounded-xl py-3 font-bold">คัดลอกข้อความ</button>
-    </div>
+    <button id="copy" class="w-full bg-green-600 text-white rounded-xl py-3 font-bold">
+      คัดลอกข้อความ
+    </button>
 
-
-    <p class="text-xs text-gray-500">
-     
-    </p>
+    <p id="hint" class="text-xs text-gray-400"></p>
   </div>
 
 <script>
   const qs = new URLSearchParams(location.search);
   const orderId = qs.get("orderId") || "-";
-  const phone = (qs.get("phone") || "").replace(/-/g,"");
-  const name = qs.get("name") || "ลูกค้า";
-  const total = qs.get("total") || "-";
+  const phoneRaw = (qs.get("phone") || "").trim();
+  const phone = phoneRaw.replace(/-/g, "").replace(/\s/g, "");
+  const name = (qs.get("name") || "ลูกค้า").trim();
+  const total = (qs.get("total") || "-").trim();
 
   document.getElementById("info").innerHTML =
-    `ออเดอร์ <b>#${orderId}</b><br>ลูกค้า: <b>${name}</b> (${phone})<br>ยอด: <b>${total}</b>`;
+    `ออเดอร์ <b>#${orderId}</b><br>ลูกค้า: <b>${name}</b> (${phoneRaw || phone})<br>ยอด: <b>${total}</b>`;
 
   const text =
 `สวัสดีครับ คุณ${name} 😊
@@ -42,16 +41,39 @@
   const msg = document.getElementById("msg");
   msg.value = text;
 
+  // ✅ คัดลอกแบบกันพัง (Clipboard API + fallback)
+  async function copyText(t) {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(t);
+        return true;
+      }
+    } catch (e) {}
+
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = t;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      const ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      return ok;
+    } catch (e) {
+      return false;
+    }
+  }
+
   document.getElementById("copy").onclick = async () => {
-    await navigator.clipboard.writeText(msg.value);
-    alert("คัดลอกแล้ว");
+    const ok = await copyText(msg.value);
+    document.getElementById("hint").innerText = ok
+      ? "✅ คัดลอกแล้ว"
+      : "❌ คัดลอกไม่สำเร็จ (ลองลากเลือกในกล่องแล้วคัดลอกเอง)";
+    alert(ok ? "คัดลอกแล้ว" : "คัดลอกไม่สำเร็จ ลองคัดลอกเองจากกล่องข้อความ");
   };
-
-  document.getElementById("sms").href = `sms:${phone}?&body=${encodeURIComponent(text)}`;
-
-  // เปิดแชทกับ OA (เปลี่ยน @YOUR_OA_ID ให้เป็นไอดี OA ของคุณ)
-  document.getElementById("oa").href =
-    `https://line.me/R/ti/p/@YOUR_OA_ID`;
 </script>
+
 </body>
 </html>
