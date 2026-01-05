@@ -277,7 +277,7 @@
     window.currentItem = null;
     window.currentBasePrice = 0;
 
-    // ✅ ✅ ✅ NEW: flag ว่ามีตำแหน่งลูกค้าจริง (เพื่อไม่ให้ระบบคิดว่าระยะ 0 = ใกล้บ้านทันที)
+    // ✅ ✅ ✅ NEW: flag ว่ามีตำแหน่งลูกค้าจริง (เพื่อไม่ให้ระบบคิดว่าระยะ 0 = ใกล้ร้านทันที)
     window.hasUserLocation = false;
     window.currentPage = 'menu';
 
@@ -407,9 +407,9 @@
         const target = nearEligible ? 100 : 200;
 
         if (window.hasUserLocation !== true) {
-            textEl.innerText = 'ส่งฟรีเมื่อครบ 200 บาท (ปักหมุดเพื่อเช็คโปรใกล้บ้าน)';
+            textEl.innerText = 'ส่งฟรีเมื่อครบ 200 บาท (ปักหมุดเพื่อเช็คโปรใกล้ร้าน)';
         } else {
-            textEl.innerText = nearEligible ? 'ใกล้บ้าน ส่งฟรีเมื่อครบ 100 บาท' : 'ส่งฟรีเมื่อครบ 200 บาท';
+            textEl.innerText = nearEligible ? 'ใกล้ร้าน ส่งฟรีเมื่อครบ 100 บาท' : 'ส่งฟรีเมื่อครบ 200 บาท';
         }
 
         const remaining = Math.max(0, target - total);
@@ -697,7 +697,7 @@
         
         if(window.deliveryFee === 0) {
             feeDisplay.innerText = "ฟรี"; feeDisplay.className = "text-green-600 font-bold";
-            feeDetail.innerText = (window.distanceKm <= 1.5 && foodTotal >= 100) ? "(โปรใกล้บ้าน 1.5km)" : "(โปรสั่ง 200 บาทขึ้นไป)";
+            feeDetail.innerText = (window.distanceKm <= 1.5 && foodTotal >= 100) ? "(โปรใกล้ร้าน 1.5km)" : "(โปรสั่ง 200 บาทขึ้นไป)";
             feeDetail.className = "text-[10px] text-green-600";
         } else {
             feeDisplay.innerText = `${window.deliveryFee} บาท`; feeDisplay.className = "text-gray-800";
