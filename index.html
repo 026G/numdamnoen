@@ -521,9 +521,17 @@
         let startZoom = savedLat && savedLng ? 16 : 14;
         window.map.setView(startLoc, startZoom);
         window.marker = L.marker(startLoc, { draggable: true, icon: customerIcon }).addTo(window.map);
+        
+        // 🔥 FIX: เรียก calculateDelivery ทันทีเพื่อแก้ปัญหาปุ่มกดไม่ได้
+        if (savedLat && savedLng) {
+            window.calculateDelivery(startLoc[0], startLoc[1]);
+        } else {
+            // ถ้าไม่มีพิกัดเก่า ให้เซ็ตค่าเริ่มต้นของ marker ปัจจุบัน
+            window.calculateDelivery(startLoc[0], startLoc[1]);
+        }
+
         window.map.on('click', function(e) { window.marker.setLatLng(e.latlng); window.calculateDelivery(e.latlng.lat, e.latlng.lng); });
         window.marker.on('dragend', function(e) { const pos = window.marker.getLatLng(); window.calculateDelivery(pos.lat, pos.lng); window.map.panTo(pos); });
-        if (savedLat && savedLng) window.calculateDelivery(startLoc[0], startLoc[1]);
     }
 
     window.calculateDelivery = function(lat, lng) {
@@ -558,16 +566,13 @@
         if(!name || !phone || !address) return Swal.fire({icon: 'warning', text: 'กรุณากรอกข้อมูลที่อยู่ให้ครบถ้วน'});
         if(!window.userLat) return Swal.fire({icon: 'warning', text: 'กรุณาปักหมุดจุดส่งบนแผนที่'});
         if(window.distanceKm > window.MAX_DIST_KM) return Swal.fire({icon: 'error', text: `อยู่นอกพื้นที่จัดส่ง (จำกัด ${window.MAX_DIST_KM} กม.)`});
-        
         const foodTotal = window.cart.reduce((s, i) => s + i.finalPrice, 0);
         let isFree = (window.distanceKm <= 1.5 && foodTotal >= 100) || (foodTotal >= 200);
         window.deliveryFee = isFree ? 0 : 40;
         const grandTotal = foodTotal + window.deliveryFee;
-        
         document.getElementById('summary-food-total').innerText = `${foodTotal} บาท`;
         const feeDisplay = document.getElementById('summary-delivery-fee');
         const feeDetail = document.getElementById('delivery-details');
-        
         if(window.deliveryFee === 0) {
             feeDisplay.innerText = "ฟรี"; feeDisplay.className = "text-green-600 font-bold";
             feeDetail.innerText = (window.distanceKm <= 1.5 && foodTotal >= 100) ? "(โปรใกล้บ้าน 1.5km)" : "(โปรสั่ง 200 บาทขึ้นไป)";
@@ -759,12 +764,11 @@
         container.innerHTML = serverOrders.map(order => {
             let statusColor = "text-orange-500 bg-orange-50 border-orange-100";
             let cardBgColor = "bg-white"; 
-            
-            if(order.status.includes("รอแอดมิน")) { statusColor = "text-yellow-600 bg-yellow-50 border-yellow-100 animate-pulse"; cardBgColor = "bg-yellow-50/20 border-yellow-100"; }
-            else if(order.status.includes("ปรุง")) { statusColor = "text-blue-600 bg-blue-50 border-blue-100"; cardBgColor = "bg-blue-50/30 border-blue-100"; }
+            if(order.status.includes("ปรุง")) { statusColor = "text-blue-600 bg-blue-50 border-blue-100"; cardBgColor = "bg-blue-50/30 border-blue-100"; }
             else if(order.status.includes("ส่ง") || order.status.includes("ไรเดอร์")) { statusColor = "text-purple-600 bg-purple-50 border-purple-100"; cardBgColor = "bg-purple-50/30 border-purple-100"; }
             else if(order.status.includes("สำเร็จ")) { statusColor = "text-green-600 bg-green-50 border-green-100"; cardBgColor = "bg-green-50/30 border-green-100"; }
             else if(order.status.includes("ยกเลิก")) { statusColor = "text-red-600 bg-red-50 border-red-100"; cardBgColor = "bg-red-50/30 border-red-100"; }
+            else if(order.status.includes("แจ้งยอด")) { statusColor = "text-yellow-600 bg-yellow-50 border-yellow-100 animate-pulse"; cardBgColor = "bg-yellow-50/20 border-yellow-100"; }
             else { cardBgColor = "bg-orange-50/20 border-orange-100"; }
 
             let itemsDisplay = order.items;
