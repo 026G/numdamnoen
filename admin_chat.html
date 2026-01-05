@@ -5,65 +5,47 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Admin Chat Helper</title>
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- กัน referrer เผื่อมีการกดลิงก์ออก (ลดโอกาส URL หลุดผ่าน referrer) -->
   <meta name="referrer" content="no-referrer" />
 </head>
 
 <body class="bg-gray-50 p-4">
   <div class="max-w-md mx-auto bg-white rounded-2xl shadow p-4 space-y-3">
-    <h1 class="text-lg font-bold">💬 ทักลูกค้า / 📦 ส่งไรเดอร์</h1>
+    <h1 class="text-lg font-bold">💬 ข้อความทักลูกค้า (คัดลอกส่ง)</h1>
 
-    <div id="loading" class="text-sm text-gray-600 bg-yellow-50 border border-yellow-100 rounded-xl p-3">
-      กำลังดึงข้อมูลออเดอร์...
-    </div>
+    <div id="info" class="text-sm text-gray-700 bg-gray-50 border border-gray-100 rounded-xl p-3"></div>
 
-    <div id="errorBox" class="hidden text-sm text-red-700 bg-red-50 border border-red-100 rounded-xl p-3"></div>
+    <label class="text-xs font-bold text-gray-600">ข้อความพร้อมส่ง</label>
+    <textarea id="msg" class="w-full border rounded-xl p-3 bg-gray-50" rows="7"></textarea>
 
-    <div id="info" class="text-sm text-gray-700 hidden"></div>
-
-    <label class="text-xs font-bold text-gray-600">ข้อความทักลูกค้า</label>
-    <textarea id="msg" class="w-full border rounded-xl p-3 bg-gray-50" rows="6"></textarea>
-
-    <button id="copyCustomer" class="w-full bg-green-600 text-white rounded-xl py-3 font-bold">
-      คัดลอกข้อความทักลูกค้า
-    </button>
-
-    <div class="h-px bg-gray-100 my-2"></div>
-
-    <label class="text-xs font-bold text-gray-600">ข้อมูลจัดส่งให้ไรเดอร์</label>
-    <textarea id="riderMsg" class="w-full border rounded-xl p-3 bg-gray-50" rows="7" readonly></textarea>
-
-    <button id="copyRider" class="w-full bg-blue-600 text-white rounded-xl py-3 font-bold">
-      คัดลอกข้อมูลส่งไรเดอร์
+    <button id="copy" class="w-full bg-green-600 text-white rounded-xl py-3 font-bold">
+      คัดลอกข้อความ
     </button>
 
     <p id="hint" class="text-xs text-gray-400"></p>
   </div>
 
 <script>
-  // =========================
-  // ✅ CONFIG: แก้ให้เป็น Web App URL ของคุณ
-  // =========================
-  const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzYBSnGMUXEXdHyJ21L98xxkGbCNVlcqRBvtJti38vr95txAcemZ4wJVeO70JIttX2RHQ/exec";
-
-  // =========================
-  // ✅ อ่านพารามิเตอร์ (เหลือแค่ orderId + secret)
-  // =========================
   const qs = new URLSearchParams(location.search);
-  const orderId = (qs.get("orderId") || "").trim();
-  const secret = (qs.get("secret") || "").trim();
+  const orderId = (qs.get("orderId") || "-").trim();
+  const phone = (qs.get("phone") || "").replace(/-/g,"").trim();
+  const name  = (qs.get("name")  || "ลูกค้า").trim();
+  const total = (qs.get("total") || "-").trim();
 
-  const loadingEl = document.getElementById("loading");
-  const errorBox = document.getElementById("errorBox");
-  const infoEl = document.getElementById("info");
-  const msgEl = document.getElementById("msg");
-  const riderEl = document.getElementById("riderMsg");
-  const hintEl = document.getElementById("hint");
+  document.getElementById("info").innerHTML =
+    `ออเดอร์ <b>#${orderId}</b><br>` +
+    `ลูกค้า: <b>${name}</b> ${phone ? `(${phone})` : ""}<br>` +
+    `ยอดรวม: <b>${total}</b>`;
 
-  // =========================
-  // ✅ คัดลอกแบบกันพัง (Clipboard API + fallback)
-  // =========================
+  const text =
+`สวัสดีครับ คุณ${name} 😊
+ออเดอร์ #${orderId} ยอดรวม ${total} ครับ
+
+เดี๋ยวแอดมินจะส่ง QR ให้ทางแชทนี้นะครับ
+พอสแกนแล้ว รบกวนส่งสลิปกลับมาให้ด้วยครับ 🙏`;
+
+  const msg = document.getElementById("msg");
+  msg.value = text;
+
   async function copyText(t) {
     try {
       if (navigator.clipboard && window.isSecureContext) {
@@ -88,105 +70,11 @@
     }
   }
 
-  // =========================
-  // ✅ JSONP callback — Apps Script จะเรียกฟังก์ชันนี้พร้อมข้อมูล
-  // =========================
-  window.handleOrder = function(payload) {
-    try {
-      if (!payload || payload.ok !== true) {
-        throw new Error(payload && payload.error ? payload.error : "โหลดข้อมูลไม่สำเร็จ");
-      }
-
-      const o = payload.order;
-      const c = o.customer;
-
-      loadingEl.classList.add("hidden");
-      infoEl.classList.remove("hidden");
-
-      infoEl.innerHTML =
-        `ออเดอร์ <b>#${o.id}</b> <span class="text-xs text-gray-400">(${o.date})</span><br>` +
-        `ลูกค้า: <b>${c.name}</b> (${c.phone})<br>` +
-        `ยอด: <b>${o.total}</b><br>` +
-        `สถานะ: <b>${o.status}</b>`;
-
-      // ✅ ข้อความทักลูกค้า (ปรับได้ตามสไตล์ร้าน)
-      const customerText =
-`สวัสดีครับ คุณ${c.name} 😊
-ออเดอร์ #${o.id} ยอดรวม ${o.total} ครับ
-
-เดี๋ยวแอดมินจะส่ง QR (ถุงเงิน) ให้ทางแชทนี้นะครับ
-พอสแกนแล้ว รบกวนส่งสลิปกลับมาให้ด้วยครับ 🙏`;
-
-      msgEl.value = customerText;
-
-      // ✅ ข้อมูลส่งไรเดอร์
-      const riderLines = [];
-      riderLines.push("📦 ส่งงานไรเดอร์");
-      riderLines.push(`เลขออเดอร์: ${o.id}`);
-      riderLines.push(`ชื่อลูกค้า: ${c.name}`);
-      riderLines.push(`เบอร์โทร: ${c.phone}`);
-      riderLines.push(`ที่อยู่: ${c.address || "-"}`);
-      riderLines.push(`จุดสังเกต: ${c.landmark ? c.landmark : "-"}`);
-      riderLines.push(`หมุดแผนที่: ${c.map ? c.map : "-"}`);
-      riderEl.value = riderLines.join("\n");
-
-      hintEl.textContent = "✅ โหลดข้อมูลสำเร็จ";
-
-    } catch (err) {
-      loadingEl.classList.add("hidden");
-      errorBox.classList.remove("hidden");
-      errorBox.textContent = "❌ " + (err && err.message ? err.message : err);
-    }
+  document.getElementById("copy").onclick = async () => {
+    const ok = await copyText(msg.value);
+    document.getElementById("hint").textContent = ok ? "✅ คัดลอกแล้ว" : "❌ คัดลอกไม่สำเร็จ ลองคัดลอกจากกล่องข้อความ";
+    alert(ok ? "คัดลอกแล้ว" : "คัดลอกไม่สำเร็จ");
   };
-
-  // =========================
-  // ✅ โหลดข้อมูลด้วย JSONP (ไม่ติด CORS)
-  // =========================
-  function loadOrderJSONP() {
-    if (!orderId || !secret) {
-      loadingEl.classList.add("hidden");
-      errorBox.classList.remove("hidden");
-      errorBox.textContent = "❌ ลิงก์ไม่ครบ (ต้องมี orderId และ secret)";
-      return;
-    }
-
-    const callbackName = "handleOrder";
-    const src =
-      `${GAS_WEBAPP_URL}` +
-      `?action=get_order_admin` +
-      `&orderId=${encodeURIComponent(orderId)}` +
-      `&secret=${encodeURIComponent(secret)}` +
-      `&callback=${encodeURIComponent(callbackName)}` +
-      `&t=${Date.now()}`; // กัน cache
-
-    const s = document.createElement("script");
-    s.src = src;
-    s.onerror = () => {
-      loadingEl.classList.add("hidden");
-      errorBox.classList.remove("hidden");
-      errorBox.textContent = "❌ โหลดข้อมูลไม่ได้ (ตรวจสอบ URL Web App / การ Deploy / secret)";
-    };
-    document.body.appendChild(s);
-  }
-
-  // =========================
-  // ✅ ปุ่มคัดลอก
-  // =========================
-  document.getElementById("copyCustomer").onclick = async () => {
-    const ok = await copyText(msgEl.value);
-    hintEl.textContent = ok ? "✅ คัดลอกข้อความทักลูกค้าแล้ว" : "❌ คัดลอกไม่สำเร็จ";
-    alert(ok ? "คัดลอกแล้ว" : "คัดลอกไม่สำเร็จ ลองคัดลอกจากกล่องข้อความ");
-  };
-
-  document.getElementById("copyRider").onclick = async () => {
-    const ok = await copyText(riderEl.value);
-    hintEl.textContent = ok ? "✅ คัดลอกข้อมูลส่งไรเดอร์แล้ว" : "❌ คัดลอกไม่สำเร็จ";
-    alert(ok ? "คัดลอกข้อมูลส่งไรเดอร์แล้ว" : "คัดลอกไม่สำเร็จ ลองคัดลอกจากกล่องข้อมูลไรเดอร์");
-  };
-
-  // เริ่มโหลด
-  loadOrderJSONP();
 </script>
-
 </body>
 </html>
