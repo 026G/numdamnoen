@@ -14,18 +14,10 @@
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap');
-        
-        body { 
-            font-family: 'Prompt', sans-serif; 
-            background-color: #f8f9fa;
-            color: #333;
-            -webkit-font-smoothing: antialiased;
-        }
-        
+        body { font-family: 'Prompt', sans-serif; background-color: #f8f9fa; color: #333; -webkit-font-smoothing: antialiased; }
         .page-section { display: none; }
         .active-section { display: block; animation: fadeIn 0.4s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-        
         #map { height: 300px; width: 100%; border-radius: 12px; z-index: 0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         .tab-active { color: #16a34a; border-bottom: 2px solid #16a34a; background-color: rgba(22, 163, 74, 0.05); }
         .tab-inactive { color: #6b7280; border-bottom: 2px solid transparent; }
@@ -127,15 +119,18 @@
                     <div class="border-t border-dashed pt-2 mt-2 flex justify-between text-lg font-bold text-gray-800"><span>ยอดรวมสุทธิ</span><span id="summary-grand-total" class="text-green-600">0 บาท</span></div>
                 </div>
             </div>
+            
             <div class="bg-white p-5 shadow-sm mb-20">
                  <h2 class="text-lg font-bold text-gray-800 mb-4">เลือกวิธีการชำระเงิน</h2>
+                 
                  <label class="block mb-3 cursor-pointer">
                     <input type="radio" name="paymentMethod" value="transfer" class="payment-radio hidden" checked onchange="togglePaymentDetail()">
                     <div class="border rounded-xl p-4 flex items-center justify-between transition-all hover:bg-gray-50">
-                        <div class="flex items-center gap-3"><div class="w-5 h-5 rounded-full border border-gray-300 radio-indicator flex items-center justify-center"></div><span class="font-medium text-gray-700">โอนเงิน / สแกนจ่าย</span></div>
+                        <div class="flex items-center gap-3"><div class="w-5 h-5 rounded-full border border-gray-300 radio-indicator flex items-center justify-center"></div><span class="font-medium text-gray-700">📱 โอนเงิน / สแกนจ่าย</span></div>
                         <i class="fa-solid fa-qrcode text-gray-400 text-xl"></i>
                     </div>
                 </label>
+                
                 <div id="payment-transfer-detail" class="ml-2 pl-6 border-l-2 border-gray-200 mb-6 space-y-4">
                      <div class="max-w-[280px] mx-auto bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden relative">
                         <div class="bg-[#113566] p-3 flex justify-between items-center"><img src="https://upload.wikimedia.org/wikipedia/commons/c/c5/PromptPay-logo.png" class="h-6 bg-white rounded px-1"><div class="text-right"><p class="text-white text-[10px] font-light">Thai QR Payment</p></div></div>
@@ -162,15 +157,33 @@
                         <p class="text-[10px] text-gray-400 mt-1 flex items-center gap-1"><i class="fa-solid fa-circle-exclamation"></i> กรุณาแนบสลิปเพื่อยืนยันการสั่งซื้อ</p>
                     </div>
                 </div>
-                <label id="cod-label" class="cursor-pointer relative"> 
-                    <input type="radio" name="paymentMethod" value="cod" id="cod-radio" class="payment-radio hidden" onchange="togglePaymentDetail()">
-                    <div id="cod-box" class="border rounded-xl p-4 flex items-center justify-between transition-all hover:bg-gray-50">
-                        <div class="flex items-center gap-3"><div class="w-5 h-5 rounded-full border border-gray-300 radio-indicator flex items-center justify-center"></div><div><span class="font-medium text-gray-700 block">เก็บเงินปลายทาง (COD)</span></div></div><i class="fa-solid fa-money-bill-wave text-gray-400 text-xl"></i>
+
+                <label id="chat-pay-label" class="cursor-pointer relative"> 
+                    <input type="radio" name="paymentMethod" value="chat_pay" id="chat-pay-radio" class="payment-radio hidden" onchange="togglePaymentDetail()">
+                    <div class="border rounded-xl p-4 flex items-center justify-between transition-all hover:bg-gray-50">
+                        <div class="flex items-center gap-3">
+                            <div class="w-5 h-5 rounded-full border border-gray-300 radio-indicator flex items-center justify-center"></div>
+                            <div><span class="font-medium text-gray-700 block">💬 โอนจ่ายทีหลัง (รอร้านแจ้งยอดทางแชท)</span></div>
+                        </div>
+                        <i class="fa-brands fa-line text-green-500 text-xl"></i>
                     </div>
                 </label>
-                <div id="payment-cod-detail" class="hidden ml-2 pl-6 border-l-2 border-gray-200 mt-3">
-                    <div class="bg-yellow-50 text-yellow-800 p-3 rounded-lg text-sm flex items-start gap-2"><i class="fa-solid fa-circle-info mt-1 shrink-0"></i><p>กรุณาเตรียมเงินสดให้พอดีกับยอด <strong><span id="cod-amount-display"></span></strong> บาท</p></div>
+
+                <div id="payment-chat-pay-detail" class="hidden ml-2 pl-6 border-l-2 border-gray-200 mt-3 space-y-3">
+                    <div class="bg-blue-50 text-blue-800 p-4 rounded-xl text-sm flex items-start gap-3 border border-blue-100">
+                        <i class="fa-solid fa-circle-info mt-1 shrink-0 text-lg"></i>
+                        <div>
+                            <p class="font-bold mb-1">ขั้นตอนการสั่งซื้อ:</p>
+                            <ol class="list-decimal pl-4 space-y-1 text-xs">
+                                <li>กดปุ่ม <b>"ยืนยันการสั่งซื้อ"</b> ด้านล่าง</li>
+                                <li>รอแอดมินทักแชท / หรือทักหาแอดมิน</li>
+                                <li>แอดมินจะส่ง <b>QR Code (ถุงเงิน)</b> ให้ทางแชท</li>
+                                <li>ชำระเงินตามยอดจริงที่แอดมินแจ้ง</li>
+                            </ol>
+                        </div>
+                    </div>
                 </div>
+
             </div>
         </section>
         
@@ -235,11 +248,9 @@
 
     window.SHOP_LOC = [13.639417, 100.499580]; 
     window.MAX_DIST_KM = 5.0; 
-    // 🔥 ตั้งเวลาเปิดปิดร้านเป็น 24 ชั่วโมง ตามที่ขอมา
     window.OPEN_HOUR = 0;    
     window.CLOSE_HOUR = 24; 
     
-    // 🔥 URL Apps Script
     window.WEB_APP_URL = "https://script.google.com/macros/s/AKfycby-CN2vDIOsauP7k1qjiGEm3nPlNV0X9ADKyt_Xzzw1HUY_fzobRJZnTapRUweWu9a3fg/exec"; 
 
     window.menuDB = [];
@@ -256,26 +267,23 @@
     window.currentItem = null;
     window.currentBasePrice = 0;
 
-    // 🔥 1. ฟังก์ชันโหลดตะกร้า (เก็บไว้ 1 ชม.)
     function loadCartFromStorage() {
         const savedData = localStorage.getItem('shopping_cart');
         if (savedData) {
             try {
                 const parsed = JSON.parse(savedData);
                 const oneHour = 60 * 60 * 1000; 
-                // เช็คว่าเวลาเกิน 1 ชั่วโมงหรือยัง
                 if (Date.now() - parsed.timestamp < oneHour) {
                     window.cart = parsed.cart || [];
                     console.log("Cart loaded from storage");
                 } else {
-                    localStorage.removeItem('shopping_cart'); // หมดเวลา ลบ
+                    localStorage.removeItem('shopping_cart'); 
                     console.log("Cart expired");
                 }
             } catch (e) { console.error("Error loading cart", e); }
         }
     }
 
-    // 🔥 2. ฟังก์ชันบันทึกตะกร้า
     function saveCartToStorage() {
         const data = {
             cart: window.cart,
@@ -287,7 +295,6 @@
     document.addEventListener("DOMContentLoaded", async () => {
         Swal.fire({ title: 'กำลังโหลดเมนู...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
         
-        // ✅ เรียกโหลดตะกร้าทันทีเมื่อเปิดเว็บ
         loadCartFromStorage();
 
         try {
@@ -302,7 +309,6 @@
                 window.menuDB.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
                 Swal.close();
                 
-                // ถ้ามีของในตะกร้าค้างอยู่ ให้แสดงปุ่มตะกร้า
                 if (window.cart.length > 0) {
                     window.updateCartUI();
                     window.updateFooterState('menu');
@@ -485,7 +491,6 @@
     }
     window.addToCart = function(item, opts, price, qty) {
         window.cart.push({ ...item, selectedOptions: opts, finalPrice: price, qty: qty });
-        // ✅ บันทึกลงเครื่องทันที
         saveCartToStorage(); 
         window.updateCartUI();
         if(document.querySelector('.active-section').id === 'page-menu') window.updateFooterState('menu');
@@ -500,7 +505,6 @@
         if(window.cart.length === 0) { list.innerHTML = `<div class="text-center py-10"><i class="fa-solid fa-basket-shopping text-4xl text-gray-200 mb-2"></i><p class="text-gray-400">ยังไม่มีสินค้าในตะกร้า</p></div>`; return; }
         list.innerHTML = window.cart.map((item, idx) => {
             let optionsHtml = item.selectedOptions && item.selectedOptions.length > 0 ? item.selectedOptions.map(opt => `<div class="text-xs text-gray-500 pl-2 flex items-center gap-1"><span class="w-1 h-1 rounded-full bg-gray-300"></span> ${opt}</div>`).join('') : '';
-            // ✅ เพิ่ม saveCartToStorage() ตอนลบของ
             return `<div class="flex justify-between items-start border-b border-gray-100 pb-4 last:border-0 animation-fade-in"><div class="flex-1 pr-2"><div class="flex items-center gap-2 mb-1"><span class="font-bold text-gray-700 text-sm bg-gray-100 px-1.5 rounded text-[10px] h-fit">${idx + 1}</span><span class="font-semibold text-gray-800">${item.qty}x ${item.name}</span></div><div class="space-y-0.5 mt-1 border-l-2 border-gray-100 ml-1 pl-1">${optionsHtml}</div><div class="mt-2"><span class="text-xs text-red-500 font-medium cursor-pointer hover:underline flex items-center gap-1 w-fit" onclick="window.cart.splice(${idx},1); saveCartToStorage(); window.updateCartUI()"><i class="fa-solid fa-trash-can"></i> ลบรายการ</span></div></div><span class="font-bold text-gray-800 whitespace-nowrap">฿${item.finalPrice}</span></div>`;
         }).join('');
     }
@@ -579,25 +583,18 @@
         window.showPage('payment');
     }
 
-    // ❌ ปิดระบบเก็บเงินปลายทาง (ซ่อนปุ่ม)
     window.checkCODEligibility = function() {
         const codRadio = document.getElementById('cod-radio');
         const codLabel = document.getElementById('cod-label');
         if(codLabel) codLabel.classList.add('hidden');
         if(codRadio) codRadio.disabled = true;
-        if (codRadio && codRadio.checked) {
-            const transferRadio = document.querySelector('input[value="transfer"]');
-            if(transferRadio) {
-                transferRadio.checked = true;
-                if(typeof window.togglePaymentDetail === 'function') window.togglePaymentDetail();
-            }
-        }
     }
 
     window.togglePaymentDetail = function() {
         const method = document.querySelector('input[name="paymentMethod"]:checked').value;
         document.getElementById('payment-transfer-detail').classList.toggle('hidden', method !== 'transfer');
         document.getElementById('payment-cod-detail').classList.toggle('hidden', method !== 'cod');
+        document.getElementById('payment-chat-pay-detail').classList.toggle('hidden', method !== 'chat_pay');
     }
 
     window.confirmOrder = async function() {
@@ -613,15 +610,23 @@
         localStorage.setItem('cust_lat', window.userLat);
         localStorage.setItem('cust_lng', window.userLng);
         let slipBase64 = "-";
+        
         if(method === 'transfer') {
             const fileInput = document.getElementById('slip-file');
             if(fileInput.files.length === 0) return Swal.fire({icon: 'warning', text: 'กรุณาแนบสลิปการโอนเงิน'});
             slipBase64 = await window.toBase64(fileInput.files[0]);
         }
+
         Swal.fire({ title: 'กำลังส่งออเดอร์...', text: 'กรุณารอสักครู่', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
         const timestamp = new Date();
         const shortId = timestamp.getTime().toString().slice(-4);
         const orderId = `ORD-${shortId}`;
+        
+        let initialStatus = "🕒 รอร้านรับยอด";
+        if (method === 'chat_pay') {
+            initialStatus = "💬 รอแอดมินแจ้งยอด";
+        }
+
         const newOrder = {
             id: orderId,
             timestamp: timestamp.toISOString(),
@@ -631,7 +636,7 @@
             total: total,
             paymentMethod: method,
             slipImage: slipBase64,
-            status: "🕒 รอร้านรับยอด"
+            status: initialStatus
         };
         try {
             const ordersRef = ref(db, 'orders');
@@ -650,8 +655,14 @@
             window.updateCartUI(); 
 
             window.updateTrackingButtonState();
+            
+            let successMsg = 'ทางร้านได้รับออเดอร์แล้วครับ';
+            if (method === 'chat_pay') {
+                successMsg = 'กรุณารอแอดมินทักแชท/แจ้งยอดนะครับ';
+            }
+
             Swal.fire({
-                icon: 'success', title: 'สั่งซื้อสำเร็จ!', text: 'ทางร้านได้รับออเดอร์แล้วครับ',
+                icon: 'success', title: 'สั่งซื้อสำเร็จ!', text: successMsg,
                 showCancelButton: true, confirmButtonText: '📦 ติดตามสถานะ', confirmButtonColor: '#16a34a', cancelButtonText: 'สั่งเพิ่ม', cancelButtonColor: '#6b7280'
             }).then((result) => {
                 if (result.isConfirmed) window.openTrackingPage(); 
@@ -686,9 +697,8 @@
 
     window.saveOrderToHistory = function(order) {
         let history = JSON.parse(localStorage.getItem('order_history') || "[]");
-        // ✅ แก้ไข: แสดงผลสวยงาม (x1) - ชื่อสินค้า
         const itemsStr = order.items.map(i => `<div><span class="font-bold text-green-600 mr-2">x${i.qty}</span>${i.name}</div>`).join('');
-        const newHistoryItem = { id: order.id, date: order.date, items: itemsStr, total: order.total, status: '🕒 รอร้านรับยอด' };
+        const newHistoryItem = { id: order.id, date: order.date, items: itemsStr, total: order.total, status: order.status };
         history.unshift(newHistoryItem); 
         localStorage.setItem('order_history', JSON.stringify(history));
     }
@@ -750,6 +760,7 @@
             else if(order.status.includes("ส่ง") || order.status.includes("ไรเดอร์")) { statusColor = "text-purple-600 bg-purple-50 border-purple-100"; cardBgColor = "bg-purple-50/30 border-purple-100"; }
             else if(order.status.includes("สำเร็จ")) { statusColor = "text-green-600 bg-green-50 border-green-100"; cardBgColor = "bg-green-50/30 border-green-100"; }
             else if(order.status.includes("ยกเลิก")) { statusColor = "text-red-600 bg-red-50 border-red-100"; cardBgColor = "bg-red-50/30 border-red-100"; }
+            else if(order.status.includes("แจ้งยอด")) { statusColor = "text-yellow-600 bg-yellow-50 border-yellow-100 animate-pulse"; cardBgColor = "bg-yellow-50/20 border-yellow-100"; }
             else { cardBgColor = "bg-orange-50/20 border-orange-100"; }
 
             let itemsDisplay = order.items;
@@ -785,6 +796,7 @@
         if(status.includes("ส่ง") || status.includes("ไรเดอร์")) return '<i class="fa-solid fa-motorcycle"></i>';
         if(status.includes("สำเร็จ")) return '<i class="fa-solid fa-circle-check"></i>';
         if(status.includes("ยกเลิก")) return '<i class="fa-solid fa-circle-xmark"></i>';
+        if(status.includes("แจ้งยอด")) return '<i class="fa-regular fa-comment-dots"></i>';
         return '<i class="fa-regular fa-clock"></i>';
     }
 
