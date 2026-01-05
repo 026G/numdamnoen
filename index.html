@@ -163,7 +163,7 @@
                     <div class="border rounded-xl p-4 flex items-center justify-between transition-all hover:bg-gray-50">
                         <div class="flex items-center gap-3">
                             <div class="w-5 h-5 rounded-full border border-gray-300 radio-indicator flex items-center justify-center"></div>
-                            <div><span class="font-medium text-gray-700 block">💬 โอนจ่ายทีหลัง (รอร้านแจ้งยอดทางแชท)</span></div>
+                            <div><span class="font-medium text-gray-700 block">💬 โอนจ่ายทีหลัง (รอแอดมินทักแชท)</span></div>
                         </div>
                         <i class="fa-brands fa-line text-green-500 text-xl"></i>
                     </div>
@@ -234,14 +234,14 @@
     import { getDatabase, ref, get, push, set, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyBLo1JKTNOrx6vvh2a6Pl8Zxjll4eoIKAA",
-      authDomain: "linenoti-7c04f.firebaseapp.com",
-      databaseURL: "https://linenoti-7c04f-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "linenoti-7c04f",
-      storageBucket: "linenoti-7c04f.firebasestorage.app",
-      messagingSenderId: "607844945437",
-      appId: "1:607844945437:web:d5e0229b8c18522cd500f4"
-    };
+  apiKey: "AIzaSyBLo1JKTNOrx6vvh2a6Pl8Zxjll4eoIKAA",
+  authDomain: "linenoti-7c04f.firebaseapp.com",
+  databaseURL: "https://linenoti-7c04f-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "linenoti-7c04f",
+  storageBucket: "linenoti-7c04f.firebasestorage.app",
+  messagingSenderId: "607844945437",
+  appId: "1:607844945437:web:d5e0229b8c18522cd500f4"
+};
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
@@ -558,13 +558,16 @@
         if(!name || !phone || !address) return Swal.fire({icon: 'warning', text: 'กรุณากรอกข้อมูลที่อยู่ให้ครบถ้วน'});
         if(!window.userLat) return Swal.fire({icon: 'warning', text: 'กรุณาปักหมุดจุดส่งบนแผนที่'});
         if(window.distanceKm > window.MAX_DIST_KM) return Swal.fire({icon: 'error', text: `อยู่นอกพื้นที่จัดส่ง (จำกัด ${window.MAX_DIST_KM} กม.)`});
+        
         const foodTotal = window.cart.reduce((s, i) => s + i.finalPrice, 0);
         let isFree = (window.distanceKm <= 1.5 && foodTotal >= 100) || (foodTotal >= 200);
         window.deliveryFee = isFree ? 0 : 40;
         const grandTotal = foodTotal + window.deliveryFee;
+        
         document.getElementById('summary-food-total').innerText = `${foodTotal} บาท`;
         const feeDisplay = document.getElementById('summary-delivery-fee');
         const feeDetail = document.getElementById('delivery-details');
+        
         if(window.deliveryFee === 0) {
             feeDisplay.innerText = "ฟรี"; feeDisplay.className = "text-green-600 font-bold";
             feeDetail.innerText = (window.distanceKm <= 1.5 && foodTotal >= 100) ? "(โปรใกล้บ้าน 1.5km)" : "(โปรสั่ง 200 บาทขึ้นไป)";
@@ -756,11 +759,12 @@
         container.innerHTML = serverOrders.map(order => {
             let statusColor = "text-orange-500 bg-orange-50 border-orange-100";
             let cardBgColor = "bg-white"; 
-            if(order.status.includes("ปรุง")) { statusColor = "text-blue-600 bg-blue-50 border-blue-100"; cardBgColor = "bg-blue-50/30 border-blue-100"; }
+            
+            if(order.status.includes("รอแอดมิน")) { statusColor = "text-yellow-600 bg-yellow-50 border-yellow-100 animate-pulse"; cardBgColor = "bg-yellow-50/20 border-yellow-100"; }
+            else if(order.status.includes("ปรุง")) { statusColor = "text-blue-600 bg-blue-50 border-blue-100"; cardBgColor = "bg-blue-50/30 border-blue-100"; }
             else if(order.status.includes("ส่ง") || order.status.includes("ไรเดอร์")) { statusColor = "text-purple-600 bg-purple-50 border-purple-100"; cardBgColor = "bg-purple-50/30 border-purple-100"; }
             else if(order.status.includes("สำเร็จ")) { statusColor = "text-green-600 bg-green-50 border-green-100"; cardBgColor = "bg-green-50/30 border-green-100"; }
             else if(order.status.includes("ยกเลิก")) { statusColor = "text-red-600 bg-red-50 border-red-100"; cardBgColor = "bg-red-50/30 border-red-100"; }
-            else if(order.status.includes("แจ้งยอด")) { statusColor = "text-yellow-600 bg-yellow-50 border-yellow-100 animate-pulse"; cardBgColor = "bg-yellow-50/20 border-yellow-100"; }
             else { cardBgColor = "bg-orange-50/20 border-orange-100"; }
 
             let itemsDisplay = order.items;
