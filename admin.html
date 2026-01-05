@@ -253,6 +253,30 @@
         </div>
     </div>
 
+    <div id="admin-option-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
+            <div class="bg-blue-600 p-3 text-white flex justify-between items-center">
+                <h3 class="font-bold" id="admin-modal-item-name">เลือกตัวเลือก</h3>
+                <button onclick="closeAdminOptionModal()" class="text-white hover:text-gray-200"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="admin-modal-options" class="p-4 overflow-y-auto flex-1 space-y-4"></div>
+            <div class="p-4 border-t bg-gray-50">
+                <div class="flex justify-between items-center mb-3">
+                    <span class="font-bold text-gray-700">จำนวน</span>
+                    <div class="flex items-center gap-3">
+                        <button onclick="adjustAdminOptionQty(-1)" class="w-8 h-8 rounded-full bg-white border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100">-</button>
+                        <span id="admin-modal-qty" class="font-bold w-6 text-center">1</span>
+                        <button onclick="adjustAdminOptionQty(1)" class="w-8 h-8 rounded-full bg-white border border-gray-300 flex items-center justify-center text-gray-600 hover:bg-gray-100">+</button>
+                    </div>
+                </div>
+                <button onclick="confirmAdminOption()" class="w-full bg-blue-600 text-white py-2 rounded-lg font-bold hover:bg-blue-700 flex justify-between px-4">
+                    <span>เพิ่มลงตะกร้า</span>
+                    <span id="admin-modal-total">0.-</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <audio id="notif-sound" src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3?filename=service-bell-ring-14610.mp3" preload="auto"></audio>
 
     <script type="module">
@@ -282,6 +306,9 @@
         // Global Variables
         window.adminCart = [];
         window.adminDeliveryMode = 'pickup';
+        window.allMenuItems = {}; // Cache all menu items for option lookup
+        window.currentAdminItem = null;
+        window.adminOptionQty = 1;
 
         // Page Navigation
         const pages = {
@@ -442,7 +469,7 @@
         window.deleteProduct = function() { const key = document.getElementById('prod-id').value; if(!key) return; Swal.fire({ title: 'ลบสินค้า?', text: "ไม่สามารถกู้คืนได้", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'ลบเลย' }).then((result) => { if (result.isConfirmed) { remove(ref(db, `menu/${key}`)).then(() => { window.closeProductModal(); Swal.fire('ลบแล้ว', '', 'success'); }); } }); }
 
         // ==========================================
-        // 🔥🔥 Manual Order Logic (Mobile Friendly) 🔥🔥
+        // 🔥🔥 Manual Order Logic (Mobile Friendly + Options) 🔥🔥
         // ==========================================
         window.openManualOrder = function() {
             document.getElementById('manual-order-modal').classList.remove('hidden');
@@ -459,10 +486,11 @@
             onValue(ref(db, 'menu'), (snapshot) => {
                 if(!snapshot.exists()) { container.innerHTML = 'ไม่พบสินค้า'; return; }
                 const data = snapshot.val();
+                window.allMenuItems = data; // Store globally for access by ID
                 const items = Object.entries(data).map(([key, val]) => ({ key, ...val })).sort((a,b) => (a.sortOrder||0) - (b.sortOrder||0));
                 
                 container.innerHTML = items.map(item => `
-                    <div class="flex justify-between items-center bg-white p-3 rounded-xl border border-gray-100 shadow-sm hover:bg-blue-50 cursor-pointer transition active:scale-95" onclick="window.addToAdminCart('${item.key}', '${item.name}', ${item.price})">
+                    <div class="flex justify-between items-center bg-white p-3 rounded-xl border border-gray-100 shadow-sm hover:bg-blue-50 cursor-pointer transition active:scale-95" onclick="window.prepAdminItem('${item.key}')">
                         <div class="flex items-center gap-3 overflow-hidden">
                             <img src="${item.img}" class="w-12 h-12 rounded-lg object-cover bg-gray-200 shrink-0">
                             <div class="font-bold text-gray-700 truncate text-sm">${item.name}</div>
@@ -473,22 +501,112 @@
             }, { onlyOnce: true });
         }
 
+        window.prepAdminItem = function(key) {
+            const item = window.allMenuItems[key];
+            if (!item) return;
+
+            // ถ้ามี Option ให้เปิด Modal เลือก Option
+            if (item.options && item.options.length > 0) {
+                window.openAdminOptionModal(key);
+            } else {
+                // ถ้าไม่มี Option เพิ่มลงตะกร้าเลย (เหมือนเดิม)
+                window.addToAdminCart({
+                    id: key,
+                    name: item.name,
+                    price: item.price,
+                    qty: 1,
+                    selectedOptions: []
+                });
+            }
+        }
+
+        // --- Admin Option Modal Logic ---
+        window.openAdminOptionModal = function(key) {
+            const item = window.allMenuItems[key];
+            window.currentAdminItem = item;
+            window.adminOptionQty = 1;
+            
+            document.getElementById('admin-modal-item-name').innerText = item.name;
+            document.getElementById('admin-modal-qty').innerText = "1";
+            
+            const container = document.getElementById('admin-modal-options');
+            container.innerHTML = '';
+
+            item.options.forEach((opt, idx) => {
+                let html = `<div class="border rounded-lg p-3 bg-gray-50"><p class="font-bold text-sm mb-2">${opt.name}</p><div class="space-y-2">`;
+                opt.choices.forEach((choice, cIdx) => {
+                    const isChecked = (opt.type === 'radio' && cIdx === 0) ? 'checked' : '';
+                    const inputType = opt.type === 'radio' ? 'radio' : 'checkbox';
+                    html += `
+                        <label class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <input type="${inputType}" name="admin-opt-${idx}" value="${choice.label}" data-price="${choice.price}" ${isChecked} class="admin-opt-input w-4 h-4 text-blue-600" onchange="window.calculateAdminOptionTotal()">
+                                <span class="ml-2 text-sm">${choice.label}</span>
+                            </div>
+                            ${choice.price > 0 ? `<span class="text-xs text-gray-500">+${choice.price}</span>` : ''}
+                        </label>`;
+                });
+                html += `</div></div>`;
+                container.innerHTML += html;
+            });
+
+            window.calculateAdminOptionTotal();
+            document.getElementById('admin-option-modal').classList.remove('hidden');
+        }
+
+        window.closeAdminOptionModal = function() {
+            document.getElementById('admin-option-modal').classList.add('hidden');
+        }
+
+        window.adjustAdminOptionQty = function(change) {
+            const newQty = window.adminOptionQty + change;
+            if (newQty < 1) return;
+            window.adminOptionQty = newQty;
+            document.getElementById('admin-modal-qty').innerText = newQty;
+            window.calculateAdminOptionTotal();
+        }
+
+        window.calculateAdminOptionTotal = function() {
+            let basePrice = window.currentAdminItem.price;
+            document.querySelectorAll('.admin-opt-input:checked').forEach(input => {
+                basePrice += parseInt(input.getAttribute('data-price') || 0);
+            });
+            const total = basePrice * window.adminOptionQty;
+            document.getElementById('admin-modal-total').innerText = `${total}.-`;
+        }
+
+        window.confirmAdminOption = function() {
+            const item = window.currentAdminItem;
+            let pricePerItem = item.price;
+            const selectedOptions = [];
+
+            document.querySelectorAll('.admin-opt-input:checked').forEach(input => {
+                pricePerItem += parseInt(input.getAttribute('data-price') || 0);
+                selectedOptions.push(input.value);
+            });
+
+            window.addToAdminCart({
+                id: item.id || Date.now().toString(), // Use items key or temp ID
+                name: item.name,
+                price: pricePerItem, // Store price inclusive of options
+                qty: window.adminOptionQty,
+                selectedOptions: selectedOptions
+            });
+
+            window.closeAdminOptionModal();
+        }
+
         window.switchManualTab = function(tabName) {
             document.getElementById('manual-page-menu').classList.add('hidden');
             document.getElementById('manual-page-summary').classList.add('hidden');
             
-            document.getElementById('manual-tab-menu').classList.replace('text-blue-600', 'text-gray-400');
-            document.getElementById('manual-tab-menu').classList.replace('border-blue-600', 'border-transparent');
-            document.getElementById('manual-tab-menu').classList.replace('bg-blue-50', 'bg-transparent');
-
-            document.getElementById('manual-tab-summary').classList.replace('text-blue-600', 'text-gray-400');
-            document.getElementById('manual-tab-summary').classList.replace('border-blue-600', 'border-transparent');
-            document.getElementById('manual-tab-summary').classList.replace('bg-blue-50', 'bg-transparent');
+            document.getElementById('manual-tab-menu').className = "flex-1 py-3 text-center font-bold text-gray-400 border-b-2 border-transparent bg-transparent";
+            document.getElementById('manual-tab-summary').className = "flex-1 py-3 text-center font-bold text-gray-400 border-b-2 border-transparent bg-transparent";
 
             document.getElementById('manual-page-' + tabName).classList.remove('hidden');
-            document.getElementById('manual-tab-' + tabName).classList.replace('text-gray-400', 'text-blue-600');
-            document.getElementById('manual-tab-' + tabName).classList.replace('border-transparent', 'border-blue-600');
-            document.getElementById('manual-tab-' + tabName).classList.replace('bg-transparent', 'bg-blue-50');
+            
+            const activeClass = "flex-1 py-3 text-center font-bold text-blue-600 border-b-2 border-blue-600 bg-blue-50";
+            document.getElementById('manual-tab-' + tabName).className = activeClass;
 
             if(tabName === 'summary') {
                 document.getElementById('btn-manual-next').classList.add('hidden');
@@ -499,10 +617,12 @@
             }
         }
 
-        window.addToAdminCart = function(key, name, price) {
-            const existing = window.adminCart.find(i => i.id === key);
-            if(existing) existing.qty++;
-            else window.adminCart.push({ id: key, name: name, price: price, qty: 1 });
+        // Updated addToAdminCart to accept object
+        window.addToAdminCart = function(itemObj) {
+            // Simply push new item for manual orders (simplest way to handle options differences)
+            // Or simple grouping by Name + Options
+            window.adminCart.push(itemObj);
+            
             window.updateAdminCartUI();
             
             // Effect
@@ -522,15 +642,21 @@
                 container.innerHTML = window.adminCart.map((item, idx) => {
                     total += item.price * item.qty;
                     count += item.qty;
+                    const optionsHtml = item.selectedOptions && item.selectedOptions.length > 0 
+                        ? `<div class="text-xs text-gray-500 mt-1 pl-2 border-l-2 border-gray-200">${item.selectedOptions.join(', ')}</div>` 
+                        : '';
                     return `
-                    <div class="flex justify-between items-center bg-white p-2 rounded-lg border border-gray-100 text-sm shadow-sm">
-                        <div class="flex items-center gap-2 overflow-hidden">
-                            <span class="text-gray-700 truncate font-medium">${item.name}</span>
+                    <div class="flex justify-between items-start bg-white p-2 rounded-lg border border-gray-100 text-sm shadow-sm">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-gray-800">${item.qty}x</span>
+                                <span class="text-gray-700 font-medium">${item.name}</span>
+                            </div>
+                            ${optionsHtml}
                         </div>
-                        <div class="flex items-center gap-2 shrink-0">
-                            <button onclick="window.adjustAdminQty(${idx}, -1)" class="w-6 h-6 bg-gray-100 rounded text-gray-600 hover:bg-gray-200 font-bold">-</button>
-                            <span class="font-bold w-4 text-center text-gray-800">${item.qty}</span>
-                            <button onclick="window.adjustAdminQty(${idx}, 1)" class="w-6 h-6 bg-gray-100 rounded text-gray-600 hover:bg-gray-200 font-bold">+</button>
+                        <div class="flex items-center gap-3 shrink-0 ml-2">
+                            <span class="font-bold text-gray-800">${item.price * item.qty}</span>
+                            <button onclick="window.removeAdminItem(${idx})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash-can"></i></button>
                         </div>
                     </div>`;
                 }).join('');
@@ -544,9 +670,8 @@
             document.getElementById('manual-items-count').innerText = count;
         }
 
-        window.adjustAdminQty = function(index, change) {
-            window.adminCart[index].qty += change;
-            if(window.adminCart[index].qty <= 0) window.adminCart.splice(index, 1);
+        window.removeAdminItem = function(index) {
+            window.adminCart.splice(index, 1);
             window.updateAdminCartUI();
         }
 
@@ -558,25 +683,13 @@
             const deliveryFeeInput = document.getElementById('manual-delivery-fee');
 
             if(mode === 'pickup') {
-                btnPickup.classList.replace('text-gray-500', 'text-blue-600');
-                btnPickup.classList.replace('bg-gray-100', 'bg-white');
-                btnPickup.classList.add('shadow-sm', 'border', 'border-gray-200');
-                
-                btnDelivery.classList.replace('text-blue-600', 'text-gray-500');
-                btnDelivery.classList.replace('bg-white', 'bg-gray-100');
-                btnDelivery.classList.remove('shadow-sm', 'border', 'border-gray-200');
-
+                btnPickup.className = "flex-1 py-2 rounded-md text-sm font-bold transition bg-white text-blue-600 shadow-sm";
+                btnDelivery.className = "flex-1 py-2 rounded-md text-sm font-bold transition text-gray-500 hover:bg-white/50";
                 addressBox.classList.add('hidden');
                 deliveryFeeInput.value = 0;
             } else {
-                btnDelivery.classList.replace('text-gray-500', 'text-blue-600');
-                btnDelivery.classList.replace('bg-gray-100', 'bg-white');
-                btnDelivery.classList.add('shadow-sm', 'border', 'border-gray-200');
-
-                btnPickup.classList.replace('text-blue-600', 'text-gray-500');
-                btnPickup.classList.replace('bg-white', 'bg-gray-100');
-                btnPickup.classList.remove('shadow-sm', 'border', 'border-gray-200');
-
+                btnDelivery.className = "flex-1 py-2 rounded-md text-sm font-bold transition bg-white text-blue-600 shadow-sm";
+                btnPickup.className = "flex-1 py-2 rounded-md text-sm font-bold transition text-gray-500 hover:bg-white/50";
                 addressBox.classList.remove('hidden');
             }
             window.updateAdminCartUI();
@@ -598,11 +711,16 @@
             const orderId = `ORD-${shortId}`;
 
             const cartItems = window.adminCart.map(i => ({
-                id: i.id, name: i.name, price: i.price, qty: i.qty, finalPrice: i.price * i.qty, selectedOptions: []
+                id: i.id || 'manual', 
+                name: i.name, 
+                price: i.price, // This price is per unit (base + options)
+                qty: i.qty, 
+                finalPrice: i.price * i.qty, 
+                selectedOptions: i.selectedOptions || []
             }));
 
             if(deliveryFee > 0) {
-                cartItems.push({ name: 'ค่าจัดส่ง', qty: 1, finalPrice: deliveryFee, price: deliveryFee });
+                cartItems.push({ name: 'ค่าจัดส่ง', qty: 1, finalPrice: deliveryFee, price: deliveryFee, selectedOptions: [] });
             }
 
             const newOrder = {
@@ -633,9 +751,16 @@
             }
         }
 
+        // Window Exports
         window.openManualOrder = openManualOrder;
+        window.prepAdminItem = prepAdminItem;
+        window.openAdminOptionModal = openAdminOptionModal;
+        window.closeAdminOptionModal = closeAdminOptionModal;
+        window.adjustAdminOptionQty = adjustAdminOptionQty;
+        window.calculateAdminOptionTotal = calculateAdminOptionTotal;
+        window.confirmAdminOption = confirmAdminOption;
         window.addToAdminCart = addToAdminCart;
-        window.adjustAdminQty = adjustAdminQty;
+        window.removeAdminItem = removeAdminItem; // New remove function
         window.updateAdminCartUI = updateAdminCartUI;
         window.toggleDeliveryMode = toggleDeliveryMode;
         window.confirmManualOrder = confirmManualOrder;
