@@ -183,14 +183,6 @@
                         </div>
                     </div>
                 </div>
-
-                <label id="cod-label" class="hidden cursor-pointer relative"> 
-                    <input type="radio" name="paymentMethod" value="cod" id="cod-radio" class="payment-radio hidden">
-                    <div id="cod-box" class="border rounded-xl p-4 flex items-center justify-between">
-                        </div>
-                </label>
-                <div id="payment-cod-detail" class="hidden"></div>
-
             </div>
         </section>
         
@@ -218,7 +210,7 @@
                 <button onclick="showPage('menu')" class="shrink-0 w-28 bg-gray-100 text-gray-600 rounded-xl font-bold text-sm hover:bg-gray-200 transition shadow-sm border border-gray-200 flex items-center justify-center gap-2"><i class="fa-solid fa-cart-plus"></i> สั่งเพิ่ม</button>
                 <button onclick="showPage('address')" class="flex-1 bg-green-600 text-white rounded-xl p-3.5 font-bold shadow-lg hover:bg-green-700 transition flex items-center justify-center gap-2">ยืนยันรายการ <i class="fa-solid fa-arrow-right"></i></button>
             </div>
-            <button id="btn-confirm-address" onclick="validateAndGoToPayment()" class="hidden w-full bg-green-600 text-white rounded-xl p-3.5 font-bold shadow-lg hover:bg-green-700 transition disabled:bg-gray-400">ยืนยันที่อยู่ & ไปชำระเงิน</button>
+            <button id="btn-confirm-address" onclick="validateAndGoToPayment()" class="hidden w-full bg-green-600 text-white rounded-xl p-3.5 font-bold shadow-lg hover:bg-green-700 transition">ยืนยันที่อยู่ & ไปชำระเงิน</button>
             <button id="btn-confirm-order" onclick="confirmOrder()" class="hidden w-full bg-green-600 text-white rounded-xl p-3.5 font-bold shadow-lg hover:bg-green-700 transition">ยืนยันการสั่งซื้อ</button>
         </div>
     </div>
@@ -241,14 +233,14 @@
     import { getDatabase, ref, get, push, set, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyBLo1JKTNOrx6vvh2a6Pl8Zxjll4eoIKAA",
-      authDomain: "linenoti-7c04f.firebaseapp.com",
-      databaseURL: "https://linenoti-7c04f-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "linenoti-7c04f",
-      storageBucket: "linenoti-7c04f.firebasestorage.app",
-      messagingSenderId: "607844945437",
-      appId: "1:607844945437:web:d5e0229b8c18522cd500f4"
-    };
+  apiKey: "AIzaSyBLo1JKTNOrx6vvh2a6Pl8Zxjll4eoIKAA",
+  authDomain: "linenoti-7c04f.firebaseapp.com",
+  databaseURL: "https://linenoti-7c04f-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "linenoti-7c04f",
+  storageBucket: "linenoti-7c04f.firebasestorage.app",
+  messagingSenderId: "607844945437",
+  appId: "1:607844945437:web:d5e0229b8c18522cd500f4"
+};
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
@@ -274,7 +266,6 @@
     window.currentItem = null;
     window.currentBasePrice = 0;
 
-    // 🔥 Fix: ตรวจสอบก่อนเรียกใช้
     function loadCartFromStorage() {
         const savedData = localStorage.getItem('shopping_cart');
         if (savedData) {
@@ -292,18 +283,13 @@
     }
 
     function saveCartToStorage() {
-        const data = {
-            cart: window.cart,
-            timestamp: Date.now()
-        };
+        const data = { cart: window.cart, timestamp: Date.now() };
         localStorage.setItem('shopping_cart', JSON.stringify(data));
     }
 
     document.addEventListener("DOMContentLoaded", async () => {
         Swal.fire({ title: 'กำลังโหลดเมนู...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
-        
         loadCartFromStorage();
-
         try {
             const menuRef = ref(db, 'menu');
             const snapshot = await get(menuRef);
@@ -315,21 +301,17 @@
                 }).filter(item => item !== null); 
                 window.menuDB.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
                 Swal.close();
-                
                 if (window.cart.length > 0) {
                     window.updateCartUI();
                     window.updateFooterState('menu');
                 }
-
                 window.switchTab('recommend');
                 window.initMap();
                 window.updateFooterState('menu');
                 window.startBannerAutoSlide();
-                
                 if(localStorage.getItem('cust_name')) document.getElementById('cust-name').value = localStorage.getItem('cust_name');
                 if(localStorage.getItem('cust_phone')) document.getElementById('cust-phone').value = localStorage.getItem('cust_phone');
                 if(localStorage.getItem('cust_address')) document.getElementById('cust-address').value = localStorage.getItem('cust_address');
-                
                 window.updateTrackingButtonState();
                 window.updateShopStatusUI();
             } else { Swal.fire('แจ้งเตือน', 'ไม่พบข้อมูลเมนูในระบบ', 'warning'); window.menuDB = []; }
@@ -341,7 +323,6 @@
         document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active-section'));
         document.getElementById('page-' + pageId).classList.add('active-section');
         document.getElementById('category-tabs').style.display = (pageId === 'menu') ? 'flex' : 'none';
-        
         const backBtn = document.querySelector('header button i.fa-arrow-left')?.parentElement;
         if(backBtn) {
             if(pageId === 'menu') { backBtn.style.opacity = '0'; backBtn.style.pointerEvents = 'none'; } 
@@ -397,7 +378,6 @@
     window.renderMenu = function(cat) {
         const list = document.getElementById('menu-list');
         const items = window.menuDB.filter(i => i.category === cat && i.hidden !== true);
-        
         const createCard = (item) => {
             const isSoldOut = !item.stock;
             const priceColorClass = item.originalPrice ? 'text-red-600' : 'text-green-600';
@@ -446,7 +426,6 @@
          window.currentItem = item; 
          window.currentBasePrice = item.price;
          document.getElementById('modal-item-name').innerText = item.name;
-         
          const container = document.getElementById('modal-options'); 
          container.innerHTML = '';
          if(item.options && item.options.length > 0) {
@@ -516,12 +495,12 @@
         }).join('');
     }
 
-    // 🔥 FIX: แยกฟังก์ชันลบออกมาให้ชัดเจน
+    // 🔥 FIX: Separate Function for Delete
     window.removeCartItem = function(index) {
         window.cart.splice(index, 1);
         saveCartToStorage();
         window.updateCartUI();
-        if(window.cart.length === 0) window.updateFooterState('menu'); // ซ่อน Footer ถ้าตะกร้าว่าง
+        if(window.cart.length === 0) window.updateFooterState('menu');
     }
 
     window.initMap = function() {
@@ -537,7 +516,7 @@
         window.map.setView(startLoc, startZoom);
         window.marker = L.marker(startLoc, { draggable: true, icon: customerIcon }).addTo(window.map);
         
-        // 🔥 FIX: เรียก calculateDelivery ทันทีเพื่อแก้ปัญหาปุ่มกดไม่ได้
+        // 🔥 FIX: Calculate immediately
         if (savedLat && savedLng) {
             window.calculateDelivery(startLoc[0], startLoc[1]);
         } else {
@@ -554,19 +533,18 @@
         document.getElementById('header-distance').innerText = `ห่าง ${window.distanceKm.toFixed(1)} กม. จากร้าน`;
         document.getElementById('distance-display').innerText = `${window.distanceKm.toFixed(1)} กม.`;
         const btnConfirm = document.getElementById('btn-confirm-address');
+        
+        // Remove disabled completely logic here, just handle styles if you want
         if (window.distanceKm > window.MAX_DIST_KM) {
             document.getElementById('out-of-range-msg').classList.remove('hidden');
             document.getElementById('distance-display').classList.replace('bg-green-50','bg-red-50');
             document.getElementById('distance-display').classList.replace('text-green-600','text-red-600');
-            btnConfirm.disabled = true; window.deliveryFee = 0;
+            // btnConfirm.disabled = true; // Optional: Keep it enabled but show error
         } else {
             document.getElementById('out-of-range-msg').classList.add('hidden');
             document.getElementById('distance-display').classList.replace('bg-red-50','bg-green-50');
             document.getElementById('distance-display').classList.replace('text-red-600','text-green-600');
-            btnConfirm.disabled = false;
-            const foodTotal = window.cart.reduce((s, i) => s + i.finalPrice, 0);
-            let isFree = (window.distanceKm <= 1.5 && foodTotal >= 100) || (foodTotal >= 200);
-            window.deliveryFee = isFree ? 0 : 40;
+            // btnConfirm.disabled = false;
         }
     }
     
@@ -577,16 +555,22 @@
         const name = document.getElementById('cust-name').value;
         const phone = document.getElementById('cust-phone').value;
         const address = document.getElementById('cust-address').value;
+        
         if(!name || !phone || !address) return Swal.fire({icon: 'warning', text: 'กรุณากรอกข้อมูลที่อยู่ให้ครบถ้วน'});
         if(!window.userLat) return Swal.fire({icon: 'warning', text: 'กรุณาปักหมุดจุดส่งบนแผนที่'});
+        
+        // Logic check only when clicking
         if(window.distanceKm > window.MAX_DIST_KM) return Swal.fire({icon: 'error', text: `อยู่นอกพื้นที่จัดส่ง (จำกัด ${window.MAX_DIST_KM} กม.)`});
+        
         const foodTotal = window.cart.reduce((s, i) => s + i.finalPrice, 0);
         let isFree = (window.distanceKm <= 1.5 && foodTotal >= 100) || (foodTotal >= 200);
         window.deliveryFee = isFree ? 0 : 40;
         const grandTotal = foodTotal + window.deliveryFee;
+        
         document.getElementById('summary-food-total').innerText = `${foodTotal} บาท`;
         const feeDisplay = document.getElementById('summary-delivery-fee');
         const feeDetail = document.getElementById('delivery-details');
+        
         if(window.deliveryFee === 0) {
             feeDisplay.innerText = "ฟรี"; feeDisplay.className = "text-green-600 font-bold";
             feeDetail.innerText = (window.distanceKm <= 1.5 && foodTotal >= 100) ? "(โปรใกล้บ้าน 1.5km)" : "(โปรสั่ง 200 บาทขึ้นไป)";
@@ -671,7 +655,6 @@
             }).catch(err => console.error("LINE Error", err));
             window.saveOrderToHistory(newOrder);
             
-            // ✅ สั่งซื้อสำเร็จ ล้างตะกร้าทิ้ง
             window.cart = [];
             localStorage.removeItem('shopping_cart'); 
             window.updateCartUI(); 
@@ -782,7 +765,6 @@
             else if(order.status.includes("ส่ง") || order.status.includes("ไรเดอร์")) { statusColor = "text-purple-600 bg-purple-50 border-purple-100"; cardBgColor = "bg-purple-50/30 border-purple-100"; }
             else if(order.status.includes("สำเร็จ")) { statusColor = "text-green-600 bg-green-50 border-green-100"; cardBgColor = "bg-green-50/30 border-green-100"; }
             else if(order.status.includes("ยกเลิก")) { statusColor = "text-red-600 bg-red-50 border-red-100"; cardBgColor = "bg-red-50/30 border-red-100"; }
-            else if(order.status.includes("แจ้งยอด")) { statusColor = "text-yellow-600 bg-yellow-50 border-yellow-100 animate-pulse"; cardBgColor = "bg-yellow-50/20 border-yellow-100"; }
             else { cardBgColor = "bg-orange-50/20 border-orange-100"; }
 
             let itemsDisplay = order.items;
@@ -818,7 +800,6 @@
         if(status.includes("ส่ง") || status.includes("ไรเดอร์")) return '<i class="fa-solid fa-motorcycle"></i>';
         if(status.includes("สำเร็จ")) return '<i class="fa-solid fa-circle-check"></i>';
         if(status.includes("ยกเลิก")) return '<i class="fa-solid fa-circle-xmark"></i>';
-        if(status.includes("แจ้งยอด")) return '<i class="fa-regular fa-comment-dots"></i>';
         return '<i class="fa-regular fa-clock"></i>';
     }
 
