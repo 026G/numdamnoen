@@ -997,47 +997,58 @@
     }
 
     window.searchOrder = function(isSilent = false) { 
-    const phone = document.getElementById('track-phone').value.trim();
+    const phoneInput = document.getElementById('track-phone');
+    if (!phoneInput) return; // กัน Error กรณีไม่มี element
     
-    // ตรวจสอบเบอร์โทร
+    const phone = phoneInput.value.trim();
+    
+    // หาปุ่มกด
+    const searchBtn = document.querySelector('button[onclick="searchOrder()"]') || document.querySelector('.fa-search')?.parentElement;
+    let originalBtnContent = '';
+
     if(phone.length < 9) { 
         if(!isSilent) Swal.fire({icon:'warning', title:'กรุณากรอกเบอร์โทรให้ถูกต้อง'}); 
         return; 
     }
 
     const resultDiv = document.getElementById('tracking-result');
-    if(!isSilent) resultDiv.innerHTML = `<div class="text-center py-10 animate-pulse"><i class="fa-solid fa-circle-notch fa-spin text-green-600 text-3xl"></i><p class="text-gray-500 mt-2">กำลังดึงข้อมูลล่าสุด...</p></div>`;
 
-    // -----------------------------------------------------
-    // 🟢 แก้ไขจุดที่ 1: เปลี่ยน URL ให้ส่งค่าไปกับ Link (Query String)
-    // 🟢 แก้ไขจุดที่ 2: เปลี่ยน action ให้ตรงกับ Google Apps Script ('get_customer_orders')
-    // -----------------------------------------------------
+    // ✅ ถ้าไม่ใช่ Silent Mode (คือกดปุ่มเอง) ให้แสดง Loading ที่ปุ่ม
+    if(searchBtn && !isSilent) {
+        originalBtnContent = searchBtn.innerHTML; // จำค่าเดิมไว้
+        searchBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i>`;
+        searchBtn.disabled = true;
+    }
+
     const apiUrl = window.WEB_APP_URL + `?action=get_customer_orders&phone=${phone}`;
 
-    fetch(apiUrl, {
-        method: 'GET' // 🟢 เปลี่ยนเป็น GET ให้ตรงกับ doGet
-    })
+    fetch(apiUrl, { method: 'GET' })
     .then(response => response.json())
     .then(data => {
-        // 🟢 แก้ไขจุดที่ 3: เช็ค data.orders โดยตรง (Script ไม่ได้ส่ง data.found มา)
         if (data.orders && data.orders.length > 0) {
-             // เรียกฟังก์ชันแสดงผล (ตรวจสอบว่า function นี้มีอยู่จริงในโค้ดส่วนอื่น)
              if (typeof window.renderHistoryFromAdminData === 'function') {
+                 // ส่งข้อมูลไป render
                  window.renderHistoryFromAdminData(data.orders);
-             } else {
-                 console.error("ไม่พบฟังก์ชัน window.renderHistoryFromAdminData");
-                 // เขียนโค้ดแสดงผลง่ายๆ แทนถ้ายังไม่มีฟังก์ชัน render
-                 resultDiv.innerHTML = `<div class="text-center text-green-600 py-10">พบ ${data.orders.length} รายการ (ดู Console)</div>`;
-                 console.log(data.orders);
              }
              localStorage.setItem('cust_phone', phone);
         } else {
-             resultDiv.innerHTML = '<div class="text-center text-gray-400 py-10">ไม่พบประวัติการสั่งซื้อ</div>';
+             // ถ้าไม่เจอข้อมูล ให้แสดงข้อความ (เฉพาะกรณีค้นหาครั้งแรก หรือข้อมูลหายไป)
+             // ถ้าเป็น Silent Mode และเคยมีข้อมูลอยู่แล้ว อาจจะเลือกไม่แสดง error เพื่อความเนียน
+             if (!isSilent || resultDiv.innerHTML === '') {
+                resultDiv.innerHTML = '<div class="text-center text-gray-400 py-10">ไม่พบประวัติการสั่งซื้อ</div>';
+             }
         }
     })
     .catch(err => {
          console.error(err);
-         resultDiv.innerHTML = '<div class="text-center text-red-400 py-10">เกิดข้อผิดพลาดในการโหลด</div>';
+         if(!isSilent) Swal.fire({icon:'error', title:'เกิดข้อผิดพลาดในการโหลด'});
+    })
+    .finally(() => {
+        // ✅ คืนค่าปุ่ม เฉพาะตอนกดปุ่มเอง (Not Silent)
+        if(searchBtn && !isSilent && originalBtnContent) {
+            searchBtn.innerHTML = originalBtnContent; // คืนค่าปุ่มเดิม (เช่น ไอคอนแว่นขยาย)
+            searchBtn.disabled = false;
+        }
     });
 }
 
@@ -1047,21 +1058,16 @@
   const orders = Array.isArray(serverOrders) ? serverOrders : [];
 
   // =========================
-  // 1. Helpers & CSS
+  // 1. Helpers
   // =========================
-  if (!document.getElementById('custom-order-style')) {
-    const style = document.createElement('style');
-    style.id = 'custom-order-style';
-    style.innerHTML = `
-      @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-      .order-anim { animation: fadeInUp 0.4s ease-out forwards; }
-      .dashed-line { background-image: linear-gradient(to bottom, #e5e7eb 50%, transparent 50%); background-size: 1px 8px; background-repeat: repeat-y; }
-    `;
-    document.head.appendChild(style);
-  }
-
   const escapeHtml = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const normalizeTotal = (val) => /^\d+(\.\d+)?$/.test(String(val).trim()) ? `${val} บาท` : (String(val).includes("฿") ? String(val).replace("฿", "") + " บาท" : String(val) + " บาท");
+  
+  const normalizeTotal = (val) => {
+    if (val === null || val === undefined || val === '') return "-";
+    // ลบ ฿, บาท, และช่องว่างออกให้หมดก่อน แล้วค่อยเติมใหม่
+    let cleanVal = String(val).replace(/฿|บาท/g, '').trim();
+    return cleanVal ? `${cleanVal} บาท` : "-";
+  };
 
   const getStatusMeta = (statusTextRaw) => {
     const s = String(statusTextRaw || "รอร้านรับยอด");
@@ -1073,7 +1079,7 @@
   };
 
   // =========================
-  // 2. Logic: จัดกลุ่มสินค้า (Parser)
+  // 2. Logic: จัดกลุ่มสินค้า (Master-Detail Parser)
   // =========================
   const parseItems = (rawText) => {
     if (!rawText) return [];
@@ -1082,32 +1088,24 @@
     let currentGroup = null;
 
     lines.forEach((line) => {
-      // ตรวจสอบว่าเป็นรายการหลักหรือไม่? (ขึ้นต้นด้วยตัวเลข, -, หรือไม่มีสัญลักษณ์นำหน้าแปลกๆ)
-      // ตัวอย่าง: "1. มะพร้าว", "1x มะพร้าว", "มะพร้าวปั่น" (บรรทัดแรก)
       const isMainItem = /^\d+[.)x]/.test(line) || (!line.startsWith('L') && !line.startsWith('+') && !line.startsWith('•') && groups.length === 0);
 
       if (isMainItem) {
-        // ดึงราคาออกจากชื่อ (ถ้ามี) เช่น "มะพร้าวปั่น 75.-"
         let price = "";
         let name = line;
-        const priceMatch = line.match(/(\d+)(\.|-|\s*บาท)$/); // หาตัวเลขท้ายประโยค
+        const priceMatch = line.match(/(\d+)(\.|-|\s*บาท)$/); 
         if(priceMatch) {
             price = "฿" + priceMatch[1];
             name = line.replace(priceMatch[0], "").trim();
         }
-
-        // ลบตัวเลขนำหน้าออกเพื่อความสวยงาม (เช่น "1. " -> "")
         name = name.replace(/^\d+[.)x]\s*/, ""); 
-
         currentGroup = { name: name, price: price, options: [] };
         groups.push(currentGroup);
       } else {
-        // เป็นตัวเลือกย่อย (Option)
-        let optName = line.replace(/^[L\-+•]\s*/, ""); // ลบตัวนำหน้า L, -, +
+        let optName = line.replace(/^[L\-+•]\s*/, ""); 
         if (currentGroup) {
           currentGroup.options.push(optName);
         } else {
-          // กรณีบรรทัดแรกดันเป็น Option (กัน error)
           groups.push({ name: optName, price: "", options: [] });
           currentGroup = groups[0];
         }
@@ -1118,19 +1116,22 @@
 
   // Empty State
   if (!orders.length) {
-    container.innerHTML = `<div class="text-center text-gray-400 py-10 font-light">ไม่พบประวัติการสั่งซื้อ</div>`;
+    const emptyHtml = `<div class="text-center text-gray-400 py-10 font-light">ไม่พบประวัติการสั่งซื้อ</div>`;
+    if (container.innerHTML !== emptyHtml) container.innerHTML = emptyHtml;
     return;
   }
 
   // =========================
-  // 3. Render HTML
+  // 3. Render HTML (Seamless Mode)
   // =========================
-  container.innerHTML = orders.map((order, idx) => {
+  // สร้าง HTML เก็บไว้ในตัวแปรก่อน อย่าเพิ่งยัดลง container
+  const newHtmlContent = orders.map((order, idx) => {
     const meta = getStatusMeta(order.status);
     const items = parseItems(order.items);
-    const delay = idx * 100;
+    
+    // ❌ เอา delay และ animation ออก เพื่อไม่ให้กระพริบ
+    // const delay = idx * 100;
 
-    // สร้าง HTML ของรายการสินค้าทีละรายการ
     const itemsHtml = items.map((item, i) => `
       <div class="flex gap-3 mb-4 last:mb-0 items-start relative">
          <div class="shrink-0 w-8 h-8 flex items-center justify-center bg-gray-100 rounded-lg text-gray-500 font-bold text-sm">
@@ -1159,8 +1160,9 @@
       </div>
     `).join('');
 
+    // ❌ เอา class 'order-anim' ออก
     return `
-      <div class="order-anim bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-5 hover:shadow-md transition-shadow" style="animation-delay: ${delay}ms;">
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-5 hover:shadow-md transition-shadow">
         <div class="px-5 py-3 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
             <div class="flex items-center gap-2">
                 <span class="font-bold text-gray-700 text-lg">#${order.shortId || (order.id ? order.id.slice(-4) : 'xxxx')}</span>
@@ -1184,6 +1186,14 @@
       </div>
     `;
   }).join('');
+
+  // ⭐ MAGIC CHECK: ถ้า HTML ใหม่ เหมือนของเก่าเป๊ะๆ ให้จบฟังก์ชันเลย (หน้าจอจะไม่ขยับ)
+  if (container.innerHTML === newHtmlContent) {
+      return; 
+  }
+
+  // ถ้ามีอะไรเปลี่ยน ค่อยอัปเดต
+  container.innerHTML = newHtmlContent;
 };
 
     window.getStatusIcon = function(status) {
