@@ -1064,7 +1064,6 @@
   
   const normalizeTotal = (val) => {
     if (val === null || val === undefined || val === '') return "-";
-    // ลบ ฿, บาท, และช่องว่างออกให้หมดก่อน แล้วค่อยเติมใหม่
     let cleanVal = String(val).replace(/฿|บาท/g, '').trim();
     return cleanVal ? `${cleanVal} บาท` : "-";
   };
@@ -1079,7 +1078,7 @@
   };
 
   // =========================
-  // 2. Logic: จัดกลุ่มสินค้า (Master-Detail Parser)
+  // 2. Logic: ดึงจำนวน (Qty) และชื่อสินค้า
   // =========================
   const parseItems = (rawText) => {
     if (!rawText) return [];
@@ -1088,25 +1087,43 @@
     let currentGroup = null;
 
     lines.forEach((line) => {
+      // เช็คว่าเป็นบรรทัด "เมนูหลัก" หรือไม่
       const isMainItem = /^\d+[.)x]/.test(line) || (!line.startsWith('L') && !line.startsWith('+') && !line.startsWith('•') && groups.length === 0);
 
       if (isMainItem) {
         let price = "";
         let name = line;
+        let qty = 1; // เริ่มต้นที่ 1 เสมอ
+
+        // 1. ดึงราคา (ถ้ามี)
         const priceMatch = line.match(/(\d+)(\.|-|\s*บาท)$/); 
         if(priceMatch) {
             price = "฿" + priceMatch[1];
             name = line.replace(priceMatch[0], "").trim();
         }
-        name = name.replace(/^\d+[.)x]\s*/, ""); 
-        currentGroup = { name: name, price: price, options: [] };
+
+        // 2. 🟢 ดึงจำนวนสินค้า (เช่น "2x มะพร้าว" -> qty=2)
+        // ถ้าเจอรูปแบบ "ตัวเลขตามด้วย x" ให้เอาเลขนั้นมาเป็น qty
+        const qtyMatch = name.match(/^(\d+)[xX]\s*/);
+        if (qtyMatch) {
+            qty = parseInt(qtyMatch[1]); 
+            name = name.replace(/^(\d+)[xX]\s*/, ""); // ลบ 2x ออกจากชื่อ
+        } else {
+            // ถ้าไม่เจอ x แต่เจอตัวเลขนำหน้าแบบรายการ (เช่น "1. มะพร้าว") ให้ลบเลขทิ้งเฉยๆ
+            name = name.replace(/^\d+[.)]\s*/, ""); 
+        }
+
+        name = name.trim();
+
+        currentGroup = { name: name, price: price, qty: qty, options: [] };
         groups.push(currentGroup);
       } else {
+        // เป็น Option เสริม
         let optName = line.replace(/^[L\-+•]\s*/, ""); 
         if (currentGroup) {
           currentGroup.options.push(optName);
         } else {
-          groups.push({ name: optName, price: "", options: [] });
+          groups.push({ name: optName, price: "", qty: 1, options: [] });
           currentGroup = groups[0];
         }
       }
@@ -1114,7 +1131,6 @@
     return groups;
   };
 
-  // Empty State
   if (!orders.length) {
     const emptyHtml = `<div class="text-center text-gray-400 py-10 font-light">ไม่พบประวัติการสั่งซื้อ</div>`;
     if (container.innerHTML !== emptyHtml) container.innerHTML = emptyHtml;
@@ -1122,16 +1138,12 @@
   }
 
   // =========================
-  // 3. Render HTML (Seamless Mode)
+  // 3. Render HTML
   // =========================
-  // สร้าง HTML เก็บไว้ในตัวแปรก่อน อย่าเพิ่งยัดลง container
-  const newHtmlContent = orders.map((order, idx) => {
+  const newHtmlContent = orders.map((order) => {
     const meta = getStatusMeta(order.status);
     const items = parseItems(order.items);
     
-    // ❌ เอา delay และ animation ออก เพื่อไม่ให้กระพริบ
-    // const delay = idx * 100;
-
     const itemsHtml = items.map((item, i) => `
       <div class="flex gap-3 mb-4 last:mb-0 items-start relative">
          <div class="shrink-0 w-8 h-8 flex items-center justify-center bg-gray-100 rounded-lg text-gray-500 font-bold text-sm">
@@ -1141,7 +1153,7 @@
          <div class="flex-grow min-w-0">
             <div class="flex justify-between items-start gap-2">
                 <div class="font-bold text-gray-800 text-[15px] leading-tight">
-                    <span class="text-green-600 mr-1 text-sm">1x</span> ${escapeHtml(item.name)}
+                    <span class="text-green-600 mr-1 text-sm">${item.qty}x</span> ${escapeHtml(item.name)}
                 </div>
                 ${item.price ? `<div class="font-bold text-gray-900 text-sm whitespace-nowrap">${item.price}</div>` : ''}
             </div>
@@ -1160,7 +1172,6 @@
       </div>
     `).join('');
 
-    // ❌ เอา class 'order-anim' ออก
     return `
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-5 hover:shadow-md transition-shadow">
         <div class="px-5 py-3 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
@@ -1187,12 +1198,7 @@
     `;
   }).join('');
 
-  // ⭐ MAGIC CHECK: ถ้า HTML ใหม่ เหมือนของเก่าเป๊ะๆ ให้จบฟังก์ชันเลย (หน้าจอจะไม่ขยับ)
-  if (container.innerHTML === newHtmlContent) {
-      return; 
-  }
-
-  // ถ้ามีอะไรเปลี่ยน ค่อยอัปเดต
+  if (container.innerHTML === newHtmlContent) return;
   container.innerHTML = newHtmlContent;
 };
 
