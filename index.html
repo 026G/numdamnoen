@@ -1078,7 +1078,7 @@
   };
 
   // =========================
-  // 2. Logic: ดึงจำนวน (Qty) และชื่อสินค้า
+  // 2. Logic: ดึงจำนวน (Qty) และตัดคำฟุ่มเฟือย (x1)
   // =========================
   const parseItems = (rawText) => {
     if (!rawText) return [];
@@ -1093,7 +1093,7 @@
       if (isMainItem) {
         let price = "";
         let name = line;
-        let qty = 1; // เริ่มต้นที่ 1 เสมอ
+        let qty = 1; 
 
         // 1. ดึงราคา (ถ้ามี)
         const priceMatch = line.match(/(\d+)(\.|-|\s*บาท)$/); 
@@ -1102,16 +1102,19 @@
             name = line.replace(priceMatch[0], "").trim();
         }
 
-        // 2. 🟢 ดึงจำนวนสินค้า (เช่น "2x มะพร้าว" -> qty=2)
-        // ถ้าเจอรูปแบบ "ตัวเลขตามด้วย x" ให้เอาเลขนั้นมาเป็น qty
+        // 2. ดึงจำนวนสินค้าข้างหน้า (เช่น "2x มะพร้าว")
         const qtyMatch = name.match(/^(\d+)[xX]\s*/);
         if (qtyMatch) {
             qty = parseInt(qtyMatch[1]); 
-            name = name.replace(/^(\d+)[xX]\s*/, ""); // ลบ 2x ออกจากชื่อ
+            name = name.replace(/^(\d+)[xX]\s*/, ""); // ลบ 2x ออก
         } else {
-            // ถ้าไม่เจอ x แต่เจอตัวเลขนำหน้าแบบรายการ (เช่น "1. มะพร้าว") ให้ลบเลขทิ้งเฉยๆ
-            name = name.replace(/^\d+[.)]\s*/, ""); 
+            name = name.replace(/^\d+[.)]\s*/, ""); // ลบ 1. ออก
         }
+
+        // 🔥 3. (เพิ่มใหม่) ลบคำขยายซ้ำซ้อน เช่น (x1), (x2) และเครื่องหมาย -
+        // Regex นี้จะหาคำว่า (xตัวเลข) ตามด้วยขีด หรือช่องว่าง แล้วลบทิ้ง
+        name = name.replace(/^\(x\d+\)\s*[-]?\s*/i, "");
+        name = name.replace(/^[-]\s*/, ""); // ลบขีดนำหน้าถ้ายังมีเหลือ
 
         name = name.trim();
 
