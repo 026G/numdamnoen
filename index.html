@@ -13,15 +13,20 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
     <style>
-        /* 🟢 แก้ไขจุดที่ 1: เปลี่ยน URL เป็น Kanit */
-        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap');
+        /* 🟢 แก้ไขจุดที่ 1: ดึงฟอนต์ Chonburi จาก Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Chonburi&display=swap');
 
         body { 
-            /* 🟢 แก้ไขจุดที่ 2: เปลี่ยนชื่อฟอนต์เป็น Kanit */
-            font-family: 'Kanit', sans-serif; 
+            /* 🟢 แก้ไขจุดที่ 2: ตั้งค่าฟอนต์หลักเป็น Chonburi */
+            font-family: 'Chonburi', serif; 
             background-color: #f8f9fa; 
             color: #333; 
             -webkit-font-smoothing: antialiased; 
+        }
+
+        /* เพิ่มเติม: เนื่องจาก Chonburi ค่อนข้างหนา อาจปรับ line-height ให้ข้อความดูไม่อึดอัด */
+        p, span, div {
+            line-height: 1.6;
         }
 
         .page-section { display: none; }
