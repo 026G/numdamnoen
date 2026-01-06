@@ -13,15 +13,20 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
     <style>
-        /* 🟢 แก้ไขจุดที่ 1: ดึงฟอนต์ IBM Plex Sans Thai (ให้อารมณ์คล้าย Google Sans) */
-        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600&display=swap');
+        /* 🟢 แก้ไขจุดที่ 1: ดึงฟอนต์ Pridi มาใช้ (รองรับความหนาหลายระดับ) */
+        @import url('https://fonts.googleapis.com/css2?family=Pridi:wght@200;300;400;500;600;700&display=swap');
 
         body { 
-            /* 🟢 แก้ไขจุดที่ 2: ตั้งค่าฟอนต์หลัก */
-            font-family: 'IBM Plex Sans Thai', sans-serif; 
+            /* 🟢 แก้ไขจุดที่ 2: ตั้งค่าฟอนต์หลักเป็น Pridi */
+            font-family: 'Pridi', serif; 
             background-color: #f8f9fa; 
             color: #333; 
             -webkit-font-smoothing: antialiased; 
+        }
+
+        /* ปรับแต่งเพิ่มเติม: Pridi ตัวค่อนข้างกว้าง เพิ่มระยะบรรทัดนิดหน่อยจะอ่านสบายขึ้น */
+        p, span, div {
+            line-height: 1.6;
         }
 
         .page-section { display: none; }
