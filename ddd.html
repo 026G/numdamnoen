@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant P&L Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Sarabun', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <nav class="bg-blue-900 text-white p-4 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold">📊 ระบบจัดการร้านอาหาร (P&L)</h1>
+            <div>
+                <button onclick="showSection('dashboard')" class="px-3 py-1 hover:bg-blue-700 rounded">Dashboard</button>
+                <button onclick="showSection('input-sales')" class="px-3 py-1 hover:bg-blue-700 rounded">บันทึกยอดขาย</button>
+                <button onclick="showSection('input-expense')" class="px-3 py-1 hover:bg-blue-700 rounded">บันทึกค่าใช้จ่าย</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-6">
+
+        <div id="dashboard" class="section-content">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-white p-4 rounded shadow border-l-4 border-green-500">
+                    <p class="text-gray-500 text-sm">ยอดขายรวม (Revenue)</p>
+                    <h2 class="text-2xl font-bold" id="totalRevenue">0 ฿</h2>
+                </div>
+                <div class="bg-white p-4 rounded shadow border-l-4 border-red-500">
+                    <p class="text-gray-500 text-sm">ต้นทุนขาย (COGS)</p>
+                    <h2 class="text-2xl font-bold" id="totalCOGS">0 ฿</h2>
+                </div>
+                <div class="bg-white p-4 rounded shadow border-l-4 border-yellow-500">
+                    <p class="text-gray-500 text-sm">ค่าใช้จ่ายดำเนินงาน (OPEX)</p>
+                    <h2 class="text-2xl font-bold" id="totalExpense">0 ฿</h2>
+                </div>
+                <div class="bg-white p-4 rounded shadow border-l-4 border-blue-500">
+                    <p class="text-gray-500 text-sm">กำไรสุทธิ (Net Profit)</p>
+                    <h2 class="text-2xl font-bold" id="netProfit">0 ฿</h2>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded shadow mb-6">
+                <h3 class="text-lg font-bold mb-4">แนวโน้มรายได้และค่าใช้จ่าย</h3>
+                <canvas id="plChart" height="100"></canvas>
+            </div>
+
+            <div class="bg-white p-6 rounded shadow overflow-x-auto">
+                <h3 class="text-lg font-bold mb-4">งบกำไร-ขาดทุน (Profit & Loss Statement)</h3>
+                <table class="min-w-full text-sm text-left text-gray-500">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3">รหัสบัญชี</th>
+                            <th class="px-6 py-3">รายการ</th>
+                            <th class="px-6 py-3 text-right">จำนวนเงิน</th>
+                            <th class="px-6 py-3 text-right">%</th>
+                        </tr>
+                    </thead>
+                    <tbody id="plTableBody">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="input-sales" class="section-content hidden">
+            <div class="bg-white p-6 rounded shadow max-w-lg mx-auto">
+                <h2 class="text-xl font-bold mb-4">บันทึกยอดขายรายวัน (Daily Sale)</h2>
+                <form onsubmit="saveSale(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium">วันที่</label>
+                        <input type="date" id="saleDate" class="w-full p-2 border rounded" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium">ยอดขาย A La Carte (0101)</label>
+                        <input type="number" id="saleALaCarte" class="w-full p-2 border rounded" placeholder="0.00">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium">ยอดขาย Buffet (0105)</label>
+                        <input type="number" id="saleBuffet" class="w-full p-2 border rounded" placeholder="0.00">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium">ยอดขาย Delivery (Grab/Lineman)</label>
+                        <input type="number" id="saleDelivery" class="w-full p-2 border rounded" placeholder="0.00">
+                    </div>
+                    <button type="submit" class="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700">บันทึกยอดขาย</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="input-expense" class="section-content hidden">
+            <div class="bg-white p-6 rounded shadow max-w-lg mx-auto">
+                <h2 class="text-xl font-bold mb-4">บันทึกค่าใช้จ่าย (Expenses)</h2>
+                <form onsubmit="saveExpense(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium">วันที่</label>
+                        <input type="date" id="expenseDate" class="w-full p-2 border rounded" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium">หมวดหมู่บัญชี</label>
+                        <select id="expenseCategory" class="w-full p-2 border rounded">
+                            <option value="0201">0201 - วัตถุดิบอาหาร (COGS)</option>
+                            <option value="0207">0207 - ค่าแก๊ส</option>
+                            <option value="0401">0401 - ค่าไฟฟ้า</option>
+                            <option value="0301">0301 - เงินเดือนพนักงาน (FT)</option>
+                            <option value="0408">0408 - การตลาด/Ads</option>
+                            <option value="0411">0411 - ค่าใช้จ่ายเบ็ดเตล็ด</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium">จำนวนเงิน</label>
+                        <input type="number" id="expenseAmount" class="w-full p-2 border rounded" placeholder="0.00" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium">รายละเอียดเพิ่มเติม</label>
+                        <input type="text" id="expenseMemo" class="w-full p-2 border rounded" placeholder="เช่น ค่าซ่อมแอร์">
+                    </div>
+                    <button type="submit" class="w-full bg-red-600 text-white p-2 rounded hover:bg-red-700">บันทึกค่าใช้จ่าย</button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 1. Navigation Logic ---
+        function showSection(id) {
+            document.querySelectorAll('.section-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+            if(id === 'dashboard') loadDashboard();
+        }
+
+        // --- 2. Data Storage (Mock Database using LocalStorage) ---
+        function getTransactions() {
+            return JSON.parse(localStorage.getItem('transactions')) || [];
+        }
+
+        function saveTransaction(data) {
+            const transactions = getTransactions();
+            transactions.push(data);
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+            alert('บันทึกข้อมูลเรียบร้อย');
+        }
+
+        // --- 3. Save Functions ---
+        function saveSale(e) {
+            e.preventDefault();
+            const data = {
+                type: 'income',
+                date: document.getElementById('saleDate').value,
+                alacarte: Number(document.getElementById('saleALaCarte').value),
+                buffet: Number(document.getElementById('saleBuffet').value),
+                delivery: Number(document.getElementById('saleDelivery').value)
+            };
+            saveTransaction(data);
+            document.getElementById('saleALaCarte').value = ''; 
+            document.getElementById('saleBuffet').value = '';
+            document.getElementById('saleDelivery').value = '';
+        }
+
+        function saveExpense(e) {
+            e.preventDefault();
+            const data = {
+                type: 'expense',
+                date: document.getElementById('expenseDate').value,
+                category: document.getElementById('expenseCategory').value,
+                amount: Number(document.getElementById('expenseAmount').value),
+                memo: document.getElementById('expenseMemo').value
+            };
+            saveTransaction(data);
+            document.getElementById('expenseAmount').value = '';
+            document.getElementById('expenseMemo').value = '';
+        }
+
+        // --- 4. Dashboard Logic (Calculation) ---
+        function loadDashboard() {
+            const transactions = getTransactions();
+            let revenue = 0;
+            let cogs = 0;
+            let opex = 0;
+
+            // Simple Aggregation
+            transactions.forEach(t => {
+                if (t.type === 'income') {
+                    revenue += (t.alacarte + t.buffet + t.delivery);
+                } else if (t.type === 'expense') {
+                    if (t.category === '0201') { // สมมติ 0201 คือต้นทุนขาย
+                        cogs += t.amount;
+                    } else {
+                        opex += t.amount;
+                    }
+                }
+            });
+
+            const netProfit = revenue - cogs - opex;
+
+            // Update Cards
+            document.getElementById('totalRevenue').innerText = revenue.toLocaleString() + ' ฿';
+            document.getElementById('totalCOGS').innerText = cogs.toLocaleString() + ' ฿';
+            document.getElementById('totalExpense').innerText = opex.toLocaleString() + ' ฿';
+            document.getElementById('netProfit').innerText = netProfit.toLocaleString() + ' ฿';
+            
+            // Update Color of Net Profit
+            const profitEl = document.getElementById('netProfit').parentElement;
+            profitEl.className = `bg-white p-4 rounded shadow border-l-4 ${netProfit >= 0 ? 'border-blue-500' : 'border-red-600'}`;
+
+            // Update Table (Sample)
+            const tbody = document.getElementById('plTableBody');
+            tbody.innerHTML = `
+                <tr class="bg-white border-b"><td class="px-6 py-4">0100</td><td class="px-6 py-4 font-bold">รายได้รวม (Total Revenue)</td><td class="px-6 py-4 text-right font-bold text-green-600">${revenue.toLocaleString()}</td><td class="px-6 py-4 text-right">100%</td></tr>
+                <tr class="bg-white border-b"><td class="px-6 py-4">0200</td><td class="px-6 py-4">หัก ต้นทุนขาย (COGS)</td><td class="px-6 py-4 text-right text-red-500">-${cogs.toLocaleString()}</td><td class="px-6 py-4 text-right">${revenue ? ((cogs/revenue)*100).toFixed(1) : 0}%</td></tr>
+                <tr class="bg-gray-50 border-b"><td class="px-6 py-4"></td><td class="px-6 py-4 font-bold">กำไรขั้นต้น (Gross Profit)</td><td class="px-6 py-4 text-right font-bold">${(revenue-cogs).toLocaleString()}</td><td class="px-6 py-4 text-right">${revenue ? (((revenue-cogs)/revenue)*100).toFixed(1) : 0}%</td></tr>
+                <tr class="bg-white border-b"><td class="px-6 py-4">0300-0400</td><td class="px-6 py-4">หัก ค่าใช้จ่ายดำเนินงาน</td><td class="px-6 py-4 text-right text-red-500">-${opex.toLocaleString()}</td><td class="px-6 py-4 text-right">${revenue ? ((opex/revenue)*100).toFixed(1) : 0}%</td></tr>
+                <tr class="bg-blue-50 border-b"><td class="px-6 py-4"></td><td class="px-6 py-4 font-bold text-xl">กำไรสุทธิ (Net Profit)</td><td class="px-6 py-4 text-right font-bold text-xl ${netProfit>=0 ? 'text-blue-600':'text-red-600'}">${netProfit.toLocaleString()}</td><td class="px-6 py-4 text-right font-bold">${revenue ? ((netProfit/revenue)*100).toFixed(1) : 0}%</td></tr>
+            `;
+
+            renderChart(revenue, cogs, opex);
+        }
+
+        // --- 5. Chart Rendering ---
+        let myChart = null;
+        function renderChart(rev, cogs, exp) {
+            const ctx = document.getElementById('plChart').getContext('2d');
+            if(myChart) myChart.destroy();
+            
+            myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['รายได้', 'ต้นทุนขาย', 'ค่าใช้จ่าย', 'กำไรสุทธิ'],
+                    datasets: [{
+                        label: 'จำนวนเงิน (บาท)',
+                        data: [rev, cogs, exp, rev - cogs - exp],
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.6)',
+                            'rgba(255, 99, 132, 0.6)',
+                            'rgba(255, 206, 86, 0.6)',
+                            'rgba(54, 162, 235, 0.6)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        // Load dashboard initially
+        loadDashboard();
+    </script>
+</body>
+</html>
