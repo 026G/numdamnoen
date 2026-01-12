@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant PRO (V.39 Detailed Itemized)</title>
+    <title>Restaurant PRO (V.40 Split Loans)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script> 
@@ -24,9 +24,6 @@
         .row-subtotal td { background-color: #fffbeb; font-weight: bold; color: #92400e; border-top: 2px solid #fcd34d; }
         .row-total td { background-color: #1e3a8a; color: white; font-weight: bold; font-size: 1.1em; padding-top: 1rem; padding-bottom: 1rem; }
         
-        /* Small detail text */
-        .detail-code { color: #9ca3af; font-size: 0.8em; margin-right: 5px; }
-
         /* UI Elements */
         .tab-btn.active { background-color: #4338ca; color: white; box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06); }
         .sub-tab-btn { @apply px-4 py-2 rounded-full text-sm font-bold border transition; }
@@ -36,7 +33,6 @@
         .sub-tab-btn.active-rbh { background-color: #8B5CF6; color: white; border-color: #8B5CF6; }
         .daily-card { transition: all 0.3s ease; }
         .daily-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        .progress-bar { transition: width 1s ease-in-out; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -45,7 +41,7 @@
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center space-y-3 md:space-y-0">
             <div class="flex items-center w-full md:w-auto justify-between md:justify-start">
                 <h1 class="text-xl font-bold flex items-center mr-4">
-                    📊 Restaurant PRO <span class="text-xs bg-purple-500 text-white px-2 rounded ml-2 shadow">V.39 Detailed</span>
+                    📊 Restaurant PRO <span class="text-xs bg-red-500 text-white px-2 rounded ml-2 shadow">V.40 Loans Split</span>
                 </h1>
                 <div class="flex items-center space-x-2 bg-indigo-800 p-1.5 rounded border border-indigo-700">
                     <span class="text-xs text-indigo-200">เดือน:</span>
@@ -84,7 +80,7 @@
                 <div class="bg-white p-4 rounded-lg shadow border-l-4 border-green-500 daily-card">
                     <p class="text-xs text-gray-500 font-bold uppercase">ยอดขายสุทธิ (Net Sales)</p>
                     <h2 class="text-3xl font-bold text-gray-800 mt-2" id="m_revenue">0 ฿</h2>
-                    <p class="text-xs text-gray-400 mt-1">ก่อนหักส่วนลด/VAT</p>
+                    <p class="text-xs text-gray-400 mt-1">หลังหักส่วนลด/VAT</p>
                 </div>
                 <div class="bg-white p-4 rounded-lg shadow border-l-4 border-red-500 daily-card">
                     <p class="text-xs text-gray-500 font-bold uppercase">ต้นทุนขาย (COGS)</p>
@@ -273,6 +269,7 @@
                         <li><strong>VAT / ภาษีมูลค่าเพิ่ม:</strong> ลงหมวด 0121 (หักจากรายได้)</li>
                         <li><strong>GP Delivery:</strong> ลงหมวด 0504 (ค่าใช้จ่ายคงที่)</li>
                         <li><strong>Ads / Promo:</strong> ลงหมวด 0408 (การตลาด)</li>
+                        <li><strong>Lineman Loan:</strong> แยกผ่อนสินค้า/สินเชื่อเงินสด (0411)</li>
                     </ul>
                 </div>
 
@@ -386,7 +383,7 @@
         let charts = {};
         let currentAnalyticsData = {}; // Store raw data for switching tabs
         
-        // Full Itemized Account Names (Updated V.39)
+        // Full Itemized Account Names (Updated V.40)
         const accountNames = {
             // Revenue Sources
             'INSTORE': 'หน้าร้าน (Walk-in)', 
@@ -423,7 +420,10 @@
             '0408-L': 'ค่าโฆษณา Lineman Ads',
             '0409': 'วัสดุสิ้นเปลือง',
             '0411': 'เบ็ดเตล็ด', 
-            '0411-L': 'สินเชื่อเงินสด Lineman',
+            
+            // 🔥 SPLIT LOANS
+            '0411-L-C': 'สินเชื่อเงินสด Lineman (Cash Loan)',
+            '0411-L-I': 'ผ่อนสินค้า Lineman (Installment)',
             '0411-G': 'สินเชื่อ Grab',
 
             // 05 Fixed / Fees
@@ -626,7 +626,7 @@
                 currentAnalyticsData = bucket; // Save for switching tabs
 
                 const m_gross_sales = Object.values(dailyTrend).reduce((a,b)=>a+b,0);
-                const m_net_sales = m_gross_sales;
+                const m_net_sales = m_gross_sales - totalDeductions;
                 const m_cogs = expenses.filter(e => e.category.startsWith('02')).reduce((a,b)=>a+b.amount,0);
                 const m_opex = expenses.filter(e => e.category.startsWith('03') || e.category.startsWith('04') || e.category.startsWith('05')).reduce((a,b)=>a+b.amount,0);
                 const m_net = m_net_sales - m_cogs - m_opex;
@@ -786,8 +786,9 @@
                 if (val.vat > 0) await saveExp(date, 'lineman_vat', '0121-L', val.vat);
                 if (val.promo > 0) await saveExp(date, 'lineman_promo', '0118-L', val.promo); 
                 if (val.ads > 0) await saveExp(date, 'lineman_ads', '0408-L', val.ads);
-                if (val.cash_loan > 0) await saveExp(date, 'lineman_cash', '0411-L', val.cash_loan);
-                if (val.installment > 0) await saveExp(date, 'lineman_inst', '0411-L', val.installment);
+                // 🔥 Split Loan Types
+                if (val.cash_loan > 0) await saveExp(date, 'lineman_cash', '0411-L-C', val.cash_loan);
+                if (val.installment > 0) await saveExp(date, 'lineman_inst', '0411-L-I', val.installment);
             }
             alert(`✅ Import Lineman สำเร็จ`); loadData();
         }
