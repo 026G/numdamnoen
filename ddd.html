@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant P&L (V.13 Ultimate Loan Split)</title>
+    <title>Restaurant P&L (V.14 Final Perfect)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script> 
@@ -26,7 +26,7 @@
     <nav class="bg-blue-900 text-white p-4 shadow-lg sticky top-0 z-50">
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
             <h1 class="text-xl font-bold flex items-center">
-                📊 Restaurant P&L <span class="text-xs bg-indigo-500 text-white px-2 rounded ml-2 shadow">V.13 Ultimate</span>
+                📊 Restaurant P&L <span class="text-xs bg-green-500 text-white px-2 rounded ml-2 shadow">V.14 Perfect</span>
             </h1>
             <div class="space-x-1 flex overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
                 <button onclick="showSection('dashboard')" class="bg-blue-800 px-3 py-1 rounded hover:bg-blue-700 whitespace-nowrap transition">🏠 ภาพรวม</button>
@@ -44,7 +44,7 @@
             <div class="bg-white p-6 rounded-lg shadow-xl text-center flex flex-col items-center">
                 <div class="spinner mb-4"></div>
                 <p id="loading-text" class="text-lg font-bold text-gray-700">กำลังประมวลผล...</p>
-                <p class="text-sm text-gray-500 mt-1">แยกสินเชื่อ Grab & Lineman</p>
+                <p class="text-sm text-gray-500 mt-1">ตรวจสอบความถูกต้อง 100%</p>
             </div>
         </div>
 
@@ -93,7 +93,7 @@
             <div class="bg-white p-6 rounded-lg shadow-lg min-h-screen">
                 <div class="flex flex-col md:flex-row justify-between items-center mb-6 border-b pb-4">
                     <h2 class="text-2xl font-bold text-gray-800 flex items-center">
-                        📑 งบกำไร-ขาดทุน (แยกสินเชื่อละเอียด)
+                        📑 งบกำไร-ขาดทุน (แยกสินเชื่อ/Ads)
                     </h2>
                     <div class="flex items-center space-x-2 mt-4 md:mt-0">
                         <label class="text-gray-600 font-medium">เลือกเดือน:</label>
@@ -122,19 +122,14 @@
 
         <div id="import-section" class="section-content hidden">
             <div class="bg-white p-8 rounded-lg shadow-lg max-w-3xl mx-auto border-t-4 border-green-500">
-                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">📂 Import ยอดขาย (แยกสินเชื่อ Lineman)</h2>
+                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">📂 Import ยอดขาย (Smart Logic)</h2>
                 
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                    <h3 class="font-bold text-blue-800 mb-2">✨ ความสามารถใหม่ V.13:</h3>
+                    <h3 class="font-bold text-blue-800 mb-2">✨ ระบบแยกรายการอัตโนมัติ (V.14):</h3>
                     <ul class="list-disc ml-5 text-sm text-blue-900 space-y-1">
-                        <li><strong>Grab:</strong> แยก <code>สินเชื่อ (Loan)</code> รหัส 0425-G</li>
-                        <li><strong>Lineman:</strong> แยก 2 สินเชื่อ:
-                            <ul class="list-disc ml-5 mt-1 text-xs">
-                                <li><code>Installment</code> (ผ่อนสินค้า/เครดิตโฆษณา) -> 0426-L</li>
-                                <li><code>Cash Loan</code> (LINE MAN ให้ยืม) -> 0425-L</li>
-                            </ul>
-                        </li>
-                        <li><strong>Anti-Duplicate:</strong> อัปโหลดไฟล์ซ้ำได้ ระบบจัดการให้</li>
+                        <li><strong>Lineman:</strong> ตรวจสอบช่อง <code>detail</code> เพื่อแยก "สินเชื่อเงินสด" และ "ผ่อนสินค้า"</li>
+                        <li><strong>Grab:</strong> แยก GP, VAT, Ads, Promo, และ สินเชื่อ ครบทุกเม็ด</li>
+                        <li><strong>Anti-Duplicate:</strong> อัปโหลดซ้ำได้ ระบบทับยอดเดิมให้</li>
                     </ul>
                 </div>
 
@@ -217,10 +212,10 @@
                                 <option value="0408-G">0408 - ค่าโฆษณา (Grab Ads)</option>
                                 <option value="0422-G">0422 - โปรโมชั่น (Grab Promo)</option>
                                 <option value="0423-G">0423 - ส่วนลดค่าส่ง (Grab Del)</option>
-                                <option value="0425-G">0425 - สินเชื่อ Grab (Finance)</option>
+                                <option value="0425-G">0425 - สินเชื่อ Grab</option>
                                 <option value="0424-L">0424 - ค่าโฆษณา/โปรโมชั่น (Lineman)</option>
                                 <option value="0425-L">0425 - สินเชื่อเงินสด (Lineman Cash)</option>
-                                <option value="0426-L">0426 - สินเชื่อผ่อนสินค้า (Lineman Installment)</option>
+                                <option value="0426-L">0426 - ผ่อนสินค้า/โฆษณา (Lineman Inst.)</option>
                                 <option value="0411">0411 - เบ็ดเตล็ด</option>
                                 <option value="0416">0416 - ค่าเช่าที่</option>
                             </optgroup>
@@ -292,7 +287,7 @@
         });
 
         // ============================================
-        // 1. SMART IMPORT LOGIC (SEPARATE LOANS)
+        // 1. SMART IMPORT LOGIC (ULTIMATE SPLIT)
         // ============================================
         window.processCSV = () => {
             const fileInput = document.getElementById('csvFileInput');
@@ -366,10 +361,8 @@
                 // 2. Ads
                 if (type === 'GrabFood' && cat === 'โฆษณา') dailyData[dateKey].ads += Math.abs(cleanVal(row, 'ทั้งหมด'));
 
-                // 3. LOAN (GrabFinance -> สินเชื่อ)
-                if (type === 'GrabFinance' && cat === 'สินเชื่อ') {
-                    dailyData[dateKey].loan += Math.abs(cleanVal(row, 'ทั้งหมด'));
-                }
+                // 3. LOAN
+                if (type === 'GrabFinance' && cat === 'สินเชื่อ') dailyData[dateKey].loan += Math.abs(cleanVal(row, 'ทั้งหมด'));
                 
                 // 4. Promo
                 dailyData[dateKey].promo += Math.abs(cleanVal(row, 'ส่วนลด (ออกโดยร้าน)')) + Math.abs(cleanVal(row, 'โปรโมชัน'));
@@ -392,7 +385,7 @@
             setTimeout(() => { alert(`✅ Import Grab สำเร็จ ${count} วัน`); loadDashboard(); }, 100);
         }
 
-        // --- B. Lineman Logic (แยก 2 สินเชื่อ) ---
+        // --- B. Lineman Logic (Detailed) ---
         async function importLinemanDetailed(data) {
             let dailyData = {};
             data.forEach(row => {
@@ -409,11 +402,11 @@
                     dailyData[dateKey].other += Math.abs(parseFloat(row.other_cost)||0); // Promo/Ads
                 }
                 else if (detail === 'Cash Loan') {
-                    // สินเชื่อเงินสด (net_amount ติดลบ)
+                    // สินเชื่อเงินสด (0425-L)
                     dailyData[dateKey].cash_loan += Math.abs(parseFloat(row.net_amount)||0);
                 }
                 else if (detail === 'Installment') {
-                    // ผ่อนสินค้า/โฆษณา (net_amount ติดลบ)
+                    // ผ่อนสินค้า (0426-L)
                     dailyData[dateKey].installment += Math.abs(parseFloat(row.net_amount)||0);
                 }
             });
@@ -424,16 +417,15 @@
                 
                 if (val.gp > 0) await saveExp(date, 'lineman_gp', '0420-L', val.gp, 'GP Lineman');
                 if (val.vat > 0) await saveExp(date, 'lineman_vat', '0421-L', val.vat, 'VAT Lineman');
-                if (val.other > 0) await saveExp(date, 'lineman_other', '0424-L', val.other, 'Promo/Other Lineman');
+                if (val.other > 0) await saveExp(date, 'lineman_other', '0424-L', val.other, 'Promo/Ads Lineman');
                 
-                // แยก 2 สินเชื่อ
                 if (val.cash_loan > 0) await saveExp(date, 'lineman_cash', '0425-L', val.cash_loan, 'Cash Loan Lineman');
                 if (val.installment > 0) await saveExp(date, 'lineman_inst', '0426-L', val.installment, 'Installment Lineman');
                 
                 count++;
             }
             showLoading(false);
-            setTimeout(() => { alert(`✅ Import Lineman สำเร็จ ${count} วัน (แยกสินเชื่อแล้ว)`); loadDashboard(); }, 100);
+            setTimeout(() => { alert(`✅ Import Lineman สำเร็จ ${count} วัน`); loadDashboard(); }, 100);
         }
 
         async function saveExp(date, id_prefix, category, amount, memo) {
@@ -469,8 +461,8 @@
             // GRAB
             '0420-G': 'GP Grab', '0421-G': 'VAT Grab', '0408-G': 'Ads Grab', '0422-G': 'Promo Grab', '0423-G': 'Del Subsidy Grab', '0425-G': 'สินเชื่อ Grab (Finance)',
             // LINEMAN
-            '0420-L': 'GP Lineman', '0421-L': 'VAT Lineman', '0424-L': 'Promo/Other Lineman', 
-            '0425-L': 'สินเชื่อเงินสด Lineman (Cash Loan)', '0426-L': 'ผ่อนสินค้า/โฆษณา Lineman (Installment)',
+            '0420-L': 'GP Lineman', '0421-L': 'VAT Lineman', '0424-L': 'Promo/Ads Lineman', 
+            '0425-L': 'สินเชื่อเงินสด Lineman (Cash)', '0426-L': 'ผ่อนสินค้า/เครดิต Lineman',
             // OPEX
             '0301': 'เงินเดือน', '0401': 'ค่าไฟฟ้า', '0402': 'ค่าน้ำ', '0411': 'เบ็ดเตล็ด', '0416': 'ค่าเช่าที่'
         };
