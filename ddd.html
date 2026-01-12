@@ -100,12 +100,41 @@
                 <h2 class="text-xl font-bold mb-4">บันทึกค่าใช้จ่าย</h2>
                 <form id="expenseForm" class="space-y-3">
                     <input type="date" id="expDate" class="w-full border p-2 rounded" required>
-                    <select id="expCategory" class="w-full border p-2 rounded">
-                        <option value="0201">วัตถุดิบ (COGS)</option>
-                        <option value="0207">ค่าแก๊ส (COGS)</option>
-                        <option value="0401">ค่าไฟ (OPEX)</option>
-                        <option value="0301">เงินเดือน (OPEX)</option>
-                        <option value="0411">อื่นๆ (OPEX)</option>
+                    <label class="block text-sm font-medium text-gray-700">หมวดหมู่บัญชี (อ้างอิง Report 📊)</label>
+                    <select id="expCategory" class="w-full border p-2 rounded bg-white">
+                        <option value="" disabled selected>-- เลือกรายการ --</option>
+                        
+                        <optgroup label="💰 ต้นทุนขาย (COGS)">
+                            <option value="0201">0201 - วัตถุดิบอาหาร (Food Cost)</option>
+                            <option value="0202">0202 - เครื่องดื่ม (Beverage Cost)</option>
+                            <option value="0203">0203 - เครื่องดื่มแอลกอฮอล์</option>
+                            <option value="0204">0204 - ขนมหวาน (Dessert)</option>
+                            <option value="0205">0205 - บรรจุภัณฑ์ (Packaging)</option>
+                            <option value="0207">0207 - ค่าแก๊ส (LPG)</option>
+                            <option value="0208">0208 - วัสดุสิ้นเปลืองในครัว</option>
+                        </optgroup>
+
+                        <optgroup label="👷 ค่าแรง (Labor Cost)">
+                            <option value="0301">0301 - เงินเดือนพนักงาน (FT)</option>
+                            <option value="0302">0302 - ค่าล่วงเวลา (OT)</option>
+                            <option value="0303">0303 - ค่าแรงพนักงาน (PT)</option>
+                            <option value="0304">0304 - สวัสดิการ/เบี้ยขยัน</option>
+                            <option value="0309">0309 - ประกันสังคม (ส่วนนายจ้าง)</option>
+                        </optgroup>
+
+                        <optgroup label="💡 ค่าใช้จ่ายดำเนินงาน (OPEX)">
+                            <option value="0401">0401 - ค่าไฟฟ้า</option>
+                            <option value="0402">0402 - ค่าน้ำประปา</option>
+                            <option value="0403">0403 - ค่าโทรศัพท์/อินเทอร์เน็ต</option>
+                            <option value="0405">0405 - อุปกรณ์เครื่องครัว (เสื่อมสภาพ)</option>
+                            <option value="0406">0406 - ค่าซ่อมแซมบำรุงรักษา</option>
+                            <option value="0407">0407 - ค่าเดินทาง</option>
+                            <option value="0408">0408 - ค่าโฆษณา/การตลาด (Ads)</option>
+                            <option value="0409">0409 - วัสดุสิ้นเปลืองหน้าร้าน</option>
+                            <option value="0411">0411 - ค่าใช้จ่ายเบ็ดเตล็ด</option>
+                            <option value="0416">0416 - ค่าเช่าที่</option>
+                            <option value="0420">0420 - GP Delivery (Grab/Lineman)</option>
+                        </optgroup>
                     </select>
                     <input type="number" id="expAmount" placeholder="จำนวนเงิน" class="w-full border p-2 rounded" required>
                     <input type="text" id="expMemo" placeholder="รายละเอียด" class="w-full border p-2 rounded">
