@@ -3,38 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant PRO (V.35 Fixed)</title>
+    <title>Restaurant PRO (V.34 Classic+Pro)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script> 
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Sarabun', sans-serif; }
-        .chart-container { position: relative; height: 280px; width: 100%; }
+        .chart-container { position: relative; height: 300px; width: 100%; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .spinner { border: 4px solid rgba(0, 0, 0, 0.1); border-left-color: #3B82F6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
-        .report-table th { background-color: #f3f4f6; color: #374151; font-weight: 600; padding: 0.75rem 1rem; font-size: 0.8rem; }
-        .report-table td { padding: 0.75rem 1rem; border-bottom: 1px solid #e5e7eb; font-size: 0.9rem; }
+        
+        /* Table Styling */
+        .report-table th { background-color: #f3f4f6; color: #374151; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; padding: 0.75rem 1.5rem; }
+        .report-table td { padding: 0.75rem 1.5rem; border-bottom: 1px solid #e5e7eb; }
+        .row-header { font-weight: bold; background-color: #e0e7ff; color: #3730a3; }
+        .row-subtotal { font-weight: bold; background-color: #f9fafb; border-top: 2px solid #d1d5db; }
+        .row-total { font-weight: bold; background-color: #1e3a8a; color: white; font-size: 1.1em; }
+        
+        /* Card & Progress Bar */
         .daily-card { transition: all 0.3s ease; }
         .daily-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         .progress-bar { transition: width 1s ease-in-out; }
-        .tab-btn.active { background-color: #4338ca; color: white; border-bottom: 2px solid #fbbf24; }
+        
+        /* Tab Button Active State */
+        .tab-btn.active { background-color: #4338ca; /* indigo-700 */ box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06); }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body class="bg-gray-50">
 
     <nav class="bg-indigo-900 text-white p-4 shadow-lg sticky top-0 z-50">
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
             <h1 class="text-xl font-bold flex items-center">
-                📊 Restaurant PRO <span class="text-xs bg-green-500 text-white px-2 rounded ml-2 shadow">V.35 Fixed</span>
+                📊 Restaurant PRO <span class="text-xs bg-yellow-400 text-indigo-900 px-2 rounded ml-2 shadow">V.34 Hybrid</span>
             </h1>
-            <div class="flex overflow-x-auto w-full md:w-auto space-x-1 pb-1 md:pb-0">
-                <button onclick="showSection('dashboard')" class="tab-btn bg-indigo-800 px-3 py-2 rounded hover:bg-indigo-700 whitespace-nowrap transition active">🏠 ภาพรวม</button>
-                <button onclick="showSection('analytics')" class="tab-btn bg-indigo-800 px-3 py-2 rounded hover:bg-indigo-700 whitespace-nowrap transition text-yellow-300 font-bold">📈 วิเคราะห์ (Pro)</button>
-                <button onclick="showSection('report-section')" class="tab-btn bg-indigo-800 px-3 py-2 rounded hover:bg-indigo-700 whitespace-nowrap transition">📑 รายงาน</button>
-                <button onclick="showSection('input-sales')" class="tab-btn bg-indigo-800 px-3 py-2 rounded hover:bg-indigo-700 whitespace-nowrap transition">✏️ ยอดขาย</button>
-                <button onclick="showSection('input-expense')" class="tab-btn bg-indigo-800 px-3 py-2 rounded hover:bg-indigo-700 whitespace-nowrap transition">💸 ค่าใช้จ่าย</button>
-                <button onclick="showSection('import-section')" class="bg-green-600 px-3 py-2 rounded hover:bg-green-500 shadow whitespace-nowrap transition">📂 Import</button>
+            <div class="space-x-1 flex overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
+                <button onclick="showSection('dashboard')" class="tab-btn bg-indigo-800 px-3 py-1.5 rounded hover:bg-indigo-700 whitespace-nowrap transition active">🏠 ภาพรวม</button>
+                <button onclick="showSection('analytics')" class="tab-btn bg-indigo-800 px-3 py-1.5 rounded hover:bg-indigo-700 whitespace-nowrap transition text-yellow-300 font-bold">📈 วิเคราะห์ (Pro)</button>
+                <button onclick="showSection('report-section')" class="tab-btn bg-indigo-700 px-3 py-1.5 rounded hover:bg-indigo-600 shadow transition">📑 รายงาน</button>
+                <button onclick="showSection('input-sales')" class="tab-btn bg-indigo-800 px-3 py-1.5 rounded hover:bg-indigo-700 whitespace-nowrap transition">✏️ ยอดขาย</button>
+                <button onclick="showSection('input-expense')" class="tab-btn bg-indigo-800 px-3 py-1.5 rounded hover:bg-indigo-700 whitespace-nowrap transition">💸 ค่าใช้จ่าย</button>
+                <button onclick="showSection('import-section')" class="bg-green-600 px-3 py-1.5 rounded hover:bg-green-500 shadow transition">📂 Import</button>
             </div>
         </div>
     </nav>
@@ -147,7 +156,7 @@
         <div id="analytics" class="section-content hidden">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-indigo-800">📈 วิเคราะห์เชิงลึก (Pro Analytics)</h2>
-                <div class="text-sm text-gray-500">ข้อมูลจากไฟล์ Import</div>
+                <div class="text-sm text-gray-500">ข้อมูลจากไฟล์ Import (V.33+)</div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -212,7 +221,7 @@
 
         <div id="import-section" class="section-content hidden">
             <div class="bg-white p-8 rounded-lg shadow-lg max-w-3xl mx-auto border-t-4 border-green-500">
-                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">📂 Import ยอดขาย (Smart Logic V.35)</h2>
+                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">📂 Import ยอดขาย (Smart Logic V.34)</h2>
                 
                 <div class="bg-red-50 border border-red-200 p-4 rounded mb-6 flex justify-between items-center">
                     <div>
@@ -309,6 +318,7 @@
             document.querySelectorAll('.section-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            // Highlight
             const btn = document.querySelector(`button[onclick="showSection('${id}')"]`);
             if(btn) btn.classList.add('active');
             
@@ -398,12 +408,12 @@
                     document.getElementById('pct_net').innerText = m_rev ? (((m_rev-m_cogs-m_opex)/m_rev)*100).toFixed(1)+'% ของยอดขาย' : '0%';
                 }
 
-                // Render Classic Dashboard
+                // Render Dashboard
                 renderTrendChart(dailyTrend);
                 renderTopExpenses(expTotals, m_rev);
                 updateRecentTables(sales, expenses);
                 
-                // Render Pro Analytics
+                // Render Analytics
                 renderPlatformChart(platformStats);
                 renderROAS(m_rev, totalAds); 
                 renderPeakTime(hourlySales);
@@ -544,7 +554,7 @@
             });
         }
 
-        // --- IMPORT LOGIC V.35 (Fixed Missing Data) ---
+        // --- IMPORT LOGIC V.33 ---
         window.processCSV = () => {
             const file = document.getElementById('csvFile').files[0];
             if(!file) return alert("เลือกไฟล์ก่อนครับ");
@@ -575,6 +585,7 @@
                                 const start = lines.findIndex(l => l.includes('Shop ID,Shop Name'));
                                 if(start > -1) {
                                     const rbhText = lines.slice(start+1).join('\n');
+                                    // re-detect date
                                     const dateMatch = text.match(/(\d{2})-([A-Za-z]{3})-(\d{2})/);
                                     if(dateMatch) {
                                         const ms = {Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
@@ -658,19 +669,8 @@
                 const gross = val(10);
                 if(gross > 0) {
                     v.sales += gross; v.promo += val(11); v.gp += val(19); v.orders += 1;
-                    
-                    // Fix Hourly for RBH (Check if col 8 is time)
-                    // If CSV structure varies, try to find time pattern XX:XX
-                    let time = row[8];
-                    if(!time || !time.includes(':')) {
-                         // Search in other columns if index 8 is not time
-                         time = row.find(c => typeof c === 'string' && c.match(/^\d{2}:\d{2}$/));
-                    }
-
-                    if(time) { 
-                        const h = parseInt(time.split(':')[0]); 
-                        v.hourly[h] = (v.hourly[h]||0) + gross; 
-                    }
+                    const time = row[8]; 
+                    if(time) { const h = parseInt(time.split(':')[0]); v.hourly[h] = (v.hourly[h]||0) + gross; }
                 }
             });
             await setDoc(doc(db, "daily_sales", rbhDate), { 
