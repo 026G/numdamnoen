@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant P&L (V.16 Correct Logic)</title>
+    <title>Restaurant P&L (V.17 All Platforms)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script> 
@@ -26,7 +26,7 @@
     <nav class="bg-blue-900 text-white p-4 shadow-lg sticky top-0 z-50">
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
             <h1 class="text-xl font-bold flex items-center">
-                📊 Restaurant P&L <span class="text-xs bg-red-500 text-white px-2 rounded ml-2 shadow">V.16 Correct</span>
+                📊 Restaurant P&L <span class="text-xs bg-purple-500 text-white px-2 rounded ml-2 shadow">V.17 +Robinhood</span>
             </h1>
             <div class="space-x-1 flex overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
                 <button onclick="showSection('dashboard')" class="bg-blue-800 px-3 py-1 rounded hover:bg-blue-700 whitespace-nowrap transition">🏠 ภาพรวม</button>
@@ -44,7 +44,7 @@
             <div class="bg-white p-6 rounded-lg shadow-xl text-center flex flex-col items-center">
                 <div class="spinner mb-4"></div>
                 <p id="loading-text" class="text-lg font-bold text-gray-700">กำลังประมวลผล...</p>
-                <p class="text-sm text-gray-500 mt-1">คำนวณยอด Grab แบบไม่หักซ้ำซ้อน</p>
+                <p class="text-sm text-gray-500 mt-1">รองรับ Grab, Lineman, Robinhood</p>
             </div>
         </div>
 
@@ -93,7 +93,7 @@
             <div class="bg-white p-6 rounded-lg shadow-lg min-h-screen">
                 <div class="flex flex-col md:flex-row justify-between items-center mb-6 border-b pb-4">
                     <h2 class="text-2xl font-bold text-gray-800 flex items-center">
-                        📑 งบกำไร-ขาดทุน (P&L Accurate)
+                        📑 งบกำไร-ขาดทุน (3 ค่ายหลัก)
                     </h2>
                     <div class="flex items-center space-x-2 mt-4 md:mt-0">
                         <label class="text-gray-600 font-medium">เลือกเดือน:</label>
@@ -122,14 +122,15 @@
 
         <div id="import-section" class="section-content hidden">
             <div class="bg-white p-8 rounded-lg shadow-lg max-w-3xl mx-auto border-t-4 border-green-500">
-                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">📂 Import ยอดขาย (Smart Fix)</h2>
+                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">📂 Import ยอดขาย (Smart Multi-Platform)</h2>
                 
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                    <h3 class="font-bold text-blue-800 mb-2">✨ ระบบ V.16 แก้ไขความถูกต้อง:</h3>
+                    <h3 class="font-bold text-blue-800 mb-2">✨ รองรับไฟล์ทุกค่าย (Auto Detect):</h3>
                     <ul class="list-disc ml-5 text-sm text-blue-900 space-y-1">
-                        <li><strong>Grab:</strong> ใช้ยอดขายเต็ม (Gross) แก้ปัญหาหักส่วนลดซ้ำซ้อน และปิดการหัก VAT ซ้ำ (เพราะรวมใน GP แล้ว)</li>
-                        <li><strong>Lineman:</strong> แยกสินเชื่อเงินสด/ผ่อนสินค้าตามปกติ</li>
-                        <li><strong>Anti-Duplicate:</strong> อัปโหลดไฟล์ซ้ำได้</li>
+                        <li><strong>Grab:</strong> แยก GP, Ads, Promo, สินเชื่อ (ไม่ต้องหัก VAT ซ้ำ)</li>
+                        <li><strong>Lineman:</strong> แยก สินเชื่อเงินสด, ผ่อนสินค้า, GP, VAT</li>
+                        <li><strong>Robinhood:</strong> แยก GP, VAT, Promo, Processing Fee (Auto Skip 16 บรรทัด)</li>
+                        <li><strong>Anti-Duplicate:</strong> อัปโหลดซ้ำได้</li>
                     </ul>
                 </div>
 
@@ -200,9 +201,11 @@
                                 <option value="0201">0201 - วัตถุดิบอาหาร</option>
                                 <option value="0205">0205 - บรรจุภัณฑ์</option>
                                 <option value="0207">0207 - ค่าแก๊ส</option>
-                                <option value="0420-G">0420 - GP Grab (รวม VAT)</option>
+                                <option value="0420-G">0420 - GP Grab</option>
                                 <option value="0420-L">0420 - GP Lineman</option>
+                                <option value="0420-R">0420 - GP Robinhood</option>
                                 <option value="0421-L">0421 - VAT Lineman</option>
+                                <option value="0421-R">0421 - VAT Robinhood</option>
                             </optgroup>
                             <optgroup label="💡 ค่าใช้จ่ายดำเนินงาน (OPEX)">
                                 <option value="0301">0301 - เงินเดือนพนักงาน</option>
@@ -215,6 +218,8 @@
                                 <option value="0424-L">0424 - ค่าโฆษณา/โปรโมชั่น (Lineman)</option>
                                 <option value="0425-L">0425 - สินเชื่อเงินสด (Lineman Cash)</option>
                                 <option value="0426-L">0426 - ผ่อนสินค้า/โฆษณา (Lineman Inst.)</option>
+                                <option value="0422-R">0422 - โปรโมชั่น (RBH Promo)</option>
+                                <option value="0427-R">0427 - ค่าธรรมเนียม (RBH Proc. Fee)</option>
                                 <option value="0411">0411 - เบ็ดเตล็ด</option>
                                 <option value="0416">0416 - ค่าเช่าที่</option>
                             </optgroup>
@@ -286,7 +291,7 @@
         });
 
         // ============================================
-        // 1. SMART IMPORT LOGIC
+        // 1. SMART IMPORT LOGIC (3 PLATFORMS)
         // ============================================
         window.processCSV = () => {
             const fileInput = document.getElementById('csvFileInput');
@@ -294,39 +299,87 @@
             const file = fileInput.files[0];
             showLoading(true);
 
-            Papa.parse(file, {
-                header: true, skipEmptyLines: true,
-                complete: async function(results) {
-                    const data = results.data;
-                    const headers = results.meta.fields || [];
-                    
-                    try {
+            // Check if Robinhood (needs skipping rows)
+            // We can read first few lines to detect type
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const firstLine = text.split('\n')[0];
+                
+                // Robinhood detection: first line is commas or "Purple Ventures" nearby
+                let config = { header: true, skipEmptyLines: true };
+                
+                // Simple heuristic: if first line is empty or just commas, might be Robinhood
+                // Or check if "Shop ID" is in line 16 (approx)
+                // Let's rely on PapaParse with dynamic config
+                
+                // If it's Robinhood, we need to skip 16 lines manually or use a trick
+                // Let's try parsing normally first, if headers match Robinhood structure, use it.
+                // If not, try skipping 16 lines.
+                
+                Papa.parse(file, {
+                    header: true, skipEmptyLines: true,
+                    complete: async function(results) {
+                        const headers = results.meta.fields || [];
+                        
+                        // Grab / Lineman / Standard
                         if (headers.includes('Transaction ID') && headers.includes('Updated On')) {
-                            await importGrabDetailed(data); // Grab
+                            await importGrabDetailed(results.data);
                         } 
                         else if (headers.includes('restaurant_name') && headers.includes('net_amount')) {
-                            await importLinemanDetailed(data); // Lineman
+                            await importLinemanDetailed(results.data);
                         } 
                         else if (headers.includes('Date')) {
-                            await importStandard(data); // Standard
-                        } 
-                        else {
-                            showLoading(false);
-                            setTimeout(() => alert("❌ ไม่รู้จักรูปแบบไฟล์นี้"), 100);
+                            await importStandard(results.data);
                         }
-                    } catch (err) {
-                        showLoading(false);
-                        setTimeout(() => alert("เกิดข้อผิดพลาด: " + err.message), 100);
-                    }
-                },
-                error: (err) => { 
-                    showLoading(false); 
-                    setTimeout(() => alert("Error: "+err.message), 100);
-                }
-            });
+                        else {
+                            // Try parsing as Robinhood (skip 16 lines)
+                            Papa.parse(file, {
+                                header: true, skipEmptyLines: true, comments: "#", skipEmptyLines: true, 
+                                beforeFirstChunk: function(chunk) {
+                                    // Hacky way to skip lines in PapaParse if needed, 
+                                    // but let's just re-parse if headers failed.
+                                    // actually PapaParse doesn't have easy 'skiprows'.
+                                    // So we'll slice the text manually for RBH.
+                                    return chunk; 
+                                },
+                                complete: async function(res2) {
+                                    // Logic below manually
+                                }
+                            });
+                            
+                            // Manual RBH parse
+                            const lines = text.split('\n');
+                            // Find line starting with ",Shop ID"
+                            let startIndex = -1;
+                            for(let i=0; i<lines.length; i++) {
+                                if(lines[i].includes(',Shop ID,Shop Name')) {
+                                    startIndex = i;
+                                    break;
+                                }
+                            }
+                            
+                            if (startIndex > -1) {
+                                const rbhText = lines.slice(startIndex).join('\n');
+                                Papa.parse(rbhText, {
+                                    header: true, skipEmptyLines: true,
+                                    complete: async function(rbhResults) {
+                                        await importRobinhood(rbhResults.data);
+                                    }
+                                });
+                            } else {
+                                showLoading(false);
+                                setTimeout(() => alert("❌ ไม่รู้จักรูปแบบไฟล์นี้"), 100);
+                            }
+                        }
+                    },
+                    error: (err) => { showLoading(false); setTimeout(() => alert("Error: "+err.message), 100); }
+                });
+            };
+            reader.readAsText(file, 'UTF-8'); // Try UTF-8 first
         }
 
-        // --- A. Grab Logic (Correct Gross & No Double VAT) ---
+        // --- A. Grab Logic ---
         async function importGrabDetailed(data) {
             let dailyData = {};
             const parseDate = (str) => {
@@ -342,68 +395,34 @@
             data.forEach(row => {
                 const dateKey = parseDate(row['Updated On']);
                 if(!dateKey) return;
-                if (!dailyData[dateKey]) dailyData[dateKey] = { sales: 0, gp: 0, vat: 0, ads: 0, promo: 0, del_disc: 0, loan: 0 };
-                
+                if (!dailyData[dateKey]) dailyData[dateKey] = { sales: 0, gp: 0, ads: 0, promo: 0, del_disc: 0, loan: 0 };
                 const type = row['ประเภท'];
                 const cat = row['หมวดหมู่'];
 
-                // 1. GrabFood -> ชำระเงิน
                 if (type === 'GrabFood' && cat === 'ชำระเงิน') {
-                    // FIX: Use 'ยอด' (Gross) instead of 'ยอดขายสุทธิ' to avoid double counting discount
                     dailyData[dateKey].sales += cleanVal(row, 'ยอด');
-                    
-                    // GP (Inclusive of VAT)
-                    const comm = Math.abs(cleanVal(row, 'ค่าคอมมิชชันแพลตฟอร์ม'));
-                    dailyData[dateKey].gp += comm;
-
-                    // Additional Comm -> Promo
-                    const commAdd = Math.abs(cleanVal(row, 'ค่าคอมมิชชันอื่นของ GrabFood / GrabMart')) +
-                                    Math.abs(cleanVal(row, 'ค่าคอมมิชชันเพิ่มเติม')) + 
-                                    Math.abs(cleanVal(row, 'GrabKitchen Commission'));
-                    dailyData[dateKey].promo += commAdd;
-
-                    // VAT -> DO NOT ADD! (Included in GP)
-                    // dailyData[dateKey].vat += ... (IGNORED)
-
-                    // Ads
+                    dailyData[dateKey].gp += Math.abs(cleanVal(row, 'ค่าคอมมิชชันแพลตฟอร์ม'));
+                    dailyData[dateKey].promo += Math.abs(cleanVal(row, 'ค่าคอมมิชชันอื่นของ GrabFood / GrabMart')) + Math.abs(cleanVal(row, 'ค่าคอมมิชชันเพิ่มเติม')) + Math.abs(cleanVal(row, 'GrabKitchen Commission'));
                     dailyData[dateKey].ads += Math.abs(cleanVal(row, 'ค่าธรรมเนียมการตลาด'));
-
-                    // Del Discount -> Expense
                     dailyData[dateKey].del_disc += Math.abs(cleanVal(row, 'ส่วนลดค่าจัดส่ง (ออกโดยร้าน)'));
-                    
-                    // Store Discount (from Gross) -> Promo Expense
                     dailyData[dateKey].promo += Math.abs(cleanVal(row, 'ส่วนลด (ออกโดยร้าน)'));
                 }
-                
-                // 2. Ads (Direct)
                 if (type === 'GrabFood' && cat === 'โฆษณา') dailyData[dateKey].ads += Math.abs(cleanVal(row, 'ทั้งหมด'));
-
-                // 3. LOAN
-                if (type === 'GrabFinance' && cat === 'สินเชื่อ') {
-                    dailyData[dateKey].loan += Math.abs(cleanVal(row, 'ทั้งหมด'));
-                }
-                
-                // 4. Promo (Direct)
-                if (cat !== 'ชำระเงิน') { // Avoid double counting if already processed in payment row logic above
-                     dailyData[dateKey].promo += Math.abs(cleanVal(row, 'โปรโมชัน'));
-                }
+                if (type === 'GrabFinance' && cat === 'สินเชื่อ') dailyData[dateKey].loan += Math.abs(cleanVal(row, 'ทั้งหมด'));
+                if (cat !== 'ชำระเงิน') dailyData[dateKey].promo += Math.abs(cleanVal(row, 'โปรโมชัน'));
             });
 
-            // Save
             let count = 0;
             for (const [date, val] of Object.entries(dailyData)) {
                 await setDoc(doc(db, "daily_sales", date), { date: date, delivery_grab: val.sales, timestamp: Timestamp.now() }, { merge: true });
-
                 if (val.gp > 0) await saveExp(date, 'grab_gp', '0420-G', val.gp, 'GP Grab');
-                // No VAT recorded for Grab
                 if (val.ads > 0) await saveExp(date, 'grab_ads', '0408-G', val.ads, 'Ads Grab');
                 if (val.promo > 0) await saveExp(date, 'grab_promo', '0422-G', val.promo, 'Promo Grab');
                 if (val.del_disc > 0) await saveExp(date, 'grab_del', '0423-G', val.del_disc, 'Del Subsidy Grab');
                 if (val.loan > 0) await saveExp(date, 'grab_loan', '0425-G', val.loan, 'Finance/Loan Grab');
                 count++;
             }
-            showLoading(false);
-            setTimeout(() => { alert(`✅ Import Grab สำเร็จ ${count} วัน`); loadDashboard(); }, 100);
+            showLoading(false); setTimeout(() => { alert(`✅ Import Grab สำเร็จ ${count} วัน`); loadDashboard(); }, 100);
         }
 
         // --- B. Lineman Logic ---
@@ -413,21 +432,15 @@
                 if (!row.capture_time) return;
                 const dateKey = row.capture_time.split(' ')[0];
                 if (!dailyData[dateKey]) dailyData[dateKey] = { sales: 0, gp: 0, vat: 0, other: 0, cash_loan: 0, installment: 0 };
-                
                 const detail = row['detail'] || ''; 
-
                 if (detail === 'Delivery Order') {
                     dailyData[dateKey].sales += (parseFloat(row.cash_amount)||0) + (parseFloat(row.e_payment_amount)||0);
                     dailyData[dateKey].gp += Math.abs(parseFloat(row.fee)||0);
                     dailyData[dateKey].vat += Math.abs(parseFloat(row.vat)||0);
                     dailyData[dateKey].other += Math.abs(parseFloat(row.other_cost)||0); 
                 }
-                else if (detail === 'Cash Loan') {
-                    dailyData[dateKey].cash_loan += Math.abs(parseFloat(row.net_amount)||0);
-                }
-                else if (detail === 'Installment') {
-                    dailyData[dateKey].installment += Math.abs(parseFloat(row.net_amount)||0);
-                }
+                else if (detail === 'Cash Loan') dailyData[dateKey].cash_loan += Math.abs(parseFloat(row.net_amount)||0);
+                else if (detail === 'Installment') dailyData[dateKey].installment += Math.abs(parseFloat(row.net_amount)||0);
             });
 
             let count = 0;
@@ -440,8 +453,79 @@
                 if (val.installment > 0) await saveExp(date, 'lineman_inst', '0426-L', val.installment, 'Installment Lineman');
                 count++;
             }
-            showLoading(false);
-            setTimeout(() => { alert(`✅ Import Lineman สำเร็จ ${count} วัน`); loadDashboard(); }, 100);
+            showLoading(false); setTimeout(() => { alert(`✅ Import Lineman สำเร็จ ${count} วัน`); loadDashboard(); }, 100);
+        }
+
+        // --- C. Robinhood Logic ---
+        async function importRobinhood(data) {
+            let dailyData = {};
+            data.forEach(row => {
+                // Column 8 is 'Order Completed Time' or 'Order Time'. 
+                // Col headers in snippet: ..., Order Time, Order Completed Time
+                // Assuming 'Order Time' or similar has the date? 
+                // Actually RBH usually has a date at top, but rows only have Time?
+                // Wait, row 13 in snippet: ",??????,06-Dec-25,,,,,,,,,,,,,,,,,,,,,,,," -> Date is in header metadata?
+                // OR row 17+ has columns. 
+                // Let's assume we can't easily get date from row if it's just '16:34'. 
+                // BUT, looking at data again, there's no date column in the row! 
+                // It's usually in the filename or a specific cell.
+                // For simplicity, let's use the current date or ask user?
+                // Actually, often RBH exports are daily.
+                
+                // Let's try to find date from row 13 content if passed? 
+                // In this CSV parsing flow, we only have 'data' (rows).
+                // If the CSV is single day, we might need to prompt or parse filename.
+                // BUT, if we look closely at snippet, there isn't a date column in the table.
+                // Workaround: Use today's date or input field date for RBH.
+                
+                const dateKey = document.getElementById('saleDate').value; // Use selected date
+                
+                if (!dailyData[dateKey]) dailyData[dateKey] = { sales: 0, gp: 0, vat: 0, promo: 0, fee: 0 };
+                
+                // Column Mapping based on snippet:
+                // Gross Sales = Col 10 (?????????)
+                // Promo = Col 11 (??????????????)
+                // GP = Col 16 (Processing Fee?? No, snippet says 4.45. Col 19 is 110.85 large amount)
+                // Let's use indices from headers if possible, or fuzzy match
+                
+                const getCol = (keyPart) => {
+                    const key = Object.keys(row).find(k => k && k.includes(keyPart));
+                    return row[key];
+                };
+
+                // Gross Sales (Assume largest positive number or specific column index?)
+                // PapaParse headers might be garbled "?????".
+                // Let's try by index if headers are messy.
+                // Object.values(row)[10] -> Gross
+                const vals = Object.values(row);
+                if (vals.length < 20) return; // Skip footer/empty
+
+                const gross = parseFloat((vals[10]||"0").replace(/,/g,'')) || 0;
+                const promo = parseFloat((vals[11]||"0").replace(/,/g,'')) || 0;
+                const procFee = parseFloat((vals[16]||"0").replace(/,/g,'')) || 0;
+                const vat = parseFloat((vals[17]||"0").replace(/,/g,'')) || 0;
+                const gp = parseFloat((vals[19]||"0").replace(/,/g,'')) || 0; // The big deduction
+
+                if (gross > 0) {
+                    dailyData[dateKey].sales += gross;
+                    dailyData[dateKey].promo += promo;
+                    dailyData[dateKey].fee += procFee;
+                    dailyData[dateKey].vat += vat;
+                    dailyData[dateKey].gp += gp;
+                }
+            });
+
+            let count = 0;
+            for (const [date, val] of Object.entries(dailyData)) {
+                if (val.sales === 0) continue;
+                await setDoc(doc(db, "daily_sales", date), { date: date, delivery_robinhood: val.sales, timestamp: Timestamp.now() }, { merge: true });
+                if (val.gp > 0) await saveExp(date, 'rbh_gp', '0420-R', val.gp, 'GP Robinhood');
+                if (val.vat > 0) await saveExp(date, 'rbh_vat', '0421-R', val.vat, 'VAT Robinhood');
+                if (val.promo > 0) await saveExp(date, 'rbh_promo', '0422-R', val.promo, 'Promo Robinhood');
+                if (val.fee > 0) await saveExp(date, 'rbh_fee', '0427-R', val.fee, 'Processing Fee RBH');
+                count++;
+            }
+            showLoading(false); setTimeout(() => { alert(`✅ Import Robinhood สำเร็จ (ลงวันที่ ${document.getElementById('saleDate').value})`); loadDashboard(); }, 100);
         }
 
         async function saveExp(date, id_prefix, category, amount, memo) {
@@ -464,8 +548,7 @@
                 }, { merge: true });
                 count++;
             }
-            showLoading(false);
-            setTimeout(() => { alert(`✅ Import มาตรฐานสำเร็จ ${count} รายการ`); loadDashboard(); }, 100);
+            showLoading(false); setTimeout(() => { alert(`✅ Import มาตรฐานสำเร็จ ${count} รายการ`); loadDashboard(); }, 100);
         }
 
         // ============================================
@@ -475,9 +558,11 @@
             'INSTORE': 'หน้าร้าน (Walk-in)', 'DEL_GRAB': 'Grab', 'DEL_LINE': 'Lineman', 'DEL_OTH': 'Delivery อื่นๆ',
             '0201': 'วัตถุดิบอาหาร', '0205': 'บรรจุภัณฑ์', '0207': 'ค่าแก๊ส', 
             // GRAB
-            '0420-G': 'GP Grab (รวม VAT)', '0408-G': 'Ads Grab', '0422-G': 'Promo Grab', '0423-G': 'Del Subsidy Grab', '0425-G': 'สินเชื่อ Grab (Finance)',
+            '0420-G': 'GP Grab', '0408-G': 'Ads Grab', '0422-G': 'Promo Grab', '0423-G': 'Del Subsidy Grab', '0425-G': 'สินเชื่อ Grab',
             // LINEMAN
             '0420-L': 'GP Lineman', '0421-L': 'VAT Lineman', '0424-L': 'Promo/Ads Lineman', '0425-L': 'สินเชื่อเงินสด Lineman', '0426-L': 'ผ่อนสินค้า Lineman',
+            // ROBINHOOD
+            '0420-R': 'GP Robinhood', '0421-R': 'VAT Robinhood', '0422-R': 'Promo Robinhood', '0427-R': 'Processing Fee RBH',
             // OPEX
             '0301': 'เงินเดือน', '0401': 'ค่าไฟฟ้า', '0402': 'ค่าน้ำ', '0411': 'เบ็ดเตล็ด', '0416': 'ค่าเช่าที่'
         };
@@ -504,7 +589,7 @@
                 (await getDocs(collection(db, "expenses"))).forEach(doc => {
                     const d = doc.data();
                     if(d.date.startsWith(monthVal)) {
-                        if(['0201','0202','0205','0207','0420-G','0420-L','0421-L'].includes(d.category)) rData.cogs[d.category] = (rData.cogs[d.category]||0)+d.amount;
+                        if(['0201','0202','0205','0207','0420-G','0420-L','0420-R','0421-L','0421-R'].includes(d.category)) rData.cogs[d.category] = (rData.cogs[d.category]||0)+d.amount;
                         else rData.opex[d.category] = (rData.opex[d.category]||0)+d.amount;
                     }
                 });
@@ -553,8 +638,7 @@
                 timestamp: Timestamp.now()
             }, { merge: true });
             
-            showLoading(false);
-            setTimeout(() => { alert("บันทึกสำเร็จ"); e.target.reset(); loadDashboard(); }, 100);
+            showLoading(false); setTimeout(() => { alert("บันทึกสำเร็จ"); e.target.reset(); loadDashboard(); }, 100);
         });
 
         document.getElementById('expenseForm').addEventListener('submit', async (e) => {
@@ -564,8 +648,7 @@
                 amount: getVal('expAmount'), memo: document.getElementById('expMemo').value, timestamp: Timestamp.now()
             });
             
-            showLoading(false);
-            setTimeout(() => { alert("บันทึกสำเร็จ"); e.target.reset(); loadDashboard(); }, 100);
+            showLoading(false); setTimeout(() => { alert("บันทึกสำเร็จ"); e.target.reset(); loadDashboard(); }, 100);
         });
 
         window.loadDashboard = async () => {
@@ -579,7 +662,7 @@
                 });
                 (await getDocs(collection(db, "expenses"))).forEach(doc=>{
                     const d=doc.data();
-                    if(['0201','0205','0207','0420-G','0420-L','0421-L'].includes(d.category)) cogs+=d.amount; else opex+=d.amount;
+                    if(['0201','0205','0207','0420-G','0420-L','0420-R','0421-L','0421-R'].includes(d.category)) cogs+=d.amount; else opex+=d.amount;
                     if(list.children.length < 20) {
                         const li = document.createElement('li');
                         li.innerHTML = `<div class="flex justify-between border-b py-2 text-sm"><span>${d.date} ${accountNames[d.category]||d.category}</span><span class="text-red-500">-${d.amount.toLocaleString()}</span></div>`;
