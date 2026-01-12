@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant PRO (V.37 Classic Report)</title>
+    <title>Restaurant PRO (V.37 Fixed 2026)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script> 
@@ -36,7 +36,7 @@
     <nav class="bg-indigo-900 text-white p-4 shadow-lg sticky top-0 z-50">
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
             <h1 class="text-xl font-bold flex items-center">
-                📊 Restaurant PRO <span class="text-xs bg-pink-500 text-white px-2 rounded ml-2 shadow">V.37 Report UI</span>
+                📊 Restaurant PRO <span class="text-xs bg-pink-500 text-white px-2 rounded ml-2 shadow">V.37 Fixed 2026</span>
             </h1>
             <div class="flex overflow-x-auto w-full md:w-auto space-x-1 pb-1 md:pb-0">
                 <button onclick="showSection('dashboard')" class="tab-btn bg-indigo-800 px-3 py-2 rounded hover:bg-indigo-700 whitespace-nowrap transition active">🏠 ภาพรวม</button>
@@ -375,9 +375,9 @@
                         const total = (d.instore||0)+(d.delivery_grab||0)+(d.delivery_lineman||0)+(d.delivery_robinhood||0)+(d.delivery_other||0);
                         dailyTrend[d.date] = total;
 
-                        // แก้ไข 2: Map ข้อมูลรายได้เข้า Key ใหม่
+                        // แก้ไข 2: Map ข้อมูลรายได้เข้า Key ใหม่ (รองรับ delivery_lineman จาก DB)
                         platformStats.Grab.rev += (d.delivery_grab||0);
-                        platformStats.Lineman.rev += (d.delivery_lineman||0);
+                        platformStats.Lineman.rev += (d.delivery_lineman||0); 
                         platformStats.Robinhood.rev += (d.delivery_robinhood||0);
                         
                         // Extract Analytics Info
@@ -385,7 +385,7 @@
                             Object.keys(d.hourly_stats).forEach(h => {
                                 // แปลง key เป็นตัวเลขเพื่อให้ลง Array index ได้ถูกต้อง
                                 const hourIndex = parseInt(h);
-                                if(!isNaN(hourIndex)) {
+                                if(!isNaN(hourIndex) && hourIndex >= 0 && hourIndex < 24) {
                                     hourlySales[hourIndex] = (hourlySales[hourIndex]||0) + d.hourly_stats[h];
                                 }
                             });
@@ -443,34 +443,6 @@
                 renderBasketSize(platformStats);
 
             } catch(e) { console.error("Error loading data:", e); }
-        }
-
-        // --- แก้ไขฟังก์ชันกราฟให้เรียกชื่อ Key ให้ตรงกัน ---
-        
-        function renderPlatformChart(stats) {
-            const ctx = document.getElementById('platformChart'); if(!ctx) return;
-            if(charts.plat) charts.plat.destroy();
-            // ใช้ชื่อ Key ตรงกับที่ประกาศไว้ข้างบน
-            const labels = ['Grab', 'Lineman', 'Robinhood']; 
-            const margins = labels.map(k => { 
-                const s = stats[k]; 
-                // ป้องกันการหารด้วย 0
-                if (!s || !s.rev) return 0;
-                return ((s.rev - s.cost) / s.rev) * 100; 
-            });
-            charts.plat = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: 'Net Margin (%)', data: margins, backgroundColor: ['#10B981', '#F59E0B', '#8B5CF6'], borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100 } } } });
-        }
-
-        function renderBasketSize(stats) {
-            const ctx = document.getElementById('basketChart'); if(!ctx) return;
-            if(charts.basket) charts.basket.destroy();
-            // แก้ชื่อ Rbh เป็น Robinhood ให้ตรงกัน
-            const labels = ['Grab', 'Lineman', 'Robinhood'];
-            const aov = labels.map(k => { 
-                const s = stats[k]; 
-                return (s && s.orders) ? (s.rev / s.orders) : 0; 
-            });
-            charts.basket = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: 'ยอดต่อบิล (Avg Order Value)', data: aov, backgroundColor: '#EC4899', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false } });
         }
 
         // --- IMPORT LOGIC (Base V.31 + Analytics) ---
@@ -600,6 +572,7 @@
                 await setDoc(doc(db, "daily_sales", date), { 
                     date: date, delivery_lineman: val.sales, 
                     order_counts: { line: val.orders }, 
+                    hourly_stats: val.hourly, // Added hourly stats
                     timestamp: Timestamp.now() 
                 }, { merge: true });
                 if (val.gp > 0) await saveExp(date, 'lineman_gp', '0420-L', val.gp);
@@ -640,6 +613,7 @@
                 await setDoc(doc(db, "daily_sales", dateKey), { 
                     date: dateKey, delivery_robinhood: dailyData.sales, 
                     order_counts: { rbh: dailyData.orders },
+                    hourly_stats: dailyData.hourly, // Added hourly stats
                     timestamp: Timestamp.now() 
                 }, { merge: true });
                 if (dailyData.gp > 0) await saveExp(dateKey, 'rbh_gp', '0420-R', dailyData.gp);
@@ -765,11 +739,17 @@
                 list.innerHTML += `<div><div class="flex justify-between text-sm mb-1"><span class="text-gray-700">${accountNames[cat]||cat}</span><div><span class="font-bold text-gray-800">${amt.toLocaleString()}</span> <span class="text-red-500 font-bold">(${pct}%)</span></div></div><div class="w-full bg-gray-200 rounded-full h-2"><div class="bg-red-500 h-2 rounded-full progress-bar" style="width: ${Math.min(pct, 100)}%"></div></div></div>`;
             });
         }
+        
+        // --- FIXED ANALYTICS CHARTS ---
         function renderPlatformChart(stats) {
             const ctx = document.getElementById('platformChart'); if(!ctx) return;
             if(charts.plat) charts.plat.destroy();
-            const labels = ['Grab', 'Lineman', 'Robinhood'];
-            const margins = labels.map(k => { const s = stats[k]; return s.rev ? ((s.rev - s.cost) / s.rev) * 100 : 0; });
+            const labels = ['Grab', 'Lineman', 'Robinhood']; 
+            const margins = labels.map(k => { 
+                const s = stats[k]; 
+                if(!s || !s.rev) return 0; // Prevent NaN
+                return ((s.rev - s.cost) / s.rev) * 100; 
+            });
             charts.plat = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: 'Net Margin (%)', data: margins, backgroundColor: ['#10B981', '#F59E0B', '#8B5CF6'], borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100 } } } });
         }
         function renderROAS(sales, ads) {
@@ -788,10 +768,14 @@
         function renderBasketSize(stats) {
             const ctx = document.getElementById('basketChart'); if(!ctx) return;
             if(charts.basket) charts.basket.destroy();
-            const labels = ['Grab', 'Lineman', 'Rbh'];
-            const aov = labels.map(k => { const s = stats[k]; return s.orders ? (s.rev / s.orders) : 0; });
+            const labels = ['Grab', 'Lineman', 'Robinhood'];
+            const aov = labels.map(k => { 
+                const s = stats[k]; 
+                return (s && s.orders) ? (s.rev / s.orders) : 0; 
+            });
             charts.basket = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: 'ยอดต่อบิล (Avg Order Value)', data: aov, backgroundColor: '#EC4899', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false } });
         }
+        
         function updateRecentTables(sales, expenses) {
             sales.sort((a,b) => b.date.localeCompare(a.date));
             const sBody = document.getElementById('recentDaysTable'); if(sBody) { sBody.innerHTML = '';
@@ -831,11 +815,10 @@
             showLoading(false); setTimeout(() => { alert("บันทึกสำเร็จ"); e.target.reset(); loadData(); }, 100);
         });
 
-        // Init
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('dashMonth').value = today.slice(0,7);
-        document.getElementById('saleDate').value = today;
-        document.getElementById('expDate').value = today;
+        // Init - Force 2026 for testing based on your DB screenshot
+        document.getElementById('dashMonth').value = '2026-01'; 
+        document.getElementById('saleDate').value = '2026-01-11';
+        document.getElementById('expDate').value = '2026-01-11';
         loadData();
 
     </script>
