@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant P&L (V.11 Full Loans)</title>
+    <title>Restaurant P&L (V.13 Ultimate Loan Split)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script> 
@@ -26,7 +26,7 @@
     <nav class="bg-blue-900 text-white p-4 shadow-lg sticky top-0 z-50">
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
             <h1 class="text-xl font-bold flex items-center">
-                📊 Restaurant P&L <span class="text-xs bg-indigo-500 text-white px-2 rounded ml-2 shadow">V.11 Full Loan</span>
+                📊 Restaurant P&L <span class="text-xs bg-indigo-500 text-white px-2 rounded ml-2 shadow">V.13 Ultimate</span>
             </h1>
             <div class="space-x-1 flex overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
                 <button onclick="showSection('dashboard')" class="bg-blue-800 px-3 py-1 rounded hover:bg-blue-700 whitespace-nowrap transition">🏠 ภาพรวม</button>
@@ -125,13 +125,13 @@
                 <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">📂 Import ยอดขาย (แยกสินเชื่อ Lineman)</h2>
                 
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                    <h3 class="font-bold text-blue-800 mb-2">✨ ความสามารถใหม่ V.11:</h3>
+                    <h3 class="font-bold text-blue-800 mb-2">✨ ความสามารถใหม่ V.13:</h3>
                     <ul class="list-disc ml-5 text-sm text-blue-900 space-y-1">
                         <li><strong>Grab:</strong> แยก <code>สินเชื่อ (Loan)</code> รหัส 0425-G</li>
                         <li><strong>Lineman:</strong> แยก 2 สินเชื่อ:
                             <ul class="list-disc ml-5 mt-1 text-xs">
-                                <li><code>Installment</code> (ผ่อนสินค้า/โฆษณา) -> 0426-L</li>
-                                <li><code>Cash Loan</code> (ยืมเงินสด) -> 0425-L</li>
+                                <li><code>Installment</code> (ผ่อนสินค้า/เครดิตโฆษณา) -> 0426-L</li>
+                                <li><code>Cash Loan</code> (LINE MAN ให้ยืม) -> 0425-L</li>
                             </ul>
                         </li>
                         <li><strong>Anti-Duplicate:</strong> อัปโหลดไฟล์ซ้ำได้ ระบบจัดการให้</li>
@@ -400,13 +400,13 @@
                 const dateKey = row.capture_time.split(' ')[0];
                 if (!dailyData[dateKey]) dailyData[dateKey] = { sales: 0, gp: 0, vat: 0, other: 0, cash_loan: 0, installment: 0 };
                 
-                const detail = row['detail'] || ''; // ดูช่อง detail
+                const detail = row['detail'] || ''; 
 
                 if (detail === 'Delivery Order') {
                     dailyData[dateKey].sales += (parseFloat(row.cash_amount)||0) + (parseFloat(row.e_payment_amount)||0);
                     dailyData[dateKey].gp += Math.abs(parseFloat(row.fee)||0);
                     dailyData[dateKey].vat += Math.abs(parseFloat(row.vat)||0);
-                    dailyData[dateKey].other += Math.abs(parseFloat(row.other_cost)||0); // Promo
+                    dailyData[dateKey].other += Math.abs(parseFloat(row.other_cost)||0); // Promo/Ads
                 }
                 else if (detail === 'Cash Loan') {
                     // สินเชื่อเงินสด (net_amount ติดลบ)
@@ -428,7 +428,7 @@
                 
                 // แยก 2 สินเชื่อ
                 if (val.cash_loan > 0) await saveExp(date, 'lineman_cash', '0425-L', val.cash_loan, 'Cash Loan Lineman');
-                if (val.installment > 0) await saveExp(date, 'lineman_inst', '0426-L', val.installment, 'Installment/Ads Lineman');
+                if (val.installment > 0) await saveExp(date, 'lineman_inst', '0426-L', val.installment, 'Installment Lineman');
                 
                 count++;
             }
@@ -470,7 +470,7 @@
             '0420-G': 'GP Grab', '0421-G': 'VAT Grab', '0408-G': 'Ads Grab', '0422-G': 'Promo Grab', '0423-G': 'Del Subsidy Grab', '0425-G': 'สินเชื่อ Grab (Finance)',
             // LINEMAN
             '0420-L': 'GP Lineman', '0421-L': 'VAT Lineman', '0424-L': 'Promo/Other Lineman', 
-            '0425-L': 'สินเชื่อเงินสด (Lineman Cash)', '0426-L': 'ผ่อนสินค้า/โฆษณา (Lineman Inst.)',
+            '0425-L': 'สินเชื่อเงินสด Lineman (Cash Loan)', '0426-L': 'ผ่อนสินค้า/โฆษณา Lineman (Installment)',
             // OPEX
             '0301': 'เงินเดือน', '0401': 'ค่าไฟฟ้า', '0402': 'ค่าน้ำ', '0411': 'เบ็ดเตล็ด', '0416': 'ค่าเช่าที่'
         };
