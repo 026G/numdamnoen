@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant P&L (Master Edition)</title>
+    <title>Restaurant P&L (Report Edition)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script> 
@@ -11,9 +11,14 @@
     <style>
         body { font-family: 'Sarabun', sans-serif; }
         .chart-container { position: relative; height: 300px; width: 100%; }
-        /* Animation สำหรับ Loading */
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .spinner { border: 4px solid rgba(0, 0, 0, 0.1); border-left-color: #3B82F6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        /* Table Styling */
+        .report-table th { background-color: #f3f4f6; color: #374151; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; padding: 0.75rem 1.5rem; }
+        .report-table td { padding: 0.75rem 1.5rem; border-bottom: 1px solid #e5e7eb; }
+        .row-header { font-weight: bold; background-color: #eef2ff; }
+        .row-subtotal { font-weight: bold; background-color: #f9fafb; border-top: 2px solid #d1d5db; }
+        .row-total { font-weight: bold; background-color: #1e3a8a; color: white; font-size: 1.1em; }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -21,13 +26,14 @@
     <nav class="bg-blue-900 text-white p-4 shadow-lg sticky top-0 z-50">
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
             <h1 class="text-xl font-bold flex items-center">
-                📊 Restaurant P&L <span class="text-xs bg-yellow-400 text-blue-900 px-2 rounded ml-2 shadow">Master</span>
+                📊 Restaurant P&L <span class="text-xs bg-pink-500 text-white px-2 rounded ml-2 shadow">Full Report</span>
             </h1>
             <div class="space-x-1 flex overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
-                <button onclick="showSection('dashboard')" class="bg-blue-800 px-3 py-1 rounded hover:bg-blue-700 whitespace-nowrap transition">🏠 Dashboard</button>
-                <button onclick="showSection('input-sales')" class="bg-blue-800 px-3 py-1 rounded hover:bg-blue-700 whitespace-nowrap transition">✏️ ยอดขาย</button>
-                <button onclick="showSection('input-expense')" class="bg-blue-800 px-3 py-1 rounded hover:bg-blue-700 whitespace-nowrap transition">💸 ค่าใช้จ่าย</button>
-                <button onclick="showSection('import-section')" class="bg-green-600 px-3 py-1 rounded hover:bg-green-700 whitespace-nowrap shadow transition">📂 Import CSV</button>
+                <button onclick="showSection('dashboard')" class="nav-btn bg-blue-800 px-3 py-1 rounded hover:bg-blue-700">🏠 ภาพรวม</button>
+                <button onclick="showSection('report-section')" class="nav-btn bg-purple-600 px-3 py-1 rounded hover:bg-purple-700 shadow">📑 รายงานละเอียด</button>
+                <button onclick="showSection('input-sales')" class="nav-btn bg-blue-800 px-3 py-1 rounded hover:bg-blue-700">✏️ ยอดขาย</button>
+                <button onclick="showSection('input-expense')" class="nav-btn bg-blue-800 px-3 py-1 rounded hover:bg-blue-700">💸 ค่าใช้จ่าย</button>
+                <button onclick="showSection('import-section')" class="nav-btn bg-green-600 px-3 py-1 rounded hover:bg-green-700 shadow">📂 Import</button>
             </div>
         </div>
     </nav>
@@ -38,186 +44,124 @@
             <div class="bg-white p-6 rounded-lg shadow-xl text-center flex flex-col items-center">
                 <div class="spinner mb-4"></div>
                 <p id="loading-text" class="text-lg font-bold text-gray-700">กำลังประมวลผล...</p>
-                <p class="text-sm text-gray-500 mt-1">กรุณารอสักครู่</p>
             </div>
         </div>
 
         <div id="dashboard" class="section-content">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">ภาพรวม (Overview)</h2>
-                <button onclick="loadDashboard()" class="text-sm text-blue-600 underline hover:text-blue-800">🔄 รีเฟรชข้อมูล</button>
+                <h2 class="text-2xl font-bold text-gray-800">ภาพรวม (Dashboard)</h2>
+                <button onclick="loadDashboard()" class="text-sm text-blue-600 underline">รีเฟรชข้อมูล</button>
             </div>
-
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div class="bg-white p-4 rounded-lg shadow border-l-4 border-green-500 hover:shadow-md transition">
-                    <p class="text-gray-500 text-sm">รายได้รวม (Revenue)</p>
+                <div class="bg-white p-4 rounded shadow border-l-4 border-green-500">
+                    <p class="text-gray-500 text-sm">รายได้รวม</p>
                     <h2 class="text-2xl font-bold text-gray-800" id="totalRevenue">0 ฿</h2>
                 </div>
-                <div class="bg-white p-4 rounded-lg shadow border-l-4 border-red-500 hover:shadow-md transition">
+                <div class="bg-white p-4 rounded shadow border-l-4 border-red-500">
                     <p class="text-gray-500 text-sm">ต้นทุนขาย (COGS)</p>
                     <h2 class="text-2xl font-bold text-gray-800" id="totalCOGS">0 ฿</h2>
                 </div>
-                <div class="bg-white p-4 rounded-lg shadow border-l-4 border-yellow-500 hover:shadow-md transition">
+                <div class="bg-white p-4 rounded shadow border-l-4 border-yellow-500">
                     <p class="text-gray-500 text-sm">ค่าใช้จ่าย (OPEX)</p>
                     <h2 class="text-2xl font-bold text-gray-800" id="totalExpense">0 ฿</h2>
                 </div>
-                <div class="bg-white p-4 rounded-lg shadow border-l-4 border-blue-500 hover:shadow-md transition">
-                    <p class="text-gray-500 text-sm">กำไรสุทธิ (Net Profit)</p>
+                <div class="bg-white p-4 rounded shadow border-l-4 border-blue-500">
+                    <p class="text-gray-500 text-sm">กำไรสุทธิ</p>
                     <h2 class="text-2xl font-bold text-gray-800" id="netProfit">0 ฿</h2>
                 </div>
             </div>
+            <div class="bg-white p-6 rounded shadow mb-6">
+                <h3 class="text-lg font-bold mb-4">สัดส่วนกำไร/ขาดทุน</h3>
+                <div class="chart-container"><canvas id="plChart"></canvas></div>
+            </div>
+        </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="bg-white p-6 rounded-lg shadow lg:col-span-2">
-                    <h3 class="text-lg font-bold mb-4 text-gray-700">📊 สัดส่วนกำไรและค่าใช้จ่าย</h3>
-                    <div class="chart-container">
-                        <canvas id="plChart"></canvas>
+        <div id="report-section" class="section-content hidden">
+            <div class="bg-white p-6 rounded-lg shadow-lg min-h-screen">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-6 border-b pb-4">
+                    <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+                        📑 งบกำไร-ขาดทุน (P&L Statement)
+                    </h2>
+                    <div class="flex items-center space-x-2 mt-4 md:mt-0">
+                        <label class="text-gray-600 font-medium">เลือกเดือน:</label>
+                        <input type="month" id="reportMonth" class="border p-2 rounded focus:ring-2 focus:ring-purple-500 outline-none">
+                        <button onclick="generateReport()" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 shadow">🔎 แสดงรายงาน</button>
                     </div>
                 </div>
-                <div class="bg-white p-6 rounded-lg shadow">
-                    <h3 class="text-lg font-bold mb-4 text-gray-700">📝 รายการล่าสุด</h3>
-                    <ul id="recentTransactions" class="text-sm space-y-3 max-h-80 overflow-y-auto pr-2">
-                        <li class="text-gray-400 text-center py-4">ยังไม่มีข้อมูล</li>
-                    </ul>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm text-left text-gray-500 report-table">
+                        <thead>
+                            <tr>
+                                <th>รหัส</th>
+                                <th>รายการ</th>
+                                <th class="text-right">จำนวนเงิน (บาท)</th>
+                                <th class="text-right">% ของยอดขาย</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportBody">
+                            <tr><td colspan="4" class="text-center py-8">กรุณาเลือกเดือนแล้วกดแสดงรายงาน</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
         <div id="import-section" class="section-content hidden">
-            <div class="bg-white p-8 rounded-lg shadow-lg max-w-3xl mx-auto border-t-4 border-green-500">
-                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">📂 Import ยอดขาย (Smart CSV)</h2>
-                
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                    <h3 class="font-bold text-blue-800 mb-2">✨ ความสามารถของระบบ:</h3>
-                    <ul class="list-disc ml-5 text-sm text-blue-900 space-y-1">
-                        <li><strong>Lineman Report:</strong> แยกค่า GP, VAT, และ ค่าโฆษณา/ส่วนลด ให้อัตโนมัติ</li>
-                        <li><strong>ป้องกันข้อมูลซ้ำ (Anti-Duplicate):</strong> สามารถอัปโหลดไฟล์เดิมซ้ำได้ ระบบจะ "อัปเดต" ข้อมูลเดิมให้ ไม่เบิ้ลยอด</li>
-                        <li><strong>มาตรฐาน (Standard):</strong> รองรับไฟล์ CSV ที่คุณทำเอง (Date, Alacarte, Buffet...)</li>
-                    </ul>
+            <div class="bg-white p-8 rounded-lg shadow-lg max-w-2xl mx-auto">
+                <h2 class="text-2xl font-bold mb-4 border-b pb-2">📂 Import CSV (Smart Mode)</h2>
+                <div class="mb-4 text-sm text-gray-600 bg-gray-50 p-4 rounded border">
+                    <p>✅ รองรับไฟล์ Lineman (แยก GP, Vat, Ads ให้อัตโนมัติ)</p>
+                    <p>✅ อัปโหลดซ้ำได้ (ระบบจะอัปเดตข้อมูล ไม่เบิ้ล)</p>
                 </div>
-
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">เลือกไฟล์ CSV ที่ต้องการนำเข้า</label>
-                    <div class="flex items-center justify-center w-full">
-                        <label for="csvFileInput" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition">
-                            <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                                <svg class="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
-                                </svg>
-                                <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">คลิกเพื่อเลือกไฟล์</span> หรือลากไฟล์มาวาง</p>
-                                <p class="text-xs text-gray-500">รองรับไฟล์ .csv เท่านั้น</p>
-                            </div>
-                            <input id="csvFileInput" type="file" accept=".csv" class="hidden" />
-                        </label>
-                    </div>
-                    <div id="fileNameDisplay" class="mt-2 text-sm text-center text-green-600 font-medium"></div>
-                </div>
-
-                <button onclick="processCSV()" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 font-bold shadow-lg transform transition hover:scale-[1.02]">
-                    🚀 เริ่มประมวลผล (Import Data)
-                </button>
+                <input type="file" id="csvFileInput" accept=".csv" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 mb-4"/>
+                <button onclick="processCSV()" class="w-full bg-green-600 text-white py-3 rounded hover:bg-green-700 font-bold shadow">เริ่ม Import</button>
             </div>
         </div>
 
         <div id="input-sales" class="section-content hidden">
-            <div class="bg-white p-8 rounded-lg shadow-lg max-w-2xl mx-auto border-t-4 border-blue-500">
-                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">✏️ บันทึกยอดขาย (รายวัน)</h2>
-                <form id="salesForm" class="space-y-5">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">วันที่ขาย</label>
-                        <input type="date" id="saleDate" class="w-full p-3 border rounded focus:ring-2 focus:ring-blue-500 outline-none" required>
-                        <p class="text-xs text-yellow-600 mt-1">*หากบันทึกซ้ำวันที่เดิม ระบบจะทับยอดเก่าให้</p>
+            <div class="bg-white p-6 rounded shadow max-w-xl mx-auto">
+                <h2 class="text-2xl font-bold mb-4">✏️ บันทึกยอดขาย</h2>
+                <form id="salesForm" class="space-y-4">
+                    <input type="date" id="saleDate" class="w-full border p-2 rounded" required>
+                    <div class="grid grid-cols-2 gap-4">
+                        <input type="number" id="saleALaCarte" placeholder="A La Carte" class="border p-2 rounded">
+                        <input type="number" id="saleBuffet" placeholder="Buffet" class="border p-2 rounded">
+                        <input type="number" id="delGrab" placeholder="Grab" class="border p-2 rounded">
+                        <input type="number" id="delLineman" placeholder="Lineman" class="border p-2 rounded">
+                        <input type="number" id="delRobinhood" placeholder="Robinhood" class="border p-2 rounded">
+                        <input type="number" id="delOther" placeholder="อื่นๆ" class="border p-2 rounded">
                     </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="bg-blue-50 p-4 rounded-lg">
-                            <h3 class="font-bold text-blue-800 mb-2 border-b border-blue-200 pb-1">🏠 หน้าร้าน</h3>
-                            <div class="space-y-3">
-                                <div>
-                                    <label class="text-xs text-gray-600">A La Carte</label>
-                                    <input type="number" id="saleALaCarte" class="w-full p-2 border rounded text-sm bg-white" placeholder="0.00">
-                                </div>
-                                <div>
-                                    <label class="text-xs text-gray-600">Buffet</label>
-                                    <input type="number" id="saleBuffet" class="w-full p-2 border rounded text-sm bg-white" placeholder="0.00">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="bg-green-50 p-4 rounded-lg">
-                            <h3 class="font-bold text-green-800 mb-2 border-b border-green-200 pb-1">🛵 Delivery</h3>
-                            <div class="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label class="text-xs text-gray-600">Grab</label>
-                                    <input type="number" id="delGrab" class="w-full p-2 border rounded text-sm bg-white" placeholder="0">
-                                </div>
-                                <div>
-                                    <label class="text-xs text-gray-600">Lineman</label>
-                                    <input type="number" id="delLineman" class="w-full p-2 border rounded text-sm bg-white" placeholder="0">
-                                </div>
-                                <div>
-                                    <label class="text-xs text-gray-600">Robinhood</label>
-                                    <input type="number" id="delRobinhood" class="w-full p-2 border rounded text-sm bg-white" placeholder="0">
-                                </div>
-                                <div>
-                                    <label class="text-xs text-gray-600">อื่นๆ</label>
-                                    <input type="number" id="delOther" class="w-full p-2 border rounded text-sm bg-white" placeholder="0">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-bold shadow transition">บันทึกยอดขาย</button>
+                    <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded shadow">บันทึก</button>
                 </form>
             </div>
         </div>
 
         <div id="input-expense" class="section-content hidden">
-            <div class="bg-white p-8 rounded-lg shadow-lg max-w-xl mx-auto border-t-4 border-red-500">
-                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">💸 บันทึกค่าใช้จ่าย</h2>
+            <div class="bg-white p-6 rounded shadow max-w-xl mx-auto">
+                <h2 class="text-2xl font-bold mb-4">💸 บันทึกค่าใช้จ่าย</h2>
                 <form id="expenseForm" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">วันที่</label>
-                        <input type="date" id="expDate" class="w-full p-3 border rounded focus:ring-2 focus:ring-red-500 outline-none" required>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">หมวดหมู่บัญชี</label>
-                        <select id="expCategory" class="w-full p-3 border rounded bg-white focus:ring-2 focus:ring-red-500 outline-none">
-                            <option value="" disabled selected>-- กรุณาเลือกรายการ --</option>
-                            <optgroup label="💰 ต้นทุนขาย (COGS)">
-                                <option value="0201">0201 - วัตถุดิบอาหาร (Food Cost)</option>
-                                <option value="0202">0202 - เครื่องดื่ม</option>
-                                <option value="0205">0205 - บรรจุภัณฑ์ (Packaging)</option>
-                                <option value="0207">0207 - ค่าแก๊ส (LPG)</option>
-                                <option value="0420">0420 - GP Delivery (Grab/Lineman)</option>
-                            </optgroup>
-                            <optgroup label="👷 ค่าแรง (Labor)">
-                                <option value="0301">0301 - เงินเดือนพนักงาน (FT)</option>
-                                <option value="0303">0303 - ค่าแรงพนักงาน (PT)</option>
-                            </optgroup>
-                            <optgroup label="💡 ค่าใช้จ่ายดำเนินงาน (OPEX)">
-                                <option value="0401">0401 - ค่าไฟฟ้า</option>
-                                <option value="0402">0402 - ค่าน้ำประปา</option>
-                                <option value="0406">0406 - ค่าซ่อมแซมบำรุงรักษา</option>
-                                <option value="0408">0408 - การตลาด/โฆษณา (Ads)</option>
-                                <option value="0411">0411 - ค่าใช้จ่ายเบ็ดเตล็ด</option>
-                                <option value="0416">0416 - ค่าเช่าที่</option>
-                            </optgroup>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">จำนวนเงิน (บาท)</label>
-                        <input type="number" id="expAmount" class="w-full p-3 border rounded focus:ring-2 focus:ring-red-500 outline-none" placeholder="0.00" required>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">รายละเอียดเพิ่มเติม (Memo)</label>
-                        <input type="text" id="expMemo" class="w-full p-3 border rounded focus:ring-2 focus:ring-red-500 outline-none" placeholder="เช่น ค่าซ่อมท่อ, ซื้อน้ำแข็ง">
-                    </div>
-
-                    <button type="submit" class="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 font-bold shadow transition">บันทึกค่าใช้จ่าย</button>
+                    <input type="date" id="expDate" class="w-full border p-2 rounded" required>
+                    <select id="expCategory" class="w-full border p-2 rounded bg-white">
+                        <option value="" disabled selected>-- เลือกหมวดหมู่ --</option>
+                        <optgroup label="💰 ต้นทุนขาย (COGS)">
+                            <option value="0201">0201 - วัตถุดิบอาหาร (Food Cost)</option>
+                            <option value="0205">0205 - บรรจุภัณฑ์ (Packaging)</option>
+                            <option value="0207">0207 - ค่าแก๊ส (LPG)</option>
+                            <option value="0420">0420 - GP Delivery</option>
+                        </optgroup>
+                        <optgroup label="💡 ค่าใช้จ่ายดำเนินงาน (OPEX)">
+                            <option value="0301">0301 - เงินเดือนพนักงาน</option>
+                            <option value="0401">0401 - ค่าไฟฟ้า</option>
+                            <option value="0402">0402 - ค่าน้ำประปา</option>
+                            <option value="0408">0408 - การตลาด/Ads</option>
+                            <option value="0411">0411 - เบ็ดเตล็ด</option>
+                            <option value="0416">0416 - ค่าเช่าที่</option>
+                        </optgroup>
+                    </select>
+                    <input type="number" id="expAmount" placeholder="จำนวนเงิน" class="w-full border p-2 rounded" required>
+                    <input type="text" id="expMemo" placeholder="รายละเอียด" class="w-full border p-2 rounded">
+                    <button type="submit" class="w-full bg-red-600 text-white p-2 rounded shadow">บันทึก</button>
                 </form>
             </div>
         </div>
@@ -229,309 +173,300 @@
         import { getFirestore, collection, getDocs, setDoc, addDoc, doc, Timestamp } 
         from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-        // ============================================================
-        // ⚠️ TODO: วาง Firebase Config ของคุณตรงนี้ (ห้ามลืม!)
-        // ============================================================
+        // ============================================
+        // ⚠️ Config Firebase (ใส่ของคุณตรงนี้)
+        // ============================================
           const firebaseConfig = {
-            apiKey: "AIzaSyDRiTZXUbkdGaCHZVTkOOl1Iu0A-744tE0",
-            authDomain: "numdamnoen-6cbd5.firebaseapp.com",
-            projectId: "numdamnoen-6cbd5",
-            storageBucket: "numdamnoen-6cbd5.firebasestorage.app",
-            messagingSenderId: "823964498524",
-            appId: "1:823964498524:web:c79d742cf1a5a33c864499",
-            measurementId: "G-805RS7VZEM"
-          };
-        // ============================================================
+    apiKey: "AIzaSyDRiTZXUbkdGaCHZVTkOOl1Iu0A-744tE0",
+    authDomain: "numdamnoen-6cbd5.firebaseapp.com",
+    projectId: "numdamnoen-6cbd5",
+    storageBucket: "numdamnoen-6cbd5.firebasestorage.app",
+    messagingSenderId: "823964498524",
+    appId: "1:823964498524:web:c79d742cf1a5a33c864499",
+    measurementId: "G-805RS7VZEM"
+  };
+        // ============================================
 
-        // Initialize Firebase
-        let db;
-        try {
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            console.log("Firebase initialized.");
-        } catch (e) {
-            console.error(e);
-            alert("❌ ตั้งค่า Firebase ผิดพลาด: " + e.message + "\n(กรุณาแก้โค้ดส่วน firebaseConfig)");
-        }
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-        // --- Helper Functions ---
+        // --- Helper Func ---
         window.showSection = (id) => {
             document.querySelectorAll('.section-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
             if(id === 'dashboard') loadDashboard();
+            if(id === 'report-section') {
+                // Default month to current month
+                const now = new Date();
+                const monthStr = now.toISOString().slice(0, 7); // YYYY-MM
+                document.getElementById('reportMonth').value = monthStr;
+            }
         }
-        
-        const showLoading = (show) => {
-            const el = document.getElementById('loading');
-            if(show) el.classList.remove('hidden'); else el.classList.add('hidden');
-        };
-
+        const showLoading = (show) => document.getElementById('loading').className = show ? "fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50" : "hidden";
         const getVal = (id) => Number(document.getElementById(id).value) || 0;
 
-        // Show File Name on Select
-        document.getElementById('csvFileInput').addEventListener('change', function(e) {
-            const fileName = e.target.files[0]?.name || "";
-            document.getElementById('fileNameDisplay').innerText = fileName ? `📄 เลือกไฟล์: ${fileName}` : "";
-        });
+        // ============================================
+        // REPORT GENERATION LOGIC (NEW!)
+        // ============================================
+        const accountNames = {
+            '0101': 'A La Carte', '0105': 'Buffet', 'DEL_GRAB': 'Grab', 'DEL_LINE': 'Lineman', 'DEL_OTH': 'Delivery อื่นๆ',
+            '0201': 'วัตถุดิบอาหาร (Food Cost)', '0205': 'บรรจุภัณฑ์', '0207': 'ค่าแก๊ส', '0420': 'GP Delivery',
+            '0301': 'เงินเดือนพนักงาน', '0401': 'ค่าไฟฟ้า', '0402': 'ค่าน้ำประปา', '0408': 'การตลาด/Ads', '0411': 'เบ็ดเตล็ด', '0416': 'ค่าเช่าที่'
+        };
 
-        // ============================================================
-        // 1. Logic Import CSV (Smart + Anti-Dup)
-        // ============================================================
+        window.generateReport = async () => {
+            const monthVal = document.getElementById('reportMonth').value; // 2026-01
+            if(!monthVal) { alert("กรุณาเลือกเดือนก่อนครับ"); return; }
+            
+            showLoading(true);
+            const tbody = document.getElementById('reportBody');
+            tbody.innerHTML = '';
+
+            try {
+                let reportData = {
+                    sales: { '0101':0, '0105':0, 'DEL_GRAB':0, 'DEL_LINE':0, 'DEL_OTH':0 },
+                    cogs: {},
+                    opex: {}
+                };
+
+                // 1. Fetch Sales matching month
+                const salesSnapshot = await getDocs(collection(db, "daily_sales"));
+                salesSnapshot.forEach(doc => {
+                    const d = doc.data();
+                    if(d.date.startsWith(monthVal)) {
+                        reportData.sales['0101'] += (d.alacarte || 0);
+                        reportData.sales['0105'] += (d.buffet || 0);
+                        reportData.sales['DEL_GRAB'] += (d.delivery_grab || 0);
+                        reportData.sales['DEL_LINE'] += (d.delivery_lineman || 0);
+                        reportData.sales['DEL_OTH'] += (d.delivery_robinhood || 0) + (d.delivery_other || 0);
+                    }
+                });
+
+                // 2. Fetch Expenses matching month
+                const expSnapshot = await getDocs(collection(db, "expenses"));
+                expSnapshot.forEach(doc => {
+                    const d = doc.data();
+                    if(d.date.startsWith(monthVal)) {
+                        if(['0201','0202','0205','0207','0420'].includes(d.category)) {
+                            // COGS
+                            reportData.cogs[d.category] = (reportData.cogs[d.category] || 0) + d.amount;
+                        } else {
+                            // OPEX
+                            reportData.opex[d.category] = (reportData.opex[d.category] || 0) + d.amount;
+                        }
+                    }
+                });
+
+                // 3. Render Table
+                const totalRev = Object.values(reportData.sales).reduce((a,b)=>a+b,0);
+                const totalCogs = Object.values(reportData.cogs).reduce((a,b)=>a+b,0);
+                const totalOpex = Object.values(reportData.opex).reduce((a,b)=>a+b,0);
+                const grossProfit = totalRev - totalCogs;
+                const netProfit = grossProfit - totalOpex;
+
+                // --- Helper Render Row ---
+                const addRow = (code, name, amount, isHeader=false, isTotal=false, isSubtotal=false) => {
+                    let tr = document.createElement('tr');
+                    let percent = totalRev ? ((amount/totalRev)*100).toFixed(1) + '%' : '0%';
+                    if(isHeader) { tr.className = "row-header"; percent = ''; amount = ''; }
+                    if(isSubtotal) tr.className = "row-subtotal";
+                    if(isTotal) { tr.className = "row-total"; percent = (totalRev ? ((amount/totalRev)*100).toFixed(1) + '%' : ''); }
+                    
+                    // Format number
+                    let amountStr = typeof amount === 'number' ? amount.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) : amount;
+
+                    tr.innerHTML = `
+                        <td>${code}</td>
+                        <td>${name}</td>
+                        <td class="text-right">${amountStr}</td>
+                        <td class="text-right">${percent}</td>
+                    `;
+                    tbody.appendChild(tr);
+                };
+
+                // === Part 1: Revenue ===
+                addRow('', 'รายได้ (Revenue)', '', true);
+                Object.entries(reportData.sales).forEach(([key, val]) => {
+                    if(val > 0) addRow(key.startsWith('DEL')?'-':key, accountNames[key] || key, val);
+                });
+                addRow('', 'รวมรายได้', totalRev, false, false, true); // Subtotal
+
+                // === Part 2: COGS ===
+                addRow('', 'ต้นทุนขาย (COGS)', '', true);
+                Object.entries(reportData.cogs).forEach(([key, val]) => {
+                    addRow(key, accountNames[key] || ('รหัส ' + key), val);
+                });
+                addRow('', 'รวมต้นทุนขาย', totalCogs, false, false, true);
+
+                // === Gross Profit ===
+                addRow('', 'กำไรขั้นต้น (Gross Profit)', grossProfit, false, false, true);
+
+                // === Part 3: OPEX ===
+                addRow('', 'ค่าใช้จ่ายดำเนินงาน (OPEX)', '', true);
+                Object.entries(reportData.opex).forEach(([key, val]) => {
+                    addRow(key, accountNames[key] || ('รหัส ' + key), val);
+                });
+                addRow('', 'รวมค่าใช้จ่ายดำเนินงาน', totalOpex, false, false, true);
+
+                // === Net Profit ===
+                addRow('', 'กำไรสุทธิ (Net Profit)', netProfit, false, true); // Total Row
+
+            } catch (err) { console.error(err); alert("Report Error: "+err.message); }
+            showLoading(false);
+        }
+
+        // ============================================
+        // CSV IMPORT (LINEMAN + STANDARD)
+        // ============================================
         window.processCSV = () => {
             const fileInput = document.getElementById('csvFileInput');
-            if (!fileInput.files.length) { alert("กรุณาเลือกไฟล์ CSV ก่อนครับ"); return; }
-            const file = fileInput.files[0];
+            if (!fileInput.files.length) { alert("กรุณาเลือกไฟล์ CSV"); return; }
             showLoading(true);
-
-            Papa.parse(file, {
-                header: true,
-                skipEmptyLines: true,
+            Papa.parse(fileInput.files[0], {
+                header: true, skipEmptyLines: true,
                 complete: async function(results) {
                     const data = results.data;
                     const headers = results.meta.fields || [];
-                    console.log("Headers Found:", headers);
-
+                    
                     if (headers.includes('restaurant_name') && headers.includes('net_amount')) {
-                        // Lineman Logic
-                        await importLinemanDetailed(data);
+                        await importLinemanDetailed(data); // Lineman Logic
                     } else if (headers.includes('Date')) {
-                        // Standard Logic
-                        await importStandard(data);
+                        await importStandard(data); // Standard Logic
                     } else {
-                        showLoading(false);
-                        alert("❌ ไม่รู้จักรูปแบบไฟล์นี้\n(ต้องเป็นไฟล์ Lineman หรือไฟล์มาตรฐานที่มีช่อง Date)");
+                        showLoading(false); alert("❌ รูปแบบไฟล์ไม่ถูกต้อง");
                     }
                 },
-                error: function(err) { showLoading(false); alert("Error: " + err.message); }
+                error: (err) => { showLoading(false); alert("Error: "+err.message); }
             });
         }
 
         async function importLinemanDetailed(data) {
             let dailyData = {};
-
             data.forEach(row => {
                 if (!row.capture_time) return;
-                const dateKey = row.capture_time.split(' ')[0]; // แยกวันที่
-
-                if (!dailyData[dateKey]) {
-                    dailyData[dateKey] = { sales: 0, gp: 0, vat: 0, ads_promo: 0 };
-                }
-
-                const sales = (parseFloat(row.cash_amount) || 0) + (parseFloat(row.e_payment_amount) || 0);
-                const gp = Math.abs(parseFloat(row.fee) || 0);
-                const vat = Math.abs(parseFloat(row.vat) || 0);
-                // รวมค่าโฆษณา/ส่วนลด/สินเชื่อ จากช่อง other_cost (ปกติเป็นลบ แปลงเป็นบวก)
-                const other = Math.abs(parseFloat(row.other_cost) || 0);
-
-                dailyData[dateKey].sales += sales;
-                dailyData[dateKey].gp += gp;
-                dailyData[dateKey].vat += vat;
-                dailyData[dateKey].ads_promo += other;
+                const dateKey = row.capture_time.split(' ')[0];
+                if (!dailyData[dateKey]) dailyData[dateKey] = { sales: 0, gp: 0, vat: 0, ads: 0 };
+                
+                dailyData[dateKey].sales += (parseFloat(row.cash_amount)||0) + (parseFloat(row.e_payment_amount)||0);
+                dailyData[dateKey].gp += Math.abs(parseFloat(row.fee)||0);
+                dailyData[dateKey].vat += Math.abs(parseFloat(row.vat)||0);
+                dailyData[dateKey].ads += Math.abs(parseFloat(row.other_cost)||0);
             });
 
             let count = 0;
             for (const [date, val] of Object.entries(dailyData)) {
-                try {
-                    // A. บันทึกยอดขาย (ใช้ setDoc ทับ ID วันที่)
-                    await setDoc(doc(db, "daily_sales", date), {
-                        date: date,
-                        delivery_lineman: val.sales, // อัปเดตเฉพาะยอด Lineman
-                        timestamp: Timestamp.now()
-                    }, { merge: true }); // merge=true คือไม่ลบข้อมูลแอพอื่น (Grab/Robinhood) ที่มีอยู่แล้ว
+                // Update Sales
+                await setDoc(doc(db, "daily_sales", date), {
+                    date: date, delivery_lineman: val.sales, timestamp: Timestamp.now()
+                }, { merge: true });
 
-                    // B. บันทึกค่า GP + VAT (ทับ ID เดิม: lineman_gp_วันที่)
-                    if (val.gp + val.vat > 0) {
-                        await setDoc(doc(db, "expenses", `lineman_gp_${date}`), {
-                            date: date,
-                            category: "0420",
-                            amount: parseFloat((val.gp + val.vat).toFixed(2)),
-                            memo: "GP & VAT Lineman (Auto Import)",
-                            timestamp: Timestamp.now()
-                        });
-                    }
-
-                    // C. บันทึกค่า Ads/Promo (ทับ ID เดิม: lineman_ads_วันที่)
-                    if (val.ads_promo > 0) {
-                        await setDoc(doc(db, "expenses", `lineman_ads_${date}`), {
-                            date: date,
-                            category: "0408",
-                            amount: parseFloat(val.ads_promo.toFixed(2)),
-                            memo: "Ads/Promo Lineman (Auto Import)",
-                            timestamp: Timestamp.now()
-                        });
-                    }
-                    count++;
-                } catch (e) { console.error("Import Error:", e); }
+                // Update Expenses (GP & Ads)
+                if (val.gp + val.vat > 0) {
+                    await setDoc(doc(db, "expenses", `lineman_gp_${date}`), {
+                        date: date, category: "0420", amount: parseFloat((val.gp + val.vat).toFixed(2)), memo: "GP/Vat Lineman"
+                    });
+                }
+                if (val.ads > 0) {
+                    await setDoc(doc(db, "expenses", `lineman_ads_${date}`), {
+                        date: date, category: "0408", amount: parseFloat(val.ads.toFixed(2)), memo: "Ads Lineman"
+                    });
+                }
+                count++;
             }
-            showLoading(false);
-            alert(`✅ Import Lineman สำเร็จ ${count} วัน\n(ข้อมูลถูกอัปเดตเรียบร้อย)`);
-            showSection('dashboard');
+            showLoading(false); alert(`Import Lineman สำเร็จ ${count} วัน`); loadDashboard();
         }
 
         async function importStandard(data) {
             let count = 0;
             for (const row of data) {
-                if(!row.Date) continue; 
-                try {
-                    const cleanNum = (val) => parseFloat((val || "0").toString().replace(/,/g, '')) || 0;
-                    // ใช้ setDoc ทับ ID วันที่
-                    await setDoc(doc(db, "daily_sales", row.Date), {
-                        date: row.Date,
-                        alacarte: cleanNum(row.Alacarte), buffet: cleanNum(row.Buffet),
-                        delivery_grab: cleanNum(row.Grab), delivery_lineman: cleanNum(row.Lineman),
-                        delivery_robinhood: cleanNum(row.Robinhood), delivery_other: cleanNum(row.Other),
-                        timestamp: Timestamp.now()
-                    }, { merge: true });
-                    count++;
-                } catch (err) { console.error(err); }
+                if(!row.Date) continue;
+                const clean = (v) => parseFloat((v||"0").toString().replace(/,/g,''))||0;
+                await setDoc(doc(db, "daily_sales", row.Date), {
+                    date: row.Date,
+                    alacarte: clean(row.Alacarte), buffet: clean(row.Buffet),
+                    delivery_grab: clean(row.Grab), delivery_lineman: clean(row.Lineman),
+                    delivery_robinhood: clean(row.Robinhood), delivery_other: clean(row.Other),
+                    timestamp: Timestamp.now()
+                }, { merge: true });
+                count++;
             }
-            showLoading(false);
-            alert(`✅ Import มาตรฐานสำเร็จ ${count} รายการ`);
-            showSection('dashboard');
+            showLoading(false); alert(`Import สำเร็จ ${count} รายการ`); loadDashboard();
         }
 
-        // ============================================================
-        // 2. Logic บันทึก Manual (Anti-Dup)
-        // ============================================================
+        // ============================================
+        // MANUAL ENTRY
+        // ============================================
         document.getElementById('salesForm').addEventListener('submit', async (e) => {
             e.preventDefault(); showLoading(true);
             const dateVal = document.getElementById('saleDate').value;
-            try {
-                // ใช้ setDoc เพื่อทับ/อัปเดตยอดของวันนั้นๆ
-                await setDoc(doc(db, "daily_sales", dateVal), {
-                    date: dateVal,
-                    alacarte: getVal('saleALaCarte'), buffet: getVal('saleBuffet'),
-                    delivery_grab: getVal('delGrab'), delivery_lineman: getVal('delLineman'),
-                    delivery_robinhood: getVal('delRobinhood'), delivery_other: getVal('delOther'),
-                    timestamp: Timestamp.now()
-                }, { merge: true });
-                
-                alert("✅ บันทึกยอดขายเรียบร้อย"); e.target.reset();
-                document.getElementById('saleDate').valueAsDate = new Date();
-            } catch (err) { alert("Error: " + err.message); }
-            showLoading(false);
+            await setDoc(doc(db, "daily_sales", dateVal), {
+                date: dateVal,
+                alacarte: getVal('saleALaCarte'), buffet: getVal('saleBuffet'),
+                delivery_grab: getVal('delGrab'), delivery_lineman: getVal('delLineman'),
+                delivery_robinhood: getVal('delRobinhood'), delivery_other: getVal('delOther'),
+                timestamp: Timestamp.now()
+            }, { merge: true });
+            showLoading(false); alert("บันทึกสำเร็จ"); e.target.reset(); document.getElementById('saleDate').valueAsDate = new Date();
         });
 
         document.getElementById('expenseForm').addEventListener('submit', async (e) => {
             e.preventDefault(); showLoading(true);
-            try {
-                // ค่าใช้จ่าย Manual ใช้ addDoc (Auto ID) เพราะอาจมีหลายรายการในวันเดียวได้
-                await addDoc(collection(db, "expenses"), {
-                    date: document.getElementById('expDate').value,
-                    category: document.getElementById('expCategory').value,
-                    amount: getVal('expAmount'), 
-                    memo: document.getElementById('expMemo').value,
-                    timestamp: Timestamp.now()
-                });
-                alert("✅ บันทึกค่าใช้จ่ายเรียบร้อย"); e.target.reset();
-                document.getElementById('expDate').valueAsDate = new Date();
-            } catch (err) { alert("Error: " + err.message); }
-            showLoading(false);
+            await addDoc(collection(db, "expenses"), {
+                date: document.getElementById('expDate').value,
+                category: document.getElementById('expCategory').value,
+                amount: getVal('expAmount'), memo: document.getElementById('expMemo').value,
+                timestamp: Timestamp.now()
+            });
+            showLoading(false); alert("บันทึกสำเร็จ"); e.target.reset(); document.getElementById('expDate').valueAsDate = new Date();
         });
 
-        // ============================================================
-        // 3. Logic Dashboard
-        // ============================================================
+        // ============================================
+        // DASHBOARD
+        // ============================================
         window.loadDashboard = async () => {
             showLoading(true);
-            try {
-                let rev = 0, cogs = 0, opex = 0;
-                const list = document.getElementById('recentTransactions');
-                list.innerHTML = '';
-                
-                // ดึงยอดขาย (รวมทุกวัน)
-                const salesSnapshot = await getDocs(collection(db, "daily_sales"));
-                salesSnapshot.forEach(doc => {
-                    const d = doc.data();
-                    rev += (d.alacarte||0)+(d.buffet||0)+(d.delivery_grab||0)+(d.delivery_lineman||0)+(d.delivery_robinhood||0)+(d.delivery_other||0);
-                });
+            let rev=0, cogs=0, opex=0;
+            const list = document.getElementById('recentTransactions'); list.innerHTML='';
+            
+            // Sales
+            (await getDocs(collection(db, "daily_sales"))).forEach(doc=>{
+                const d=doc.data();
+                rev += (d.alacarte||0)+(d.buffet||0)+(d.delivery_grab||0)+(d.delivery_lineman||0)+(d.delivery_robinhood||0)+(d.delivery_other||0);
+            });
+            // Expenses
+            (await getDocs(collection(db, "expenses"))).forEach(doc=>{
+                const d=doc.data();
+                if(['0201','0205','0207','0420'].includes(d.category)) cogs+=d.amount; else opex+=d.amount;
+                // List (Simple)
+                if(list.children.length < 20) {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<div class="flex justify-between border-b py-2 text-sm"><span>${d.date} ${accountNames[d.category]||d.category}</span><span class="text-red-500">-${d.amount}</span></div>`;
+                    list.prepend(li);
+                }
+            });
 
-                // ดึงค่าใช้จ่าย
-                const expSnapshot = await getDocs(collection(db, "expenses"));
-                expSnapshot.forEach(doc => {
-                    const d = doc.data();
-                    // แยกหมวดหมู่ COGS กับ OPEX
-                    if(['0201','0202','0205','0207','0420'].includes(d.category)) {
-                        cogs += d.amount;
-                    } else {
-                        opex += d.amount;
-                    }
-                    
-                    // สร้างรายการล่าสุด (Limit 50 ตัวบนๆ จะได้ไม่หน่วง)
-                    if (list.children.length < 50) {
-                        const li = document.createElement('li');
-                        li.className = "flex justify-between items-center border-b pb-2 border-gray-100";
-                        
-                        let catBadge = "bg-gray-200 text-gray-600";
-                        let catName = d.category || "???";
-                        
-                        // แต่งสี Badge
-                        if(d.category === '0420') { catName = 'GP Del'; catBadge = 'bg-orange-100 text-orange-800'; }
-                        else if(d.category === '0408') { catName = 'Ads/Mkt'; catBadge = 'bg-purple-100 text-purple-800'; }
-                        else if(['0201','0207'].includes(d.category)) { catBadge = 'bg-red-100 text-red-800'; }
-
-                        li.innerHTML = `
-                            <div>
-                                <span class="text-xs px-2 py-0.5 rounded ${catBadge} font-bold mr-2">${catName}</span>
-                                <span class="text-gray-700">${d.date} ${d.memo || ''}</span>
-                            </div>
-                            <span class="font-bold text-red-500">-${d.amount.toLocaleString()}</span>
-                        `;
-                        list.prepend(li); // เอาอันใหม่ขึ้นบน
-                    }
-                });
-
-                // คำนวณกำไร
-                const net = rev - cogs - opex;
-
-                // Update UI Numbers
-                document.getElementById('totalRevenue').innerText = rev.toLocaleString() + ' ฿';
-                document.getElementById('totalCOGS').innerText = cogs.toLocaleString() + ' ฿';
-                document.getElementById('totalExpense').innerText = opex.toLocaleString() + ' ฿';
-                document.getElementById('netProfit').innerText = net.toLocaleString() + ' ฿';
-                
-                // Color Code Net Profit
-                const netEl = document.getElementById('netProfit');
-                netEl.className = `text-2xl font-bold ${net >= 0 ? 'text-blue-600' : 'text-red-600'}`;
-
-                renderChart(rev, cogs, opex);
-
-            } catch (err) { console.error("Dashboard Error:", err); }
+            document.getElementById('totalRevenue').innerText = rev.toLocaleString()+' ฿';
+            document.getElementById('totalCOGS').innerText = cogs.toLocaleString()+' ฿';
+            document.getElementById('totalExpense').innerText = opex.toLocaleString()+' ฿';
+            document.getElementById('netProfit').innerText = (rev-cogs-opex).toLocaleString()+' ฿';
+            renderChart(rev, cogs, opex);
             showLoading(false);
         }
 
-        let myChart = null;
-        function renderChart(rev, cogs, exp) {
-            const ctx = document.getElementById('plChart');
-            if(myChart) myChart.destroy();
-            
-            const profit = Math.max(0, rev - cogs - exp);
-            
-            myChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['กำไรสุทธิ', 'ต้นทุนขาย (COGS)', 'ค่าใช้จ่ายดำเนินงาน (OPEX)'],
-                    datasets: [{
-                        data: [profit, cogs, exp],
-                        backgroundColor: [
-                            '#3B82F6', // Blue (Profit)
-                            '#EF4444', // Red (COGS)
-                            '#F59E0B'  // Yellow (Expense)
-                        ],
-                        hoverOffset: 4
-                    }]
+        let myChart=null;
+        function renderChart(r,c,e){
+            const ctx=document.getElementById('plChart'); if(myChart) myChart.destroy();
+            myChart=new Chart(ctx,{
+                type:'doughnut',
+                data:{
+                    labels:['กำไร','ต้นทุน','ค่าใช้จ่าย'],
+                    datasets:[{data:[Math.max(0,r-c-e),c,e], backgroundColor:['#3B82F6','#EF4444','#F59E0B']}]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom' }
-                    }
-                }
+                options:{responsive:true,maintainAspectRatio:false}
             });
         }
 
-        // เริ่มต้น: โหลด Dashboard
+        // Init
         document.getElementById('saleDate').valueAsDate = new Date();
         document.getElementById('expDate').valueAsDate = new Date();
         loadDashboard();
