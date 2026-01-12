@@ -3,357 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant P&L (Firebase Edition)</title>
+    <title>Restaurant P&L (Final Fix)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Sarabun', sans-serif; }
+        /* Fix: บังคับขนาดกราฟไม่ให้ล้น */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
 
     <nav class="bg-blue-900 text-white p-4 shadow-lg sticky top-0 z-50">
         <div class="container mx-auto flex justify-between items-center">
-            <h1 class="text-xl font-bold flex items-center">
-                📊 Restaurant P&L <span class="text-xs ml-2 bg-yellow-500 text-blue-900 px-2 rounded">Beta</span>
-            </h1>
+            <h1 class="text-xl font-bold">📊 Restaurant P&L</h1>
             <div class="space-x-2">
-                <button onclick="showSection('dashboard')" class="px-3 py-1 hover:bg-blue-700 rounded transition">Dashboard</button>
-                <button onclick="showSection('input-sales')" class="px-3 py-1 hover:bg-blue-700 rounded transition">บันทึกยอดขาย</button>
-                <button onclick="showSection('input-expense')" class="px-3 py-1 hover:bg-blue-700 rounded transition">บันทึกค่าใช้จ่าย</button>
+                <button onclick="showSection('dashboard')" class="bg-blue-800 px-3 py-1 rounded">Dashboard</button>
+                <button onclick="showSection('input-sales')" class="bg-blue-800 px-3 py-1 rounded">บันทึกยอดขาย</button>
+                <button onclick="showSection('input-expense')" class="bg-blue-800 px-3 py-1 rounded">บันทึกค่าใช้จ่าย</button>
             </div>
         </div>
     </nav>
 
     <div class="container mx-auto p-6">
-
         <div id="loading" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-            <div class="bg-white p-4 rounded shadow-lg">กำลังโหลดข้อมูล...</div>
+            <div class="bg-white p-4 rounded shadow-lg text-black">กำลังโหลดข้อมูล...</div>
         </div>
 
         <div id="dashboard" class="section-content">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">ภาพรวมเดือนปัจจุบัน</h2>
-                <button onclick="loadDashboard()" class="text-sm text-blue-600 underline">รีเฟรชข้อมูล</button>
+                <h2 class="text-2xl font-bold text-gray-800">ภาพรวม</h2>
+                <button onclick="loadDashboard()" class="text-sm text-blue-600 underline">รีเฟรช</button>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div class="bg-white p-4 rounded-lg shadow border-l-4 border-green-500 hover:shadow-lg transition">
-                    <p class="text-gray-500 text-sm">ยอดขายรวม (Revenue)</p>
-                    <h2 class="text-2xl font-bold text-gray-800" id="totalRevenue">...</h2>
+                <div class="bg-white p-4 rounded shadow border-l-4 border-green-500">
+                    <p class="text-gray-500 text-sm">รายได้รวม</p>
+                    <h2 class="text-2xl font-bold" id="totalRevenue">0 ฿</h2>
                 </div>
-                <div class="bg-white p-4 rounded-lg shadow border-l-4 border-red-500 hover:shadow-lg transition">
-                    <p class="text-gray-500 text-sm">ต้นทุนขาย (COGS)</p>
-                    <h2 class="text-2xl font-bold text-gray-800" id="totalCOGS">...</h2>
+                <div class="bg-white p-4 rounded shadow border-l-4 border-red-500">
+                    <p class="text-gray-500 text-sm">ต้นทุนขาย</p>
+                    <h2 class="text-2xl font-bold" id="totalCOGS">0 ฿</h2>
                 </div>
-                <div class="bg-white p-4 rounded-lg shadow border-l-4 border-yellow-500 hover:shadow-lg transition">
-                    <p class="text-gray-500 text-sm">ค่าใช้จ่าย (OPEX)</p>
-                    <h2 class="text-2xl font-bold text-gray-800" id="totalExpense">...</h2>
+                <div class="bg-white p-4 rounded shadow border-l-4 border-yellow-500">
+                    <p class="text-gray-500 text-sm">ค่าใช้จ่าย</p>
+                    <h2 class="text-2xl font-bold" id="totalExpense">0 ฿</h2>
                 </div>
-                <div class="bg-white p-4 rounded-lg shadow border-l-4 border-blue-500 hover:shadow-lg transition">
-                    <p class="text-gray-500 text-sm">กำไรสุทธิ (Net Profit)</p>
-                    <h2 class="text-2xl font-bold text-gray-800" id="netProfit">...</h2>
+                <div class="bg-white p-4 rounded shadow border-l-4 border-blue-500">
+                    <p class="text-gray-500 text-sm">กำไรสุทธิ</p>
+                    <h2 class="text-2xl font-bold" id="netProfit">0 ฿</h2>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="bg-white p-6 rounded-lg shadow lg:col-span-2">
-                    <h3 class="text-lg font-bold mb-4">สัดส่วนรายได้ vs ค่าใช้จ่าย</h3>
-                    <canvas id="plChart" height="150"></canvas>
+                <div class="bg-white p-6 rounded shadow lg:col-span-2">
+                    <h3 class="text-lg font-bold mb-4">สัดส่วนกำไร/ขาดทุน</h3>
+                    <div class="chart-container">
+                        <canvas id="plChart"></canvas>
+                    </div>
                 </div>
 
-                <div class="bg-white p-6 rounded-lg shadow">
+                <div class="bg-white p-6 rounded shadow">
                     <h3 class="text-lg font-bold mb-4">รายการล่าสุด</h3>
-                    <ul id="recentTransactions" class="text-sm space-y-3 max-h-64 overflow-y-auto">
-                        <li class="text-gray-400 text-center">ยังไม่มีข้อมูล</li>
+                    <ul id="recentTransactions" class="text-sm space-y-2 max-h-64 overflow-y-auto">
+                        <li class="text-gray-400 text-center">...</li>
                     </ul>
                 </div>
             </div>
         </div>
 
         <div id="input-sales" class="section-content hidden">
-            <div class="bg-white p-8 rounded-lg shadow-lg max-w-2xl mx-auto">
-                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">บันทึกยอดขายรายวัน (Daily Sale)</h2>
-                <form id="salesForm" class="space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">วันที่ขาย</label>
-                            <input type="date" id="saleDate" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none" required>
-                        </div>
-                        
-                        <div class="bg-blue-50 p-4 rounded col-span-2 md:col-span-1">
-                            <h3 class="font-bold text-blue-800 mb-2">หน้าร้าน</h3>
-                            <div class="mb-2">
-                                <label class="text-xs text-gray-600">A La Carte (0101)</label>
-                                <input type="number" id="saleALaCarte" class="w-full p-2 border rounded text-sm" placeholder="0.00">
-                            </div>
-                            <div>
-                                <label class="text-xs text-gray-600">Buffet (0105)</label>
-                                <input type="number" id="saleBuffet" class="w-full p-2 border rounded text-sm" placeholder="0.00">
-                            </div>
-                        </div>
-
-                        <div class="bg-green-50 p-4 rounded col-span-2 md:col-span-1">
-                            <h3 class="font-bold text-green-800 mb-2">Delivery App</h3>
-                            <div class="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label class="text-xs text-gray-600">Grab</label>
-                                    <input type="number" id="delGrab" class="w-full p-2 border rounded text-sm" placeholder="0">
-                                </div>
-                                <div>
-                                    <label class="text-xs text-gray-600">Lineman</label>
-                                    <input type="number" id="delLineman" class="w-full p-2 border rounded text-sm" placeholder="0">
-                                </div>
-                                <div>
-                                    <label class="text-xs text-gray-600">Robinhood</label>
-                                    <input type="number" id="delRobinhood" class="w-full p-2 border rounded text-sm" placeholder="0">
-                                </div>
-                                <div>
-                                    <label class="text-xs text-gray-600">Shopee/Panda</label>
-                                    <input type="number" id="delOther" class="w-full p-2 border rounded text-sm" placeholder="0">
-                                </div>
-                            </div>
-                        </div>
+            <div class="bg-white p-6 rounded shadow max-w-xl mx-auto">
+                <h2 class="text-xl font-bold mb-4">บันทึกยอดขาย</h2>
+                <form id="salesForm" class="space-y-3">
+                    <input type="date" id="saleDate" class="w-full border p-2 rounded" required>
+                    <input type="number" id="saleALaCarte" placeholder="A La Carte" class="w-full border p-2 rounded">
+                    <input type="number" id="saleBuffet" placeholder="Buffet" class="w-full border p-2 rounded">
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="number" id="delGrab" placeholder="Grab" class="border p-2 rounded">
+                        <input type="number" id="delLineman" placeholder="Lineman" class="border p-2 rounded">
+                        <input type="number" id="delRobinhood" placeholder="Robinhood" class="border p-2 rounded">
+                        <input type="number" id="delOther" placeholder="อื่นๆ" class="border p-2 rounded">
                     </div>
-                    
-                    <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 font-bold transition">บันทึกยอดขาย</button>
+                    <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded">บันทึก</button>
                 </form>
             </div>
         </div>
 
         <div id="input-expense" class="section-content hidden">
-            <div class="bg-white p-8 rounded-lg shadow-lg max-w-lg mx-auto">
-                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">บันทึกค่าใช้จ่าย (Expenses)</h2>
-                <form id="expenseForm" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">วันที่</label>
-                        <input type="date" id="expDate" class="w-full p-2 border rounded" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">หมวดหมู่บัญชี</label>
-                        <select id="expCategory" class="w-full p-2 border rounded bg-white">
-                            <optgroup label="ต้นทุนขาย (COGS)">
-                                <option value="0201">0201 - วัตถุดิบอาหาร (ตลาดสด/Makro)</option>
-                                <option value="0207">0207 - ค่าแก๊ส</option>
-                            </optgroup>
-                            <optgroup label="ค่าใช้จ่ายดำเนินงาน (OPEX)">
-                                <option value="0401">0401 - ค่าไฟฟ้า</option>
-                                <option value="0301">0301 - เงินเดือนพนักงาน</option>
-                                <option value="0408">0408 - การตลาด/Ads</option>
-                                <option value="0411">0411 - เบ็ดเตล็ด</option>
-                            </optgroup>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">จำนวนเงิน</label>
-                        <input type="number" id="expAmount" class="w-full p-2 border rounded" placeholder="0.00" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700">รายละเอียด (Memo)</label>
-                        <input type="text" id="expMemo" class="w-full p-2 border rounded" placeholder="เช่น ค่าซ่อมท่อ, ซื้อน้ำแข็ง">
-                    </div>
-                    <button type="submit" class="w-full bg-red-600 text-white py-3 rounded hover:bg-red-700 font-bold transition">บันทึกค่าใช้จ่าย</button>
+            <div class="bg-white p-6 rounded shadow max-w-xl mx-auto">
+                <h2 class="text-xl font-bold mb-4">บันทึกค่าใช้จ่าย</h2>
+                <form id="expenseForm" class="space-y-3">
+                    <input type="date" id="expDate" class="w-full border p-2 rounded" required>
+                    <select id="expCategory" class="w-full border p-2 rounded">
+                        <option value="0201">วัตถุดิบ (COGS)</option>
+                        <option value="0207">ค่าแก๊ส (COGS)</option>
+                        <option value="0401">ค่าไฟ (OPEX)</option>
+                        <option value="0301">เงินเดือน (OPEX)</option>
+                        <option value="0411">อื่นๆ (OPEX)</option>
+                    </select>
+                    <input type="number" id="expAmount" placeholder="จำนวนเงิน" class="w-full border p-2 rounded" required>
+                    <input type="text" id="expMemo" placeholder="รายละเอียด" class="w-full border p-2 rounded">
+                    <button type="submit" class="w-full bg-red-600 text-white p-2 rounded">บันทึก</button>
                 </form>
             </div>
         </div>
-
     </div>
 
     <script type="module">
-        // Import libraries
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit, Timestamp } 
+        import { getFirestore, collection, addDoc, getDocs, Timestamp } 
         from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-        // --------------------------------------------------------------
-        // ⚠️ สำคัญ: นำ Config ของคุณมาวางทับตรงนี้ (ห้ามลืม!)
-        // --------------------------------------------------------------
-          const firebaseConfig = {
-            apiKey: "AIzaSyDRiTZXUbkdGaCHZVTkOOl1Iu0A-744tE0",
-            authDomain: "numdamnoen-6cbd5.firebaseapp.com",
-            projectId: "numdamnoen-6cbd5",
-            storageBucket: "numdamnoen-6cbd5.firebasestorage.app",
-            messagingSenderId: "823964498524",
-            appId: "1:823964498524:web:c79d742cf1a5a33c864499",
-            measurementId: "G-805RS7VZEM"
-          };
-        // --------------------------------------------------------------
+        // TODO: วาง Firebase Config ของคุณตรงนี้
+        const firebaseConfig = {
+            apiKey: "AIzaSy...", 
+            authDomain: "xxxx.firebaseapp.com",
+            projectId: "xxxx",
+            storageBucket: "xxxx.appspot.com",
+            messagingSenderId: "xxxx",
+            appId: "xxxx"
+        };
 
-        // เริ่มต้นการทำงาน Firebase
-        let app, db;
+        // Init
+        let db;
         try {
-            app = initializeApp(firebaseConfig);
+            const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
-            console.log("Firebase initialized successfully");
-        } catch (err) {
-            alert("❌ ตั้งค่า Firebase ไม่ถูกต้อง: " + err.message);
-        }
+        } catch (e) { console.error(e); alert("ตั้งค่า Firebase ผิด: " + e.message); }
 
-        // --- ระบบป้องกันการโหลดค้าง (Safety Timeout) ---
-        // ถ้าโหลดนานเกิน 8 วินาที ให้บังคับหยุดแล้วแจ้งเตือน
-        setTimeout(() => {
-            const loadingEl = document.getElementById('loading');
-            if (!loadingEl.classList.contains('hidden')) {
-                loadingEl.classList.add('hidden');
-                alert("⚠️ โหลดนานผิดปกติ!\n\nสาเหตุที่เป็นไปได้:\n1. ลืมเปลี่ยน firebaseConfig เป็นของตัวเอง\n2. ยังไม่ได้เปิด Database เป็นโหมด Test Mode\n3. อินเทอร์เน็ตมีปัญหา\n\n(ลองกด F12 ดู Console เพื่อดูรายละเอียดสีแดง)");
-            }
-        }, 8000);
-
-        // --- Global Logic ---
         window.showSection = (id) => {
             document.querySelectorAll('.section-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
             if(id === 'dashboard') loadDashboard();
         }
 
-        // --- 1. ฟังก์ชันบันทึกยอดขาย ---
+        // Functions
+        const getVal = (id) => Number(document.getElementById(id).value) || 0;
+        const showLoading = (show) => document.getElementById('loading').className = show ? "fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50" : "hidden";
+
+        // Save Sales
         document.getElementById('salesForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             showLoading(true);
-            
             try {
-                console.log("กำลังบันทึกยอดขาย...");
                 await addDoc(collection(db, "daily_sales"), {
                     date: document.getElementById('saleDate').value,
-                    alacarte: Number(document.getElementById('saleALaCarte').value) || 0,
-                    buffet: Number(document.getElementById('saleBuffet').value) || 0,
-                    delivery_grab: Number(document.getElementById('delGrab').value) || 0,
-                    delivery_lineman: Number(document.getElementById('delLineman').value) || 0,
-                    delivery_robinhood: Number(document.getElementById('delRobinhood').value) || 0,
-                    delivery_other: Number(document.getElementById('delOther').value) || 0,
+                    alacarte: getVal('saleALaCarte'), buffet: getVal('saleBuffet'),
+                    delivery_grab: getVal('delGrab'), delivery_lineman: getVal('delLineman'),
+                    delivery_robinhood: getVal('delRobinhood'), delivery_other: getVal('delOther'),
                     timestamp: Timestamp.now()
                 });
-                alert("✅ บันทึกยอดขายเรียบร้อย!");
-                e.target.reset();
-                document.getElementById('saleDate').valueAsDate = new Date();
-            } catch (err) {
-                console.error("Error adding document: ", err);
-                alert("❌ เกิดข้อผิดพลาดในการบันทึก: " + err.message);
-            }
+                alert("✅ บันทึกยอดขายแล้ว"); e.target.reset();
+            } catch (err) { alert("Error: " + err.message); }
             showLoading(false);
         });
 
-        // --- 2. ฟังก์ชันบันทึกค่าใช้จ่าย ---
+        // Save Expense
         document.getElementById('expenseForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             showLoading(true);
-            
             try {
-                console.log("กำลังบันทึกค่าใช้จ่าย...");
                 await addDoc(collection(db, "expenses"), {
                     date: document.getElementById('expDate').value,
                     category: document.getElementById('expCategory').value,
-                    amount: Number(document.getElementById('expAmount').value) || 0,
-                    memo: document.getElementById('expMemo').value,
+                    amount: getVal('expAmount'), memo: document.getElementById('expMemo').value,
                     timestamp: Timestamp.now()
                 });
-                alert("✅ บันทึกค่าใช้จ่ายเรียบร้อย!");
-                e.target.reset();
-                document.getElementById('expDate').valueAsDate = new Date();
-            } catch (err) {
-                console.error("Error adding expense: ", err);
-                alert("❌ เกิดข้อผิดพลาดในการบันทึก: " + err.message);
-            }
+                alert("✅ บันทึกค่าใช้จ่ายแล้ว"); e.target.reset();
+            } catch (err) { alert("Error: " + err.message); }
             showLoading(false);
         });
 
-        // --- 3. ฟังก์ชันดึงข้อมูล Dashboard ---
+        // Dashboard
         window.loadDashboard = async () => {
             showLoading(true);
-            console.log("กำลังดึงข้อมูล Dashboard...");
-            let revenue = 0, cogs = 0, opex = 0;
-            const transactionsList = document.getElementById('recentTransactions');
-            transactionsList.innerHTML = '';
-
             try {
-                // ดึงข้อมูลยอดขาย
-                const salesSnapshot = await getDocs(collection(db, "daily_sales"));
-                salesSnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    const dayTotal = (data.alacarte || 0) + (data.buffet || 0) + (data.delivery_grab || 0) + (data.delivery_lineman || 0) + (data.delivery_robinhood || 0) + (data.delivery_other || 0);
-                    revenue += dayTotal;
+                let rev = 0, cogs = 0, opex = 0;
+                const list = document.getElementById('recentTransactions');
+                list.innerHTML = '';
+
+                // Get Sales
+                (await getDocs(collection(db, "daily_sales"))).forEach(doc => {
+                    const d = doc.data();
+                    rev += (d.alacarte || 0) + (d.buffet || 0) + (d.delivery_grab || 0) + (d.delivery_lineman || 0) + (d.delivery_robinhood || 0) + (d.delivery_other || 0);
                 });
 
-                // ดึงข้อมูลค่าใช้จ่าย
-                const expSnapshot = await getDocs(collection(db, "expenses"));
-                expSnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    if (['0201', '0207'].includes(data.category)) {
-                        cogs += (data.amount || 0);
-                    } else {
-                        opex += (data.amount || 0);
-                    }
-
-                    // สร้างรายการล่าสุดโชว์หน้าเว็บ
+                // Get Expenses
+                (await getDocs(collection(db, "expenses"))).forEach(doc => {
+                    const d = doc.data();
+                    if(['0201','0207'].includes(d.category)) cogs += d.amount;
+                    else opex += d.amount;
+                    
                     const li = document.createElement('li');
                     li.className = "flex justify-between border-b pb-1";
-                    li.innerHTML = `<span>${data.date} ${data.memo || 'ค่าใช้จ่าย'}</span> <span class="font-bold text-red-500">-${(data.amount || 0).toLocaleString()}</span>`;
-                    transactionsList.prepend(li);
+                    li.innerHTML = `<span>${d.date} ${d.memo}</span><span class="text-red-500">-${d.amount}</span>`;
+                    list.prepend(li);
                 });
 
-                // คำนวณกำไร
-                const netProfit = revenue - cogs - opex;
-
-                // อัปเดตตัวเลขหน้าเว็บ
-                document.getElementById('totalRevenue').innerText = revenue.toLocaleString() + ' ฿';
+                // Update UI
+                const net = rev - cogs - opex;
+                document.getElementById('totalRevenue').innerText = rev.toLocaleString() + ' ฿';
                 document.getElementById('totalCOGS').innerText = cogs.toLocaleString() + ' ฿';
                 document.getElementById('totalExpense').innerText = opex.toLocaleString() + ' ฿';
-                document.getElementById('netProfit').innerText = netProfit.toLocaleString() + ' ฿';
-                
-                // เปลี่ยนสีกำไร
-                const profitEl = document.getElementById('netProfit');
-                profitEl.className = `text-2xl font-bold ${netProfit >= 0 ? 'text-blue-600' : 'text-red-600'}`;
+                document.getElementById('netProfit').innerText = net.toLocaleString() + ' ฿';
 
-                // วาดกราฟ
-                renderChart(revenue, cogs, opex);
-                console.log("โหลดข้อมูลเสร็จสิ้น");
-
-            } catch (err) {
-                console.error("Dashboard Error: ", err);
-                // แจ้งเตือนถ้ามีปัญหา
-                alert("❌ ดึงข้อมูลไม่สำเร็จ: " + err.message + "\n(กรุณาเช็ค Console F12 เพื่อดูรายละเอียด)");
-            }
+                renderChart(rev, cogs, opex);
+            } catch (err) { console.error(err); }
             showLoading(false);
         }
 
-        // --- Utility: Chart ---
+        // Chart Fix: Destroy old chart before creating new one
         let myChart = null;
         function renderChart(rev, cogs, exp) {
-            const ctx = document.getElementById('plChart').getContext('2d');
+            const ctx = document.getElementById('plChart');
             if(myChart) myChart.destroy();
             
             myChart = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['กำไรสุทธิ', 'ต้นทุนขาย', 'ค่าใช้จ่ายดำเนินงาน'],
+                    labels: ['กำไร', 'ต้นทุน', 'ค่าใช้จ่าย'],
                     datasets: [{
                         data: [Math.max(0, rev - cogs - exp), cogs, exp],
-                        backgroundColor: ['#3B82F6', '#EF4444', '#F59E0B'],
-                        borderWidth: 0
+                        backgroundColor: ['#3B82F6', '#EF4444', '#F59E0B']
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'right' } }
+                    maintainAspectRatio: false // สำคัญ: ป้องกันการยืด
                 }
             });
         }
 
-        function showLoading(isLoading) {
-            const el = document.getElementById('loading');
-            if(isLoading) el.classList.remove('hidden');
-            else el.classList.add('hidden');
-        }
-
-        // ตั้งค่าวันที่ปัจจุบัน
+        // Init Dates
         document.getElementById('saleDate').valueAsDate = new Date();
         document.getElementById('expDate').valueAsDate = new Date();
-        
-        // เริ่มโหลด
         loadDashboard();
-
     </script>
 </body>
 </html>
