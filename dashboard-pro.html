@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant PRO (V.32 Analytics)</title>
+    <title>Restaurant PRO (V.33 Duplicate Fix)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script> 
@@ -25,11 +25,11 @@
     <nav class="bg-indigo-900 text-white p-4 shadow-lg sticky top-0 z-50">
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
             <h1 class="text-xl font-bold flex items-center">
-                🚀 Restaurant PRO <span class="text-xs bg-yellow-400 text-indigo-900 px-2 rounded ml-2 shadow">V.32 Analytics</span>
+                🚀 Restaurant PRO <span class="text-xs bg-red-500 text-white px-2 rounded ml-2 shadow">V.33 Clean</span>
             </h1>
             <div class="flex overflow-x-auto w-full md:w-auto space-x-1 pb-1 md:pb-0">
                 <button onclick="showSection('dashboard')" class="tab-btn px-4 py-2 rounded hover:bg-indigo-700 active">🏠 ภาพรวม</button>
-                <button onclick="showSection('analytics')" class="tab-btn px-4 py-2 rounded hover:bg-indigo-700 text-yellow-300 font-bold">📈 วิเคราะห์ (New)</button>
+                <button onclick="showSection('analytics')" class="tab-btn px-4 py-2 rounded hover:bg-indigo-700 text-yellow-300 font-bold">📈 วิเคราะห์</button>
                 <button onclick="showSection('report-section')" class="tab-btn px-4 py-2 rounded hover:bg-indigo-700">📑 รายงาน</button>
                 <button onclick="showSection('input-section')" class="tab-btn px-4 py-2 rounded hover:bg-indigo-700">✏️ บันทึก</button>
                 <button onclick="showSection('import-section')" class="bg-green-600 px-4 py-2 rounded hover:bg-green-500 shadow font-bold">📂 Import</button>
@@ -42,7 +42,7 @@
         <div id="loading" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
             <div class="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
                 <div class="spinner mb-4"></div>
-                <p class="text-gray-700 font-bold">กำลังวิเคราะห์ข้อมูล...</p>
+                <p id="loading-text" class="text-lg font-bold text-gray-700">กำลังทำงาน...</p>
             </div>
         </div>
 
@@ -105,13 +105,10 @@
 
         <div id="analytics" class="section-content hidden">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                
                 <div class="bg-white p-6 rounded-lg shadow border-t-4 border-purple-500">
                     <h3 class="text-lg font-bold text-gray-800 mb-2">📊 ความคุ้มค่าแต่ละค่าย (Net Margin)</h3>
-                    <p class="text-xs text-gray-500 mb-4">ยอดขายหลังหัก GP, Ads, Promo แล้วเหลือเท่าไหร่?</p>
                     <div class="chart-container"><canvas id="platformChart"></canvas></div>
                 </div>
-
                 <div class="bg-white p-6 rounded-lg shadow border-t-4 border-yellow-500">
                     <h3 class="text-lg font-bold text-gray-800 mb-2">📢 ประสิทธิภาพโฆษณา (ROAS)</h3>
                     <div class="flex items-center justify-between mb-4">
@@ -127,18 +124,13 @@
                     <div class="chart-container" style="height:150px"><canvas id="roasChart"></canvas></div>
                 </div>
             </div>
-
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                
                 <div class="bg-white p-6 rounded-lg shadow border-t-4 border-blue-500">
                     <h3 class="text-lg font-bold text-gray-800 mb-2">⏰ ช่วงเวลาทำเงิน (Peak Time)</h3>
-                    <p class="text-xs text-gray-500 mb-4">ยอดขายสะสมรายชั่วโมง (จากข้อมูลที่ Import)</p>
                     <div class="chart-container"><canvas id="peakTimeChart"></canvas></div>
                 </div>
-
                 <div class="bg-white p-6 rounded-lg shadow border-t-4 border-green-500">
-                    <h3 class="text-lg font-bold text-gray-800 mb-2">🛒 พฤติกรรมลูกค้า (Basket Size)</h3>
-                    <p class="text-xs text-gray-500 mb-4">ยอดขายเฉลี่ยต่อบิล (AOV) แยกตามค่าย</p>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">🛒 Basket Size (ยอดต่อบิล)</h3>
                     <div class="chart-container"><canvas id="basketChart"></canvas></div>
                 </div>
             </div>
@@ -166,12 +158,12 @@
         <div id="input-section" class="section-content hidden">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="bg-white p-6 rounded-lg shadow border-l-4 border-blue-500">
-                    <h3 class="font-bold mb-4">✏️ บันทึกยอดขาย (รายวัน)</h3>
+                    <h3 class="font-bold mb-4">✏️ บันทึกยอดขาย (Safe Save)</h3>
                     <form id="salesForm" class="space-y-3">
                         <input type="date" id="sDate" class="w-full border p-2 rounded" required>
                         <input type="number" id="sInstore" class="w-full border p-2 rounded" placeholder="หน้าร้าน">
                         <div class="grid grid-cols-2 gap-2">
-                            <input type="number" id="sGrab" class="w-full border p-2 rounded" placeholder="Grab">
+                            <input type="number" id="sGrab" class="w-full border p-2 rounded" placeholder="Grab (แก้ไขเฉพาะที่ผิด)">
                             <input type="number" id="sLine" class="w-full border p-2 rounded" placeholder="Lineman">
                             <input type="number" id="sRbh" class="w-full border p-2 rounded" placeholder="Robinhood">
                             <input type="number" id="sOth" class="w-full border p-2 rounded" placeholder="Other">
@@ -197,7 +189,16 @@
 
         <div id="import-section" class="section-content hidden">
             <div class="bg-white p-8 rounded-lg shadow max-w-2xl mx-auto border-t-4 border-green-600">
-                <h2 class="text-2xl font-bold mb-4">📂 Import ไฟล์ (Smart Logic V.32)</h2>
+                <h2 class="text-2xl font-bold mb-4">📂 Import ไฟล์ (V.33)</h2>
+                
+                <div class="bg-red-50 border border-red-200 p-4 rounded mb-6 flex justify-between items-center">
+                    <div>
+                        <p class="text-red-800 font-bold">⚠️ ข้อมูลซ้ำซ้อน?</p>
+                        <p class="text-xs text-red-600">กดปุ่มนี้เพื่อล้างข้อมูลเก่าของ "เดือนนี้" ทั้งหมด แล้ว Import ใหม่</p>
+                    </div>
+                    <button onclick="resetMonthData()" class="bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700 font-bold text-sm">🗑️ ล้างข้อมูลเดือนนี้</button>
+                </div>
+
                 <div class="mb-4 text-sm text-gray-600">
                     <p>✅ <strong>Grab:</strong> ยอด Gross, แยก GP/Ads/Promo</p>
                     <p>✅ <strong>Lineman:</strong> แยก Ads/Promo/Loan ละเอียด</p>
@@ -212,7 +213,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, setDoc, addDoc, doc, Timestamp, query, where } 
+        import { getFirestore, collection, getDocs, setDoc, addDoc, deleteDoc, doc, Timestamp, query, where } 
         from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
           const firebaseConfig = {
@@ -229,28 +230,25 @@
         try { const app = initializeApp(firebaseConfig); db = getFirestore(app); console.log("Firebase OK"); } 
         catch (e) { alert("Config Error"); }
 
-        // --- GLOBAL STATE ---
         let charts = {};
         
         window.showSection = (id) => {
             document.querySelectorAll('.section-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            // Highlight active tab logic if needed
-            if(id === 'analytics') loadData(); // Reload stats
+            if(id === 'analytics') loadData(); 
         }
 
         const getVal = (id) => Number(document.getElementById(id).value) || 0;
         const getRaw = (id) => document.getElementById(id).value;
         const showLoading = (show) => document.getElementById('loading').classList.toggle('hidden', !show);
 
-        // --- DATA LOADING & ANALYTICS ---
+        // --- DATA LOADING ---
         window.loadData = async () => {
             const monthVal = document.getElementById('dashMonth').value;
             if(!db || !monthVal) return;
             
             try {
-                // Fetch Data
                 let sales = [], expenses = [];
                 let dailyTrend = {}, platformStats = { Grab:{rev:0, cost:0, orders:0}, Line:{rev:0, cost:0, orders:0}, Rbh:{rev:0, cost:0, orders:0} };
                 let hourlySales = new Array(24).fill(0);
@@ -261,20 +259,12 @@
                     const d = doc.data();
                     if(d.date.startsWith(monthVal)) {
                         sales.push(d);
-                        // Trend
                         const total = (d.instore||0)+(d.delivery_grab||0)+(d.delivery_lineman||0)+(d.delivery_robinhood||0)+(d.delivery_other||0);
                         dailyTrend[d.date] = total;
-                        
-                        // Platform Stats (Accumulate Revenue)
                         platformStats.Grab.rev += (d.delivery_grab||0);
                         platformStats.Line.rev += (d.delivery_lineman||0);
                         platformStats.Rbh.rev += (d.delivery_robinhood||0);
-
-                        // Hourly (If available in doc - from V.32 import)
-                        if(d.hourly_stats) {
-                            Object.keys(d.hourly_stats).forEach(h => hourlySales[h] = (hourlySales[h]||0) + d.hourly_stats[h]);
-                        }
-                        // Order Counts (If available)
+                        if(d.hourly_stats) Object.keys(d.hourly_stats).forEach(h => hourlySales[h] = (hourlySales[h]||0) + d.hourly_stats[h]);
                         if(d.order_counts) {
                             platformStats.Grab.orders += (d.order_counts.grab||0);
                             platformStats.Line.orders += (d.order_counts.line||0);
@@ -289,18 +279,14 @@
                     const d = doc.data();
                     if(d.date.startsWith(monthVal)) {
                         expenses.push(d);
-                        // Map Costs to Platforms
                         if(d.category.includes('-G')) platformStats.Grab.cost += d.amount;
                         if(d.category.includes('-L')) platformStats.Line.cost += d.amount;
                         if(d.category.includes('-R')) platformStats.Rbh.cost += d.amount;
-                        // Ads
                         if(d.category.includes('Ads') || d.category === '0408-G' || d.category === '0408-L') totalAds += d.amount;
-                        
                         expTotals[d.category] = (expTotals[d.category]||0) + d.amount;
                     }
                 });
 
-                // --- UPDATE DASHBOARD ---
                 const m_rev = Object.values(dailyTrend).reduce((a,b)=>a+b,0);
                 const m_cogs = expenses.filter(e => ['0201','0205','0207'].includes(e.category) || e.category.startsWith('0420') || e.category.startsWith('0421')).reduce((a,b)=>a+b.amount,0);
                 const m_opex = expenses.reduce((a,b)=>a+b.amount,0) - m_cogs;
@@ -311,20 +297,40 @@
                 document.getElementById('kpi_opex').innerText = m_opex.toLocaleString();
                 document.getElementById('kpi_net').innerText = m_net.toLocaleString();
                 
-                // Charts
                 renderTrendChart(dailyTrend);
                 renderTopExpenses(expTotals, m_rev);
-                
-                // --- UPDATE ANALYTICS ---
                 renderPlatformChart(platformStats);
-                renderROAS(m_rev, totalAds); // Simple ROAS: Total Sales / Total Ads (Can refine to Ad Sales if data avail)
+                renderROAS(m_rev, totalAds); 
                 renderPeakTime(hourlySales);
                 renderBasketSize(platformStats);
-
-                // Update Recent Tables
                 updateRecentTables(sales, expenses);
 
             } catch(e) { console.error(e); }
+        }
+
+        // --- RESET DATA FUNCTION (Fix Duplicate) ---
+        window.resetMonthData = async () => {
+            const monthVal = document.getElementById('dashMonth').value;
+            if(!confirm(`⚠️ ยืนยันลบข้อมูลทั้งหมดของเดือน ${monthVal}?\n(เพื่อให้คุณ Import ใหม่ได้ถูกต้อง)`)) return;
+            showLoading(true);
+            try {
+                // Delete Sales
+                const qS = await getDocs(collection(db, "daily_sales"));
+                let count = 0;
+                qS.forEach(async (d) => {
+                    if(d.data().date.startsWith(monthVal)) { await deleteDoc(doc(db, "daily_sales", d.id)); count++; }
+                });
+                
+                // Delete Expenses
+                const qE = await getDocs(collection(db, "expenses"));
+                qE.forEach(async (d) => {
+                    if(d.data().date.startsWith(monthVal)) { await deleteDoc(doc(db, "expenses", d.id)); count++; }
+                });
+                
+                alert(`ลบข้อมูลเรียบร้อย! กรุณา Import ไฟล์ใหม่`);
+                loadData();
+            } catch(e) { alert("Error deleting: "+e.message); }
+            showLoading(false);
         }
 
         // --- CHARTS FUNCTIONS ---
@@ -379,7 +385,6 @@
             const roas = ads > 0 ? (sales / ads).toFixed(1) : 'N/A';
             document.getElementById('roasValue').innerText = roas + 'x';
             document.getElementById('totalAds').innerText = ads.toLocaleString() + ' ฿';
-            // Chart visualization for Ad Spend vs Sales
             const ctx = document.getElementById('roasChart');
             if(charts.roas) charts.roas.destroy();
             charts.roas = new Chart(ctx, {
@@ -438,7 +443,7 @@
             });
         }
 
-        // --- IMPORT LOGIC V.32 (Capture Time & Count) ---
+        // --- IMPORT LOGIC V.33 (Fix ID) ---
         window.processCSV = () => {
             const file = document.getElementById('csvFile').files[0];
             if(!file) return alert("เลือกไฟล์ก่อนครับ");
@@ -447,8 +452,8 @@
             reader.onload = (e) => {
                 const text = e.target.result;
                 const lines = text.split('\n');
-                let rbhDate = null; // Auto Date Logic here (same as V30)
-                // ... (Use existing date detection) ...
+                let rbhDate = null;
+                // ... Date logic ...
                 
                 Papa.parse(file, {
                     header: true, skipEmptyLines: true,
@@ -458,11 +463,9 @@
                             if(headers.includes('Transaction ID')) await importGrab(res.data);
                             else if(headers.includes('restaurant_name')) await importLine(res.data);
                             else {
-                                // Manual RBH parse logic
                                 const start = lines.findIndex(l => l.includes('Shop ID,Shop Name'));
                                 if(start > -1) {
                                     const rbhText = lines.slice(start+1).join('\n');
-                                    // Need to find date again for safety
                                     const dateMatch = text.match(/(\d{2})-([A-Za-z]{3})-(\d{2})/);
                                     if(dateMatch) {
                                         const ms = {Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
@@ -479,45 +482,30 @@
             reader.readAsText(file);
         };
 
-        // Simplified Import Functions with Analytics Data
         async function importGrab(data) {
             let daily = {};
             data.forEach(row => {
                 if(!row['Updated On']) return;
-                // Parse Time for Peak Analysis
-                const dateTime = row['Updated On']; // "11 Jan 2026 18:30"
+                const dateTime = row['Updated On']; 
                 const parts = dateTime.split(' ');
                 const months = {Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
                 const date = `${parts[2]}-${months[parts[1]]}-${parts[0].padStart(2,'0')}`;
-                
                 if(!daily[date]) daily[date] = {sales:0, gp:0, ads:0, promo:0, loan:0, orders:0, hourly:{}};
-                
                 const val = (k) => parseFloat(row[k])||0;
                 if(row['ประเภท'] === 'GrabFood' && row['หมวดหมู่'] === 'ชำระเงิน') {
                     daily[date].sales += val('ยอด');
                     daily[date].gp += Math.abs(val('ค่าคอมมิชชันแพลตฟอร์ม'));
                     daily[date].ads += Math.abs(val('ค่าธรรมเนียมการตลาด'));
                     daily[date].promo += Math.abs(val('ค่าคอมมิชชันอื่นของ GrabFood / GrabMart') + val('ค่าคอมมิชชันเพิ่มเติม'));
-                    
-                    daily[date].orders += 1; // Count Order
-                    // Time
-                    const timePart = parts[3]; // "18:30"
-                    if(timePart) {
-                        const hour = parseInt(timePart.split(':')[0]);
-                        daily[date].hourly[hour] = (daily[date].hourly[hour]||0) + val('ยอด');
-                    }
+                    daily[date].orders += 1;
+                    const timePart = parts[3]; 
+                    if(timePart) { const h = parseInt(timePart.split(':')[0]); daily[date].hourly[h] = (daily[date].hourly[h]||0) + val('ยอด'); }
                 }
-                // ... other deductions
             });
-            // Save logic similar to V30 but adding `order_counts` and `hourly_stats` map
             for(const [d, v] of Object.entries(daily)) {
                 await setDoc(doc(db, "daily_sales", d), { 
-                    date: d, delivery_grab: v.sales, 
-                    order_counts: { grab: v.orders }, 
-                    hourly_stats: v.hourly, // Store hourly map
-                    timestamp: Timestamp.now() 
+                    date: d, delivery_grab: v.sales, order_counts: { grab: v.orders }, hourly_stats: v.hourly, timestamp: Timestamp.now() 
                 }, { merge: true });
-                // Expenses...
                 if(v.gp > 0) await saveExp(d, 'grab_gp', '0420-G', v.gp);
                 if(v.ads > 0) await saveExp(d, 'grab_ads', '0408-G', v.ads);
             }
@@ -529,9 +517,8 @@
             data.forEach(row => {
                 if(!row.capture_time) return;
                 const date = row.capture_time.split(' ')[0];
-                const time = row.capture_time.split(' ')[1]; // "13:26:56"
+                const time = row.capture_time.split(' ')[1]; 
                 if(!daily[date]) daily[date] = {sales:0, gp:0, vat:0, promo:0, ads:0, orders:0, hourly:{}};
-                
                 const val = (v) => parseFloat(v)||0;
                 if(row.detail === 'Delivery Order') {
                     const amt = val(row.cash_amount) + val(row.e_payment_amount);
@@ -539,30 +526,18 @@
                     daily[date].gp += Math.abs(val(row.fee));
                     daily[date].vat += Math.abs(val(row.vat));
                     daily[date].promo += Math.abs(val(row.other_cost));
-                    
                     daily[date].orders += 1;
-                    if(time) {
-                        const h = parseInt(time.split(':')[0]);
-                        daily[date].hourly[h] = (daily[date].hourly[h]||0) + amt;
-                    }
+                    if(time) { const h = parseInt(time.split(':')[0]); daily[date].hourly[h] = (daily[date].hourly[h]||0) + amt; }
                 } else if(row.detail === 'Listing Ads') daily[date].ads += Math.abs(val(row.net_amount));
             });
-            
             for(const [d, v] of Object.entries(daily)) {
-                // Merge logic needed for hourly/orders if multi-platform on same day
-                // Firestore merge: true handles top level, but maps might overwrite.
-                // For PRO version, proper way is to read first then update. For simplicity here using merge (Note: might overwrite other platform's hourly if on same day).
-                // Solution: Store platform specific hourly in doc? Or simply merge.
-                // Let's assume we merge into existing.
                 await setDoc(doc(db, "daily_sales", d), { 
-                    date: d, delivery_lineman: v.sales,
-                    order_counts: { line: v.orders }, // This will merge with {grab: x} if done correctly with dot notation in real code, but here simplest is object merge.
-                    // Note: Ideally read doc first.
-                    timestamp: Timestamp.now() 
+                    date: d, delivery_lineman: v.sales, order_counts: { line: v.orders }, timestamp: Timestamp.now() 
                 }, { merge: true });
-                if(v.gp > 0) await saveExp(d, 'line_gp', '0420-L', v.gp);
-                if(v.ads > 0) await saveExp(d, 'line_ads', '0408-L', v.ads);
-                if(v.promo > 0) await saveExp(d, 'line_promo', '0422-L', v.promo);
+                // FIX ID HERE V33
+                if(v.gp > 0) await saveExp(d, 'lineman_gp', '0420-L', v.gp);
+                if(v.ads > 0) await saveExp(d, 'lineman_ads', '0408-L', v.ads);
+                if(v.promo > 0) await saveExp(d, 'lineman_promo', '0422-L', v.promo);
             }
             alert("Import Lineman Done"); loadData();
         }
@@ -575,21 +550,13 @@
                 const val = (i) => parseFloat((row[i]||"0").replace(/,/g,''))||0;
                 const gross = val(10);
                 if(gross > 0) {
-                    v.sales += gross;
-                    v.promo += val(11);
-                    v.gp += val(19);
-                    v.orders += 1;
-                    const time = row[8]; // "16:34"
-                    if(time) {
-                        const h = parseInt(time.split(':')[0]);
-                        v.hourly[h] = (v.hourly[h]||0) + gross;
-                    }
+                    v.sales += gross; v.promo += val(11); v.gp += val(19); v.orders += 1;
+                    const time = row[8]; 
+                    if(time) { const h = parseInt(time.split(':')[0]); v.hourly[h] = (v.hourly[h]||0) + gross; }
                 }
             });
             await setDoc(doc(db, "daily_sales", rbhDate), { 
-                date: rbhDate, delivery_robinhood: v.sales,
-                order_counts: { rbh: v.orders },
-                timestamp: Timestamp.now() 
+                date: rbhDate, delivery_robinhood: v.sales, order_counts: { rbh: v.orders }, timestamp: Timestamp.now() 
             }, { merge: true });
             if(v.gp > 0) await saveExp(rbhDate, 'rbh_gp', '0420-R', v.gp);
             if(v.promo > 0) await saveExp(rbhDate, 'rbh_promo', '0422-R', v.promo);
