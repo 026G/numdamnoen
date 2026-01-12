@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant P&L (V.14 Final Perfect)</title>
+    <title>Restaurant P&L (V.15 Final Verified)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script> 
@@ -26,7 +26,7 @@
     <nav class="bg-blue-900 text-white p-4 shadow-lg sticky top-0 z-50">
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
             <h1 class="text-xl font-bold flex items-center">
-                📊 Restaurant P&L <span class="text-xs bg-green-500 text-white px-2 rounded ml-2 shadow">V.14 Perfect</span>
+                📊 Restaurant P&L <span class="text-xs bg-green-500 text-white px-2 rounded ml-2 shadow">V.15 Verified</span>
             </h1>
             <div class="space-x-1 flex overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
                 <button onclick="showSection('dashboard')" class="bg-blue-800 px-3 py-1 rounded hover:bg-blue-700 whitespace-nowrap transition">🏠 ภาพรวม</button>
@@ -125,10 +125,10 @@
                 <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">📂 Import ยอดขาย (Smart Logic)</h2>
                 
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                    <h3 class="font-bold text-blue-800 mb-2">✨ ระบบแยกรายการอัตโนมัติ (V.14):</h3>
+                    <h3 class="font-bold text-blue-800 mb-2">✨ ระบบแยกรายการอัตโนมัติ (V.15):</h3>
                     <ul class="list-disc ml-5 text-sm text-blue-900 space-y-1">
                         <li><strong>Lineman:</strong> แยกสินเชื่อเงินสด (0425-L) และ ผ่อนสินค้า (0426-L)</li>
-                        <li><strong>Grab:</strong> แยก GP, Ads, Promo, และ สินเชื่อ (แต่ไม่หัก VAT ซ้ำ เพราะ GP Grab รวม VAT แล้ว)</li>
+                        <li><strong>Grab:</strong> แยก GP, Ads, Promo, และ สินเชื่อ (ไม่หัก VAT ซ้ำ)</li>
                         <li><strong>Anti-Duplicate:</strong> อัปโหลดซ้ำได้ ระบบทับยอดเดิมให้</li>
                     </ul>
                 </div>
@@ -342,7 +342,7 @@
             data.forEach(row => {
                 const dateKey = parseDate(row['Updated On']);
                 if(!dateKey) return;
-                if (!dailyData[dateKey]) dailyData[dateKey] = { sales: 0, gp: 0, ads: 0, promo: 0, del_disc: 0, loan: 0 };
+                if (!dailyData[dateKey]) dailyData[dateKey] = { sales: 0, gp: 0, vat: 0, ads: 0, promo: 0, del_disc: 0, loan: 0 };
                 
                 const type = row['ประเภท'];
                 const cat = row['หมวดหมู่'];
