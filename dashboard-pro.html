@@ -584,7 +584,7 @@
                 currentAnalyticsData = bucket; // Save for switching tabs
 
                 const m_gross_sales = Object.values(dailyTrend).reduce((a,b)=>a+b,0);
-                const m_net_sales = m_gross_sales - totalDeductions;
+                const m_net_sales = m_gross_sales;
                 const m_cogs = expenses.filter(e => e.category.startsWith('02')).reduce((a,b)=>a+b.amount,0);
                 const m_opex = expenses.filter(e => e.category.startsWith('03') || e.category.startsWith('04') || e.category.startsWith('05')).reduce((a,b)=>a+b.amount,0);
                 const m_net = m_net_sales - m_cogs - m_opex;
