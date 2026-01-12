@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant P&L (All-in-One)</title>
+    <title>Restaurant P&L (V.5 Fast & Stable)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script> 
@@ -26,7 +26,7 @@
     <nav class="bg-blue-900 text-white p-4 shadow-lg sticky top-0 z-50">
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
             <h1 class="text-xl font-bold flex items-center">
-                📊 Restaurant P&L <span class="text-xs bg-green-500 text-white px-2 rounded ml-2 shadow">V.4 Final</span>
+                📊 Restaurant P&L <span class="text-xs bg-red-500 text-white px-2 rounded ml-2 shadow">V.5 Fast</span>
             </h1>
             <div class="space-x-1 flex overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
                 <button onclick="showSection('dashboard')" class="bg-blue-800 px-3 py-1 rounded hover:bg-blue-700 whitespace-nowrap transition">🏠 ภาพรวม</button>
@@ -51,7 +51,7 @@
         <div id="dashboard" class="section-content">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-gray-800">ภาพรวม (Dashboard)</h2>
-                <button onclick="loadDashboard()" class="text-sm text-blue-600 underline hover:text-blue-800">🔄 รีเฟรชข้อมูล</button>
+                <button onclick="loadDashboard()" class="text-sm text-blue-600 underline hover:text-blue-800">🔄 กดเพื่อรีเฟรชข้อมูลล่าสุด</button>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -280,9 +280,10 @@
 
         // --- Helper Func ---
         window.showSection = (id) => {
+            // FIX: ไม่โหลด Dashboard ใหม่ทุกครั้งที่สลับหน้า (แก้ปัญหาหมุนค้าง)
             document.querySelectorAll('.section-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
-            if(id === 'dashboard') loadDashboard();
+            
             if(id === 'report-section') {
                 const now = new Date();
                 const monthStr = now.toISOString().slice(0, 7); 
@@ -374,7 +375,6 @@
                 
                 // 2. Ads (GrabFood -> โฆษณา)
                 if (type === 'GrabFood' && cat === 'โฆษณา') {
-                    // ช่อง "ทั้งหมด" จะเป็นยอดติดลบ
                     dailyData[dateKey].ads_loan += Math.abs(cleanVal(row, 'ทั้งหมด'));
                 }
 
@@ -387,12 +387,10 @@
             // Save to Firestore
             let count = 0;
             for (const [date, val] of Object.entries(dailyData)) {
-                // Update Sales
                 await setDoc(doc(db, "daily_sales", date), {
                     date: date, delivery_grab: val.sales, timestamp: Timestamp.now()
                 }, { merge: true });
 
-                // Update Expenses
                 if (val.gp > 0) {
                     await setDoc(doc(db, "expenses", `grab_gp_${date}`), {
                         date: date, category: "0420", amount: parseFloat(val.gp.toFixed(2)), memo: "GP Grab (Auto)"
@@ -461,7 +459,7 @@
         }
 
         // ============================================
-        // 2. OTHER LOGIC (Report, Dashboard, Manual)
+        // 2. OTHER LOGIC
         // ============================================
         const accountNames = {
             'INSTORE': 'หน้าร้าน (Walk-in)', 'DEL_GRAB': 'Grab', 'DEL_LINE': 'Lineman', 'DEL_OTH': 'Delivery อื่นๆ',
@@ -536,7 +534,7 @@
                 delivery_robinhood: getVal('delRobinhood'), delivery_other: getVal('delOther'),
                 timestamp: Timestamp.now()
             }, { merge: true });
-            showLoading(false); alert("บันทึกสำเร็จ"); e.target.reset();
+            showLoading(false); alert("บันทึกสำเร็จ"); e.target.reset(); loadDashboard();
         });
 
         document.getElementById('expenseForm').addEventListener('submit', async (e) => {
@@ -545,7 +543,7 @@
                 date: document.getElementById('expDate').value, category: document.getElementById('expCategory').value,
                 amount: getVal('expAmount'), memo: document.getElementById('expMemo').value, timestamp: Timestamp.now()
             });
-            showLoading(false); alert("บันทึกสำเร็จ"); e.target.reset();
+            showLoading(false); alert("บันทึกสำเร็จ"); e.target.reset(); loadDashboard();
         });
 
         window.loadDashboard = async () => {
