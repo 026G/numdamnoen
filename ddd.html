@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant P&L (V.25 Ultimate)</title>
+    <title>Restaurant P&L (V.26 Realtime Check)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script> 
@@ -28,7 +28,7 @@
     <nav class="bg-blue-900 text-white p-4 shadow-lg sticky top-0 z-50">
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
             <h1 class="text-xl font-bold flex items-center">
-                📊 Restaurant P&L <span class="text-xs bg-cyan-500 text-white px-2 rounded ml-2 shadow">V.25 Ultimate</span>
+                📊 Restaurant P&L <span class="text-xs bg-orange-500 text-white px-2 rounded ml-2 shadow">V.26 Realtime</span>
             </h1>
             <div class="space-x-1 flex overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
                 <button onclick="showSection('dashboard')" class="bg-blue-800 px-3 py-1 rounded hover:bg-blue-700 whitespace-nowrap transition">🏠 ภาพรวม</button>
@@ -46,13 +46,12 @@
             <div class="bg-white p-6 rounded-lg shadow-xl text-center flex flex-col items-center">
                 <div class="spinner mb-4"></div>
                 <p id="loading-text" class="text-lg font-bold text-gray-700">กำลังประมวลผล...</p>
-                <p class="text-sm text-gray-500 mt-1">กรุณารอสักครู่</p>
             </div>
         </div>
 
         <div id="dashboard" class="section-content">
             <div class="flex flex-col md:flex-row justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-2 md:mb-0">🏠 ภาพรวมธุรกิจ (รายเดือน)</h2>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2 md:mb-0">🏠 ภาพรวม (Dashboard)</h2>
                 <div class="flex items-center space-x-2">
                     <span class="text-sm text-gray-600">เลือกเดือน:</span>
                     <input type="month" id="dashMonth" class="border p-2 rounded shadow-sm focus:ring-2 focus:ring-blue-500 outline-none" onchange="loadDashboard()">
@@ -60,45 +59,65 @@
                 </div>
             </div>
 
-            <div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-6 rounded shadow-sm">
-                <p class="text-blue-800 text-sm font-bold">📅 สรุปยอดประจำเดือน: <span id="displayMonth" class="text-lg">...</span></p>
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-6 rounded shadow-sm flex justify-between items-center">
+                <p class="text-blue-800 text-sm font-bold">📅 สรุปยอดเดือน: <span id="displayMonth">...</span></p>
+                <span class="text-xs text-gray-500">*รวมทุกช่องทาง</span>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div class="bg-white p-4 rounded-lg shadow border-l-4 border-green-500 daily-card">
-                    <p class="text-gray-500 text-xs uppercase font-bold">รายได้รวมทั้งเดือน</p>
+                    <p class="text-gray-500 text-xs uppercase font-bold">รายได้รวม (Gross)</p>
                     <h2 class="text-2xl font-bold text-gray-800 mt-1" id="m_revenue">0 ฿</h2>
-                    <p class="text-xs text-green-600 mt-1">ยอดขายทุกช่องทาง</p>
                 </div>
                 <div class="bg-white p-4 rounded-lg shadow border-l-4 border-red-500 daily-card">
                     <p class="text-gray-500 text-xs uppercase font-bold">ต้นทุนขาย (COGS)</p>
                     <h2 class="text-2xl font-bold text-gray-800 mt-1" id="m_cogs">0 ฿</h2>
-                    <p class="text-xs text-red-500 mt-1">วัตถุดิบ + ค่า GP</p>
                 </div>
                 <div class="bg-white p-4 rounded-lg shadow border-l-4 border-orange-500 daily-card">
                     <p class="text-gray-500 text-xs uppercase font-bold">ค่าใช้จ่าย (OPEX)</p>
                     <h2 class="text-2xl font-bold text-gray-800 mt-1" id="m_opex">0 ฿</h2>
-                    <p class="text-xs text-orange-500 mt-1">ค่าจ้าง + ค่าเช่า + Ads</p>
                 </div>
                 <div class="bg-white p-4 rounded-lg shadow border-l-4 border-blue-500 daily-card">
-                    <p class="text-gray-500 text-xs uppercase font-bold">กำไรสุทธิ (Net Profit)</p>
+                    <p class="text-gray-500 text-xs uppercase font-bold">กำไรสุทธิ (Net)</p>
                     <h2 class="text-2xl font-bold text-gray-800 mt-1" id="m_net">0 ฿</h2>
-                    <p class="text-xs text-blue-500 mt-1">กำไรจริงหลังหักทุกอย่าง</p>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="bg-white p-6 rounded-lg shadow lg:col-span-1">
-                    <h3 class="text-lg font-bold mb-4 text-gray-700">📊 โครงสร้างต้นทุน</h3>
-                    <div class="chart-container">
-                        <canvas id="plChart"></canvas>
-                    </div>
+            <div class="bg-white p-6 rounded-lg shadow mb-6 border-t-4 border-indigo-500">
+                <h3 class="text-lg font-bold mb-4 text-gray-800 flex items-center">
+                    📅 เช็คยอดรายวัน (7 วันล่าสุด)
+                    <span class="ml-2 text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-normal">อัปเดตล่าสุด</span>
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-gray-600">
+                        <thead class="text-xs text-gray-700 uppercase bg-indigo-50">
+                            <tr>
+                                <th class="py-3 px-4">วันที่</th>
+                                <th class="py-3 px-4 text-right text-blue-600">หน้าร้าน</th>
+                                <th class="py-3 px-4 text-right text-green-600">Grab</th>
+                                <th class="py-3 px-4 text-right text-green-600">Lineman</th>
+                                <th class="py-3 px-4 text-right text-green-600">Robinhood</th>
+                                <th class="py-3 px-4 text-right font-bold">รวมทั้งวัน</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentDaysTable">
+                            <tr><td colspan="6" class="text-center py-4">กำลังโหลดข้อมูล...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
-                
-                <div class="bg-white p-6 rounded-lg shadow lg:col-span-2">
-                    <h3 class="text-lg font-bold mb-4 text-gray-700">📈 แนวโน้มยอดขายรายวัน</h3>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-lg font-bold mb-4 text-gray-700">📈 แนวโน้มยอดขาย</h3>
                     <div class="chart-container">
                         <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-lg font-bold mb-4 text-gray-700">📊 สัดส่วนกำไร/ต้นทุน</h3>
+                    <div class="chart-container">
+                        <canvas id="plChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -115,7 +134,6 @@
                         <div class="flex space-x-1">
                             <button onclick="setRange('today')" class="px-3 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300">วันนี้</button>
                             <button onclick="setRange('7days')" class="px-3 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300">7 วัน</button>
-                            <button onclick="setRange('30days')" class="px-3 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300">30 วัน</button>
                             <button onclick="setRange('thisMonth')" class="px-3 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300">เดือนนี้</button>
                         </div>
                         <div class="flex items-center space-x-2">
@@ -147,8 +165,7 @@
 
         <div id="import-section" class="section-content hidden">
             <div class="bg-white p-8 rounded-lg shadow-lg max-w-3xl mx-auto border-t-4 border-green-500">
-                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">📂 Import ยอดขาย (Smart Logic V.25)</h2>
-                
+                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">📂 Import ยอดขาย (Smart Logic V.26)</h2>
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                     <h3 class="font-bold text-blue-800 mb-2">✨ รองรับทุกแพลตฟอร์ม:</h3>
                     <ul class="list-disc ml-5 text-sm text-blue-900 space-y-1">
@@ -157,7 +174,6 @@
                         <li><strong>Robinhood:</strong> Auto Date + ยอดตรง 100%</li>
                     </ul>
                 </div>
-
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-gray-700 mb-2">เลือกไฟล์ CSV</label>
                     <div class="flex items-center justify-center w-full">
@@ -173,10 +189,7 @@
                     </div>
                     <div id="fileNameDisplay" class="mt-2 text-sm text-center text-green-600 font-medium"></div>
                 </div>
-
-                <button onclick="processCSV()" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 font-bold shadow-lg transform transition hover:scale-[1.02]">
-                    🚀 เริ่มประมวลผล (Import)
-                </button>
+                <button onclick="processCSV()" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 font-bold shadow-lg transform transition hover:scale-[1.02]">🚀 เริ่มประมวลผล (Import)</button>
             </div>
         </div>
 
@@ -216,7 +229,6 @@
                         <label class="block text-sm font-medium text-gray-700">วันที่</label>
                         <input type="date" id="expDate" class="w-full p-3 border rounded focus:ring-2 focus:ring-red-500 outline-none" required>
                     </div>
-                    
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">หมวดหมู่บัญชี</label>
                         <select id="expCategory" class="w-full p-3 border rounded bg-white focus:ring-2 focus:ring-red-500 outline-none">
@@ -249,17 +261,14 @@
                             </optgroup>
                         </select>
                     </div>
-
                     <div>
                         <label class="block text-sm font-medium text-gray-700">จำนวนเงิน (บาท)</label>
                         <input type="number" id="expAmount" class="w-full p-3 border rounded focus:ring-2 focus:ring-red-500 outline-none" placeholder="0.00" required>
                     </div>
-                    
                     <div>
                         <label class="block text-sm font-medium text-gray-700">รายละเอียดเพิ่มเติม</label>
                         <input type="text" id="expMemo" class="w-full p-3 border rounded focus:ring-2 focus:ring-red-500 outline-none" placeholder="เช่น ค่าซ่อมท่อ">
                     </div>
-
                     <button type="submit" class="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 font-bold shadow transition">บันทึกค่าใช้จ่าย</button>
                 </form>
             </div>
@@ -269,7 +278,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, setDoc, addDoc, doc, Timestamp, query, where, orderBy } 
+        import { getFirestore, collection, getDocs, setDoc, addDoc, doc, Timestamp, query, where } 
         from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
         // ============================================================
@@ -297,32 +306,19 @@
         window.showSection = (id) => {
             document.querySelectorAll('.section-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
-            if(id === 'report-section') {
-                // Default report range: Today
-                setRange('today');
-            }
+            if(id === 'report-section') setRange('today');
         }
         
         window.setRange = (type) => {
             const end = new Date();
             let start = new Date();
             
-            if(type === 'today') {
-                // start is today
-            } else if (type === '7days') {
-                start.setDate(end.getDate() - 7);
-            } else if (type === '30days') {
-                start.setDate(end.getDate() - 30);
-            } else if (type === 'thisMonth') {
-                start = new Date(end.getFullYear(), end.getMonth(), 1);
-            } else if (type === 'lastMonth') {
-                start = new Date(end.getFullYear(), end.getMonth() - 1, 1);
-                end.setDate(0); // Last day of previous month
-            }
+            if(type === '7days') start.setDate(end.getDate() - 7);
+            else if (type === 'thisMonth') start = new Date(end.getFullYear(), end.getMonth(), 1);
 
             document.getElementById('startDate').value = start.toISOString().split('T')[0];
             document.getElementById('endDate').value = end.toISOString().split('T')[0];
-            generateReport(); // Auto generate
+            generateReport();
         };
 
         const showLoading = (show) => {
@@ -350,7 +346,6 @@
                 const text = e.target.result;
                 const lines = text.split('\n');
                 
-                // Robinhood Date Detection
                 let rbhDate = null;
                 const rbhDateRegex = /(\d{2})-([A-Za-z]{3})-(\d{2})/;
                 for(let i=0; i<Math.min(lines.length, 25); i++) {
@@ -407,7 +402,6 @@
             reader.readAsText(file, 'UTF-8');
         }
 
-        // --- Import Logic Functions (Same as V.23) ---
         async function importGrabDetailed(data) {
             let dailyData = {};
             const parseDate = (str) => {
@@ -494,10 +488,11 @@
 
                 const clean = (val) => parseFloat((val||"0").toString().replace(/,/g,'')) || 0;
                 const gross = clean(row[10]);
+                const promo = clean(row[11]);
                 
                 if (gross > 0) {
                     dailyData.sales += gross;
-                    dailyData.promo += clean(row[11]);
+                    dailyData.promo += promo;
                     dailyData.fee += clean(row[16]);
                     dailyData.vat += clean(row[17]);
                     dailyData.gp += clean(row[19]);
@@ -564,7 +559,6 @@
             try {
                 let rData = { sales: { 'INSTORE':0, 'DEL_GRAB':0, 'DEL_LINE':0, 'DEL_OTH':0 }, cogs: {}, opex: {} };
                 
-                // Fetch Daily Sales
                 const qSales = query(collection(db, "daily_sales"), where("date", ">=", startDate), where("date", "<=", endDate));
                 const snapSales = await getDocs(qSales);
                 snapSales.forEach(doc => {
@@ -575,13 +569,8 @@
                     rData.sales['DEL_OTH'] += (d.delivery_robinhood||0)+(d.delivery_other||0);
                 });
 
-                // Fetch Expenses (Filtering client-side for simplicity if no composite index, or use separate queries)
-                // To avoid index issues, we'll fetch all expenses and filter (not efficient for large data, but works for now)
-                // OR query by date range since we can do one range filter.
-                
                 const qExp = query(collection(db, "expenses"), where("date", ">=", startDate), where("date", "<=", endDate));
                 const snapExp = await getDocs(qExp);
-                
                 snapExp.forEach(doc => {
                     const d = doc.data();
                     if(['0201','0202','0205','0207','0420-G','0420-L','0420-R','0421-L','0421-R'].includes(d.category)) 
@@ -622,26 +611,70 @@
         }
 
         // ============================================
-        // 3. DASHBOARD LOGIC (Monthly)
+        // 3. DASHBOARD LOGIC (Monthly + Recent 7 Days)
         // ============================================
+        document.getElementById('salesForm').addEventListener('submit', async (e) => {
+            e.preventDefault(); showLoading(true);
+            const dateVal = document.getElementById('saleDate').value;
+            await setDoc(doc(db, "daily_sales", dateVal), {
+                date: dateVal, instore: getVal('saleInstore'),
+                delivery_grab: getVal('delGrab'), delivery_lineman: getVal('delLineman'),
+                delivery_robinhood: getVal('delRobinhood'), delivery_other: getVal('delOther'),
+                timestamp: Timestamp.now()
+            }, { merge: true });
+            
+            showLoading(false); setTimeout(() => { alert("บันทึกสำเร็จ"); e.target.reset(); loadDashboard(); }, 100);
+        });
+
+        document.getElementById('expenseForm').addEventListener('submit', async (e) => {
+            e.preventDefault(); showLoading(true);
+            await addDoc(collection(db, "expenses"), {
+                date: document.getElementById('expDate').value, category: document.getElementById('expCategory').value,
+                amount: getVal('expAmount'), memo: document.getElementById('expMemo').value, timestamp: Timestamp.now()
+            });
+            
+            showLoading(false); setTimeout(() => { alert("บันทึกสำเร็จ"); e.target.reset(); loadDashboard(); }, 100);
+        });
+
         window.loadDashboard = async () => {
             const monthVal = document.getElementById('dashMonth').value;
             document.getElementById('displayMonth').innerText = monthVal;
             
             try {
                 let m_rev=0, m_cogs=0, m_opex=0;
-                let dailyTrend = {}; // Date -> Sales
+                let dailyTrend = {}; 
+                let allSales = []; // Store for Recent Table
 
-                // Fetch data for the selected month (Client-side filtering for simplicity)
-                // In production, better use startAt/endAt queries
+                // Fetch sales (optimized with client filtering for demo)
                 const snapSales = await getDocs(collection(db, "daily_sales"));
                 snapSales.forEach(doc => {
                     const d = doc.data();
+                    const total = (d.instore||0)+(d.delivery_grab||0)+(d.delivery_lineman||0)+(d.delivery_robinhood||0)+(d.delivery_other||0);
+                    
+                    // Monthly Aggregation
                     if(d.date.startsWith(monthVal)) {
-                        const total = (d.instore||0)+(d.delivery_grab||0)+(d.delivery_lineman||0)+(d.delivery_robinhood||0)+(d.delivery_other||0);
                         m_rev += total;
                         dailyTrend[d.date] = total;
                     }
+                    
+                    // Collect for Recent Table
+                    allSales.push({ date: d.date, total, ...d });
+                });
+
+                // Populate Recent 7 Days Table
+                allSales.sort((a,b) => b.date.localeCompare(a.date)); // Sort Desc
+                const recentTable = document.getElementById('recentDaysTable'); recentTable.innerHTML = '';
+                allSales.slice(0, 7).forEach(s => {
+                    recentTable.innerHTML += `
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="py-3 px-4">${s.date}</td>
+                            <td class="py-3 px-4 text-right text-blue-600">${(s.instore||0).toLocaleString()}</td>
+                            <td class="py-3 px-4 text-right text-green-600">${(s.delivery_grab||0).toLocaleString()}</td>
+                            <td class="py-3 px-4 text-right text-green-600">${(s.delivery_lineman||0).toLocaleString()}</td>
+                            <td class="py-3 px-4 text-right text-green-600">${(s.delivery_robinhood||0).toLocaleString()}</td>
+                            <td class="py-3 px-4 text-right font-bold">${s.total.toLocaleString()}</td>
+                        </tr>
+                    `;
                 });
 
                 const snapExp = await getDocs(collection(db, "expenses"));
@@ -675,7 +708,7 @@
                 window.barChart = new Chart(ctxBar, {
                     type: 'bar',
                     data: {
-                        labels: labels.map(d => d.slice(8)), // Show only day
+                        labels: labels.map(d => d.slice(8)),
                         datasets: [{
                             label: 'ยอดขายรายวัน',
                             data: data,
@@ -689,7 +722,6 @@
             } catch(e) { console.error(e); }
         }
 
-        // Init
         const now = new Date();
         document.getElementById('dashMonth').value = now.toISOString().slice(0, 7);
         document.getElementById('saleDate').valueAsDate = now;
