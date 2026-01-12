@@ -551,52 +551,9 @@
             reader.readAsText(file, 'UTF-8');
         }
 
-        async function importGrabDetailed(data) {
-            let dailyData = {};
-            const parseDate = (str) => {
-                if(!str) return null; const parts = str.split(' '); if(parts.length < 3) return null;
-                const months = {Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
-                return `${parts[2]}-${months[parts[1]]}-${parts[0].padStart(2,'0')}`;
-            };
-            const cleanVal = (row, key) => parseFloat(row[key] || 0) || 0;
-
-            for(const row of data) {
-                const dateKey = parseDate(row['Updated On']); if(!dateKey) continue;
-                if (!dailyData[dateKey]) dailyData[dateKey] = { sales: 0, gp: 0, ads: 0, promo: 0, del_disc: 0, loan: 0, orders: 0, hourly: {} };
-                
-                if (row['ประเภท'] === 'GrabFood' && row['หมวดหมู่'] === 'ชำระเงิน') {
-                    dailyData[dateKey].sales += cleanVal(row, 'ยอด');
-                    // GP -> 0504
-                    dailyData[dateKey].gp += Math.abs(cleanVal(row, 'ค่าคอมมิชชันแพลตฟอร์ม'));
-                    // Promo -> 0408
-                    dailyData[dateKey].promo += Math.abs(cleanVal(row, 'ค่าคอมมิชชันอื่นของ GrabFood / GrabMart')) + Math.abs(cleanVal(row, 'ค่าคอมมิชชันเพิ่มเติม')) + Math.abs(cleanVal(row, 'GrabKitchen Commission'));
-                    dailyData[dateKey].ads += Math.abs(cleanVal(row, 'ค่าธรรมเนียมการตลาด'));
-                    dailyData[dateKey].del_disc += Math.abs(cleanVal(row, 'ส่วนลดค่าจัดส่ง (ออกโดยร้าน)'));
-                    dailyData[dateKey].promo += Math.abs(cleanVal(row, 'ส่วนลด (ออกโดยร้าน)'));
-                    
-                    dailyData[dateKey].orders += 1;
-                    const timePart = row['Updated On'].split(' ')[3];
-                    if(timePart) { const h = parseInt(timePart.split(':')[0]); dailyData[dateKey].hourly[h] = (dailyData[dateKey].hourly[h]||0) + cleanVal(row, 'ยอด'); }
-                }
-                if (row['ประเภท'] === 'GrabFood' && row['หมวดหมู่'] === 'โฆษณา') dailyData[dateKey].ads += Math.abs(cleanVal(row, 'ทั้งหมด'));
-                if (row['หมวดหมู่'] === 'สินเชื่อ') dailyData[dateKey].loan += Math.abs(cleanVal(row, 'ทั้งหมด'));
-            }
-
-            for (const [date, val] of Object.entries(dailyData)) {
-                await setDoc(doc(db, "daily_sales", date), { 
-                    date: date, delivery_grab: val.sales, 
-                    order_counts: { grab: val.orders }, hourly_stats: val.hourly,
-                    timestamp: Timestamp.now() 
-                }, { merge: true });
-                if (val.gp > 0) await saveExp(date, 'grab_gp', '0504-G', val.gp); // New Cat
-                if (val.ads > 0) await saveExp(date, 'grab_ads', '0408-G', val.ads);
-                if (val.promo > 0) await saveExp(date, 'grab_promo', '0408-G', val.promo); // Promo to Ads
-                if (val.del_disc > 0) await saveExp(date, 'grab_del', '0408-G', val.del_disc);
-                if (val.loan > 0) await saveExp(date, 'grab_loan', '0411-G', val.loan);
-            }
-            alert(`✅ Import Grab สำเร็จ`); loadData();
-        }
-
+        // ==========================================
+        // แก้ไข 1: Import Lineman (โยก Promo ไปหมวด 0118)
+        // ==========================================
         async function importLinemanDetailed(data) {
             let dailyData = {};
             for(const row of data) {
@@ -606,11 +563,14 @@
                 const clean = (v) => parseFloat(v) || 0;
 
                 if (row['detail'] === 'Delivery Order') {
+                    // ยอดขาย (Gross Sales)
                     const amt = clean(row.cash_amount) + clean(row.e_payment_amount);
                     dailyData[dateKey].sales += amt;
-                    dailyData[dateKey].gp += Math.abs(clean(row.fee));
-                    dailyData[dateKey].vat += Math.abs(clean(row.vat));
-                    dailyData[dateKey].promo += Math.abs(clean(row.other_cost)); 
+                    
+                    // ค่าใช้จ่ายต่างๆ (แปลงค่าลบให้เป็นบวก เพื่อบันทึกเป็น Expense)
+                    dailyData[dateKey].gp += Math.abs(clean(row.fee));           // fee -> GP
+                    dailyData[dateKey].vat += Math.abs(clean(row.vat));          // vat -> VAT
+                    dailyData[dateKey].promo += Math.abs(clean(row.other_cost)); // other_cost -> Discount
                     
                     dailyData[dateKey].orders += 1;
                     const time = row.capture_time.split(' ')[1];
@@ -628,14 +588,71 @@
                     hourly_stats: val.hourly,
                     timestamp: Timestamp.now() 
                 }, { merge: true });
-                if (val.gp > 0) await saveExp(date, 'lineman_gp', '0504-L', val.gp); // New Cat
-                if (val.vat > 0) await saveExp(date, 'lineman_vat', '0121-L', val.vat); // New VAT
-                if (val.promo > 0) await saveExp(date, 'lineman_promo', '0408-L', val.promo); // Promo to Ads
-                if (val.ads > 0) await saveExp(date, 'lineman_ads', '0408-L', val.ads);
+
+                // --- MAPPING ใหม่ตามหลัก P&L ---
+                if (val.vat > 0) await saveExp(date, 'lineman_vat', '0121-L', val.vat);    // 0121: หักรายได้ (VAT)
+                if (val.promo > 0) await saveExp(date, 'lineman_promo', '0118-L', val.promo); // 0118: หักรายได้ (ส่วนลด) [แก้ไขจุดนี้]
+                
+                if (val.gp > 0) await saveExp(date, 'lineman_gp', '0504-L', val.gp);       // 0504: ค่าธรรมเนียม (GP)
+                if (val.ads > 0) await saveExp(date, 'lineman_ads', '0408-L', val.ads);    // 0408: ค่าโฆษณา
+                
                 if (val.cash_loan > 0) await saveExp(date, 'lineman_cash', '0411-L', val.cash_loan);
                 if (val.installment > 0) await saveExp(date, 'lineman_inst', '0411-L', val.installment);
             }
-            alert(`✅ Import Lineman สำเร็จ`); loadData();
+            alert(`✅ Import Lineman สำเร็จ (Mapped to P&L)`); loadData();
+        }
+
+        // ==========================================
+        // แก้ไข 2: Import Grab (ทำเหมือนกัน)
+        // ==========================================
+        async function importGrabDetailed(data) {
+            let dailyData = {};
+            const parseDate = (str) => {
+                if(!str) return null; const parts = str.split(' '); if(parts.length < 3) return null;
+                const months = {Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
+                return `${parts[2]}-${months[parts[1]]}-${parts[0].padStart(2,'0')}`;
+            };
+            const cleanVal = (row, key) => parseFloat(row[key] || 0) || 0;
+
+            for(const row of data) {
+                const dateKey = parseDate(row['Updated On']); if(!dateKey) continue;
+                if (!dailyData[dateKey]) dailyData[dateKey] = { sales: 0, gp: 0, ads: 0, promo: 0, del_disc: 0, loan: 0, orders: 0, hourly: {} };
+                
+                if (row['ประเภท'] === 'GrabFood' && row['หมวดหมู่'] === 'ชำระเงิน') {
+                    dailyData[dateKey].sales += cleanVal(row, 'ยอด');
+                    dailyData[dateKey].gp += Math.abs(cleanVal(row, 'ค่าคอมมิชชันแพลตฟอร์ม'));
+                    // รวมส่วนลดต่างๆ เข้า Promo
+                    dailyData[dateKey].promo += Math.abs(cleanVal(row, 'ค่าคอมมิชชันอื่นของ GrabFood / GrabMart')) + Math.abs(cleanVal(row, 'ค่าคอมมิชชันเพิ่มเติม')) + Math.abs(cleanVal(row, 'GrabKitchen Commission'));
+                    dailyData[dateKey].promo += Math.abs(cleanVal(row, 'ส่วนลด (ออกโดยร้าน)')); // <-- สำคัญ!
+                    
+                    dailyData[dateKey].ads += Math.abs(cleanVal(row, 'ค่าธรรมเนียมการตลาด'));
+                    dailyData[dateKey].del_disc += Math.abs(cleanVal(row, 'ส่วนลดค่าจัดส่ง (ออกโดยร้าน)'));
+                    
+                    dailyData[dateKey].orders += 1;
+                    const timePart = row['Updated On'].split(' ')[3];
+                    if(timePart) { const h = parseInt(timePart.split(':')[0]); dailyData[dateKey].hourly[h] = (dailyData[dateKey].hourly[h]||0) + cleanVal(row, 'ยอด'); }
+                }
+                if (row['ประเภท'] === 'GrabFood' && row['หมวดหมู่'] === 'โฆษณา') dailyData[dateKey].ads += Math.abs(cleanVal(row, 'ทั้งหมด'));
+                if (row['หมวดหมู่'] === 'สินเชื่อ') dailyData[dateKey].loan += Math.abs(cleanVal(row, 'ทั้งหมด'));
+            }
+
+            for (const [date, val] of Object.entries(dailyData)) {
+                await setDoc(doc(db, "daily_sales", date), { 
+                    date: date, delivery_grab: val.sales, 
+                    order_counts: { grab: val.orders }, hourly_stats: val.hourly,
+                    timestamp: Timestamp.now() 
+                }, { merge: true });
+                
+                // --- MAPPING Grab ---
+                if (val.gp > 0) await saveExp(date, 'grab_gp', '0504-G', val.gp);         // GP
+                if (val.ads > 0) await saveExp(date, 'grab_ads', '0408-G', val.ads);      // Ads
+                
+                if (val.promo > 0) await saveExp(date, 'grab_promo', '0118-G', val.promo); // ส่วนลดร้าน -> 0118 [แก้ไข]
+                if (val.del_disc > 0) await saveExp(date, 'grab_del', '0118-G', val.del_disc); // ส่วนลดค่าส่ง -> 0118 [แก้ไข]
+                
+                if (val.loan > 0) await saveExp(date, 'grab_loan', '0411-G', val.loan);
+            }
+            alert(`✅ Import Grab สำเร็จ (Mapped to P&L)`); loadData();
         }
 
         async function importRobinhood(data, detectedDate) {
