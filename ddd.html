@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant P&L (V.30 Classic UI)</title>
+    <title>Restaurant P&L (V.31 Color Tweaks)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script> 
@@ -32,7 +32,7 @@
     <nav class="bg-indigo-900 text-white p-4 shadow-lg sticky top-0 z-50">
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
             <h1 class="text-xl font-bold flex items-center">
-                📊 Restaurant P&L <span class="text-xs bg-yellow-400 text-indigo-900 px-2 rounded ml-2 shadow">V.30 Classic</span>
+                📊 Restaurant P&L <span class="text-xs bg-green-500 text-white px-2 rounded ml-2 shadow">V.31 Colors</span>
             </h1>
             <div class="space-x-1 flex overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
                 <button onclick="showSection('dashboard')" class="bg-indigo-800 px-3 py-1 rounded hover:bg-indigo-700 whitespace-nowrap transition">🏠 ภาพรวม</button>
@@ -407,6 +407,7 @@
                     complete: async function(results) {
                         const headers = results.meta.fields || [];
                         
+                        // Check headers for standard files
                         if (headers.includes('Transaction ID') && headers.includes('Updated On')) {
                             await importGrabDetailed(results.data);
                         } 
@@ -417,6 +418,7 @@
                             await importStandard(results.data);
                         }
                         else {
+                            // Manual Robinhood Parsing
                             let startIndex = -1;
                             for(let i=0; i<lines.length; i++) {
                                 if(lines[i].includes(',Shop ID,Shop Name') || lines[i].includes('Shop ID,Shop Name')) {
@@ -426,9 +428,11 @@
                             }
                             
                             if (startIndex > -1) {
+                                // Skip header row manually to ensure index 0 is first data row
                                 const rbhText = lines.slice(startIndex + 1).join('\n');
                                 Papa.parse(rbhText, {
-                                    header: false, skipEmptyLines: true,
+                                    header: false, // Use INDEX based parsing to avoid header mess
+                                    skipEmptyLines: true,
                                     complete: async function(rbhResults) {
                                         await importRobinhood(rbhResults.data, rbhDate);
                                     }
@@ -445,6 +449,7 @@
             reader.readAsText(file, 'UTF-8');
         }
 
+        // --- A. Grab Logic ---
         async function importGrabDetailed(data) {
             let dailyData = {};
             const parseDate = (str) => {
@@ -485,6 +490,7 @@
             showLoading(false); setTimeout(() => { alert(`✅ Import Grab สำเร็จ`); loadDashboard(); }, 100);
         }
 
+        // --- B. Lineman Logic ---
         async function importLinemanDetailed(data) {
             let dailyData = {};
             data.forEach(row => {
@@ -518,9 +524,13 @@
             showLoading(false); setTimeout(() => { alert(`✅ Import Lineman สำเร็จ`); loadDashboard(); }, 100);
         }
 
+        // --- C. Robinhood Logic (V.22 Fixed Indexing) ---
         async function importRobinhood(data, detectedDate) {
             let dateKey = detectedDate || document.getElementById('saleDate').value;
-            if(!dateKey) { dateKey = new Date().toISOString().split('T')[0]; alert("⚠️ ไม่พบวันที่ ใช้เป็นวันที่ปัจจุบัน: " + dateKey); }
+            if(!dateKey) {
+                dateKey = new Date().toISOString().split('T')[0];
+                alert("⚠️ ไม่พบวันที่ ใช้เป็นวันที่ปัจจุบัน: " + dateKey);
+            }
 
             let dailyData = { sales: 0, gp: 0, vat: 0, promo: 0, fee: 0 };
             
@@ -530,15 +540,19 @@
                 if (!orderNo || orderNo.trim() === '') return;
 
                 const clean = (val) => parseFloat((val||"0").toString().replace(/,/g,'')) || 0;
+
                 const gross = clean(row[10]);
-                const promo = clean(row[11]);
-                
+                const promo = clean(row[11]); 
+                const procFee = clean(row[16]);
+                const vat = clean(row[17]);
+                const gp = clean(row[19]);
+
                 if (gross > 0) {
                     dailyData.sales += gross;
                     dailyData.promo += promo;
-                    dailyData.fee += clean(row[16]);
-                    dailyData.vat += clean(row[17]);
-                    dailyData.gp += clean(row[19]);
+                    dailyData.fee += procFee;
+                    dailyData.vat += vat;
+                    dailyData.gp += gp;
                 }
             });
 
@@ -549,9 +563,11 @@
                 if (dailyData.promo > 0) await saveExp(dateKey, 'rbh_promo', '0422-R', dailyData.promo, 'Promo Robinhood');
                 if (dailyData.fee > 0) await saveExp(dateKey, 'rbh_fee', '0427-R', dailyData.fee, 'Processing Fee RBH');
                 
-                showLoading(false); setTimeout(() => { alert(`✅ Import Robinhood สำเร็จ (วันที่ ${dateKey})`); loadDashboard(); }, 100);
+                showLoading(false); 
+                setTimeout(() => { alert(`✅ Import Robinhood สำเร็จ (วันที่ ${dateKey})`); loadDashboard(); }, 100);
             } else {
-                showLoading(false); setTimeout(() => alert("⚠️ ไม่พบยอดขายในไฟล์ Robinhood"), 100);
+                showLoading(false);
+                setTimeout(() => alert("⚠️ ไม่พบยอดขายในไฟล์ Robinhood"), 100);
             }
         }
 
@@ -585,8 +601,8 @@
             'INSTORE': 'หน้าร้าน (Walk-in)', 'DEL_GRAB': 'Grab', 'DEL_LINE': 'Lineman', 'DEL_OTH': 'Delivery อื่นๆ',
             '0201': 'วัตถุดิบอาหาร', '0205': 'บรรจุภัณฑ์', '0207': 'ค่าแก๊ส', 
             '0420-G': 'GP Grab', '0408-G': 'Ads Grab', '0422-G': 'Promo Grab', '0423-G': 'Del Subsidy Grab', '0425-G': 'สินเชื่อ Grab',
-            '0420-L': 'GP Lineman', '0421-L': 'VAT Lineman', '0424-L': 'Promo/Ads Lineman', '0422-L': 'Promo Lineman', '0408-L': 'Ads Lineman',
-            '0425-L': 'สินเชื่อเงินสด Lineman', '0426-L': 'ผ่อนสินค้า Lineman',
+            '0420-L': 'GP Lineman', '0421-L': 'VAT Lineman', '0424-L': 'Promo/Ads Lineman', 
+            '0422-L': 'Promo Lineman', '0408-L': 'Ads Lineman', '0425-L': 'สินเชื่อเงินสด Lineman', '0426-L': 'ผ่อนสินค้า Lineman',
             '0420-R': 'GP Robinhood', '0421-R': 'VAT Robinhood', '0422-R': 'Promo Robinhood', '0427-R': 'Processing Fee RBH',
             '0301': 'เงินเดือน', '0401': 'ค่าไฟฟ้า', '0402': 'ค่าน้ำ', '0411': 'เบ็ดเตล็ด', '0416': 'ค่าเช่าที่'
         };
@@ -721,14 +737,14 @@
                 });
 
                 // 3. Update KPI
-                document.getElementById('m_revenue').innerText = m_rev.toLocaleString();
-                document.getElementById('m_cogs').innerText = m_cogs.toLocaleString();
-                document.getElementById('m_opex').innerText = m_opex.toLocaleString();
-                document.getElementById('m_net').innerText = (m_rev - m_cogs - m_opex).toLocaleString();
+                document.getElementById('m_revenue').innerText = m_rev.toLocaleString() + ' ฿';
+                document.getElementById('m_cogs').innerText = m_cogs.toLocaleString() + ' ฿';
+                document.getElementById('m_opex').innerText = m_opex.toLocaleString() + ' ฿';
+                document.getElementById('m_net').innerText = (m_rev - m_cogs - m_opex).toLocaleString() + ' ฿';
                 
                 document.getElementById('pct_cogs').innerText = m_rev ? ((m_cogs/m_rev)*100).toFixed(1)+'% ของยอดขาย' : '0%';
                 document.getElementById('pct_opex').innerText = m_rev ? ((m_opex/m_rev)*100).toFixed(1)+'% ของยอดขาย' : '0%';
-                document.getElementById('pct_net').innerText = m_rev ? (((m_rev-m_cogs-m_opex)/m_rev)*100).toFixed(1)+'%' : '0%';
+                document.getElementById('pct_net').innerText = m_rev ? (((m_rev-m_cogs-m_opex)/m_rev)*100).toFixed(1)+'% ของยอดขาย' : '0%';
 
                 // 4. Update Recent Sales Table
                 allSales.sort((a,b) => b.date.localeCompare(a.date));
@@ -772,10 +788,13 @@
                             <div>
                                 <div class="flex justify-between text-sm mb-1">
                                     <span class="text-gray-700">${accountNames[cat]||cat}</span>
-                                    <span class="font-bold">${amount.toLocaleString()} (${pct}%)</span>
+                                    <div>
+                                        <span class="font-bold text-gray-800">${amount.toLocaleString()}</span> 
+                                        <span class="text-red-500 font-bold">(${pct}%)</span>
+                                    </div>
                                 </div>
                                 <div class="w-full bg-gray-200 rounded-full h-2">
-                                    <div class="bg-indigo-500 h-2 rounded-full progress-bar" style="width: ${Math.min(pct, 100)}%"></div>
+                                    <div class="bg-red-500 h-2 rounded-full progress-bar" style="width: ${Math.min(pct, 100)}%"></div>
                                 </div>
                             </div>
                         `;
@@ -795,7 +814,7 @@
                         datasets: [{
                             label: 'ยอดขายรายวัน',
                             data: data,
-                            backgroundColor: '#6366F1',
+                            backgroundColor: '#10B981',
                             borderRadius: 4
                         }]
                     },
