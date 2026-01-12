@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant P&L (V.21 Robinhood Fixed)</title>
+    <title>Restaurant P&L (V.22 RBH Index Fix)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script> 
@@ -26,7 +26,7 @@
     <nav class="bg-blue-900 text-white p-4 shadow-lg sticky top-0 z-50">
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
             <h1 class="text-xl font-bold flex items-center">
-                📊 Restaurant P&L <span class="text-xs bg-indigo-600 text-white px-2 rounded ml-2 shadow">V.21 Correct</span>
+                📊 Restaurant P&L <span class="text-xs bg-pink-500 text-white px-2 rounded ml-2 shadow">V.22 Fixed</span>
             </h1>
             <div class="space-x-1 flex overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
                 <button onclick="showSection('dashboard')" class="bg-blue-800 px-3 py-1 rounded hover:bg-blue-700 whitespace-nowrap transition">🏠 ภาพรวม</button>
@@ -44,7 +44,7 @@
             <div class="bg-white p-6 rounded-lg shadow-xl text-center flex flex-col items-center">
                 <div class="spinner mb-4"></div>
                 <p id="loading-text" class="text-lg font-bold text-gray-700">กำลังประมวลผล...</p>
-                <p class="text-sm text-gray-500 mt-1">ปรับปรุงค่า Promo Robinhood</p>
+                <p class="text-sm text-gray-500 mt-1">ล็อคตำแหน่งคอลัมน์ Robinhood</p>
             </div>
         </div>
 
@@ -93,7 +93,7 @@
             <div class="bg-white p-6 rounded-lg shadow-lg min-h-screen">
                 <div class="flex flex-col md:flex-row justify-between items-center mb-6 border-b pb-4">
                     <h2 class="text-2xl font-bold text-gray-800 flex items-center">
-                        📑 งบกำไร-ขาดทุน (Correct Mapping)
+                        📑 งบกำไร-ขาดทุน (Column Index Fix)
                     </h2>
                     <div class="flex items-center space-x-2 mt-4 md:mt-0">
                         <label class="text-gray-600 font-medium">เลือกเดือน:</label>
@@ -122,14 +122,14 @@
 
         <div id="import-section" class="section-content hidden">
             <div class="bg-white p-8 rounded-lg shadow-lg max-w-3xl mx-auto border-t-4 border-green-500">
-                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">📂 Import ยอดขาย (Smart Fix)</h2>
+                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">📂 Import ยอดขาย (Direct Indexing)</h2>
                 
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                    <h3 class="font-bold text-blue-800 mb-2">✨ แก้ไขความถูกต้อง V.21:</h3>
+                    <h3 class="font-bold text-blue-800 mb-2">✨ แก้ไขความถูกต้อง V.22:</h3>
                     <ul class="list-disc ml-5 text-sm text-blue-900 space-y-1">
-                        <li><strong>Robinhood:</strong> แก้ไขช่องส่วนลด (Promo) ดึงจาก Column 11 (18.50) ถูกต้องแล้ว</li>
-                        <li><strong>Grab & Lineman:</strong> โลจิกถูกต้องตามเดิม (Gross Sales, Split Loan)</li>
-                        <li><strong>Auto Date:</strong> อ่านวันที่ Robinhood อัตโนมัติ</li>
+                        <li><strong>Robinhood:</strong> อ่านค่าจากตำแหน่งคอลัมน์โดยตรง (Col 11) เพื่อให้ได้ค่าส่วนลด 18.50 ที่ถูกต้อง</li>
+                        <li><strong>Auto Date:</strong> อ่านวันที่จากไฟล์อัตโนมัติ</li>
+                        <li><strong>Anti-Duplicate:</strong> ตัดแถวสรุปยอดออกอัตโนมัติ</li>
                     </ul>
                 </div>
 
@@ -298,6 +298,7 @@
             const file = fileInput.files[0];
             showLoading(true);
 
+            // Read as text first to detect platform and date
             const reader = new FileReader();
             reader.onload = function(e) {
                 const text = e.target.result;
@@ -327,6 +328,7 @@
                     complete: async function(results) {
                         const headers = results.meta.fields || [];
                         
+                        // Check headers for standard files
                         if (headers.includes('Transaction ID') && headers.includes('Updated On')) {
                             await importGrabDetailed(results.data);
                         } 
@@ -337,6 +339,7 @@
                             await importStandard(results.data);
                         }
                         else {
+                            // Manual Robinhood Parsing
                             let startIndex = -1;
                             for(let i=0; i<lines.length; i++) {
                                 if(lines[i].includes(',Shop ID,Shop Name') || lines[i].includes('Shop ID,Shop Name')) {
@@ -346,9 +349,11 @@
                             }
                             
                             if (startIndex > -1) {
-                                const rbhText = lines.slice(startIndex).join('\n');
+                                // Skip header row manually to ensure index 0 is first data row
+                                const rbhText = lines.slice(startIndex + 1).join('\n');
                                 Papa.parse(rbhText, {
-                                    header: true, skipEmptyLines: true,
+                                    header: false, // Use INDEX based parsing to avoid header mess
+                                    skipEmptyLines: true,
                                     complete: async function(rbhResults) {
                                         await importRobinhood(rbhResults.data, rbhDate);
                                     }
@@ -442,8 +447,9 @@
             showLoading(false); setTimeout(() => { alert(`✅ Import Lineman สำเร็จ ${count} วัน`); loadDashboard(); }, 100);
         }
 
-        // --- C. Robinhood Logic (V.21 Correct) ---
+        // --- C. Robinhood Logic (V.22 Fixed Indexing) ---
         async function importRobinhood(data, detectedDate) {
+            // Priority: Detected Date > User Input > Today
             let dateKey = detectedDate || document.getElementById('saleDate').value;
             if(!dateKey) {
                 dateKey = new Date().toISOString().split('T')[0];
@@ -453,25 +459,27 @@
             let dailyData = { sales: 0, gp: 0, vat: 0, promo: 0, fee: 0 };
             
             data.forEach(row => {
-                const vals = Object.values(row);
-                if (vals.length < 20) return; 
-
-                const orderNo = vals[4]; 
-                if (!orderNo || orderNo.trim() === '') return;
-
-                // Index mapping for Robinhood CSV
-                const gross = parseFloat((vals[10]||"0").replace(/,/g,'')) || 0;
+                // row is now array because header: false
+                // Col 10 = Gross, Col 11 = Promo, Col 16 = Fee, Col 17 = Vat, Col 19 = GP
+                // Indices are 0-based: Col 10 is index 10 (11th column)
                 
-                // FIX: Promo is Col 11 (18.50)
-                const promo = parseFloat((vals[11]||"0").replace(/,/g,'')) || 0;
-                
-                const procFee = parseFloat((vals[16]||"0").replace(/,/g,'')) || 0;
-                const vat = parseFloat((vals[17]||"0").replace(/,/g,'')) || 0;
-                const gp = parseFloat((vals[19]||"0").replace(/,/g,'')) || 0;
+                if (row.length < 20) return; // Safety check
+
+                // Order no at index 4 (5th column)
+                const orderNo = row[4];
+                if (!orderNo || orderNo.trim() === '') return; // Skip summary rows
+
+                const clean = (val) => parseFloat((val||"0").toString().replace(/,/g,'')) || 0;
+
+                const gross = clean(row[10]);
+                const promo = clean(row[11]); // Correct Promo column (18.50)
+                const procFee = clean(row[16]);
+                const vat = clean(row[17]);
+                const gp = clean(row[19]);
 
                 if (gross > 0) {
                     dailyData.sales += gross;
-                    dailyData.promo += promo; // Correctly add 18.50
+                    dailyData.promo += promo;
                     dailyData.fee += procFee;
                     dailyData.vat += vat;
                     dailyData.gp += gp;
