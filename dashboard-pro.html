@@ -3,22 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant PRO (V.36 Final Stable)</title>
+    <title>Restaurant PRO (V.37 Classic Report)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script> 
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Sarabun', sans-serif; }
-        .chart-container { position: relative; height: 300px; width: 100%; }
+        .chart-container { position: relative; height: 280px; width: 100%; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .spinner { border: 4px solid rgba(0, 0, 0, 0.1); border-left-color: #3B82F6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         
-        /* Table Styling */
-        .report-table th { background-color: #f3f4f6; color: #374151; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; padding: 0.75rem 1.5rem; }
-        .report-table td { padding: 0.75rem 1.5rem; border-bottom: 1px solid #e5e7eb; font-size: 0.9rem; }
+        /* --- Classic Report Table Styles (V.31) --- */
+        .report-table { width: 100%; border-collapse: collapse; }
+        .report-table th { background-color: #f3f4f6; color: #374151; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; padding: 1rem 1.5rem; border-bottom: 2px solid #e5e7eb; }
+        .report-table td { padding: 0.75rem 1.5rem; border-bottom: 1px solid #f3f4f6; color: #4b5563; }
         
-        /* Tab & Card */
+        /* Specific Row Styling */
+        .row-header td { background-color: #e0e7ff; color: #3730a3; font-weight: bold; padding-top: 1rem; padding-bottom: 1rem; }
+        .row-subtotal td { background-color: #f9fafb; font-weight: 600; border-top: 2px solid #d1d5db; }
+        .row-total td { background-color: #1e3a8a; color: white; font-weight: bold; font-size: 1.1em; padding-top: 1rem; padding-bottom: 1rem; }
+        
+        /* UI Elements */
         .tab-btn.active { background-color: #4338ca; color: white; box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06); }
         .daily-card { transition: all 0.3s ease; }
         .daily-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
@@ -30,7 +36,7 @@
     <nav class="bg-indigo-900 text-white p-4 shadow-lg sticky top-0 z-50">
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
             <h1 class="text-xl font-bold flex items-center">
-                📊 Restaurant PRO <span class="text-xs bg-green-500 text-white px-2 rounded ml-2 shadow">V.36 Stable</span>
+                📊 Restaurant PRO <span class="text-xs bg-pink-500 text-white px-2 rounded ml-2 shadow">V.37 Report UI</span>
             </h1>
             <div class="flex overflow-x-auto w-full md:w-auto space-x-1 pb-1 md:pb-0">
                 <button onclick="showSection('dashboard')" class="tab-btn bg-indigo-800 px-3 py-2 rounded hover:bg-indigo-700 whitespace-nowrap transition active">🏠 ภาพรวม</button>
@@ -62,6 +68,11 @@
                 </div>
             </div>
 
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-6 rounded shadow-sm flex justify-between items-center">
+                <p class="text-blue-800 text-sm font-bold">📅 สรุปยอดเดือน: <span id="displayMonth">...</span></p>
+                <span class="text-xs text-gray-500">*รวมทุกช่องทาง</span>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                 <div class="bg-white p-4 rounded-lg shadow border-l-4 border-green-500 daily-card">
                     <p class="text-xs text-gray-500 font-bold uppercase">รายได้รวม (Gross)</p>
@@ -90,7 +101,10 @@
                     <div class="chart-container"><canvas id="trendChart"></canvas></div>
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow">
-                    <h3 class="font-bold text-gray-700 mb-4">🏆 5 อันดับรายจ่ายสูงสุด</h3>
+                    <h3 class="text-lg font-bold mb-4 text-gray-700 flex justify-between items-center">
+                        🏆 5 อันดับรายจ่ายสูงสุด
+                        <span class="text-xs text-gray-400 font-normal">ประจำเดือนนี้</span>
+                    </h3>
                     <div id="topExpensesList" class="space-y-4">
                         <div class="text-center text-gray-400 text-sm py-10">กำลังคำนวณ...</div>
                     </div>
@@ -99,7 +113,7 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="bg-white p-6 rounded-lg shadow border-t-4 border-indigo-500">
-                    <h3 class="font-bold text-gray-800 mb-4">📅 เช็คยอดรายวัน (7 วันล่าสุด)</h3>
+                    <h3 class="text-lg font-bold mb-4 text-gray-800 flex items-center">📅 เช็คยอดรายวัน (7 วันล่าสุด)</h3>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left text-gray-600">
                             <thead class="bg-indigo-50 text-indigo-900 text-xs uppercase">
@@ -117,10 +131,10 @@
                     </div>
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow border-t-4 border-pink-500">
-                    <h3 class="font-bold text-gray-800 mb-4">💸 รายจ่ายล่าสุด (Log)</h3>
+                    <h3 class="text-lg font-bold mb-4 text-gray-800">💸 รายจ่ายล่าสุด (Log)</h3>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left text-gray-600">
-                            <thead class="bg-pink-50 text-pink-900 text-xs uppercase">
+                            <thead class="text-xs text-gray-700 uppercase bg-pink-50">
                                 <tr>
                                     <th class="py-2 px-3">วันที่</th>
                                     <th class="py-2 px-3">รายการ</th>
@@ -138,10 +152,9 @@
 
         <div id="analytics" class="section-content hidden">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-indigo-800">📈 วิเคราะห์เชิงลึก (Pro)</h2>
-                <div class="text-sm text-gray-500">วิเคราะห์จากข้อมูลที่ Import</div>
+                <h2 class="text-2xl font-bold text-indigo-800">📈 วิเคราะห์เชิงลึก (Pro Analytics)</h2>
+                <div class="text-sm text-gray-500">ข้อมูลจากไฟล์ Import</div>
             </div>
-
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                 <div class="bg-white p-6 rounded-lg shadow border-t-4 border-purple-500">
                     <h3 class="font-bold text-gray-800 mb-2">📊 ความคุ้มค่าแต่ละค่าย (Net Margin)</h3>
@@ -156,7 +169,6 @@
                     <div class="chart-container" style="height:150px"><canvas id="roasChart"></canvas></div>
                 </div>
             </div>
-
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div class="bg-white p-6 rounded-lg shadow border-t-4 border-blue-500">
                     <h3 class="font-bold text-gray-800 mb-2">⏰ ช่วงเวลาทำเงิน (Peak Time)</h3>
@@ -170,36 +182,82 @@
         </div>
 
         <div id="report-section" class="section-content hidden">
-            <div class="bg-white p-6 rounded-lg shadow-lg min-h-screen">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 border-b pb-4">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-4 md:mb-0">📑 งบกำไร-ขาดทุน</h2>
-                    <div class="flex flex-wrap gap-2">
-                        <button onclick="setRange('today')" class="px-3 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300">วันนี้</button>
-                        <button onclick="setRange('7days')" class="px-3 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300">7 วัน</button>
-                        <button onclick="setRange('thisMonth')" class="px-3 py-1 text-xs bg-gray-200 rounded hover:bg-gray-300">เดือนนี้</button>
-                        <input type="date" id="startDate" class="border p-1 text-sm rounded"><input type="date" id="endDate" class="border p-1 text-sm rounded">
-                        <button onclick="generateReport()" class="bg-indigo-600 text-white px-3 py-1 rounded text-sm hover:bg-indigo-700">ค้นหา</button>
+            <div class="bg-white p-8 rounded-lg shadow-lg min-h-screen">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b pb-6">
+                    <h2 class="text-3xl font-bold text-gray-800 flex items-center mb-4 md:mb-0">
+                        📑 งบกำไร-ขาดทุน
+                    </h2>
+                    
+                    <div class="flex flex-col space-y-3 md:flex-row md:space-y-0 md:space-x-3 items-end md:items-center w-full md:w-auto">
+                        <div class="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+                            <button onclick="setRange('today')" class="px-3 py-1.5 text-sm rounded hover:bg-white hover:shadow transition">วันนี้</button>
+                            <button onclick="setRange('7days')" class="px-3 py-1.5 text-sm rounded hover:bg-white hover:shadow transition">7 วัน</button>
+                            <button onclick="setRange('thisMonth')" class="px-3 py-1.5 text-sm rounded hover:bg-white hover:shadow transition font-semibold text-indigo-700">เดือนนี้</button>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="date" id="startDate" class="border border-gray-300 p-2 rounded text-sm outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm">
+                            <span class="text-gray-400">-</span>
+                            <input type="date" id="endDate" class="border border-gray-300 p-2 rounded text-sm outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm">
+                            <button onclick="generateReport()" class="bg-indigo-600 text-white px-5 py-2 rounded hover:bg-indigo-700 shadow font-bold text-sm transition transform hover:-translate-y-0.5">🔎 ค้นหา</button>
+                        </div>
                     </div>
                 </div>
-                <div class="overflow-x-auto"><table class="min-w-full text-sm text-left text-gray-500 report-table"><thead><tr><th>รหัส</th><th>รายการบัญชี</th><th class="text-right">จำนวนเงิน (บาท)</th><th class="text-right">% ของยอดขาย</th></tr></thead><tbody id="reportBody"><tr><td colspan="4" class="text-center py-8">กรุณาเลือกช่วงเวลา</td></tr></tbody></table></div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left report-table">
+                        <thead>
+                            <tr>
+                                <th class="w-24">รหัส</th>
+                                <th>รายการบัญชี</th>
+                                <th class="text-right">จำนวนเงิน (บาท)</th>
+                                <th class="text-right w-32">% ของยอดขาย</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportBody">
+                            <tr><td colspan="4" class="text-center py-12 text-gray-400">กรุณาเลือกช่วงเวลาแล้วกดค้นหา</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
         <div id="import-section" class="section-content hidden">
             <div class="bg-white p-8 rounded-lg shadow-lg max-w-3xl mx-auto border-t-4 border-green-500">
-                <h2 class="text-2xl font-bold mb-6 text-gray-800">📂 Import ยอดขาย (V.36 Stable)</h2>
+                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">📂 Import ยอดขาย (V.37 Stable)</h2>
+                
+                <div class="bg-red-50 border border-red-200 p-4 rounded mb-6 flex justify-between items-center">
+                    <div>
+                        <p class="text-red-800 font-bold">⚠️ เคลียร์ข้อมูลเก่า?</p>
+                        <p class="text-xs text-red-600">กดปุ่มนี้เพื่อล้างข้อมูล "เดือนนี้" แล้ว Import ใหม่ให้สะอาด</p>
+                    </div>
+                    <button onclick="resetMonthData()" class="bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700 font-bold text-sm">🗑️ ล้างข้อมูลเดือนนี้</button>
+                </div>
+
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                    <h3 class="font-bold text-blue-800 mb-2">✨ รองรับทุกแพลตฟอร์ม:</h3>
                     <ul class="list-disc ml-5 text-sm text-blue-900 space-y-1">
-                        <li><strong>Grab:</strong> Gross Sales + Analytics</li>
-                        <li><strong>Lineman:</strong> Promo/Ads/Loan + Analytics</li>
-                        <li><strong>Robinhood:</strong> Auto Date + Analytics</li>
+                        <li><strong>Grab:</strong> Gross Sales + Analytics Data</li>
+                        <li><strong>Lineman:</strong> แยก Promo/Ads/Loan ละเอียด</li>
+                        <li><strong>Robinhood:</strong> Auto Date + ยอดตรง 100%</li>
                     </ul>
                 </div>
+
                 <div class="mb-6">
-                    <input id="csvFileInput" type="file" accept=".csv" class="block w-full text-sm text-gray-500 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-green-50 file:text-green-700 hover:file:bg-green-100 mb-4"/>
-                    <div id="fileNameDisplay" class="text-sm text-center text-green-600 font-medium"></div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">เลือกไฟล์ CSV</label>
+                    <div class="flex items-center justify-center w-full">
+                        <label for="csvFileInput" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition">
+                            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                <svg class="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                                </svg>
+                                <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">คลิกเพื่อเลือกไฟล์</span> หรือลากไฟล์มาวาง</p>
+                            </div>
+                            <input id="csvFileInput" type="file" accept=".csv" class="hidden" />
+                        </label>
+                    </div>
+                    <div id="fileNameDisplay" class="mt-2 text-sm text-center text-green-600 font-medium"></div>
                 </div>
-                <button onclick="processCSV()" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 font-bold shadow-lg">🚀 เริ่มประมวลผล (Import)</button>
+                <button onclick="processCSV()" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 font-bold shadow-lg transform transition hover:scale-[1.02]">🚀 เริ่มประมวลผล (Import)</button>
             </div>
         </div>
 
@@ -210,7 +268,7 @@
                 <form id="salesForm" class="space-y-5">
                     <div><label class="block text-sm font-medium text-gray-700 mb-1">วันที่ขาย</label><input type="date" id="saleDate" class="w-full p-3 border rounded focus:ring-2 focus:ring-blue-500 outline-none" required></div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="bg-blue-50 p-4 rounded-lg"><h3 class="font-bold text-blue-800 mb-2 border-b border-blue-200 pb-1">🏠 หน้าร้าน</h3><div><label class="text-xs text-gray-600">ยอดขายรวม</label><input type="number" id="saleInstore" class="w-full p-2 border rounded text-sm bg-white" placeholder="เช่น 350"></div></div>
+                        <div class="bg-blue-50 p-4 rounded-lg"><h3 class="font-bold text-blue-800 mb-2 border-b border-blue-200 pb-1">🏠 หน้าร้าน (Walk-in)</h3><div><label class="text-xs text-gray-600">ยอดขายรวมหน้าร้าน</label><input type="number" id="saleInstore" class="w-full p-2 border rounded text-sm bg-white" placeholder="เช่น 350"></div></div>
                         <div class="bg-green-50 p-4 rounded-lg"><h3 class="font-bold text-green-800 mb-2 border-b border-green-200 pb-1">🛵 Delivery</h3><div class="grid grid-cols-2 gap-2"><div><label class="text-xs text-gray-600">Grab</label><input type="number" id="delGrab" class="w-full p-2 border rounded text-sm bg-white" placeholder="คงเดิม"></div><div><label class="text-xs text-gray-600">Lineman</label><input type="number" id="delLineman" class="w-full p-2 border rounded text-sm bg-white" placeholder="คงเดิม"></div><div><label class="text-xs text-gray-600">Robinhood</label><input type="number" id="delRobinhood" class="w-full p-2 border rounded text-sm bg-white" placeholder="คงเดิม"></div><div><label class="text-xs text-gray-600">อื่นๆ</label><input type="number" id="delOther" class="w-full p-2 border rounded text-sm bg-white" placeholder="คงเดิม"></div></div></div>
                     </div>
                     <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 font-bold shadow transition">บันทึก / อัปเดต</button>
@@ -223,9 +281,9 @@
                 <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">💸 บันทึกค่าใช้จ่าย</h2>
                 <form id="expenseForm" class="space-y-4">
                     <div><label class="block text-sm font-medium text-gray-700">วันที่</label><input type="date" id="expDate" class="w-full p-3 border rounded focus:ring-2 focus:ring-red-500 outline-none" required></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">หมวดหมู่</label><select id="expCategory" class="w-full p-3 border rounded bg-white focus:ring-2 focus:ring-red-500 outline-none"><option value="" disabled selected>-- เลือกหมวดหมู่ --</option><optgroup label="💰 ต้นทุนขาย (COGS)"><option value="0201">0201 - วัตถุดิบอาหาร</option><option value="0205">0205 - บรรจุภัณฑ์</option><option value="0207">0207 - ค่าแก๊ส</option><option value="0420-G">0420 - GP Grab</option><option value="0420-L">0420 - GP Lineman</option><option value="0420-R">0420 - GP Robinhood</option><option value="0421-L">0421 - VAT Lineman</option><option value="0421-R">0421 - VAT Robinhood</option></optgroup><optgroup label="💡 ค่าใช้จ่ายดำเนินงาน (OPEX)"><option value="0301">0301 - เงินเดือนพนักงาน</option><option value="0401">0401 - ค่าไฟฟ้า</option><option value="0402">0402 - ค่าน้ำประปา</option><option value="0408-G">0408 - ค่าโฆษณา (Grab Ads)</option><option value="0422-G">0422 - โปรโมชั่น (Grab Promo)</option><option value="0423-G">0423 - ส่วนลดค่าส่ง (Grab Del)</option><option value="0425-G">0425 - สินเชื่อ Grab</option><option value="0424-L">0424 - ค่าโฆษณา/โปรโมชั่น (Lineman)</option><option value="0425-L">0425 - สินเชื่อเงินสด (Lineman Cash)</option><option value="0426-L">0426 - ผ่อนสินค้า/โฆษณา (Lineman Inst.)</option><option value="0422-R">0422 - โปรโมชั่น (RBH Promo)</option><option value="0427-R">0427 - ค่าธรรมเนียม (RBH Proc. Fee)</option><option value="0411">0411 - เบ็ดเตล็ด</option><option value="0416">0416 - ค่าเช่าที่</option></optgroup></select></div>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-1">หมวดหมู่บัญชี</label><select id="expCategory" class="w-full p-3 border rounded bg-white focus:ring-2 focus:ring-red-500 outline-none"><option value="" disabled selected>-- เลือกหมวดหมู่ --</option><optgroup label="💰 ต้นทุนขาย (COGS)"><option value="0201">0201 - วัตถุดิบอาหาร</option><option value="0205">0205 - บรรจุภัณฑ์</option><option value="0207">0207 - ค่าแก๊ส</option><option value="0420-G">0420 - GP Grab</option><option value="0420-L">0420 - GP Lineman</option><option value="0420-R">0420 - GP Robinhood</option><option value="0421-L">0421 - VAT Lineman</option><option value="0421-R">0421 - VAT Robinhood</option></optgroup><optgroup label="💡 ค่าใช้จ่ายดำเนินงาน (OPEX)"><option value="0301">0301 - เงินเดือนพนักงาน</option><option value="0401">0401 - ค่าไฟฟ้า</option><option value="0402">0402 - ค่าน้ำประปา</option><option value="0408-G">0408 - ค่าโฆษณา (Grab Ads)</option><option value="0422-G">0422 - โปรโมชั่น (Grab Promo)</option><option value="0423-G">0423 - ส่วนลดค่าส่ง (Grab Del)</option><option value="0425-G">0425 - สินเชื่อ Grab</option><option value="0424-L">0424 - ค่าโฆษณา/โปรโมชั่น (Lineman)</option><option value="0425-L">0425 - สินเชื่อเงินสด (Lineman Cash)</option><option value="0426-L">0426 - ผ่อนสินค้า/โฆษณา (Lineman Inst.)</option><option value="0422-R">0422 - โปรโมชั่น (RBH Promo)</option><option value="0427-R">0427 - ค่าธรรมเนียม (RBH Proc. Fee)</option><option value="0411">0411 - เบ็ดเตล็ด</option><option value="0416">0416 - ค่าเช่าที่</option></optgroup></select></div>
                     <div><label class="block text-sm font-medium text-gray-700">จำนวนเงิน</label><input type="number" id="expAmount" class="w-full p-3 border rounded focus:ring-2 focus:ring-red-500 outline-none" placeholder="0.00" required></div>
-                    <div><label class="block text-sm font-medium text-gray-700">รายละเอียด</label><input type="text" id="expMemo" class="w-full p-3 border rounded focus:ring-2 focus:ring-red-500 outline-none" placeholder="เช่น ค่าซ่อมท่อ"></div>
+                    <div><label class="block text-sm font-medium text-gray-700">รายละเอียดเพิ่มเติม</label><input type="text" id="expMemo" class="w-full p-3 border rounded focus:ring-2 focus:ring-red-500 outline-none" placeholder="เช่น ค่าซ่อมท่อ"></div>
                     <button type="submit" class="w-full bg-red-600 text-white py-3 rounded-lg hover:bg-red-700 font-bold shadow transition">บันทึกค่าใช้จ่าย</button>
                 </form>
             </div>
@@ -235,11 +293,11 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, setDoc, addDoc, doc, Timestamp, query, where } 
+        import { getFirestore, collection, getDocs, setDoc, addDoc, deleteDoc, doc, Timestamp, query, where } 
         from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
         // ============================================================
-        // ⚠️ ใส่ Config Firebase ของคุณที่นี่
+        // ⚠️ Config Firebase (ใส่ของคุณตรงนี้)
         // ============================================================
           const firebaseConfig = {
     apiKey: "AIzaSyDRiTZXUbkdGaCHZVTkOOl1Iu0A-744tE0",
@@ -365,7 +423,7 @@
             } catch(e) { console.error(e); }
         }
 
-        // --- IMPORT LOGIC (Strictly V.31 Core + Pro Extras) ---
+        // --- IMPORT LOGIC (Base V.31 + Analytics) ---
         window.processCSV = () => {
             const fileInput = document.getElementById('csvFileInput');
             if (!fileInput.files.length) { alert("กรุณาเลือกไฟล์ CSV"); return; }
@@ -418,7 +476,6 @@
             reader.readAsText(file, 'UTF-8');
         }
 
-        // --- A. Grab Logic (V.31 + Analytics) ---
         async function importGrabDetailed(data) {
             let dailyData = {};
             const parseDate = (str) => {
@@ -431,9 +488,8 @@
             for(const row of data) {
                 const dateKey = parseDate(row['Updated On']); if(!dateKey) continue;
                 if (!dailyData[dateKey]) dailyData[dateKey] = { sales: 0, gp: 0, ads: 0, promo: 0, del_disc: 0, loan: 0, orders: 0, hourly: {} };
-                const type = row['ประเภท']; const cat = row['หมวดหมู่'];
-
-                if (type === 'GrabFood' && cat === 'ชำระเงิน') {
+                
+                if (row['ประเภท'] === 'GrabFood' && row['หมวดหมู่'] === 'ชำระเงิน') {
                     dailyData[dateKey].sales += cleanVal(row, 'ยอด');
                     dailyData[dateKey].gp += Math.abs(cleanVal(row, 'ค่าคอมมิชชันแพลตฟอร์ม'));
                     dailyData[dateKey].promo += Math.abs(cleanVal(row, 'ค่าคอมมิชชันอื่นของ GrabFood / GrabMart')) + Math.abs(cleanVal(row, 'ค่าคอมมิชชันเพิ่มเติม')) + Math.abs(cleanVal(row, 'GrabKitchen Commission'));
@@ -441,14 +497,13 @@
                     dailyData[dateKey].del_disc += Math.abs(cleanVal(row, 'ส่วนลดค่าจัดส่ง (ออกโดยร้าน)'));
                     dailyData[dateKey].promo += Math.abs(cleanVal(row, 'ส่วนลด (ออกโดยร้าน)'));
                     
-                    // Analytics Injection
+                    // Analytics
                     dailyData[dateKey].orders += 1;
                     const timePart = row['Updated On'].split(' ')[3];
                     if(timePart) { const h = parseInt(timePart.split(':')[0]); dailyData[dateKey].hourly[h] = (dailyData[dateKey].hourly[h]||0) + cleanVal(row, 'ยอด'); }
                 }
-                if (type === 'GrabFood' && cat === 'โฆษณา') dailyData[dateKey].ads += Math.abs(cleanVal(row, 'ทั้งหมด'));
-                if (type === 'GrabFinance' && cat === 'สินเชื่อ') dailyData[dateKey].loan += Math.abs(cleanVal(row, 'ทั้งหมด'));
-                if (cat !== 'ชำระเงิน') dailyData[dateKey].promo += Math.abs(cleanVal(row, 'โปรโมชัน'));
+                if (row['ประเภท'] === 'GrabFood' && row['หมวดหมู่'] === 'โฆษณา') dailyData[dateKey].ads += Math.abs(cleanVal(row, 'ทั้งหมด'));
+                if (row['หมวดหมู่'] === 'สินเชื่อ') dailyData[dateKey].loan += Math.abs(cleanVal(row, 'ทั้งหมด'));
             }
 
             for (const [date, val] of Object.entries(dailyData)) {
@@ -457,59 +512,56 @@
                     order_counts: { grab: val.orders }, hourly_stats: val.hourly,
                     timestamp: Timestamp.now() 
                 }, { merge: true });
-                if (val.gp > 0) await saveExp(date, 'grab_gp', '0420-G', val.gp, 'GP Grab');
-                if (val.ads > 0) await saveExp(date, 'grab_ads', '0408-G', val.ads, 'Ads Grab');
-                if (val.promo > 0) await saveExp(date, 'grab_promo', '0422-G', val.promo, 'Promo Grab');
-                if (val.del_disc > 0) await saveExp(date, 'grab_del', '0423-G', val.del_disc, 'Del Subsidy Grab');
-                if (val.loan > 0) await saveExp(date, 'grab_loan', '0425-G', val.loan, 'Finance/Loan Grab');
+                if (val.gp > 0) await saveExp(date, 'grab_gp', '0420-G', val.gp);
+                if (val.ads > 0) await saveExp(date, 'grab_ads', '0408-G', val.ads);
+                if (val.promo > 0) await saveExp(date, 'grab_promo', '0422-G', val.promo);
+                if (val.del_disc > 0) await saveExp(date, 'grab_del', '0423-G', val.del_disc);
+                if (val.loan > 0) await saveExp(date, 'grab_loan', '0425-G', val.loan);
             }
             alert(`✅ Import Grab สำเร็จ`); loadData();
         }
 
-        // --- B. Lineman Logic (V.31 + Analytics) ---
         async function importLinemanDetailed(data) {
             let dailyData = {};
             for(const row of data) {
                 if (!row.capture_time) continue;
                 const dateKey = row.capture_time.split(' ')[0];
                 if (!dailyData[dateKey]) dailyData[dateKey] = { sales: 0, gp: 0, vat: 0, promo: 0, ads: 0, cash_loan: 0, installment: 0, orders: 0, hourly: {} };
-                const detail = row['detail'] || ''; const clean = (v) => parseFloat(v) || 0;
+                const clean = (v) => parseFloat(v) || 0;
 
-                if (detail === 'Delivery Order') {
+                if (row['detail'] === 'Delivery Order') {
                     const amt = clean(row.cash_amount) + clean(row.e_payment_amount);
                     dailyData[dateKey].sales += amt;
                     dailyData[dateKey].gp += Math.abs(clean(row.fee));
                     dailyData[dateKey].vat += Math.abs(clean(row.vat));
                     dailyData[dateKey].promo += Math.abs(clean(row.other_cost)); 
                     
-                    // Analytics Injection
+                    // Analytics
                     dailyData[dateKey].orders += 1;
                     const time = row.capture_time.split(' ')[1];
                     if(time) { const h = parseInt(time.split(':')[0]); dailyData[dateKey].hourly[h] = (dailyData[dateKey].hourly[h]||0) + amt; }
                 }
-                else if (detail === 'Listing Ads') dailyData[dateKey].ads += Math.abs(clean(row.net_amount));
-                else if (detail === 'Cash Loan') dailyData[dateKey].cash_loan += Math.abs(clean(row.net_amount));
-                else if (detail === 'Installment') dailyData[dateKey].installment += Math.abs(clean(row.net_amount));
+                else if (row['detail'] === 'Listing Ads') dailyData[dateKey].ads += Math.abs(clean(row.net_amount));
+                else if (row['detail'] === 'Cash Loan') dailyData[dateKey].cash_loan += Math.abs(clean(row.net_amount));
+                else if (row['detail'] === 'Installment') dailyData[dateKey].installment += Math.abs(clean(row.net_amount));
             }
 
             for (const [date, val] of Object.entries(dailyData)) {
                 await setDoc(doc(db, "daily_sales", date), { 
                     date: date, delivery_lineman: val.sales, 
-                    order_counts: { line: val.orders },
-                    // Note: hourly merge logic omitted for brevity in hybrid, overwrites last
+                    order_counts: { line: val.orders }, 
                     timestamp: Timestamp.now() 
                 }, { merge: true });
-                if (val.gp > 0) await saveExp(date, 'lineman_gp', '0420-L', val.gp, 'GP Lineman');
-                if (val.vat > 0) await saveExp(date, 'lineman_vat', '0421-L', val.vat, 'VAT Lineman');
-                if (val.promo > 0) await saveExp(date, 'lineman_promo', '0422-L', val.promo, 'Promo Lineman');
-                if (val.ads > 0) await saveExp(date, 'lineman_ads', '0408-L', val.ads, 'Ads Lineman');
-                if (val.cash_loan > 0) await saveExp(date, 'lineman_cash', '0425-L', val.cash_loan, 'Cash Loan Lineman');
-                if (val.installment > 0) await saveExp(date, 'lineman_inst', '0426-L', val.installment, 'Installment Lineman');
+                if (val.gp > 0) await saveExp(date, 'lineman_gp', '0420-L', val.gp);
+                if (val.vat > 0) await saveExp(date, 'lineman_vat', '0421-L', val.vat);
+                if (val.promo > 0) await saveExp(date, 'lineman_promo', '0422-L', val.promo);
+                if (val.ads > 0) await saveExp(date, 'lineman_ads', '0408-L', val.ads);
+                if (val.cash_loan > 0) await saveExp(date, 'lineman_cash', '0425-L', val.cash_loan);
+                if (val.installment > 0) await saveExp(date, 'lineman_inst', '0426-L', val.installment);
             }
             alert(`✅ Import Lineman สำเร็จ`); loadData();
         }
 
-        // --- C. Robinhood Logic (V.31 + Analytics) ---
         async function importRobinhood(data, detectedDate) {
             let dateKey = detectedDate || document.getElementById('saleDate').value;
             if(!dateKey) { dateKey = new Date().toISOString().split('T')[0]; alert("⚠️ ไม่พบวันที่ ใช้เป็นวันที่ปัจจุบัน: " + dateKey); }
@@ -527,9 +579,8 @@
                     dailyData.vat += clean(row[17]);
                     dailyData.gp += clean(row[19]);
                     
-                    // Analytics Injection
+                    // Analytics
                     dailyData.orders += 1;
-                    // Try to find time in col 8
                     let time = row[8];
                     if(time && time.includes(':')) { const h = parseInt(time.split(':')[0]); dailyData.hourly[h] = (dailyData.hourly[h]||0) + gross; }
                 }
@@ -541,17 +592,17 @@
                     order_counts: { rbh: dailyData.orders },
                     timestamp: Timestamp.now() 
                 }, { merge: true });
-                if (dailyData.gp > 0) await saveExp(dateKey, 'rbh_gp', '0420-R', dailyData.gp, 'GP Robinhood');
-                if (dailyData.vat > 0) await saveExp(dateKey, 'rbh_vat', '0421-R', dailyData.vat, 'VAT Robinhood');
-                if (dailyData.promo > 0) await saveExp(dateKey, 'rbh_promo', '0422-R', dailyData.promo, 'Promo Robinhood');
-                if (dailyData.fee > 0) await saveExp(dateKey, 'rbh_fee', '0427-R', dailyData.fee, 'Processing Fee RBH');
+                if (dailyData.gp > 0) await saveExp(dateKey, 'rbh_gp', '0420-R', dailyData.gp);
+                if (dailyData.vat > 0) await saveExp(dateKey, 'rbh_vat', '0421-R', dailyData.vat);
+                if (dailyData.promo > 0) await saveExp(dateKey, 'rbh_promo', '0422-R', dailyData.promo);
+                if (dailyData.fee > 0) await saveExp(dateKey, 'rbh_fee', '0427-R', dailyData.fee);
                 alert(`✅ Import Robinhood สำเร็จ`); loadData();
             } else { alert("⚠️ ไม่พบยอดขายในไฟล์ Robinhood"); }
         }
 
-        async function saveExp(date, id_prefix, category, amount, memo) {
+        async function saveExp(date, id_prefix, category, amount) {
             await setDoc(doc(db, "expenses", `${id_prefix}_${date}`), {
-                date: date, category: category, amount: parseFloat(amount.toFixed(2)), memo: memo + ' (Auto)', timestamp: Timestamp.now()
+                date: date, category: category, amount: parseFloat(amount.toFixed(2)), memo: 'Auto Import', timestamp: Timestamp.now()
             });
         }
 
@@ -569,14 +620,30 @@
             alert(`✅ Import มาตรฐานสำเร็จ`); loadData();
         }
 
+        // --- RESET DATA ---
+        window.resetMonthData = async () => {
+            const monthVal = document.getElementById('dashMonth').value;
+            if(!confirm(`⚠️ ยืนยันลบข้อมูลเดือน ${monthVal} ทั้งหมด?`)) return;
+            showLoading(true);
+            try {
+                const qS = await getDocs(collection(db, "daily_sales"));
+                qS.forEach(async (d) => { if(d.data().date.startsWith(monthVal)) await deleteDoc(doc(db, "daily_sales", d.id)); });
+                const qE = await getDocs(collection(db, "expenses"));
+                qE.forEach(async (d) => { if(d.data().date.startsWith(monthVal)) await deleteDoc(doc(db, "expenses", d.id)); });
+                alert(`ลบข้อมูลเรียบร้อย!`); loadData();
+            } catch(e) { alert("Error deleting: "+e.message); }
+            showLoading(false);
+        }
+
         // ============================================
-        // 2. REPORT & DASHBOARD RENDERERS
+        // 2. REPORT GENERATION
         // ============================================
         const accountNames = {
             'INSTORE': 'หน้าร้าน (Walk-in)', 'DEL_GRAB': 'Grab', 'DEL_LINE': 'Lineman', 'DEL_OTH': 'Delivery อื่นๆ',
             '0201': 'วัตถุดิบอาหาร', '0205': 'บรรจุภัณฑ์', '0207': 'ค่าแก๊ส', 
             '0420-G': 'GP Grab', '0408-G': 'Ads Grab', '0422-G': 'Promo Grab', '0423-G': 'Del Subsidy Grab', '0425-G': 'สินเชื่อ Grab',
-            '0420-L': 'GP Lineman', '0421-L': 'VAT Lineman', '0424-L': 'Promo/Ads Lineman', '0422-L': 'Promo Lineman', '0408-L': 'Ads Lineman', '0425-L': 'สินเชื่อเงินสด Lineman', '0426-L': 'ผ่อนสินค้า Lineman',
+            '0420-L': 'GP Lineman', '0421-L': 'VAT Lineman', '0424-L': 'Promo/Ads Lineman', '0422-L': 'Promo Lineman', '0408-L': 'Ads Lineman',
+            '0425-L': 'สินเชื่อเงินสด Lineman', '0426-L': 'ผ่อนสินค้า Lineman',
             '0420-R': 'GP Robinhood', '0421-R': 'VAT Robinhood', '0422-R': 'Promo Robinhood', '0427-R': 'Processing Fee RBH',
             '0301': 'เงินเดือน', '0401': 'ค่าไฟฟ้า', '0402': 'ค่าน้ำ', '0411': 'เบ็ดเตล็ด', '0416': 'ค่าเช่าที่'
         };
@@ -606,7 +673,8 @@
                     const d = doc.data();
                     if(['0201','0202','0205','0207','0420-G','0420-L','0420-R','0421-L','0421-R'].includes(d.category)) 
                         rData.cogs[d.category] = (rData.cogs[d.category]||0)+d.amount;
-                    else rData.opex[d.category] = (rData.opex[d.category]||0)+d.amount;
+                    else 
+                        rData.opex[d.category] = (rData.opex[d.category]||0)+d.amount;
                 });
 
                 const sum = (obj) => Object.values(obj).reduce((a,b)=>a+b,0);
