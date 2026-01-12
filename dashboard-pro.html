@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant PRO (V.37 Fixed 2026)</title>
+    <title>Restaurant PRO (V.37 Full Fixed)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script> 
@@ -14,14 +14,11 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .spinner { border: 4px solid rgba(0, 0, 0, 0.1); border-left-color: #3B82F6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         
-        /* --- Classic Report Table Styles (V.31) --- */
+        /* Table Styles */
         .report-table { width: 100%; border-collapse: collapse; }
         .report-table th { background-color: #f3f4f6; color: #374151; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; padding: 1rem 1.5rem; border-bottom: 2px solid #e5e7eb; }
         .report-table td { padding: 0.75rem 1.5rem; border-bottom: 1px solid #f3f4f6; color: #4b5563; }
-        
-        /* Specific Row Styling */
         .row-header td { background-color: #e0e7ff; color: #3730a3; font-weight: bold; padding-top: 1rem; padding-bottom: 1rem; }
-        .row-subtotal td { background-color: #f9fafb; font-weight: 600; border-top: 2px solid #d1d5db; }
         .row-total td { background-color: #1e3a8a; color: white; font-weight: bold; font-size: 1.1em; padding-top: 1rem; padding-bottom: 1rem; }
         
         /* UI Elements */
@@ -34,10 +31,18 @@
 <body class="bg-gray-50 text-gray-800">
 
     <nav class="bg-indigo-900 text-white p-4 shadow-lg sticky top-0 z-50">
-        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
-            <h1 class="text-xl font-bold flex items-center">
-                📊 Restaurant PRO <span class="text-xs bg-pink-500 text-white px-2 rounded ml-2 shadow">V.37 Fixed 2026</span>
-            </h1>
+        <div class="container mx-auto flex flex-col md:flex-row justify-between items-center space-y-3 md:space-y-0">
+            <div class="flex items-center w-full md:w-auto justify-between md:justify-start">
+                <h1 class="text-xl font-bold flex items-center mr-4">
+                    📊 Restaurant PRO <span class="text-xs bg-pink-500 text-white px-2 rounded ml-2 shadow">V.37 Full</span>
+                </h1>
+                <div class="flex items-center space-x-2 bg-indigo-800 p-1.5 rounded border border-indigo-700">
+                    <span class="text-xs text-indigo-200">เดือน:</span>
+                    <input type="month" id="dashMonth" class="text-indigo-900 font-bold outline-none text-sm rounded px-1" onchange="loadData()">
+                    <button onclick="loadData()" class="text-xs text-yellow-300 hover:text-white">🔄</button>
+                </div>
+            </div>
+
             <div class="flex overflow-x-auto w-full md:w-auto space-x-1 pb-1 md:pb-0">
                 <button onclick="showSection('dashboard')" class="tab-btn bg-indigo-800 px-3 py-2 rounded hover:bg-indigo-700 whitespace-nowrap transition active">🏠 ภาพรวม</button>
                 <button onclick="showSection('analytics')" class="tab-btn bg-indigo-800 px-3 py-2 rounded hover:bg-indigo-700 whitespace-nowrap transition text-yellow-300 font-bold">📈 วิเคราะห์ (Pro)</button>
@@ -59,15 +64,6 @@
         </div>
 
         <div id="dashboard" class="section-content">
-            <div class="flex flex-col md:flex-row justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-2 md:mb-0">🏠 ภาพรวมธุรกิจ (รายเดือน)</h2>
-                <div class="flex items-center space-x-2 bg-white p-2 rounded border">
-                    <span class="text-sm text-gray-500">เลือกเดือน:</span>
-                    <input type="month" id="dashMonth" class="text-indigo-700 font-bold outline-none" onchange="loadData()">
-                    <button onclick="loadData()" class="text-sm text-indigo-600 underline hover:text-indigo-800">🔄 รีเฟรช</button>
-                </div>
-            </div>
-
             <div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-6 rounded shadow-sm flex justify-between items-center">
                 <p class="text-blue-800 text-sm font-bold">📅 สรุปยอดเดือน: <span id="displayMonth">...</span></p>
                 <span class="text-xs text-gray-500">*รวมทุกช่องทาง</span>
@@ -103,7 +99,6 @@
                 <div class="bg-white p-6 rounded-lg shadow">
                     <h3 class="text-lg font-bold mb-4 text-gray-700 flex justify-between items-center">
                         🏆 5 อันดับรายจ่ายสูงสุด
-                        <span class="text-xs text-gray-400 font-normal">ประจำเดือนนี้</span>
                     </h3>
                     <div id="topExpensesList" class="space-y-4">
                         <div class="text-center text-gray-400 text-sm py-10">กำลังคำนวณ...</div>
@@ -153,7 +148,7 @@
         <div id="analytics" class="section-content hidden">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-indigo-800">📈 วิเคราะห์เชิงลึก (Pro Analytics)</h2>
-                <div class="text-sm text-gray-500">ข้อมูลจากไฟล์ Import</div>
+                <div class="text-sm text-gray-500">ข้อมูลคำนวณจากเดือนที่เลือก</div>
             </div>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                 <div class="bg-white p-6 rounded-lg shadow border-t-4 border-purple-500">
@@ -223,7 +218,7 @@
 
         <div id="import-section" class="section-content hidden">
             <div class="bg-white p-8 rounded-lg shadow-lg max-w-3xl mx-auto border-t-4 border-green-500">
-                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">📂 Import ยอดขาย (V.37 Stable)</h2>
+                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">📂 Import ยอดขาย</h2>
                 
                 <div class="bg-red-50 border border-red-200 p-4 rounded mb-6 flex justify-between items-center">
                     <div>
@@ -234,11 +229,11 @@
                 </div>
 
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                    <h3 class="font-bold text-blue-800 mb-2">✨ รองรับทุกแพลตฟอร์ม:</h3>
+                    <h3 class="font-bold text-blue-800 mb-2">✨ รองรับแพลตฟอร์ม:</h3>
                     <ul class="list-disc ml-5 text-sm text-blue-900 space-y-1">
-                        <li><strong>Grab:</strong> Gross Sales + Analytics Data</li>
-                        <li><strong>Lineman:</strong> แยก Promo/Ads/Loan ละเอียด</li>
-                        <li><strong>Robinhood:</strong> Auto Date + ยอดตรง 100%</li>
+                        <li><strong>Grab:</strong> Gross Sales + Analytics</li>
+                        <li><strong>Lineman:</strong> Detailed Breakdown</li>
+                        <li><strong>Robinhood:</strong> Auto Date & Sales</li>
                     </ul>
                 </div>
 
@@ -247,10 +242,8 @@
                     <div class="flex items-center justify-center w-full">
                         <label for="csvFileInput" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition">
                             <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                                <svg class="w-8 h-8 mb-4 text-gray-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
-                                </svg>
-                                <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">คลิกเพื่อเลือกไฟล์</span> หรือลากไฟล์มาวาง</p>
+                                <span class="text-4xl">📂</span>
+                                <p class="mb-2 text-sm text-gray-500 mt-2"><span class="font-semibold">คลิกเพื่อเลือกไฟล์</span></p>
                             </div>
                             <input id="csvFileInput" type="file" accept=".csv" class="hidden" />
                         </label>
@@ -324,7 +317,10 @@
             const btn = document.querySelector(`button[onclick="showSection('${id}')"]`);
             if(btn) btn.classList.add('active');
             
-            if(id === 'dashboard' || id === 'analytics') loadData();
+            // Refresh Charts when switching to analytics to ensure size is correct
+            if(id === 'dashboard' || id === 'analytics') {
+                setTimeout(loadData, 50); // Small delay for UI rendering
+            }
             if(id === 'report-section') setRange('today');
         }
 
@@ -347,7 +343,7 @@
         });
 
         // ============================================
-        // 1. DATA LOADING & ANALYTICS (FIXED VERSION)
+        // 1. DATA LOADING & ANALYTICS (FULL ROBUST VERSION)
         // ============================================
         window.loadData = async () => {
             const monthVal = document.getElementById('dashMonth').value;
@@ -357,7 +353,7 @@
             try {
                 let sales = [], expenses = [];
                 let dailyTrend = {};
-                // แก้ไข 1: เปลี่ยนชื่อ Key ให้ตรงกับ Label ของกราฟเป๊ะๆ (Lineman, Robinhood)
+                // Correct Platform Keys (Matches Chart Labels)
                 let platformStats = { 
                     Grab: {rev:0, cost:0, orders:0}, 
                     Lineman: {rev:0, cost:0, orders:0}, 
@@ -372,30 +368,32 @@
                     const d = doc.data();
                     if(d.date.startsWith(monthVal)) {
                         sales.push(d);
-                        const total = (d.instore||0)+(d.delivery_grab||0)+(d.delivery_lineman||0)+(d.delivery_robinhood||0)+(d.delivery_other||0);
+                        // Helper to safely parse float
+                        const safeFloat = (v) => parseFloat(v || 0);
+
+                        const total = safeFloat(d.instore) + safeFloat(d.delivery_grab) + safeFloat(d.delivery_lineman) + safeFloat(d.delivery_robinhood) + safeFloat(d.delivery_other);
                         dailyTrend[d.date] = total;
 
-                        // แก้ไข 2: Map ข้อมูลรายได้เข้า Key ใหม่ (รองรับ delivery_lineman จาก DB)
-                        platformStats.Grab.rev += (d.delivery_grab||0);
-                        platformStats.Lineman.rev += (d.delivery_lineman||0); 
-                        platformStats.Robinhood.rev += (d.delivery_robinhood||0);
+                        // Map Revenue (Supports delivery_lineman key from your DB)
+                        platformStats.Grab.rev += safeFloat(d.delivery_grab);
+                        platformStats.Lineman.rev += safeFloat(d.delivery_lineman); 
+                        platformStats.Robinhood.rev += safeFloat(d.delivery_robinhood);
                         
-                        // Extract Analytics Info
+                        // Extract Hourly Stats (DB keys: "2", "3", etc.)
                         if(d.hourly_stats) {
                             Object.keys(d.hourly_stats).forEach(h => {
-                                // แปลง key เป็นตัวเลขเพื่อให้ลง Array index ได้ถูกต้อง
                                 const hourIndex = parseInt(h);
                                 if(!isNaN(hourIndex) && hourIndex >= 0 && hourIndex < 24) {
-                                    hourlySales[hourIndex] = (hourlySales[hourIndex]||0) + d.hourly_stats[h];
+                                    hourlySales[hourIndex] = (hourlySales[hourIndex]||0) + safeFloat(d.hourly_stats[h]);
                                 }
                             });
                         }
                         
-                        // แก้ไข 3: Map จำนวนออเดอร์ (ฐานข้อมูลเก็บเป็น grab, line, rbh)
+                        // Extract Order Counts (DB keys: grab, line, rbh)
                         if(d.order_counts) {
-                            platformStats.Grab.orders += (d.order_counts.grab||0);
-                            platformStats.Lineman.orders += (d.order_counts.line||0); // Map line -> Lineman
-                            platformStats.Robinhood.orders += (d.order_counts.rbh||0); // Map rbh -> Robinhood
+                            platformStats.Grab.orders += safeFloat(d.order_counts.grab);
+                            platformStats.Lineman.orders += safeFloat(d.order_counts.line); // Map line -> Lineman
+                            platformStats.Robinhood.orders += safeFloat(d.order_counts.rbh); // Map rbh -> Robinhood
                         }
                     }
                 });
@@ -405,13 +403,19 @@
                     const d = doc.data();
                     if(d.date.startsWith(monthVal)) {
                         expenses.push(d);
-                        // แก้ไข 4: Map ค่าใช้จ่ายเข้า Key ใหม่
-                        if(d.category.includes('-G')) platformStats.Grab.cost += d.amount;
-                        if(d.category.includes('-L')) platformStats.Lineman.cost += d.amount;
-                        if(d.category.includes('-R')) platformStats.Robinhood.cost += d.amount;
+                        const amt = parseFloat(d.amount || 0);
                         
-                        if(d.category.includes('Ads') || d.category === '0408-G' || d.category === '0408-L') totalAds += d.amount;
-                        expTotals[d.category] = (expTotals[d.category]||0) + d.amount;
+                        // Map Costs to Platforms
+                        if(d.category.includes('-G')) platformStats.Grab.cost += amt;
+                        if(d.category.includes('-L')) platformStats.Lineman.cost += amt;
+                        if(d.category.includes('-R')) platformStats.Robinhood.cost += amt;
+                        
+                        // Calculate Total Ads (Including Grab Ads, Lineman Ads)
+                        if(d.category.includes('Ads') || d.category === '0408-G' || d.category === '0408-L' || d.category === '0424-L') {
+                            totalAds += amt;
+                        }
+
+                        expTotals[d.category] = (expTotals[d.category]||0) + amt;
                     }
                 });
 
@@ -420,7 +424,7 @@
                 const m_opex = expenses.reduce((a,b)=>a+b.amount,0) - m_cogs;
                 const m_net = m_rev - m_cogs - m_opex;
 
-                // Update KPI
+                // Update KPI Dashboard
                 if(document.getElementById('m_revenue')) {
                     document.getElementById('m_revenue').innerText = m_rev.toLocaleString() + ' ฿';
                     document.getElementById('m_cogs').innerText = m_cogs.toLocaleString() + ' ฿';
@@ -431,21 +435,22 @@
                     document.getElementById('pct_net').innerText = m_rev ? (((m_rev-m_cogs-m_opex)/m_rev)*100).toFixed(1)+'% ของยอดขาย' : '0%';
                 }
 
-                // Render All Charts
-                renderTrendChart(dailyTrend);
-                renderTopExpenses(expTotals, m_rev);
-                updateRecentTables(sales, expenses);
-                
-                // Analytics Charts (Pro)
-                renderPlatformChart(platformStats);
-                renderROAS(m_rev, totalAds); 
-                renderPeakTime(hourlySales);
-                renderBasketSize(platformStats);
+                // Render Charts (With delay to ensure canvas visibility)
+                requestAnimationFrame(() => {
+                    renderTrendChart(dailyTrend);
+                    renderTopExpenses(expTotals, m_rev);
+                    updateRecentTables(sales, expenses);
+                    
+                    renderPlatformChart(platformStats);
+                    renderROAS(m_rev, totalAds); 
+                    renderPeakTime(hourlySales);
+                    renderBasketSize(platformStats);
+                });
 
             } catch(e) { console.error("Error loading data:", e); }
         }
 
-        // --- IMPORT LOGIC (Base V.31 + Analytics) ---
+        // --- IMPORT LOGIC ---
         window.processCSV = () => {
             const fileInput = document.getElementById('csvFileInput');
             if (!fileInput.files.length) { alert("กรุณาเลือกไฟล์ CSV"); return; }
@@ -519,7 +524,6 @@
                     dailyData[dateKey].del_disc += Math.abs(cleanVal(row, 'ส่วนลดค่าจัดส่ง (ออกโดยร้าน)'));
                     dailyData[dateKey].promo += Math.abs(cleanVal(row, 'ส่วนลด (ออกโดยร้าน)'));
                     
-                    // Analytics
                     dailyData[dateKey].orders += 1;
                     const timePart = row['Updated On'].split(' ')[3];
                     if(timePart) { const h = parseInt(timePart.split(':')[0]); dailyData[dateKey].hourly[h] = (dailyData[dateKey].hourly[h]||0) + cleanVal(row, 'ยอด'); }
@@ -558,7 +562,6 @@
                     dailyData[dateKey].vat += Math.abs(clean(row.vat));
                     dailyData[dateKey].promo += Math.abs(clean(row.other_cost)); 
                     
-                    // Analytics
                     dailyData[dateKey].orders += 1;
                     const time = row.capture_time.split(' ')[1];
                     if(time) { const h = parseInt(time.split(':')[0]); dailyData[dateKey].hourly[h] = (dailyData[dateKey].hourly[h]||0) + amt; }
@@ -572,7 +575,7 @@
                 await setDoc(doc(db, "daily_sales", date), { 
                     date: date, delivery_lineman: val.sales, 
                     order_counts: { line: val.orders }, 
-                    hourly_stats: val.hourly, // Added hourly stats
+                    hourly_stats: val.hourly,
                     timestamp: Timestamp.now() 
                 }, { merge: true });
                 if (val.gp > 0) await saveExp(date, 'lineman_gp', '0420-L', val.gp);
@@ -602,7 +605,6 @@
                     dailyData.vat += clean(row[17]);
                     dailyData.gp += clean(row[19]);
                     
-                    // Analytics
                     dailyData.orders += 1;
                     let time = row[8];
                     if(time && time.includes(':')) { const h = parseInt(time.split(':')[0]); dailyData.hourly[h] = (dailyData.hourly[h]||0) + gross; }
@@ -613,7 +615,7 @@
                 await setDoc(doc(db, "daily_sales", dateKey), { 
                     date: dateKey, delivery_robinhood: dailyData.sales, 
                     order_counts: { rbh: dailyData.orders },
-                    hourly_stats: dailyData.hourly, // Added hourly stats
+                    hourly_stats: dailyData.hourly,
                     timestamp: Timestamp.now() 
                 }, { merge: true });
                 if (dailyData.gp > 0) await saveExp(dateKey, 'rbh_gp', '0420-R', dailyData.gp);
@@ -644,7 +646,6 @@
             alert(`✅ Import มาตรฐานสำเร็จ`); loadData();
         }
 
-        // --- RESET DATA ---
         window.resetMonthData = async () => {
             const monthVal = document.getElementById('dashMonth').value;
             if(!confirm(`⚠️ ยืนยันลบข้อมูลเดือน ${monthVal} ทั้งหมด?`)) return;
@@ -740,14 +741,14 @@
             });
         }
         
-        // --- FIXED ANALYTICS CHARTS ---
+        // --- ANALYTICS CHARTS ---
         function renderPlatformChart(stats) {
             const ctx = document.getElementById('platformChart'); if(!ctx) return;
             if(charts.plat) charts.plat.destroy();
             const labels = ['Grab', 'Lineman', 'Robinhood']; 
             const margins = labels.map(k => { 
                 const s = stats[k]; 
-                if(!s || !s.rev) return 0; // Prevent NaN
+                if(!s || !s.rev) return 0; 
                 return ((s.rev - s.cost) / s.rev) * 100; 
             });
             charts.plat = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: 'Net Margin (%)', data: margins, backgroundColor: ['#10B981', '#F59E0B', '#8B5CF6'], borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100 } } } });
@@ -780,13 +781,13 @@
             sales.sort((a,b) => b.date.localeCompare(a.date));
             const sBody = document.getElementById('recentDaysTable'); if(sBody) { sBody.innerHTML = '';
             sales.slice(0,7).forEach(s => {
-                const tot = (s.instore||0)+(s.delivery_grab||0)+(s.delivery_lineman||0)+(s.delivery_robinhood||0);
-                sBody.innerHTML += `<tr class="border-b"><td class="py-2 px-3">${s.date}</td><td class="text-right text-blue-600">${(s.instore||0).toLocaleString()}</td><td class="text-right text-green-600">${(s.delivery_grab||0).toLocaleString()}</td><td class="text-right font-bold">${tot.toLocaleString()}</td></tr>`;
+                const tot = (parseFloat(s.instore)||0)+(parseFloat(s.delivery_grab)||0)+(parseFloat(s.delivery_lineman)||0)+(parseFloat(s.delivery_robinhood)||0);
+                sBody.innerHTML += `<tr class="border-b"><td class="py-2 px-3">${s.date}</td><td class="text-right text-blue-600">${(parseFloat(s.instore)||0).toLocaleString()}</td><td class="text-right text-green-600">${(parseFloat(s.delivery_grab)||0).toLocaleString()}</td><td class="text-right font-bold">${tot.toLocaleString()}</td></tr>`;
             }); }
             expenses.sort((a,b) => (b.timestamp?.seconds||0) - (a.timestamp?.seconds||0));
             const eBody = document.getElementById('recentExpensesTable'); if(eBody) { eBody.innerHTML = '';
             expenses.slice(0,7).forEach(e => {
-                eBody.innerHTML += `<tr class="border-b"><td class="py-2 px-3">${e.date}</td><td class="py-2 px-3 text-xs">${accountNames[e.category]||e.category}</td><td class="text-right text-red-500">-${e.amount.toLocaleString()}</td></tr>`;
+                eBody.innerHTML += `<tr class="border-b"><td class="py-2 px-3">${e.date}</td><td class="py-2 px-3 text-xs">${accountNames[e.category]||e.category}</td><td class="text-right text-red-500">-${parseFloat(e.amount).toLocaleString()}</td></tr>`;
             }); }
         }
 
@@ -815,11 +816,11 @@
             showLoading(false); setTimeout(() => { alert("บันทึกสำเร็จ"); e.target.reset(); loadData(); }, 100);
         });
 
-        // Init - Force 2026 for testing based on your DB screenshot
+        // Init - Set to your existing data date
         document.getElementById('dashMonth').value = '2026-01'; 
         document.getElementById('saleDate').value = '2026-01-11';
         document.getElementById('expDate').value = '2026-01-11';
-        loadData();
+        setTimeout(loadData, 500); // Wait for Firebase to be ready
 
     </script>
 </body>
