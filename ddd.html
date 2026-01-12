@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant P&L (V.22 RBH Index Fix)</title>
+    <title>Restaurant P&L (V.23 Lineman Split)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script> 
@@ -26,7 +26,7 @@
     <nav class="bg-blue-900 text-white p-4 shadow-lg sticky top-0 z-50">
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
             <h1 class="text-xl font-bold flex items-center">
-                📊 Restaurant P&L <span class="text-xs bg-pink-500 text-white px-2 rounded ml-2 shadow">V.22 Fixed</span>
+                📊 Restaurant P&L <span class="text-xs bg-yellow-500 text-blue-900 px-2 rounded ml-2 shadow">V.23 LM Split</span>
             </h1>
             <div class="space-x-1 flex overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
                 <button onclick="showSection('dashboard')" class="bg-blue-800 px-3 py-1 rounded hover:bg-blue-700 whitespace-nowrap transition">🏠 ภาพรวม</button>
@@ -44,7 +44,7 @@
             <div class="bg-white p-6 rounded-lg shadow-xl text-center flex flex-col items-center">
                 <div class="spinner mb-4"></div>
                 <p id="loading-text" class="text-lg font-bold text-gray-700">กำลังประมวลผล...</p>
-                <p class="text-sm text-gray-500 mt-1">ล็อคตำแหน่งคอลัมน์ Robinhood</p>
+                <p class="text-sm text-gray-500 mt-1">แยก Promo/Ads Lineman ตามคำสั่ง</p>
             </div>
         </div>
 
@@ -93,7 +93,7 @@
             <div class="bg-white p-6 rounded-lg shadow-lg min-h-screen">
                 <div class="flex flex-col md:flex-row justify-between items-center mb-6 border-b pb-4">
                     <h2 class="text-2xl font-bold text-gray-800 flex items-center">
-                        📑 งบกำไร-ขาดทุน (Column Index Fix)
+                        📑 งบกำไร-ขาดทุน (All Platforms)
                     </h2>
                     <div class="flex items-center space-x-2 mt-4 md:mt-0">
                         <label class="text-gray-600 font-medium">เลือกเดือน:</label>
@@ -122,14 +122,15 @@
 
         <div id="import-section" class="section-content hidden">
             <div class="bg-white p-8 rounded-lg shadow-lg max-w-3xl mx-auto border-t-4 border-green-500">
-                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">📂 Import ยอดขาย (Direct Indexing)</h2>
+                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">📂 Import ยอดขาย (V.23 New Logic)</h2>
                 
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                    <h3 class="font-bold text-blue-800 mb-2">✨ แก้ไขความถูกต้อง V.22:</h3>
+                    <h3 class="font-bold text-blue-800 mb-2">✨ อัปเดตล่าสุด V.23:</h3>
                     <ul class="list-disc ml-5 text-sm text-blue-900 space-y-1">
-                        <li><strong>Robinhood:</strong> อ่านค่าจากตำแหน่งคอลัมน์โดยตรง (Col 11) เพื่อให้ได้ค่าส่วนลด 18.50 ที่ถูกต้อง</li>
-                        <li><strong>Auto Date:</strong> อ่านวันที่จากไฟล์อัตโนมัติ</li>
-                        <li><strong>Anti-Duplicate:</strong> ตัดแถวสรุปยอดออกอัตโนมัติ</li>
+                        <li><strong>Lineman:</strong> แยก Promo (ส่วนลดอาหาร) และ Ads (ค่าโฆษณา) ออกจากกันชัดเจน</li>
+                        <li><strong>Lineman Loan:</strong> แยกสินเชื่อเงินสด (Cash Loan) และ ผ่อนชำระ (Installment)</li>
+                        <li><strong>Robinhood:</strong> อ่านวันที่อัตโนมัติ + ดึงยอด Promo 18.50 ถูกต้อง</li>
+                        <li><strong>Grab:</strong> ใช้ยอด Gross Sales ไม่หักส่วนลดซ้ำ</li>
                     </ul>
                 </div>
 
@@ -214,7 +215,9 @@
                                 <option value="0422-G">0422 - โปรโมชั่น (Grab Promo)</option>
                                 <option value="0423-G">0423 - ส่วนลดค่าส่ง (Grab Del)</option>
                                 <option value="0425-G">0425 - สินเชื่อ Grab</option>
-                                <option value="0424-L">0424 - ค่าโฆษณา/โปรโมชั่น (Lineman)</option>
+                                <option value="0424-L">0424 - <s>Promo/Ads (รวม)</s></option>
+                                <option value="0422-L">0422 - โปรโมชั่น (Lineman Promo)</option>
+                                <option value="0408-L">0408 - ค่าโฆษณา (Lineman Ads)</option>
                                 <option value="0425-L">0425 - สินเชื่อเงินสด (Lineman Cash)</option>
                                 <option value="0426-L">0426 - ผ่อนสินค้า/โฆษณา (Lineman Inst.)</option>
                                 <option value="0422-R">0422 - โปรโมชั่น (RBH Promo)</option>
@@ -416,22 +419,35 @@
             showLoading(false); setTimeout(() => { alert(`✅ Import Grab สำเร็จ ${count} วัน`); loadDashboard(); }, 100);
         }
 
-        // --- B. Lineman Logic ---
+        // --- B. Lineman Logic (V.23 New Logic) ---
         async function importLinemanDetailed(data) {
             let dailyData = {};
             data.forEach(row => {
                 if (!row.capture_time) return;
                 const dateKey = row.capture_time.split(' ')[0];
-                if (!dailyData[dateKey]) dailyData[dateKey] = { sales: 0, gp: 0, vat: 0, other: 0, cash_loan: 0, installment: 0 };
+                if (!dailyData[dateKey]) dailyData[dateKey] = { sales: 0, gp: 0, vat: 0, promo: 0, ads: 0, cash_loan: 0, installment: 0 };
+                
                 const detail = row['detail'] || ''; 
+                const clean = (v) => parseFloat(v) || 0;
+
                 if (detail === 'Delivery Order') {
-                    dailyData[dateKey].sales += (parseFloat(row.cash_amount)||0) + (parseFloat(row.e_payment_amount)||0);
-                    dailyData[dateKey].gp += Math.abs(parseFloat(row.fee)||0);
-                    dailyData[dateKey].vat += Math.abs(parseFloat(row.vat)||0);
-                    dailyData[dateKey].other += Math.abs(parseFloat(row.other_cost)||0); 
+                    // Normal Sales
+                    dailyData[dateKey].sales += (clean(row.cash_amount) + clean(row.e_payment_amount));
+                    dailyData[dateKey].gp += Math.abs(clean(row.fee));
+                    dailyData[dateKey].vat += Math.abs(clean(row.vat));
+                    // other_cost here is Promo (Food Discount)
+                    dailyData[dateKey].promo += Math.abs(clean(row.other_cost)); 
                 }
-                else if (detail === 'Cash Loan') dailyData[dateKey].cash_loan += Math.abs(parseFloat(row.net_amount)||0);
-                else if (detail === 'Installment') dailyData[dateKey].installment += Math.abs(parseFloat(row.net_amount)||0);
+                else if (detail === 'Listing Ads') {
+                    // New: Ads
+                    dailyData[dateKey].ads += Math.abs(clean(row.net_amount));
+                }
+                else if (detail === 'Cash Loan') {
+                    dailyData[dateKey].cash_loan += Math.abs(clean(row.net_amount));
+                }
+                else if (detail === 'Installment') {
+                    dailyData[dateKey].installment += Math.abs(clean(row.net_amount));
+                }
             });
 
             let count = 0;
@@ -439,7 +455,11 @@
                 await setDoc(doc(db, "daily_sales", date), { date: date, delivery_lineman: val.sales, timestamp: Timestamp.now() }, { merge: true });
                 if (val.gp > 0) await saveExp(date, 'lineman_gp', '0420-L', val.gp, 'GP Lineman');
                 if (val.vat > 0) await saveExp(date, 'lineman_vat', '0421-L', val.vat, 'VAT Lineman');
-                if (val.other > 0) await saveExp(date, 'lineman_other', '0424-L', val.other, 'Promo/Ads Lineman');
+                
+                // Split Promo & Ads
+                if (val.promo > 0) await saveExp(date, 'lineman_promo', '0422-L', val.promo, 'Promo Lineman');
+                if (val.ads > 0) await saveExp(date, 'lineman_ads', '0408-L', val.ads, 'Ads Lineman');
+                
                 if (val.cash_loan > 0) await saveExp(date, 'lineman_cash', '0425-L', val.cash_loan, 'Cash Loan Lineman');
                 if (val.installment > 0) await saveExp(date, 'lineman_inst', '0426-L', val.installment, 'Installment Lineman');
                 count++;
@@ -449,7 +469,6 @@
 
         // --- C. Robinhood Logic (V.22 Fixed Indexing) ---
         async function importRobinhood(data, detectedDate) {
-            // Priority: Detected Date > User Input > Today
             let dateKey = detectedDate || document.getElementById('saleDate').value;
             if(!dateKey) {
                 dateKey = new Date().toISOString().split('T')[0];
@@ -459,20 +478,14 @@
             let dailyData = { sales: 0, gp: 0, vat: 0, promo: 0, fee: 0 };
             
             data.forEach(row => {
-                // row is now array because header: false
-                // Col 10 = Gross, Col 11 = Promo, Col 16 = Fee, Col 17 = Vat, Col 19 = GP
-                // Indices are 0-based: Col 10 is index 10 (11th column)
-                
-                if (row.length < 20) return; // Safety check
-
-                // Order no at index 4 (5th column)
-                const orderNo = row[4];
-                if (!orderNo || orderNo.trim() === '') return; // Skip summary rows
+                if (row.length < 20) return; 
+                const orderNo = row[4]; 
+                if (!orderNo || orderNo.trim() === '') return;
 
                 const clean = (val) => parseFloat((val||"0").toString().replace(/,/g,'')) || 0;
 
                 const gross = clean(row[10]);
-                const promo = clean(row[11]); // Correct Promo column (18.50)
+                const promo = clean(row[11]); 
                 const procFee = clean(row[16]);
                 const vat = clean(row[17]);
                 const gp = clean(row[19]);
@@ -533,7 +546,9 @@
             // GRAB
             '0420-G': 'GP Grab', '0408-G': 'Ads Grab', '0422-G': 'Promo Grab', '0423-G': 'Del Subsidy Grab', '0425-G': 'สินเชื่อ Grab',
             // LINEMAN
-            '0420-L': 'GP Lineman', '0421-L': 'VAT Lineman', '0424-L': 'Promo/Ads Lineman', '0425-L': 'สินเชื่อเงินสด Lineman', '0426-L': 'ผ่อนสินค้า Lineman',
+            '0420-L': 'GP Lineman', '0421-L': 'VAT Lineman', 
+            '0422-L': 'Promo Lineman', '0408-L': 'Ads Lineman', // แยกแล้ว!
+            '0425-L': 'สินเชื่อเงินสด Lineman', '0426-L': 'ผ่อนสินค้า Lineman',
             // ROBINHOOD
             '0420-R': 'GP Robinhood', '0421-R': 'VAT Robinhood', '0422-R': 'Promo Robinhood', '0427-R': 'Processing Fee RBH',
             // OPEX
