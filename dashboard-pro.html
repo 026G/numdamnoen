@@ -347,7 +347,7 @@
         });
 
         // ============================================
-        // 1. DATA LOADING & ANALYTICS
+        // 1. DATA LOADING & ANALYTICS (FIXED VERSION)
         // ============================================
         window.loadData = async () => {
             const monthVal = document.getElementById('dashMonth').value;
@@ -356,7 +356,13 @@
             
             try {
                 let sales = [], expenses = [];
-                let dailyTrend = {}, platformStats = { Grab:{rev:0, cost:0, orders:0}, Line:{rev:0, cost:0, orders:0}, Rbh:{rev:0, cost:0, orders:0} };
+                let dailyTrend = {};
+                // แก้ไข 1: เปลี่ยนชื่อ Key ให้ตรงกับ Label ของกราฟเป๊ะๆ (Lineman, Robinhood)
+                let platformStats = { 
+                    Grab: {rev:0, cost:0, orders:0}, 
+                    Lineman: {rev:0, cost:0, orders:0}, 
+                    Robinhood: {rev:0, cost:0, orders:0} 
+                };
                 let hourlySales = new Array(24).fill(0);
                 let totalAds = 0;
                 let expTotals = {};
@@ -368,16 +374,28 @@
                         sales.push(d);
                         const total = (d.instore||0)+(d.delivery_grab||0)+(d.delivery_lineman||0)+(d.delivery_robinhood||0)+(d.delivery_other||0);
                         dailyTrend[d.date] = total;
+
+                        // แก้ไข 2: Map ข้อมูลรายได้เข้า Key ใหม่
                         platformStats.Grab.rev += (d.delivery_grab||0);
-                        platformStats.Line.rev += (d.delivery_lineman||0);
-                        platformStats.Rbh.rev += (d.delivery_robinhood||0);
+                        platformStats.Lineman.rev += (d.delivery_lineman||0);
+                        platformStats.Robinhood.rev += (d.delivery_robinhood||0);
                         
-                        // Extract Analytics Info (Safe Check)
-                        if(d.hourly_stats) Object.keys(d.hourly_stats).forEach(h => hourlySales[h] = (hourlySales[h]||0) + d.hourly_stats[h]);
+                        // Extract Analytics Info
+                        if(d.hourly_stats) {
+                            Object.keys(d.hourly_stats).forEach(h => {
+                                // แปลง key เป็นตัวเลขเพื่อให้ลง Array index ได้ถูกต้อง
+                                const hourIndex = parseInt(h);
+                                if(!isNaN(hourIndex)) {
+                                    hourlySales[hourIndex] = (hourlySales[hourIndex]||0) + d.hourly_stats[h];
+                                }
+                            });
+                        }
+                        
+                        // แก้ไข 3: Map จำนวนออเดอร์ (ฐานข้อมูลเก็บเป็น grab, line, rbh)
                         if(d.order_counts) {
                             platformStats.Grab.orders += (d.order_counts.grab||0);
-                            platformStats.Line.orders += (d.order_counts.line||0);
-                            platformStats.Rbh.orders += (d.order_counts.rbh||0);
+                            platformStats.Lineman.orders += (d.order_counts.line||0); // Map line -> Lineman
+                            platformStats.Robinhood.orders += (d.order_counts.rbh||0); // Map rbh -> Robinhood
                         }
                     }
                 });
@@ -387,9 +405,11 @@
                     const d = doc.data();
                     if(d.date.startsWith(monthVal)) {
                         expenses.push(d);
+                        // แก้ไข 4: Map ค่าใช้จ่ายเข้า Key ใหม่
                         if(d.category.includes('-G')) platformStats.Grab.cost += d.amount;
-                        if(d.category.includes('-L')) platformStats.Line.cost += d.amount;
-                        if(d.category.includes('-R')) platformStats.Rbh.cost += d.amount;
+                        if(d.category.includes('-L')) platformStats.Lineman.cost += d.amount;
+                        if(d.category.includes('-R')) platformStats.Robinhood.cost += d.amount;
+                        
                         if(d.category.includes('Ads') || d.category === '0408-G' || d.category === '0408-L') totalAds += d.amount;
                         expTotals[d.category] = (expTotals[d.category]||0) + d.amount;
                     }
@@ -415,12 +435,42 @@
                 renderTrendChart(dailyTrend);
                 renderTopExpenses(expTotals, m_rev);
                 updateRecentTables(sales, expenses);
+                
+                // Analytics Charts (Pro)
                 renderPlatformChart(platformStats);
                 renderROAS(m_rev, totalAds); 
                 renderPeakTime(hourlySales);
                 renderBasketSize(platformStats);
 
-            } catch(e) { console.error(e); }
+            } catch(e) { console.error("Error loading data:", e); }
+        }
+
+        // --- แก้ไขฟังก์ชันกราฟให้เรียกชื่อ Key ให้ตรงกัน ---
+        
+        function renderPlatformChart(stats) {
+            const ctx = document.getElementById('platformChart'); if(!ctx) return;
+            if(charts.plat) charts.plat.destroy();
+            // ใช้ชื่อ Key ตรงกับที่ประกาศไว้ข้างบน
+            const labels = ['Grab', 'Lineman', 'Robinhood']; 
+            const margins = labels.map(k => { 
+                const s = stats[k]; 
+                // ป้องกันการหารด้วย 0
+                if (!s || !s.rev) return 0;
+                return ((s.rev - s.cost) / s.rev) * 100; 
+            });
+            charts.plat = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: 'Net Margin (%)', data: margins, backgroundColor: ['#10B981', '#F59E0B', '#8B5CF6'], borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100 } } } });
+        }
+
+        function renderBasketSize(stats) {
+            const ctx = document.getElementById('basketChart'); if(!ctx) return;
+            if(charts.basket) charts.basket.destroy();
+            // แก้ชื่อ Rbh เป็น Robinhood ให้ตรงกัน
+            const labels = ['Grab', 'Lineman', 'Robinhood'];
+            const aov = labels.map(k => { 
+                const s = stats[k]; 
+                return (s && s.orders) ? (s.rev / s.orders) : 0; 
+            });
+            charts.basket = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: 'ยอดต่อบิล (Avg Order Value)', data: aov, backgroundColor: '#EC4899', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false } });
         }
 
         // --- IMPORT LOGIC (Base V.31 + Analytics) ---
