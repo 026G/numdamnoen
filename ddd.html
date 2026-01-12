@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant P&L (V.20 All Verified)</title>
+    <title>Restaurant P&L (V.21 Robinhood Fixed)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script> 
@@ -26,7 +26,7 @@
     <nav class="bg-blue-900 text-white p-4 shadow-lg sticky top-0 z-50">
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
             <h1 class="text-xl font-bold flex items-center">
-                📊 Restaurant P&L <span class="text-xs bg-green-600 text-white px-2 rounded ml-2 shadow">V.20 Verified</span>
+                📊 Restaurant P&L <span class="text-xs bg-indigo-600 text-white px-2 rounded ml-2 shadow">V.21 Correct</span>
             </h1>
             <div class="space-x-1 flex overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
                 <button onclick="showSection('dashboard')" class="bg-blue-800 px-3 py-1 rounded hover:bg-blue-700 whitespace-nowrap transition">🏠 ภาพรวม</button>
@@ -44,7 +44,7 @@
             <div class="bg-white p-6 rounded-lg shadow-xl text-center flex flex-col items-center">
                 <div class="spinner mb-4"></div>
                 <p id="loading-text" class="text-lg font-bold text-gray-700">กำลังประมวลผล...</p>
-                <p class="text-sm text-gray-500 mt-1">ยืนยันความถูกต้องข้อมูล 100%</p>
+                <p class="text-sm text-gray-500 mt-1">ปรับปรุงค่า Promo Robinhood</p>
             </div>
         </div>
 
@@ -93,7 +93,7 @@
             <div class="bg-white p-6 rounded-lg shadow-lg min-h-screen">
                 <div class="flex flex-col md:flex-row justify-between items-center mb-6 border-b pb-4">
                     <h2 class="text-2xl font-bold text-gray-800 flex items-center">
-                        📑 งบกำไร-ขาดทุน (3 Platforms)
+                        📑 งบกำไร-ขาดทุน (Correct Mapping)
                     </h2>
                     <div class="flex items-center space-x-2 mt-4 md:mt-0">
                         <label class="text-gray-600 font-medium">เลือกเดือน:</label>
@@ -122,14 +122,14 @@
 
         <div id="import-section" class="section-content hidden">
             <div class="bg-white p-8 rounded-lg shadow-lg max-w-3xl mx-auto border-t-4 border-green-500">
-                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">📂 Import ยอดขาย (Smart Logic V.20)</h2>
+                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">📂 Import ยอดขาย (Smart Fix)</h2>
                 
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                    <h3 class="font-bold text-blue-800 mb-2">✨ ความสามารถ V.20 Verified:</h3>
+                    <h3 class="font-bold text-blue-800 mb-2">✨ แก้ไขความถูกต้อง V.21:</h3>
                     <ul class="list-disc ml-5 text-sm text-blue-900 space-y-1">
-                        <li><strong>Robinhood:</strong> ลงยอดสุทธิถูกต้อง (235.89) ตัดยอดซ้ำและอ่านวันที่อัตโนมัติ</li>
-                        <li><strong>Grab:</strong> ใช้ยอดขาย Gross แก้ปัญหาหักส่วนลดซ้ำ</li>
-                        <li><strong>Lineman:</strong> แยกสินเชื่อละเอียด (เงินสด/ผ่อนสินค้า)</li>
+                        <li><strong>Robinhood:</strong> แก้ไขช่องส่วนลด (Promo) ดึงจาก Column 11 (18.50) ถูกต้องแล้ว</li>
+                        <li><strong>Grab & Lineman:</strong> โลจิกถูกต้องตามเดิม (Gross Sales, Split Loan)</li>
+                        <li><strong>Auto Date:</strong> อ่านวันที่ Robinhood อัตโนมัติ</li>
                     </ul>
                 </div>
 
@@ -298,7 +298,6 @@
             const file = fileInput.files[0];
             showLoading(true);
 
-            // Read as text first to detect platform and date
             const reader = new FileReader();
             reader.onload = function(e) {
                 const text = e.target.result;
@@ -306,14 +305,11 @@
                 
                 // --- 1. Robinhood Date Detection (Auto) ---
                 let rbhDate = null;
-                // Look for date pattern "DD-Mon-YY" e.g., 06-Dec-25 in first 20 lines
                 const rbhDateRegex = /(\d{2})-([A-Za-z]{3})-(\d{2})/;
                 
                 for(let i=0; i<Math.min(lines.length, 25); i++) {
                     const match = lines[i].match(rbhDateRegex);
                     if(match) {
-                        // Found date! Parse it.
-                        // match[1]=06, match[2]=Dec, match[3]=25
                         const day = match[1];
                         const monthStr = match[2];
                         const yearShort = match[3];
@@ -321,7 +317,6 @@
                         const month = months[monthStr];
                         if(day && month && yearShort) {
                             rbhDate = `20${yearShort}-${month}-${day}`;
-                            console.log("Detected Robinhood Date:", rbhDate);
                             break;
                         }
                     }
@@ -332,7 +327,6 @@
                     complete: async function(results) {
                         const headers = results.meta.fields || [];
                         
-                        // Check headers for standard files
                         if (headers.includes('Transaction ID') && headers.includes('Updated On')) {
                             await importGrabDetailed(results.data);
                         } 
@@ -343,8 +337,6 @@
                             await importStandard(results.data);
                         }
                         else {
-                            // If headers didn't match, check for Robinhood structure manually
-                            // Find line starting with ",Shop ID" or "Shop ID"
                             let startIndex = -1;
                             for(let i=0; i<lines.length; i++) {
                                 if(lines[i].includes(',Shop ID,Shop Name') || lines[i].includes('Shop ID,Shop Name')) {
@@ -354,7 +346,6 @@
                             }
                             
                             if (startIndex > -1) {
-                                // Re-parse only the table part
                                 const rbhText = lines.slice(startIndex).join('\n');
                                 Papa.parse(rbhText, {
                                     header: true, skipEmptyLines: true,
@@ -451,13 +442,12 @@
             showLoading(false); setTimeout(() => { alert(`✅ Import Lineman สำเร็จ ${count} วัน`); loadDashboard(); }, 100);
         }
 
-        // --- C. Robinhood Logic (Auto Date) ---
+        // --- C. Robinhood Logic (V.21 Correct) ---
         async function importRobinhood(data, detectedDate) {
-            // Priority: Detected Date > User Input > Today
             let dateKey = detectedDate || document.getElementById('saleDate').value;
             if(!dateKey) {
                 dateKey = new Date().toISOString().split('T')[0];
-                alert("⚠️ ไม่พบวันที่ในไฟล์ ใช้เป็นวันที่ปัจจุบัน: " + dateKey);
+                alert("⚠️ ไม่พบวันที่ ใช้เป็นวันที่ปัจจุบัน: " + dateKey);
             }
 
             let dailyData = { sales: 0, gp: 0, vat: 0, promo: 0, fee: 0 };
@@ -466,20 +456,22 @@
                 const vals = Object.values(row);
                 if (vals.length < 20) return; 
 
-                // FIX: Check if Order no. exists. If empty, it's a summary row -> Skip!
-                const orderNo = vals[4]; // Column 4 is Order no.
+                const orderNo = vals[4]; 
                 if (!orderNo || orderNo.trim() === '') return;
 
-                // Index mapping for Robinhood CSV (Manual Parsing)
+                // Index mapping for Robinhood CSV
                 const gross = parseFloat((vals[10]||"0").replace(/,/g,'')) || 0;
+                
+                // FIX: Promo is Col 11 (18.50)
                 const promo = parseFloat((vals[11]||"0").replace(/,/g,'')) || 0;
+                
                 const procFee = parseFloat((vals[16]||"0").replace(/,/g,'')) || 0;
                 const vat = parseFloat((vals[17]||"0").replace(/,/g,'')) || 0;
                 const gp = parseFloat((vals[19]||"0").replace(/,/g,'')) || 0;
 
                 if (gross > 0) {
                     dailyData.sales += gross;
-                    dailyData.promo += promo;
+                    dailyData.promo += promo; // Correctly add 18.50
                     dailyData.fee += procFee;
                     dailyData.vat += vat;
                     dailyData.gp += gp;
