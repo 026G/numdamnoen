@@ -3,21 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant PRO (V.33 Duplicate Fix)</title>
+    <title>Restaurant PRO (V.34 Hybrid)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script> 
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Sarabun', sans-serif; }
-        .chart-container { position: relative; height: 250px; width: 100%; }
+        .chart-container { position: relative; height: 280px; width: 100%; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .spinner { border: 4px solid rgba(0, 0, 0, 0.1); border-left-color: #3B82F6; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         .report-table th { background-color: #f3f4f6; color: #374151; font-weight: 600; padding: 0.75rem 1rem; font-size: 0.8rem; }
         .report-table td { padding: 0.75rem 1rem; border-bottom: 1px solid #e5e7eb; font-size: 0.9rem; }
-        .tab-btn.active { background-color: #2563EB; color: white; border-bottom: 2px solid white; }
-        .stat-card { transition: transform 0.2s; }
-        .stat-card:hover { transform: translateY(-3px); }
+        .daily-card { transition: all 0.3s ease; }
+        .daily-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .progress-bar { transition: width 1s ease-in-out; }
+        .tab-btn.active { background-color: #4F46E5; color: white; } /* Active Tab Style */
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -25,11 +26,11 @@
     <nav class="bg-indigo-900 text-white p-4 shadow-lg sticky top-0 z-50">
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
             <h1 class="text-xl font-bold flex items-center">
-                🚀 Restaurant PRO <span class="text-xs bg-red-500 text-white px-2 rounded ml-2 shadow">V.33 Clean</span>
+                🚀 Restaurant PRO <span class="text-xs bg-yellow-400 text-indigo-900 px-2 rounded ml-2 shadow">V.34 Hybrid</span>
             </h1>
             <div class="flex overflow-x-auto w-full md:w-auto space-x-1 pb-1 md:pb-0">
                 <button onclick="showSection('dashboard')" class="tab-btn px-4 py-2 rounded hover:bg-indigo-700 active">🏠 ภาพรวม</button>
-                <button onclick="showSection('analytics')" class="tab-btn px-4 py-2 rounded hover:bg-indigo-700 text-yellow-300 font-bold">📈 วิเคราะห์</button>
+                <button onclick="showSection('analytics')" class="tab-btn px-4 py-2 rounded hover:bg-indigo-700 text-yellow-300 font-bold">📈 วิเคราะห์ (Pro)</button>
                 <button onclick="showSection('report-section')" class="tab-btn px-4 py-2 rounded hover:bg-indigo-700">📑 รายงาน</button>
                 <button onclick="showSection('input-section')" class="tab-btn px-4 py-2 rounded hover:bg-indigo-700">✏️ บันทึก</button>
                 <button onclick="showSection('import-section')" class="bg-green-600 px-4 py-2 rounded hover:bg-green-500 shadow font-bold">📂 Import</button>
@@ -42,7 +43,7 @@
         <div id="loading" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
             <div class="bg-white p-6 rounded-lg shadow-xl flex flex-col items-center">
                 <div class="spinner mb-4"></div>
-                <p id="loading-text" class="text-lg font-bold text-gray-700">กำลังทำงาน...</p>
+                <p class="text-gray-700 font-bold">กำลังประมวลผล...</p>
             </div>
         </div>
 
@@ -55,23 +56,23 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div class="bg-white p-4 rounded-lg shadow border-l-4 border-green-500 stat-card">
-                    <p class="text-xs text-gray-500 font-bold uppercase">ยอดขายรวม (Gross)</p>
-                    <h2 class="text-3xl font-bold text-gray-800 mt-2" id="kpi_rev">0</h2>
+                <div class="bg-white p-4 rounded-lg shadow border-l-4 border-green-500 daily-card">
+                    <p class="text-xs text-gray-500 font-bold uppercase">รายได้รวม (Gross)</p>
+                    <h2 class="text-3xl font-bold text-gray-800 mt-2" id="m_revenue">0</h2>
                 </div>
-                <div class="bg-white p-4 rounded-lg shadow border-l-4 border-red-500 stat-card">
+                <div class="bg-white p-4 rounded-lg shadow border-l-4 border-red-500 daily-card">
                     <p class="text-xs text-gray-500 font-bold uppercase">ต้นทุนขาย (COGS)</p>
-                    <h2 class="text-3xl font-bold text-gray-800 mt-2" id="kpi_cogs">0</h2>
+                    <h2 class="text-3xl font-bold text-gray-800 mt-2" id="m_cogs">0</h2>
                     <p class="text-xs text-red-500 mt-1" id="pct_cogs">0%</p>
                 </div>
-                <div class="bg-white p-4 rounded-lg shadow border-l-4 border-orange-500 stat-card">
-                    <p class="text-xs text-gray-500 font-bold uppercase">ค่าใช้จ่าย (Ads/Loan)</p>
-                    <h2 class="text-3xl font-bold text-gray-800 mt-2" id="kpi_opex">0</h2>
+                <div class="bg-white p-4 rounded-lg shadow border-l-4 border-orange-500 daily-card">
+                    <p class="text-xs text-gray-500 font-bold uppercase">ค่าใช้จ่าย (OPEX)</p>
+                    <h2 class="text-3xl font-bold text-gray-800 mt-2" id="m_opex">0</h2>
                     <p class="text-xs text-orange-500 mt-1" id="pct_opex">0%</p>
                 </div>
-                <div class="bg-white p-4 rounded-lg shadow border-l-4 border-blue-500 stat-card bg-blue-50">
+                <div class="bg-white p-4 rounded-lg shadow border-l-4 border-blue-500 daily-card">
                     <p class="text-xs text-blue-600 font-bold uppercase">กำไรสุทธิ (Net)</p>
-                    <h2 class="text-3xl font-bold text-blue-800 mt-2" id="kpi_net">0</h2>
+                    <h2 class="text-3xl font-bold text-blue-800 mt-2" id="m_net">0</h2>
                     <p class="text-xs text-blue-600 mt-1" id="pct_net">0%</p>
                 </div>
             </div>
@@ -88,14 +89,14 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="bg-white p-6 rounded-lg shadow">
-                    <h3 class="font-bold text-gray-800 mb-4 border-b pb-2">📅 เช็คยอดรายวัน (7 วันล่าสุด)</h3>
+                <div class="bg-white p-6 rounded-lg shadow border-t-4 border-indigo-500">
+                    <h3 class="font-bold text-gray-800 mb-4">📅 เช็คยอดรายวัน (7 วันล่าสุด)</h3>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left"><tbody id="recentSalesTable"></tbody></table>
                     </div>
                 </div>
-                <div class="bg-white p-6 rounded-lg shadow">
-                    <h3 class="font-bold text-gray-800 mb-4 border-b pb-2">💸 รายจ่ายล่าสุด (Log)</h3>
+                <div class="bg-white p-6 rounded-lg shadow border-t-4 border-pink-500">
+                    <h3 class="font-bold text-gray-800 mb-4">💸 รายจ่ายล่าสุด (Log)</h3>
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left"><tbody id="recentExpTable"></tbody></table>
                     </div>
@@ -189,12 +190,12 @@
 
         <div id="import-section" class="section-content hidden">
             <div class="bg-white p-8 rounded-lg shadow max-w-2xl mx-auto border-t-4 border-green-600">
-                <h2 class="text-2xl font-bold mb-4">📂 Import ไฟล์ (V.33)</h2>
+                <h2 class="text-2xl font-bold mb-4">📂 Import ไฟล์ (V.34 Hybrid)</h2>
                 
                 <div class="bg-red-50 border border-red-200 p-4 rounded mb-6 flex justify-between items-center">
                     <div>
-                        <p class="text-red-800 font-bold">⚠️ ข้อมูลซ้ำซ้อน?</p>
-                        <p class="text-xs text-red-600">กดปุ่มนี้เพื่อล้างข้อมูลเก่าของ "เดือนนี้" ทั้งหมด แล้ว Import ใหม่</p>
+                        <p class="text-red-800 font-bold">⚠️ เคลียร์ข้อมูลเก่า?</p>
+                        <p class="text-xs text-red-600">กดปุ่มนี้เพื่อล้างข้อมูล "เดือนนี้" แล้ว Import ใหม่ให้สะอาด</p>
                     </div>
                     <button onclick="resetMonthData()" class="bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700 font-bold text-sm">🗑️ ล้างข้อมูลเดือนนี้</button>
                 </div>
@@ -216,6 +217,9 @@
         import { getFirestore, collection, getDocs, setDoc, addDoc, deleteDoc, doc, Timestamp, query, where } 
         from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
+        // ============================================================
+        // ⚠️ Config Firebase (ใส่ของคุณตรงนี้)
+        // ============================================================
           const firebaseConfig = {
     apiKey: "AIzaSyDRiTZXUbkdGaCHZVTkOOl1Iu0A-744tE0",
     authDomain: "numdamnoen-6cbd5.firebaseapp.com",
@@ -225,6 +229,7 @@
     appId: "1:823964498524:web:c79d742cf1a5a33c864499",
     measurementId: "G-805RS7VZEM"
   };
+        // ============================================================
 
         let db;
         try { const app = initializeApp(firebaseConfig); db = getFirestore(app); console.log("Firebase OK"); } 
@@ -236,6 +241,7 @@
             document.querySelectorAll('.section-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            // Highlight logic
             if(id === 'analytics') loadData(); 
         }
 
@@ -243,7 +249,7 @@
         const getRaw = (id) => document.getElementById(id).value;
         const showLoading = (show) => document.getElementById('loading').classList.toggle('hidden', !show);
 
-        // --- DATA LOADING ---
+        // --- DATA LOADING & ANALYTICS (V.33 Logic) ---
         window.loadData = async () => {
             const monthVal = document.getElementById('dashMonth').value;
             if(!db || !monthVal) return;
@@ -292,48 +298,50 @@
                 const m_opex = expenses.reduce((a,b)=>a+b.amount,0) - m_cogs;
                 const m_net = m_rev - m_cogs - m_opex;
 
-                document.getElementById('kpi_rev').innerText = m_rev.toLocaleString();
-                document.getElementById('kpi_cogs').innerText = m_cogs.toLocaleString();
-                document.getElementById('kpi_opex').innerText = m_opex.toLocaleString();
-                document.getElementById('kpi_net').innerText = m_net.toLocaleString();
+                // KPI
+                document.getElementById('m_revenue').innerText = m_rev.toLocaleString();
+                document.getElementById('m_cogs').innerText = m_cogs.toLocaleString();
+                document.getElementById('m_opex').innerText = m_opex.toLocaleString();
+                document.getElementById('m_net').innerText = m_net.toLocaleString();
                 
+                // KPI (Analytics Page)
+                if(document.getElementById('kpi_rev')) {
+                    document.getElementById('kpi_rev').innerText = m_rev.toLocaleString();
+                    document.getElementById('kpi_cogs').innerText = m_cogs.toLocaleString();
+                    document.getElementById('kpi_opex').innerText = m_opex.toLocaleString();
+                    document.getElementById('kpi_net').innerText = m_net.toLocaleString();
+                }
+
+                // Render Classic Dashboard
                 renderTrendChart(dailyTrend);
                 renderTopExpenses(expTotals, m_rev);
+                updateRecentTables(sales, expenses);
+                
+                // Render Pro Analytics
                 renderPlatformChart(platformStats);
-                renderROAS(m_rev, totalAds); 
+                renderROAS(m_rev, totalAds);
                 renderPeakTime(hourlySales);
                 renderBasketSize(platformStats);
-                updateRecentTables(sales, expenses);
 
             } catch(e) { console.error(e); }
         }
 
-        // --- RESET DATA FUNCTION (Fix Duplicate) ---
+        // --- RESET DATA ---
         window.resetMonthData = async () => {
             const monthVal = document.getElementById('dashMonth').value;
             if(!confirm(`⚠️ ยืนยันลบข้อมูลทั้งหมดของเดือน ${monthVal}?\n(เพื่อให้คุณ Import ใหม่ได้ถูกต้อง)`)) return;
             showLoading(true);
             try {
-                // Delete Sales
                 const qS = await getDocs(collection(db, "daily_sales"));
-                let count = 0;
-                qS.forEach(async (d) => {
-                    if(d.data().date.startsWith(monthVal)) { await deleteDoc(doc(db, "daily_sales", d.id)); count++; }
-                });
-                
-                // Delete Expenses
+                qS.forEach(async (d) => { if(d.data().date.startsWith(monthVal)) await deleteDoc(doc(db, "daily_sales", d.id)); });
                 const qE = await getDocs(collection(db, "expenses"));
-                qE.forEach(async (d) => {
-                    if(d.data().date.startsWith(monthVal)) { await deleteDoc(doc(db, "expenses", d.id)); count++; }
-                });
-                
-                alert(`ลบข้อมูลเรียบร้อย! กรุณา Import ไฟล์ใหม่`);
-                loadData();
+                qE.forEach(async (d) => { if(d.data().date.startsWith(monthVal)) await deleteDoc(doc(db, "expenses", d.id)); });
+                alert(`ลบข้อมูลเรียบร้อย! กรุณา Import ไฟล์ใหม่`); loadData();
             } catch(e) { alert("Error deleting: "+e.message); }
             showLoading(false);
         }
 
-        // --- CHARTS FUNCTIONS ---
+        // --- CHARTS ---
         function renderTrendChart(dataObj) {
             const ctx = document.getElementById('mainTrendChart');
             if(charts.trend) charts.trend.destroy();
@@ -353,18 +361,19 @@
             sorted.forEach(([cat, amt]) => {
                 const pct = totalRev ? ((amt/totalRev)*100).toFixed(1) : 0;
                 list.innerHTML += `
-                    <div class="mb-2">
+                    <div>
                         <div class="flex justify-between text-sm mb-1">
-                            <span>${cat}</span>
+                            <span class="text-gray-700">${cat}</span>
                             <div><span class="font-bold text-gray-800">${amt.toLocaleString()}</span> <span class="text-red-500 font-bold">(${pct}%)</span></div>
                         </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2"><div class="bg-red-500 h-2 rounded-full" style="width:${Math.min(pct,100)}%"></div></div>
+                        <div class="w-full bg-gray-200 rounded-full h-2"><div class="bg-red-500 h-2 rounded-full progress-bar" style="width: ${Math.min(pct, 100)}%"></div></div>
                     </div>`;
             });
         }
 
         function renderPlatformChart(stats) {
             const ctx = document.getElementById('platformChart');
+            if(!ctx) return;
             if(charts.plat) charts.plat.destroy();
             const labels = ['Grab', 'Lineman', 'Robinhood'];
             const margins = labels.map(k => {
@@ -383,9 +392,10 @@
 
         function renderROAS(sales, ads) {
             const roas = ads > 0 ? (sales / ads).toFixed(1) : 'N/A';
-            document.getElementById('roasValue').innerText = roas + 'x';
-            document.getElementById('totalAds').innerText = ads.toLocaleString() + ' ฿';
+            const elV = document.getElementById('roasValue'); if(elV) elV.innerText = roas + 'x';
+            const elA = document.getElementById('totalAds'); if(elA) elA.innerText = ads.toLocaleString() + ' ฿';
             const ctx = document.getElementById('roasChart');
+            if(!ctx) return;
             if(charts.roas) charts.roas.destroy();
             charts.roas = new Chart(ctx, {
                 type: 'bar',
@@ -399,6 +409,7 @@
 
         function renderPeakTime(hourlyData) {
             const ctx = document.getElementById('peakTimeChart');
+            if(!ctx) return;
             if(charts.peak) charts.peak.destroy();
             charts.peak = new Chart(ctx, {
                 type: 'line',
@@ -412,6 +423,7 @@
 
         function renderBasketSize(stats) {
             const ctx = document.getElementById('basketChart');
+            if(!ctx) return;
             if(charts.basket) charts.basket.destroy();
             const labels = ['Grab', 'Lineman', 'Rbh'];
             const aov = labels.map(k => {
@@ -443,7 +455,7 @@
             });
         }
 
-        // --- IMPORT LOGIC V.33 (Fix ID) ---
+        // --- IMPORT LOGIC V.33 ---
         window.processCSV = () => {
             const file = document.getElementById('csvFile').files[0];
             if(!file) return alert("เลือกไฟล์ก่อนครับ");
@@ -453,7 +465,15 @@
                 const text = e.target.result;
                 const lines = text.split('\n');
                 let rbhDate = null;
-                // ... Date logic ...
+                // Auto Date Logic
+                const rbhDateRegex = /(\d{2})-([A-Za-z]{3})-(\d{2})/;
+                for(let i=0; i<Math.min(lines.length, 25); i++) {
+                    const match = lines[i].match(rbhDateRegex);
+                    if(match) {
+                        const months = {Jan:'01', Feb:'02', Mar:'03', Apr:'04', May:'05', Jun:'06', Jul:'07', Aug:'08', Sep:'09', Oct:'10', Nov:'11', Dec:'12'};
+                        if(months[match[2]]) { rbhDate = `20${match[3]}-${months[match[2]]}-${match[1]}`; break; }
+                    }
+                }
                 
                 Papa.parse(file, {
                     header: true, skipEmptyLines: true,
@@ -466,11 +486,6 @@
                                 const start = lines.findIndex(l => l.includes('Shop ID,Shop Name'));
                                 if(start > -1) {
                                     const rbhText = lines.slice(start+1).join('\n');
-                                    const dateMatch = text.match(/(\d{2})-([A-Za-z]{3})-(\d{2})/);
-                                    if(dateMatch) {
-                                        const ms = {Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
-                                        rbhDate = `20${dateMatch[3]}-${ms[dateMatch[2]]}-${dateMatch[1]}`;
-                                    }
                                     Papa.parse(rbhText, {header: false, skipEmptyLines:true, complete: async(r)=> await importRBH(r.data, rbhDate)});
                                 }
                             }
@@ -486,8 +501,7 @@
             let daily = {};
             data.forEach(row => {
                 if(!row['Updated On']) return;
-                const dateTime = row['Updated On']; 
-                const parts = dateTime.split(' ');
+                const dateTime = row['Updated On']; const parts = dateTime.split(' ');
                 const months = {Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
                 const date = `${parts[2]}-${months[parts[1]]}-${parts[0].padStart(2,'0')}`;
                 if(!daily[date]) daily[date] = {sales:0, gp:0, ads:0, promo:0, loan:0, orders:0, hourly:{}};
@@ -534,8 +548,7 @@
                 await setDoc(doc(db, "daily_sales", d), { 
                     date: d, delivery_lineman: v.sales, order_counts: { line: v.orders }, timestamp: Timestamp.now() 
                 }, { merge: true });
-                // FIX ID HERE V33
-                if(v.gp > 0) await saveExp(d, 'lineman_gp', '0420-L', v.gp);
+                if(v.gp > 0) await saveExp(d, 'lineman_gp', '0420-L', v.gp); // Use consistent IDs
                 if(v.ads > 0) await saveExp(d, 'lineman_ads', '0408-L', v.ads);
                 if(v.promo > 0) await saveExp(d, 'lineman_promo', '0422-L', v.promo);
             }
@@ -576,9 +589,18 @@
         document.getElementById('eDate').value = today;
         loadData();
 
-        // Forms Event Listeners (Simplified for length)
-        document.getElementById('salesForm').addEventListener('submit', (e)=>{ e.preventDefault(); alert("Saved"); });
-        document.getElementById('expForm').addEventListener('submit', (e)=>{ e.preventDefault(); alert("Saved"); });
+        // Forms Listeners
+        document.getElementById('salesForm').addEventListener('submit', async (e)=>{
+            e.preventDefault();
+            const d = document.getElementById('sDate').value;
+            let u = {date:d, timestamp:Timestamp.now()};
+            if(getRaw('sInstore')!=='') u.instore=getVal('sInstore');
+            if(getRaw('sGrab')!=='') u.delivery_grab=getVal('sGrab');
+            if(getRaw('sLine')!=='') u.delivery_lineman=getVal('sLine');
+            if(getRaw('sRbh')!=='') u.delivery_robinhood=getVal('sRbh');
+            await setDoc(doc(db,"daily_sales",d), u, {merge:true});
+            alert("Saved"); loadData();
+        });
 
     </script>
 </body>
