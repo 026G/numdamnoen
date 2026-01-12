@@ -313,13 +313,11 @@
             document.querySelectorAll('.section-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            // Highlight Tab
             const btn = document.querySelector(`button[onclick="showSection('${id}')"]`);
             if(btn) btn.classList.add('active');
             
-            // Refresh Charts when switching to analytics to ensure size is correct
             if(id === 'dashboard' || id === 'analytics') {
-                setTimeout(loadData, 50); // Small delay for UI rendering
+                setTimeout(loadData, 50); 
             }
             if(id === 'report-section') setRange('today');
         }
@@ -343,7 +341,7 @@
         });
 
         // ============================================
-        // 1. DATA LOADING & ANALYTICS (FULL ROBUST VERSION)
+        // 1. DATA LOADING & ANALYTICS
         // ============================================
         window.loadData = async () => {
             const monthVal = document.getElementById('dashMonth').value;
@@ -353,7 +351,6 @@
             try {
                 let sales = [], expenses = [];
                 let dailyTrend = {};
-                // Correct Platform Keys (Matches Chart Labels)
                 let platformStats = { 
                     Grab: {rev:0, cost:0, orders:0}, 
                     Lineman: {rev:0, cost:0, orders:0}, 
@@ -368,18 +365,16 @@
                     const d = doc.data();
                     if(d.date.startsWith(monthVal)) {
                         sales.push(d);
-                        // Helper to safely parse float
                         const safeFloat = (v) => parseFloat(v || 0);
 
+                        // คำนวณยอดรวมทุกช่องทาง
                         const total = safeFloat(d.instore) + safeFloat(d.delivery_grab) + safeFloat(d.delivery_lineman) + safeFloat(d.delivery_robinhood) + safeFloat(d.delivery_other);
                         dailyTrend[d.date] = total;
 
-                        // Map Revenue (Supports delivery_lineman key from your DB)
                         platformStats.Grab.rev += safeFloat(d.delivery_grab);
                         platformStats.Lineman.rev += safeFloat(d.delivery_lineman); 
                         platformStats.Robinhood.rev += safeFloat(d.delivery_robinhood);
                         
-                        // Extract Hourly Stats (DB keys: "2", "3", etc.)
                         if(d.hourly_stats) {
                             Object.keys(d.hourly_stats).forEach(h => {
                                 const hourIndex = parseInt(h);
@@ -389,11 +384,10 @@
                             });
                         }
                         
-                        // Extract Order Counts (DB keys: grab, line, rbh)
                         if(d.order_counts) {
                             platformStats.Grab.orders += safeFloat(d.order_counts.grab);
-                            platformStats.Lineman.orders += safeFloat(d.order_counts.line); // Map line -> Lineman
-                            platformStats.Robinhood.orders += safeFloat(d.order_counts.rbh); // Map rbh -> Robinhood
+                            platformStats.Lineman.orders += safeFloat(d.order_counts.line); 
+                            platformStats.Robinhood.orders += safeFloat(d.order_counts.rbh); 
                         }
                     }
                 });
@@ -405,16 +399,13 @@
                         expenses.push(d);
                         const amt = parseFloat(d.amount || 0);
                         
-                        // Map Costs to Platforms
                         if(d.category.includes('-G')) platformStats.Grab.cost += amt;
                         if(d.category.includes('-L')) platformStats.Lineman.cost += amt;
                         if(d.category.includes('-R')) platformStats.Robinhood.cost += amt;
                         
-                        // Calculate Total Ads (Including Grab Ads, Lineman Ads)
                         if(d.category.includes('Ads') || d.category === '0408-G' || d.category === '0408-L' || d.category === '0424-L') {
                             totalAds += amt;
                         }
-
                         expTotals[d.category] = (expTotals[d.category]||0) + amt;
                     }
                 });
@@ -424,7 +415,6 @@
                 const m_opex = expenses.reduce((a,b)=>a+b.amount,0) - m_cogs;
                 const m_net = m_rev - m_cogs - m_opex;
 
-                // Update KPI Dashboard
                 if(document.getElementById('m_revenue')) {
                     document.getElementById('m_revenue').innerText = m_rev.toLocaleString() + ' ฿';
                     document.getElementById('m_cogs').innerText = m_cogs.toLocaleString() + ' ฿';
@@ -435,11 +425,10 @@
                     document.getElementById('pct_net').innerText = m_rev ? (((m_rev-m_cogs-m_opex)/m_rev)*100).toFixed(1)+'% ของยอดขาย' : '0%';
                 }
 
-                // Render Charts (With delay to ensure canvas visibility)
                 requestAnimationFrame(() => {
                     renderTrendChart(dailyTrend);
                     renderTopExpenses(expTotals, m_rev);
-                    updateRecentTables(sales, expenses);
+                    updateRecentTables(sales, expenses); // <-- ฟังก์ชันที่แก้แล้วอยู่ข้างล่าง
                     
                     renderPlatformChart(platformStats);
                     renderROAS(m_rev, totalAds); 
@@ -753,13 +742,24 @@
             });
             charts.plat = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: 'Net Margin (%)', data: margins, backgroundColor: ['#10B981', '#F59E0B', '#8B5CF6'], borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100 } } } });
         }
+        
+        // 🔥 แก้ไขกราฟ ROAS: ซ่อน Legend ที่ขึ้น undefined
         function renderROAS(sales, ads) {
             const roas = ads > 0 ? (sales / ads).toFixed(1) : 'N/A';
             const elV = document.getElementById('roasValue'); if(elV) elV.innerText = roas + 'x';
             const elA = document.getElementById('totalAds'); if(elA) elA.innerText = ads.toLocaleString() + ' ฿';
             const ctx = document.getElementById('roasChart'); if(!ctx) return;
             if(charts.roas) charts.roas.destroy();
-            charts.roas = new Chart(ctx, { type: 'bar', data: { labels: ['ค่าโฆษณา', 'ยอดขายที่ได้'], datasets: [{ data: [ads, sales], backgroundColor: ['#EF4444', '#10B981'], borderRadius: 4 }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false } });
+            charts.roas = new Chart(ctx, { 
+                type: 'bar', 
+                data: { labels: ['ค่าโฆษณา', 'ยอดขายที่ได้'], datasets: [{ data: [ads, sales], backgroundColor: ['#EF4444', '#10B981'], borderRadius: 4 }] }, 
+                options: { 
+                    indexAxis: 'y', 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } } // <-- เพิ่มตรงนี้
+                } 
+            });
         }
         function renderPeakTime(hourlyData) {
             const ctx = document.getElementById('peakTimeChart'); if(!ctx) return;
@@ -777,13 +777,21 @@
             charts.basket = new Chart(ctx, { type: 'bar', data: { labels: labels, datasets: [{ label: 'ยอดต่อบิล (Avg Order Value)', data: aov, backgroundColor: '#EC4899', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false } });
         }
         
+        // 🔥 แก้ไขตาราง: รวมยอด Delivery ทุกค่าย
         function updateRecentTables(sales, expenses) {
             sales.sort((a,b) => b.date.localeCompare(a.date));
             const sBody = document.getElementById('recentDaysTable'); if(sBody) { sBody.innerHTML = '';
             sales.slice(0,7).forEach(s => {
-                const tot = (parseFloat(s.instore)||0)+(parseFloat(s.delivery_grab)||0)+(parseFloat(s.delivery_lineman)||0)+(parseFloat(s.delivery_robinhood)||0);
-                sBody.innerHTML += `<tr class="border-b"><td class="py-2 px-3">${s.date}</td><td class="text-right text-blue-600">${(parseFloat(s.instore)||0).toLocaleString()}</td><td class="text-right text-green-600">${(parseFloat(s.delivery_grab)||0).toLocaleString()}</td><td class="text-right font-bold">${tot.toLocaleString()}</td></tr>`;
+                const instore = parseFloat(s.instore)||0;
+                
+                // รวมยอด Delivery ทุกค่าย (Grab + Lineman + Robinhood + Other)
+                const deliverySum = (parseFloat(s.delivery_grab)||0) + (parseFloat(s.delivery_lineman)||0) + (parseFloat(s.delivery_robinhood)||0) + (parseFloat(s.delivery_other)||0);
+                
+                const total = instore + deliverySum;
+
+                sBody.innerHTML += `<tr class="border-b"><td class="py-2 px-3">${s.date}</td><td class="text-right text-blue-600">${instore.toLocaleString()}</td><td class="text-right text-green-600">${deliverySum.toLocaleString()}</td><td class="text-right font-bold">${total.toLocaleString()}</td></tr>`;
             }); }
+            
             expenses.sort((a,b) => (b.timestamp?.seconds||0) - (a.timestamp?.seconds||0));
             const eBody = document.getElementById('recentExpensesTable'); if(eBody) { eBody.innerHTML = '';
             expenses.slice(0,7).forEach(e => {
