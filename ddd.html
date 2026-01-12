@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant P&L (V.15 Final Verified)</title>
+    <title>Restaurant P&L (V.16 Correct Logic)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script> 
@@ -26,7 +26,7 @@
     <nav class="bg-blue-900 text-white p-4 shadow-lg sticky top-0 z-50">
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center space-y-2 md:space-y-0">
             <h1 class="text-xl font-bold flex items-center">
-                📊 Restaurant P&L <span class="text-xs bg-green-500 text-white px-2 rounded ml-2 shadow">V.15 Verified</span>
+                📊 Restaurant P&L <span class="text-xs bg-red-500 text-white px-2 rounded ml-2 shadow">V.16 Correct</span>
             </h1>
             <div class="space-x-1 flex overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
                 <button onclick="showSection('dashboard')" class="bg-blue-800 px-3 py-1 rounded hover:bg-blue-700 whitespace-nowrap transition">🏠 ภาพรวม</button>
@@ -44,7 +44,7 @@
             <div class="bg-white p-6 rounded-lg shadow-xl text-center flex flex-col items-center">
                 <div class="spinner mb-4"></div>
                 <p id="loading-text" class="text-lg font-bold text-gray-700">กำลังประมวลผล...</p>
-                <p class="text-sm text-gray-500 mt-1">ตรวจสอบความถูกต้อง 100%</p>
+                <p class="text-sm text-gray-500 mt-1">คำนวณยอด Grab แบบไม่หักซ้ำซ้อน</p>
             </div>
         </div>
 
@@ -93,7 +93,7 @@
             <div class="bg-white p-6 rounded-lg shadow-lg min-h-screen">
                 <div class="flex flex-col md:flex-row justify-between items-center mb-6 border-b pb-4">
                     <h2 class="text-2xl font-bold text-gray-800 flex items-center">
-                        📑 งบกำไร-ขาดทุน (แยกสินเชื่อ/Ads)
+                        📑 งบกำไร-ขาดทุน (P&L Accurate)
                     </h2>
                     <div class="flex items-center space-x-2 mt-4 md:mt-0">
                         <label class="text-gray-600 font-medium">เลือกเดือน:</label>
@@ -122,14 +122,14 @@
 
         <div id="import-section" class="section-content hidden">
             <div class="bg-white p-8 rounded-lg shadow-lg max-w-3xl mx-auto border-t-4 border-green-500">
-                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">📂 Import ยอดขาย (Smart Logic)</h2>
+                <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">📂 Import ยอดขาย (Smart Fix)</h2>
                 
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                    <h3 class="font-bold text-blue-800 mb-2">✨ ระบบแยกรายการอัตโนมัติ (V.15):</h3>
+                    <h3 class="font-bold text-blue-800 mb-2">✨ ระบบ V.16 แก้ไขความถูกต้อง:</h3>
                     <ul class="list-disc ml-5 text-sm text-blue-900 space-y-1">
-                        <li><strong>Lineman:</strong> แยกสินเชื่อเงินสด (0425-L) และ ผ่อนสินค้า (0426-L)</li>
-                        <li><strong>Grab:</strong> แยก GP, Ads, Promo, และ สินเชื่อ (ไม่หัก VAT ซ้ำ)</li>
-                        <li><strong>Anti-Duplicate:</strong> อัปโหลดซ้ำได้ ระบบทับยอดเดิมให้</li>
+                        <li><strong>Grab:</strong> ใช้ยอดขายเต็ม (Gross) แก้ปัญหาหักส่วนลดซ้ำซ้อน และปิดการหัก VAT ซ้ำ (เพราะรวมใน GP แล้ว)</li>
+                        <li><strong>Lineman:</strong> แยกสินเชื่อเงินสด/ผ่อนสินค้าตามปกติ</li>
+                        <li><strong>Anti-Duplicate:</strong> อัปโหลดไฟล์ซ้ำได้</li>
                     </ul>
                 </div>
 
@@ -286,7 +286,7 @@
         });
 
         // ============================================
-        // 1. SMART IMPORT LOGIC (SEPARATE LOANS & VAT FIX)
+        // 1. SMART IMPORT LOGIC
         // ============================================
         window.processCSV = () => {
             const fileInput = document.getElementById('csvFileInput');
@@ -326,7 +326,7 @@
             });
         }
 
-        // --- A. Grab Logic ---
+        // --- A. Grab Logic (Correct Gross & No Double VAT) ---
         async function importGrabDetailed(data) {
             let dailyData = {};
             const parseDate = (str) => {
@@ -349,31 +349,44 @@
 
                 // 1. GrabFood -> ชำระเงิน
                 if (type === 'GrabFood' && cat === 'ชำระเงิน') {
-                    dailyData[dateKey].sales += cleanVal(row, 'ยอดขายสุทธิ');
+                    // FIX: Use 'ยอด' (Gross) instead of 'ยอดขายสุทธิ' to avoid double counting discount
+                    dailyData[dateKey].sales += cleanVal(row, 'ยอด');
                     
-                    // GP (Inclusive of VAT) - Don't double count VAT later
-                    const comm = Math.abs(cleanVal(row, 'ค่าคอมมิชชันแพลตฟอร์ม')) + 
-                                 Math.abs(cleanVal(row, 'ค่าคอมมิชชันอื่นของ GrabFood / GrabMart')) +
-                                 Math.abs(cleanVal(row, 'GrabKitchen Commission'));
+                    // GP (Inclusive of VAT)
+                    const comm = Math.abs(cleanVal(row, 'ค่าคอมมิชชันแพลตฟอร์ม'));
                     dailyData[dateKey].gp += comm;
 
-                    // Ads (Fee per order)
+                    // Additional Comm -> Promo
+                    const commAdd = Math.abs(cleanVal(row, 'ค่าคอมมิชชันอื่นของ GrabFood / GrabMart')) +
+                                    Math.abs(cleanVal(row, 'ค่าคอมมิชชันเพิ่มเติม')) + 
+                                    Math.abs(cleanVal(row, 'GrabKitchen Commission'));
+                    dailyData[dateKey].promo += commAdd;
+
+                    // VAT -> DO NOT ADD! (Included in GP)
+                    // dailyData[dateKey].vat += ... (IGNORED)
+
+                    // Ads
                     dailyData[dateKey].ads += Math.abs(cleanVal(row, 'ค่าธรรมเนียมการตลาด'));
 
-                    // Del Discount
+                    // Del Discount -> Expense
                     dailyData[dateKey].del_disc += Math.abs(cleanVal(row, 'ส่วนลดค่าจัดส่ง (ออกโดยร้าน)'));
+                    
+                    // Store Discount (from Gross) -> Promo Expense
+                    dailyData[dateKey].promo += Math.abs(cleanVal(row, 'ส่วนลด (ออกโดยร้าน)'));
                 }
                 
                 // 2. Ads (Direct)
                 if (type === 'GrabFood' && cat === 'โฆษณา') dailyData[dateKey].ads += Math.abs(cleanVal(row, 'ทั้งหมด'));
 
-                // 3. LOAN (GrabFinance)
+                // 3. LOAN
                 if (type === 'GrabFinance' && cat === 'สินเชื่อ') {
                     dailyData[dateKey].loan += Math.abs(cleanVal(row, 'ทั้งหมด'));
                 }
                 
-                // 4. Promo
-                dailyData[dateKey].promo += Math.abs(cleanVal(row, 'ส่วนลด (ออกโดยร้าน)')) + Math.abs(cleanVal(row, 'โปรโมชัน'));
+                // 4. Promo (Direct)
+                if (cat !== 'ชำระเงิน') { // Avoid double counting if already processed in payment row logic above
+                     dailyData[dateKey].promo += Math.abs(cleanVal(row, 'โปรโมชัน'));
+                }
             });
 
             // Save
@@ -382,7 +395,7 @@
                 await setDoc(doc(db, "daily_sales", date), { date: date, delivery_grab: val.sales, timestamp: Timestamp.now() }, { merge: true });
 
                 if (val.gp > 0) await saveExp(date, 'grab_gp', '0420-G', val.gp, 'GP Grab');
-                // หมายเหตุ: ไม่บันทึก VAT Grab แยก เพราะรวมใน GP แล้ว
+                // No VAT recorded for Grab
                 if (val.ads > 0) await saveExp(date, 'grab_ads', '0408-G', val.ads, 'Ads Grab');
                 if (val.promo > 0) await saveExp(date, 'grab_promo', '0422-G', val.promo, 'Promo Grab');
                 if (val.del_disc > 0) await saveExp(date, 'grab_del', '0423-G', val.del_disc, 'Del Subsidy Grab');
@@ -393,7 +406,7 @@
             setTimeout(() => { alert(`✅ Import Grab สำเร็จ ${count} วัน`); loadDashboard(); }, 100);
         }
 
-        // --- B. Lineman Logic (Detailed) ---
+        // --- B. Lineman Logic ---
         async function importLinemanDetailed(data) {
             let dailyData = {};
             data.forEach(row => {
@@ -407,14 +420,12 @@
                     dailyData[dateKey].sales += (parseFloat(row.cash_amount)||0) + (parseFloat(row.e_payment_amount)||0);
                     dailyData[dateKey].gp += Math.abs(parseFloat(row.fee)||0);
                     dailyData[dateKey].vat += Math.abs(parseFloat(row.vat)||0);
-                    dailyData[dateKey].other += Math.abs(parseFloat(row.other_cost)||0); // Promo/Ads
+                    dailyData[dateKey].other += Math.abs(parseFloat(row.other_cost)||0); 
                 }
                 else if (detail === 'Cash Loan') {
-                    // สินเชื่อเงินสด (0425-L)
                     dailyData[dateKey].cash_loan += Math.abs(parseFloat(row.net_amount)||0);
                 }
                 else if (detail === 'Installment') {
-                    // ผ่อนสินค้า (0426-L)
                     dailyData[dateKey].installment += Math.abs(parseFloat(row.net_amount)||0);
                 }
             });
@@ -422,14 +433,11 @@
             let count = 0;
             for (const [date, val] of Object.entries(dailyData)) {
                 await setDoc(doc(db, "daily_sales", date), { date: date, delivery_lineman: val.sales, timestamp: Timestamp.now() }, { merge: true });
-                
                 if (val.gp > 0) await saveExp(date, 'lineman_gp', '0420-L', val.gp, 'GP Lineman');
                 if (val.vat > 0) await saveExp(date, 'lineman_vat', '0421-L', val.vat, 'VAT Lineman');
                 if (val.other > 0) await saveExp(date, 'lineman_other', '0424-L', val.other, 'Promo/Ads Lineman');
-                
                 if (val.cash_loan > 0) await saveExp(date, 'lineman_cash', '0425-L', val.cash_loan, 'Cash Loan Lineman');
                 if (val.installment > 0) await saveExp(date, 'lineman_inst', '0426-L', val.installment, 'Installment Lineman');
-                
                 count++;
             }
             showLoading(false);
@@ -466,12 +474,10 @@
         const accountNames = {
             'INSTORE': 'หน้าร้าน (Walk-in)', 'DEL_GRAB': 'Grab', 'DEL_LINE': 'Lineman', 'DEL_OTH': 'Delivery อื่นๆ',
             '0201': 'วัตถุดิบอาหาร', '0205': 'บรรจุภัณฑ์', '0207': 'ค่าแก๊ส', 
-            // GRAB (No separate VAT)
-            '0420-G': 'GP Grab (รวม VAT)', 
-            '0408-G': 'Ads Grab', '0422-G': 'Promo Grab', '0423-G': 'Del Subsidy Grab', '0425-G': 'สินเชื่อ Grab (Finance)',
-            // LINEMAN (VAT Separated)
-            '0420-L': 'GP Lineman', '0421-L': 'VAT Lineman', '0424-L': 'Promo/Ads Lineman', 
-            '0425-L': 'สินเชื่อเงินสด Lineman (Cash)', '0426-L': 'ผ่อนสินค้า/เครดิต Lineman',
+            // GRAB
+            '0420-G': 'GP Grab (รวม VAT)', '0408-G': 'Ads Grab', '0422-G': 'Promo Grab', '0423-G': 'Del Subsidy Grab', '0425-G': 'สินเชื่อ Grab (Finance)',
+            // LINEMAN
+            '0420-L': 'GP Lineman', '0421-L': 'VAT Lineman', '0424-L': 'Promo/Ads Lineman', '0425-L': 'สินเชื่อเงินสด Lineman', '0426-L': 'ผ่อนสินค้า Lineman',
             // OPEX
             '0301': 'เงินเดือน', '0401': 'ค่าไฟฟ้า', '0402': 'ค่าน้ำ', '0411': 'เบ็ดเตล็ด', '0416': 'ค่าเช่าที่'
         };
