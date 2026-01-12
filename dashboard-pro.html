@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant PRO (V.38 Multi-Platform Analytics)</title>
+    <title>Restaurant PRO (V.39 Detailed Itemized)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script> 
@@ -17,21 +17,23 @@
         /* Table Styles */
         .report-table { width: 100%; border-collapse: collapse; }
         .report-table th { background-color: #f3f4f6; color: #374151; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; padding: 1rem 1.5rem; border-bottom: 2px solid #e5e7eb; }
-        .report-table td { padding: 0.75rem 1.5rem; border-bottom: 1px solid #f3f4f6; color: #4b5563; }
-        .row-header td { background-color: #e0e7ff; color: #3730a3; font-weight: bold; padding-top: 1rem; padding-bottom: 1rem; }
+        .report-table td { padding: 0.75rem 1.5rem; border-bottom: 1px solid #f3f4f6; color: #4b5563; font-size: 0.9rem; }
+        
+        /* Rows */
+        .row-header td { background-color: #e0e7ff; color: #3730a3; font-weight: bold; padding-top: 1rem; padding-bottom: 1rem; font-size: 1rem; }
         .row-subtotal td { background-color: #fffbeb; font-weight: bold; color: #92400e; border-top: 2px solid #fcd34d; }
         .row-total td { background-color: #1e3a8a; color: white; font-weight: bold; font-size: 1.1em; padding-top: 1rem; padding-bottom: 1rem; }
         
+        /* Small detail text */
+        .detail-code { color: #9ca3af; font-size: 0.8em; margin-right: 5px; }
+
         /* UI Elements */
         .tab-btn.active { background-color: #4338ca; color: white; box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06); }
-        
-        /* Analytics Sub-tabs */
         .sub-tab-btn { @apply px-4 py-2 rounded-full text-sm font-bold border transition; }
         .sub-tab-btn.active-all { background-color: #374151; color: white; border-color: #374151; }
         .sub-tab-btn.active-grab { background-color: #10B981; color: white; border-color: #10B981; }
         .sub-tab-btn.active-line { background-color: #F59E0B; color: white; border-color: #F59E0B; }
         .sub-tab-btn.active-rbh { background-color: #8B5CF6; color: white; border-color: #8B5CF6; }
-        
         .daily-card { transition: all 0.3s ease; }
         .daily-card:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         .progress-bar { transition: width 1s ease-in-out; }
@@ -43,7 +45,7 @@
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center space-y-3 md:space-y-0">
             <div class="flex items-center w-full md:w-auto justify-between md:justify-start">
                 <h1 class="text-xl font-bold flex items-center mr-4">
-                    📊 Restaurant PRO <span class="text-xs bg-yellow-500 text-black px-2 rounded ml-2 shadow">V.38 Pro</span>
+                    📊 Restaurant PRO <span class="text-xs bg-purple-500 text-white px-2 rounded ml-2 shadow">V.39 Detailed</span>
                 </h1>
                 <div class="flex items-center space-x-2 bg-indigo-800 p-1.5 rounded border border-indigo-700">
                     <span class="text-xs text-indigo-200">เดือน:</span>
@@ -82,7 +84,7 @@
                 <div class="bg-white p-4 rounded-lg shadow border-l-4 border-green-500 daily-card">
                     <p class="text-xs text-gray-500 font-bold uppercase">ยอดขายสุทธิ (Net Sales)</p>
                     <h2 class="text-3xl font-bold text-gray-800 mt-2" id="m_revenue">0 ฿</h2>
-                    <p class="text-xs text-gray-400 mt-1">หลังหักส่วนลด/VAT</p>
+                    <p class="text-xs text-gray-400 mt-1">ก่อนหักส่วนลด/VAT</p>
                 </div>
                 <div class="bg-white p-4 rounded-lg shadow border-l-4 border-red-500 daily-card">
                     <p class="text-xs text-gray-500 font-bold uppercase">ต้นทุนขาย (COGS)</p>
@@ -217,7 +219,7 @@
             <div class="bg-white p-8 rounded-lg shadow-lg min-h-screen">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b pb-6">
                     <h2 class="text-3xl font-bold text-gray-800 flex items-center mb-4 md:mb-0">
-                        📑 งบกำไร-ขาดทุน (P&L Standard)
+                        📑 งบกำไร-ขาดทุน (Detailed)
                     </h2>
                     
                     <div class="flex flex-col space-y-3 md:flex-row md:space-y-0 md:space-x-3 items-end md:items-center w-full md:w-auto">
@@ -384,14 +386,54 @@
         let charts = {};
         let currentAnalyticsData = {}; // Store raw data for switching tabs
         
+        // Full Itemized Account Names (Updated V.39)
         const accountNames = {
-            'INSTORE': 'หน้าร้าน (Walk-in)', 'DEL_GRAB': 'Grab', 'DEL_LINE': 'Lineman', 'DEL_OTH': 'Delivery อื่นๆ',
-            '0121': 'ภาษีมูลค่าเพิ่ม (VAT)', '0118': 'ส่วนลด (Discounts)',
-            '0201': 'วัตถุดิบอาหาร', '0202': 'บรรจุภัณฑ์', '0203': 'ค่าน้ำแข็ง',
+            // Revenue Sources
+            'INSTORE': 'หน้าร้าน (Walk-in)', 
+            'DEL_GRAB': 'Grab (Gross Sales)', 
+            'DEL_LINE': 'Lineman (Gross Sales)', 
+            'DEL_OTH': 'Delivery อื่นๆ',
+
+            // 01 Deductions
+            '0121': 'ภาษีมูลค่าเพิ่ม (VAT รวม)', 
+            '0121-L': 'ภาษีมูลค่าเพิ่ม (Lineman)', 
+            '0121-R': 'ภาษีมูลค่าเพิ่ม (Robinhood)',
+            '0121-G': 'ภาษีมูลค่าเพิ่ม (Grab)',
+            
+            '0118': 'ส่วนลดการขาย (รวม)',
+            '0118-G': 'ส่วนลด Grab (Promo/Code)',
+            '0118-L': 'ส่วนลด Lineman (Promo/Code)',
+            '0118-R': 'ส่วนลด Robinhood',
+
+            // 02 COGS
+            '0201': 'วัตถุดิบอาหาร', 
+            '0202': 'บรรจุภัณฑ์', 
+            '0203': 'ค่าน้ำแข็ง',
+
+            // 03 Labor
             '0301': 'เงินเดือนพนักงาน',
-            '0401': 'ค่าไฟฟ้า', '0402': 'ค่าน้ำประปา', '0403': 'โทรศัพท์/เน็ต', 
-            '0408': 'ค่าการโฆษณา/การตลาด', '0411': 'เบ็ดเตล็ด', '0406': 'ซ่อมแซม',
-            '0501': 'ค่าเช่าร้าน', '0502': 'ค่าทำบัญชี', '0504': 'GP Delivery (รวม)', '0505': 'ค่าเช่าอุปกรณ์'
+
+            // 04 Controllable
+            '0401': 'ค่าไฟฟ้า', 
+            '0402': 'ค่าน้ำประปา', 
+            '0403': 'ค่าโทรศัพท์/อินเทอร์เน็ต', 
+            '0406': 'ซ่อมแซมบำรุงรักษา',
+            '0408': 'ค่าโฆษณา/การตลาด (รวม)', 
+            '0408-G': 'ค่าโฆษณา Grab Ads',
+            '0408-L': 'ค่าโฆษณา Lineman Ads',
+            '0409': 'วัสดุสิ้นเปลือง',
+            '0411': 'เบ็ดเตล็ด', 
+            '0411-L': 'สินเชื่อเงินสด Lineman',
+            '0411-G': 'สินเชื่อ Grab',
+
+            // 05 Fixed / Fees
+            '0501': 'ค่าเช่าร้าน', 
+            '0502': 'ค่าทำบัญชี', 
+            '0504': 'ค่า GP Delivery (รวม)', 
+            '0504-G': 'ค่า GP Grab',
+            '0504-L': 'ค่า GP Lineman',
+            '0504-R': 'ค่า GP Robinhood',
+            '0505': 'ค่าเช่าอุปกรณ์'
         };
 
         window.showSection = (id) => {
