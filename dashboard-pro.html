@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant PRO (V.44 Grab Exact Match)</title>
+    <title>Restaurant PRO (V.45 Grab Perfect Match)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script> 
@@ -41,7 +41,7 @@
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center space-y-3 md:space-y-0">
             <div class="flex items-center w-full md:w-auto justify-between md:justify-start">
                 <h1 class="text-xl font-bold flex items-center mr-4">
-                    📊 Restaurant PRO <span class="text-xs bg-green-600 text-white px-2 rounded ml-2 shadow">V.44 Grab Exact</span>
+                    📊 Restaurant PRO <span class="text-xs bg-indigo-500 text-white px-2 rounded ml-2 shadow">V.45 Grab Exact</span>
                 </h1>
                 <div class="flex items-center space-x-2 bg-indigo-800 p-1.5 rounded border border-indigo-700">
                     <span class="text-xs text-indigo-200">เดือน:</span>
@@ -264,9 +264,9 @@
                 </div>
 
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                    <h3 class="font-bold text-blue-800 mb-2">✨ ระบบจัดหมวดหมู่อัตโนมัติ (V.44):</h3>
+                    <h3 class="font-bold text-blue-800 mb-2">✨ ระบบจัดหมวดหมู่อัตโนมัติ (V.45):</h3>
                     <ul class="list-disc ml-5 text-sm text-blue-900 space-y-1">
-                        <li><strong>Grab:</strong> แยก VAT, Ads, Promo, Adjustment ตามจริง (Net Profit 120.93)</li>
+                        <li><strong>Grab:</strong> Net Profit 120.93 (แยก VAT/Ads/Promo/Adj ตรงเป๊ะ)</li>
                         <li><strong>Lineman:</strong> รวม VAT เข้า GP, แยกสินเชื่อ/ผ่อนสินค้า</li>
                         <li><strong>Robinhood:</strong> รวม VAT เข้า GP อัตโนมัติ</li>
                     </ul>
@@ -342,7 +342,7 @@
                             <optgroup label="🔒 ค่าใช้จ่ายที่ควบคุมไม่ได้ (Fixed & Fees)">
                                 <option value="0501">0501 - ค่าเช่าร้าน</option>
                                 <option value="0502">0502 - ค่าทำบัญชี</option>
-                                <option value="0504">0504 - ค่าบริการ GP Delivery (รวม)</option>
+                                <option value="0504">0504 - ค่าบริการ GP Delivery (รวม VAT)</option>
                                 <option value="0505">0505 - ค่าเช่าอุปกรณ์</option>
                             </optgroup>
                         </select>
@@ -382,7 +382,7 @@
         let charts = {};
         let currentAnalyticsData = {}; // Store raw data for switching tabs
         
-        // Full Itemized Account Names (Updated V.44)
+        // Full Itemized Account Names (Updated V.45)
         const accountNames = {
             // Revenue Sources
             'INSTORE': 'หน้าร้าน (Walk-in)', 
@@ -393,7 +393,7 @@
             // 01 Deductions
             '0121': 'ภาษีมูลค่าเพิ่ม (VAT)', 
             '0121-L': 'VAT Lineman', 
-            '0121-G': 'VAT Grab (ตามจริง)', 
+            '0121-G': 'VAT Grab (ตามจริง)', // Tax on Comm
             '0121-R': 'VAT Robinhood',
             '0118': 'ส่วนลดการขาย (รวม)', 
             '0118-G': 'ส่วนลด Grab (แคมเปญ+คูปองร้าน)', 
@@ -416,7 +416,7 @@
             '0409': 'วัสดุสิ้นเปลือง', 
             '0411': 'เบ็ดเตล็ด',
             '0408': 'ค่าโฆษณา/การตลาด (รวม)', 
-            '0408-G': 'Ads Grab (รวม VAT)', 
+            '0408-G': 'Ads Grab (รวม VAT)', // Marketing Fee
             '0408-L': 'Ads Lineman', 
             
             // Loans
@@ -429,11 +429,11 @@
             '0502': 'ค่าทำบัญชี', 
             '0505': 'ค่าเช่าอุปกรณ์',
             '0504': 'ค่า GP Delivery (รวม)', 
-            '0504-G': 'GP Grab (รวม VAT)', 
+            '0504-G': 'GP Grab (รวม VAT)', // Comm + Other Comm + Kitchen
             '0504-L': 'GP Lineman (รวม VAT)', 
             '0504-R': 'GP Robinhood (รวม VAT)',
             '0506': 'รายการปรับปรุง (Adjustment)', 
-            '0506-G': 'รายการปรับปรุงยอด (Grab)',
+            '0506-G': 'รายการปรับปรุงยอด (Grab)', // Negative previous balance
             '0702': 'ภาษีหัก ณ ที่จ่าย (WHT)'
         };
 
@@ -656,7 +656,7 @@
             } catch(e) { console.error("Error loading data:", e); }
         }
 
-        // --- IMPORT LOGIC (FIXED GRAB NET PROFIT) ---
+        // --- IMPORT LOGIC (FIXED GRAB EXACT) ---
         window.processCSV = () => {
             const fileInput = document.getElementById('csvFileInput');
             if (!fileInput.files.length) { alert("กรุณาเลือกไฟล์ CSV"); return; }
@@ -758,7 +758,7 @@
                 if (val.wht > 0) await saveExp(date, 'grab_wht', '0702', val.wht); // WHT
                 if (val.loan > 0) await saveExp(date, 'grab_loan', '0411-G', val.loan); // Loan
             }
-            alert(`✅ Import Grab สำเร็จ (V.44 Precision)`); loadData();
+            alert(`✅ Import Grab สำเร็จ (V.45 Precision)`); loadData();
         }
 
         async function importLinemanDetailed(data) {
