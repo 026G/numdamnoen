@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant PRO (V.49 Exact Accounting + Stacked Chart)</title>
+    <title>Restaurant PRO (V.50 Ultimate: Goal + WoW + Exact Acc)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script> 
@@ -38,6 +38,12 @@
         #login-screen {
             background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
         }
+        
+        /* Goal Progress Bar */
+        .goal-progress-bg { background-color: #E5E7EB; border-radius: 9999px; overflow: hidden; height: 1.5rem; box-shadow: inset 0 2px 4px 0 rgba(0,0,0,0.06); }
+        .goal-progress-bar { height: 100%; transition: width 1s ease-in-out; background: linear-gradient(90deg, #3B82F6 0%, #2563EB 100%); display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; color: white; font-size: 0.75rem; font-weight: bold; }
+        .goal-progress-bar.warning { background: linear-gradient(90deg, #F59E0B 0%, #D97706 100%); }
+        .goal-progress-bar.success { background: linear-gradient(90deg, #10B981 0%, #059669 100%); }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -70,7 +76,7 @@
             <div class="container mx-auto flex flex-col md:flex-row justify-between items-center space-y-3 md:space-y-0">
                 <div class="flex items-center w-full md:w-auto justify-between md:justify-start">
                     <h1 class="text-xl font-bold flex items-center mr-4">
-                        📊 Restaurant PRO <span class="text-xs bg-green-500 text-white px-2 rounded ml-2 shadow">V.49</span>
+                        📊 Restaurant PRO <span class="text-xs bg-green-500 text-white px-2 rounded ml-2 shadow">V.50 Ultimate</span>
                     </h1>
                     <div class="flex items-center space-x-2 bg-indigo-800 p-1.5 rounded border border-indigo-700">
                         <span class="text-xs text-indigo-200">เดือน:</span>
@@ -108,6 +114,30 @@
             </div>
 
             <div id="dashboard" class="section-content">
+                
+                <div class="bg-white p-4 rounded-lg shadow border-t-4 border-blue-600 mb-6 relative overflow-hidden">
+                    <div class="flex justify-between items-end mb-2">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-800 flex items-center">
+                                🎯 เป้าหมายเดือนนี้ (Goal Pacing)
+                                <button onclick="setMonthlyGoal()" class="ml-2 text-xs bg-gray-200 hover:bg-gray-300 px-2 py-0.5 rounded text-gray-600">ตั้งเป้า</button>
+                            </h3>
+                            <p class="text-sm text-gray-500" id="goalTextStatus">กำลังคำนวณ...</p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-2xl font-bold text-blue-600" id="currentRevDisplay">0</span>
+                            <span class="text-gray-400 text-sm"> / <span id="goalTargetDisplay">0</span></span>
+                        </div>
+                    </div>
+                    <div class="goal-progress-bg">
+                        <div id="goalProgressBar" class="goal-progress-bar" style="width: 0%">0%</div>
+                    </div>
+                    <div class="mt-3 flex justify-between text-xs text-gray-600 bg-gray-50 p-2 rounded">
+                        <div>⏳ เหลือเวลา: <span id="daysLeft" class="font-bold">0</span> วัน</div>
+                        <div>🔥 ต้องทำยอด: <span id="reqDaily" class="font-bold text-red-500">0</span> บาท/วัน</div>
+                    </div>
+                </div>
+
                 <div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-6 rounded shadow-sm flex justify-between items-center">
                     <p class="text-blue-800 text-sm font-bold">📅 สรุปยอดเดือน: <span id="displayMonth">...</span></p>
                     <span class="text-xs text-gray-500">*ยอดขายตามจริง (Gross)</span>
@@ -200,6 +230,12 @@
                         <button onclick="switchAnalyticsTab('line')" id="tab-line" class="sub-tab-btn text-gray-500 hover:text-orange-500">Lineman</button>
                         <button onclick="switchAnalyticsTab('rbh')" id="tab-rbh" class="sub-tab-btn text-gray-500 hover:text-purple-600">Robinhood</button>
                     </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow border-t-4 border-indigo-600 mb-6">
+                    <h3 class="font-bold text-gray-800 mb-2">📉 เทียบฟอร์มรายสัปดาห์ (Week-over-Week)</h3>
+                    <div class="text-xs text-gray-500 mb-2">*เทียบ 7 วันล่าสุด กับ 7 วันก่อนหน้า</div>
+                    <div class="chart-container" style="height:300px"><canvas id="wowChart"></canvas></div>
                 </div>
 
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -606,7 +642,20 @@
             renderROAS(viewData.sales, viewData.ads);
             renderBasketSizeRaw(chartData.basketLabels, chartData.basketVals);
             renderPeakTime(viewData.hourly);
+            renderWoWChart(currentAnalyticsData.dailyTrend || {});
         };
+
+        window.setMonthlyGoal = () => {
+            const current = localStorage.getItem('monthly_goal') || 0;
+            const input = prompt("🎯 ตั้งเป้ายอดขายเดือนนี้ (บาท):", current);
+            if(input !== null) {
+                const val = parseFloat(input);
+                if(!isNaN(val)) {
+                    localStorage.setItem('monthly_goal', val);
+                    loadData();
+                } else { alert("กรุณากรอกตัวเลข"); }
+            }
+        }
 
         window.setRange = (type) => {
             const end = new Date(); let start = new Date();
@@ -636,7 +685,7 @@
             
             try {
                 let sales = [], expenses = [];
-                let dailyTrend = {};
+                let dailyTrend = {}; 
                 let hourlySales = new Array(24).fill(0);
                 let expTotals = {};
                 let totalDeductions = 0;
@@ -645,12 +694,16 @@
                     all: { rev:0, cost:0, ads:0, orders:0, hourly: new Array(24).fill(0) },
                     grab: { rev:0, cost:0, ads:0, orders:0 },
                     line: { rev:0, cost:0, ads:0, orders:0 },
-                    rbh: { rev:0, cost:0, ads:0, orders:0 }
+                    rbh: { rev:0, cost:0, ads:0, orders:0 },
+                    dailyTrend: {} // For WoW
                 };
 
                 const qS = await getDocs(collection(db, "daily_sales"));
                 qS.forEach(doc => {
                     const d = doc.data();
+                    // Store ALL dates for WoW calculation (not just this month)
+                    bucket.dailyTrend[d.date] = (parseFloat(d.instore)||0) + (parseFloat(d.delivery_grab)||0) + (parseFloat(d.delivery_lineman)||0) + (parseFloat(d.delivery_robinhood)||0) + (parseFloat(d.delivery_other)||0);
+
                     if(d.date.startsWith(monthVal)) {
                         sales.push(d);
                         const safeFloat = (v) => parseFloat(v || 0);
@@ -720,7 +773,7 @@
 
                 currentAnalyticsData = bucket; 
 
-                // KPI Calc (Fixed for Object dailyTrend)
+                // KPI Calc
                 let m_gross_sales = 0;
                 Object.values(dailyTrend).forEach(v => {
                     m_gross_sales += (v.instore + v.grab + v.line + v.rbh);
@@ -740,6 +793,47 @@
                     document.getElementById('pct_cogs').innerText = m_gross_sales ? ((m_cogs/m_gross_sales)*100).toFixed(1)+'% ของยอดขาย' : '0%';
                     document.getElementById('pct_opex').innerText = m_gross_sales ? ((m_opex/m_gross_sales)*100).toFixed(1)+'% ของยอดขาย' : '0%';
                     document.getElementById('pct_net').innerText = m_gross_sales ? ((m_net/m_gross_sales)*100).toFixed(1)+'% ของยอดขาย' : '0%';
+                }
+
+                // GOAL PACING LOGIC
+                const goal = parseFloat(localStorage.getItem('monthly_goal')) || 0;
+                if(goal > 0) {
+                    const today = new Date();
+                    // Fix: Get days in month correctly
+                    const [y, m] = monthVal.split('-');
+                    const daysInMonth = new Date(y, m, 0).getDate();
+                    // If viewing past month, remaining days = 0
+                    let remainingDays = 0;
+                    if(today.toISOString().startsWith(monthVal)) {
+                        remainingDays = daysInMonth - today.getDate();
+                    } else if (new Date(monthVal) > today) {
+                        remainingDays = daysInMonth;
+                    }
+
+                    const achievedPct = (m_gross_sales / goal) * 100;
+                    const remainingAmt = Math.max(0, goal - m_gross_sales);
+                    const reqRate = remainingDays > 0 ? remainingAmt / remainingDays : 0;
+
+                    document.getElementById('goalTargetDisplay').innerText = goal.toLocaleString();
+                    document.getElementById('currentRevDisplay').innerText = m_gross_sales.toLocaleString();
+                    document.getElementById('goalProgressBar').style.width = Math.min(achievedPct, 100) + '%';
+                    document.getElementById('goalProgressBar').innerText = achievedPct.toFixed(1) + '%';
+                    document.getElementById('daysLeft').innerText = remainingDays;
+                    document.getElementById('reqDaily').innerText = reqRate.toLocaleString(undefined, {maximumFractionDigits:0});
+                    
+                    // Colors
+                    const bar = document.getElementById('goalProgressBar');
+                    bar.className = 'goal-progress-bar';
+                    document.getElementById('goalTextStatus').innerText = "กำลังไล่ล่าเป้าหมาย...";
+                    
+                    if(achievedPct >= 100) { bar.classList.add('success'); document.getElementById('goalTextStatus').innerText = "🎉 ทะลุเป้าแล้ว!"; document.getElementById('reqDaily').innerText = "0"; }
+                    else if (remainingDays > 0) {
+                        // Check pacing: Should be at (Today/TotalDays)%
+                        const idealPct = (today.getDate() / daysInMonth) * 100;
+                        if(achievedPct < idealPct - 10) { bar.classList.add('warning'); document.getElementById('goalTextStatus').innerText = "⚠️ ช้ากว่าแผน (Behind Pace)"; }
+                    }
+                } else {
+                    document.getElementById('goalTextStatus').innerText = "ยังไม่ได้ตั้งเป้า";
                 }
 
                 requestAnimationFrame(() => {
@@ -1071,6 +1165,67 @@
                 } 
             });
         }
+
+        function renderWoWChart(allDailyData) {
+            const ctx = document.getElementById('wowChart'); if(!ctx) return;
+            if(charts.wow) charts.wow.destroy();
+
+            // Get last 7 days of data available in the dataset
+            const sortedDates = Object.keys(allDailyData).sort();
+            if(sortedDates.length === 0) return;
+
+            const latestDateStr = sortedDates[sortedDates.length - 1];
+            const latestDate = new Date(latestDateStr);
+            
+            let curWeekData = [], prevWeekData = [], labels = [];
+            const daysMap = ['อา', 'จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส'];
+
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date(latestDate); d.setDate(latestDate.getDate() - i);
+                const dStr = d.toISOString().split('T')[0];
+                
+                const dPrev = new Date(d); dPrev.setDate(d.getDate() - 7);
+                const dPrevStr = dPrev.toISOString().split('T')[0];
+
+                curWeekData.push(allDailyData[dStr] || 0);
+                prevWeekData.push(allDailyData[dPrevStr] || 0);
+                labels.push(`${daysMap[d.getDay()]} (${dStr.slice(8)})`);
+            }
+
+            charts.wow = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { 
+                            label: 'สัปดาห์นี้', 
+                            data: curWeekData, 
+                            borderColor: '#3B82F6', 
+                            backgroundColor: 'rgba(59,130,246,0.1)', 
+                            borderWidth: 3, 
+                            tension: 0.3, 
+                            fill: true 
+                        },
+                        { 
+                            label: 'สัปดาห์ก่อน', 
+                            data: prevWeekData, 
+                            borderColor: '#9CA3AF', 
+                            borderWidth: 2, 
+                            borderDash: [5, 5], 
+                            tension: 0.3, 
+                            pointRadius: 0 
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: { legend: { position: 'top' } }
+                }
+            });
+        }
+
         function renderTopExpenses(expObj, totalRev) {
             const list = document.getElementById('topExpensesList'); if(!list) return; list.innerHTML = '';
             const sorted = Object.entries(expObj).sort((a,b)=>b[1]-a[1]).slice(0,5);
