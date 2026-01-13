@@ -493,6 +493,7 @@
             '0121-R': 'VAT Robinhood',
             '0118': 'ส่วนลดการขาย (รวม)', 
             '0118-G': 'ส่วนลดแคมเปญ Grab (Campaign)', 
+            '0118-G-STORE': 'ส่วนลดที่ร้านสนับสนุน (Store)', // NEW CATEGORY
             '0118-L': 'ส่วนลด Lineman', 
             '0118-R': 'ส่วนลด Robinhood',
             '0201': 'วัตถุดิบอาหาร', 
@@ -790,7 +791,7 @@
 
             for(const row of data) {
                 const dateKey = parseDate(row['Updated On']); if(!dateKey) continue;
-                if (!dailyData[dateKey]) dailyData[dateKey] = { sales: 0, gp: 0, ads: 0, promo: 0, loan: 0, orders: 0, hourly: {}, mkt: 0 };
+                if (!dailyData[dateKey]) dailyData[dateKey] = { sales: 0, gp: 0, ads: 0, promo_store: 0, promo_grab: 0, loan: 0, orders: 0, hourly: {}, mkt: 0 };
                 
                 if (row['ประเภท'] === 'GrabFood' && row['หมวดหมู่'] === 'ชำระเงิน') {
                     const rawSales = cleanVal(row, 'ยอด');
@@ -803,11 +804,11 @@
                     // 2. Capture Store Discounts (Supported by Store) - Total 533 logic
                     const storeDisc = Math.abs(cleanVal(row, 'ส่วนลด (ออกโดยร้าน)'));
                     const delDisc = Math.abs(cleanVal(row, 'ส่วนลดค่าจัดส่ง (ออกโดยร้าน)'));
-                    dailyData[dateKey].promo += (storeDisc + delDisc); 
+                    dailyData[dateKey].promo_store += (storeDisc + delDisc); 
 
                     // 3. Keep existing mappings for other expenses
                     dailyData[dateKey].gp += Math.abs(cleanVal(row, 'ค่าคอมมิชชันแพลตฟอร์ม'));
-                    dailyData[dateKey].promo += Math.abs(cleanVal(row, 'ค่าคอมมิชชันอื่นของ GrabFood / GrabMart')); // Keep existing promo mapping too
+                    dailyData[dateKey].promo_grab += Math.abs(cleanVal(row, 'ค่าคอมมิชชันอื่นของ GrabFood / GrabMart')); // Grab Campaign only
                     dailyData[dateKey].mkt += Math.abs(cleanVal(row, 'ค่าธรรมเนียมการตลาด'));
 
                     dailyData[dateKey].orders += 1;
@@ -836,14 +837,17 @@
                 }, { merge: true });
                 
                 if (val.gp > 0) await saveExp(date, 'grab_gp', '0504-G', val.gp); 
-                if (val.promo > 0) await saveExp(date, 'grab_promo', '0118-G', val.promo);
+                
+                // SAVE PROMO SEPARATELY
+                if (val.promo_store > 0) await saveExp(date, 'grab_promo_store', '0118-G-STORE', val.promo_store);
+                if (val.promo_grab > 0) await saveExp(date, 'grab_promo', '0118-G', val.promo_grab);
                 
                 if (val.ads > 0) await saveExp(date, 'grab_ads', '0408-G', val.ads); 
                 
                 if (val.mkt > 0) await saveExp(date, 'grab_mkt', '0408-G-MKT', val.mkt); 
                 if (val.loan > 0) await saveExp(date, 'grab_loan', '0411-G', val.loan); 
             }
-            alert(`✅ Import Grab (Exact Logic + Time Fix) สำเร็จ`); loadData();
+            alert(`✅ Import Grab (Exact Logic: Split Discounts) สำเร็จ`); loadData();
         }
 
         async function importLinemanDetailed(data) {
