@@ -627,7 +627,7 @@
         });
 
         // ============================================
-        // 1. DATA LOADING
+        // 1. DATA LOADING (Updated for Stacked Chart)
         // ============================================
         window.loadData = async () => {
             const monthVal = document.getElementById('dashMonth').value;
@@ -636,7 +636,8 @@
             
             try {
                 let sales = [], expenses = [];
-                let dailyTrend = {};
+                // เปลี่ยน dailyTrend ให้เก็บแยกค่าย
+                let dailyTrend = {}; 
                 let hourlySales = new Array(24).fill(0);
                 let expTotals = {};
                 let totalDeductions = 0;
@@ -654,9 +655,17 @@
                     if(d.date.startsWith(monthVal)) {
                         sales.push(d);
                         const safeFloat = (v) => parseFloat(v || 0);
-                        const total = safeFloat(d.instore) + safeFloat(d.delivery_grab) + safeFloat(d.delivery_lineman) + safeFloat(d.delivery_robinhood) + safeFloat(d.delivery_other);
-                        dailyTrend[d.date] = total;
+                        
+                        // เก็บแยกค่ายเพื่อส่งไปกราฟ
+                        dailyTrend[d.date] = {
+                            instore: safeFloat(d.instore),
+                            grab: safeFloat(d.delivery_grab),
+                            line: safeFloat(d.delivery_lineman),
+                            rbh: safeFloat(d.delivery_robinhood) + safeFloat(d.delivery_other) // รวมอื่นๆ ไว้ใน RBH หรือแยกก็ได้
+                        };
 
+                        const total = safeFloat(d.instore) + safeFloat(d.delivery_grab) + safeFloat(d.delivery_lineman) + safeFloat(d.delivery_robinhood) + safeFloat(d.delivery_other);
+                        
                         bucket.all.rev += total;
                         bucket.grab.rev += safeFloat(d.delivery_grab);
                         bucket.line.rev += safeFloat(d.delivery_lineman);
@@ -680,6 +689,7 @@
                     }
                 });
 
+                // ... (ส่วนโหลด Expenses เหมือนเดิม ไม่ต้องแก้) ...
                 const qE = await getDocs(collection(db, "expenses"));
                 qE.forEach(doc => {
                     const d = doc.data();
@@ -699,20 +709,23 @@
                             if(d.category.includes('0504') || d.category.includes('0420')) bucket.rbh.cost += amt;
                             if(d.category.includes('0408') || d.category.includes('Ads')) bucket.rbh.ads += amt;
                         }
-
                         if((d.category.includes('0408') || d.category.includes('Ads')) && d.category !== '0408-G-MKT') {
                             bucket.all.ads += amt;
                         }
-
                         if(d.category.startsWith('01')) totalDeductions += amt; 
-
                         expTotals[d.category] = (expTotals[d.category]||0) + amt;
                     }
                 });
+                // ... (จบส่วนโหลด Expenses) ...
 
                 currentAnalyticsData = bucket; 
 
-                const m_gross_sales = Object.values(dailyTrend).reduce((a,b)=>a+b,0);
+                // คำนวณ KPI รวม
+                let m_gross_sales = 0;
+                Object.values(dailyTrend).forEach(v => {
+                    m_gross_sales += (v.instore + v.grab + v.line + v.rbh);
+                });
+
                 const m_net_sales = m_gross_sales - totalDeductions;
                 const m_cogs = expenses.filter(e => e.category.startsWith('02')).reduce((a,b)=>a+b.amount,0);
                 const m_opex = expenses.filter(e => e.category.startsWith('03') || e.category.startsWith('04') || e.category.startsWith('05') || e.category.startsWith('07')).reduce((a,b)=>a+b.amount,0);
@@ -730,7 +743,7 @@
                 }
 
                 requestAnimationFrame(() => {
-                    renderTrendChart(dailyTrend);
+                    renderTrendChart(dailyTrend); // ส่ง object ใหม่ไปวาด
                     renderTopExpenses(expTotals, m_gross_sales);
                     updateRecentTables(sales, expenses);
                     switchAnalyticsTab('all');
@@ -1041,7 +1054,62 @@
         function renderTrendChart(dataObj) {
             const ctx = document.getElementById('trendChart'); if(!ctx) return;
             if(charts.trend) charts.trend.destroy();
-            charts.trend = new Chart(ctx, { type: 'bar', data: { labels: Object.keys(dataObj).sort().map(d => d.slice(8)), datasets: [{ label: 'ยอดขายรายวัน', data: Object.values(dataObj), backgroundColor: '#10B981', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false } });
+            
+            // เตรียมข้อมูลแยก Array
+            const labels = Object.keys(dataObj).sort();
+            const d_instore = labels.map(date => dataObj[date].instore);
+            const d_grab = labels.map(date => dataObj[date].grab);
+            const d_line = labels.map(date => dataObj[date].line);
+            const d_rbh = labels.map(date => dataObj[date].rbh);
+            const displayLabels = labels.map(d => d.slice(8)); // โชว์แค่วันที่
+
+            charts.trend = new Chart(ctx, { 
+                type: 'bar', 
+                data: { 
+                    labels: displayLabels, 
+                    datasets: [
+                        { 
+                            label: 'หน้าร้าน', 
+                            data: d_instore, 
+                            backgroundColor: '#3B82F6', // สีฟ้า
+                            stack: 'Stack 0' 
+                        },
+                        { 
+                            label: 'Grab', 
+                            data: d_grab, 
+                            backgroundColor: '#10B981', // สีเขียว
+                            stack: 'Stack 0'
+                        },
+                        { 
+                            label: 'Lineman', 
+                            data: d_line, 
+                            backgroundColor: '#F59E0B', // สีส้ม
+                            stack: 'Stack 0'
+                        },
+                        { 
+                            label: 'Robinhood/อื่นๆ', 
+                            data: d_rbh, 
+                            backgroundColor: '#8B5CF6', // สีม่วง
+                            stack: 'Stack 0',
+                            borderRadius: { topLeft: 4, topRight: 4 } // มนแค่ยอดบนสุด
+                        }
+                    ] 
+                }, 
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: true }, // สำคัญ: สั่งให้ซ้อนกันแนวแกน X
+                        y: { stacked: true }  // สำคัญ: สั่งให้ซ้อนกันแนวแกน Y
+                    },
+                    plugins: {
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    }
+                } 
+            });
         }
         function renderTopExpenses(expObj, totalRev) {
             const list = document.getElementById('topExpensesList'); if(!list) return; list.innerHTML = '';
