@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant PRO (V.47 Custom Grab Logic)</title>
+    <title>Restaurant PRO (V.48 Exact Accounting)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script> 
@@ -41,7 +41,7 @@
         <div class="container mx-auto flex flex-col md:flex-row justify-between items-center space-y-3 md:space-y-0">
             <div class="flex items-center w-full md:w-auto justify-between md:justify-start">
                 <h1 class="text-xl font-bold flex items-center mr-4">
-                    📊 Restaurant PRO <span class="text-xs bg-green-500 text-white px-2 rounded ml-2 shadow">V.47 Custom</span>
+                    📊 Restaurant PRO <span class="text-xs bg-green-500 text-white px-2 rounded ml-2 shadow">V.48 Exact</span>
                 </h1>
                 <div class="flex items-center space-x-2 bg-indigo-800 p-1.5 rounded border border-indigo-700">
                     <span class="text-xs text-indigo-200">เดือน:</span>
@@ -266,7 +266,7 @@
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                     <h3 class="font-bold text-blue-800 mb-2">✨ ระบบจัดหมวดหมู่อัตโนมัติ:</h3>
                     <ul class="list-disc ml-5 text-sm text-blue-900 space-y-1">
-                        <li><strong>Grab:</strong> ไม่รวมส่วนลดร้านค้า, แคมเปญลง 0118, สินเชื่อลง 0411, Ads ลง 0408</li>
+                        <li><strong>Grab (Exact):</strong> Gross 1084, GP, แคมเปญ, สินเชื่อ, โฆษณา, Marketing Fee แยกตามจริง</li>
                         <li><strong>Lineman:</strong> รวม VAT เข้า GP, แยกสินเชื่อ/ผ่อนสินค้า</li>
                         <li><strong>Robinhood:</strong> รวม VAT เข้า GP อัตโนมัติ</li>
                     </ul>
@@ -364,7 +364,7 @@
         // ============================================================
         // ⚠️ Config Firebase (ใส่ของคุณตรงนี้)
         // ============================================================
-        const firebaseConfig = {
+      const firebaseConfig = {
     apiKey: "AIzaSyDRiTZXUbkdGaCHZVTkOOl1Iu0A-744tE0",
     authDomain: "numdamnoen-6cbd5.firebaseapp.com",
     projectId: "numdamnoen-6cbd5",
@@ -392,7 +392,7 @@
             '0121-G': 'VAT Grab (ตามจริง)', 
             '0121-R': 'VAT Robinhood',
             '0118': 'ส่วนลดการขาย (รวม)', 
-            '0118-G': 'ส่วนลดแคมเปญ Grab (Commission Add.)', 
+            '0118-G': 'ส่วนลดแคมเปญ Grab (Campaign)', 
             '0118-L': 'ส่วนลด Lineman', 
             '0118-R': 'ส่วนลด Robinhood',
             '0201': 'วัตถุดิบอาหาร', 
@@ -407,6 +407,7 @@
             '0411': 'เบ็ดเตล็ด',
             '0408': 'ค่าโฆษณา/การตลาด (รวม)', 
             '0408-G': 'Ads Grab (รวม VAT)', 
+            '0408-G-MKT': 'Grab Marketing Fee',
             '0408-L': 'Ads Lineman', 
             '0411-L-C': 'สินเชื่อเงินสด Lineman', 
             '0411-L-I': 'ผ่อนสินค้า Lineman', 
@@ -625,7 +626,7 @@
             } catch(e) { console.error("Error loading data:", e); }
         }
 
-        // --- IMPORT LOGIC (CUSTOM ACCOUNTING - GRAB FIX) ---
+        // --- IMPORT LOGIC (CUSTOM ACCOUNTING - GRAB V.48 EXACT) ---
         window.processCSV = () => {
             const fileInput = document.getElementById('csvFileInput');
             if (!fileInput.files.length) { alert("กรุณาเลือกไฟล์ CSV"); return; }
@@ -675,29 +676,27 @@
 
             for(const row of data) {
                 const dateKey = parseDate(row['Updated On']); if(!dateKey) continue;
-                if (!dailyData[dateKey]) dailyData[dateKey] = { sales: 0, gp: 0, ads: 0, promo: 0, loan: 0, orders: 0, hourly: {}, wht: 0 };
+                if (!dailyData[dateKey]) dailyData[dateKey] = { sales: 0, gp: 0, ads: 0, promo: 0, loan: 0, orders: 0, hourly: {}, mkt: 0 };
                 
                 // --- LOGIC 1: Sales (GrabFood Payment) ---
                 if (row['ประเภท'] === 'GrabFood' && row['หมวดหมู่'] === 'ชำระเงิน') {
-                    // 1. Gross Sales: ใช้ "ยอด" เลย (1084) ไม่ต้องบวกส่วนลดร้านคืน
-                    dailyData[dateKey].sales += cleanVal(row, 'ยอด');
+                    // 1. Gross Sales = ยอด (1094) + ส่วนลดร้าน (-10) = 1084
+                    // Note: ส่วนลดร้าน is negative, so adding it decreases the amount (1094 + (-10) = 1084)
+                    const rawSales = cleanVal(row, 'ยอด');
+                    const storeDisc = cleanVal(row, 'ส่วนลด (ออกโดยร้าน)'); 
+                    dailyData[dateKey].sales += (rawSales + storeDisc);
                     
-                    // 2. Expenses extraction from payment row
-                    // GP (Commission)
-                    dailyData[dateKey].gp += Math.abs(cleanVal(row, 'ค่าคอมมิชชันแพลตฟอร์ม')) + Math.abs(cleanVal(row, 'ค่าคอมมิชชันอื่นของ GrabFood / GrabMart')) + Math.abs(cleanVal(row, 'GrabKitchen Commission'));
+                    // 2. Expenses breakdown
+                    dailyData[dateKey].gp += Math.abs(cleanVal(row, 'ค่าคอมมิชชันแพลตฟอร์ม'));
                     
-                    // Ads (Marketing Fee inside payment)
-                    dailyData[dateKey].ads += Math.abs(cleanVal(row, 'ค่าธรรมเนียมการตลาด'));
-
-                    // Campaign/Discount (-46.40): Mapping to 'ค่าคอมมิชชันเพิ่มเติม'
-                    dailyData[dateKey].promo += Math.abs(cleanVal(row, 'ค่าคอมมิชชันเพิ่มเติม'));
+                    dailyData[dateKey].promo += Math.abs(cleanVal(row, 'ค่าคอมมิชชันอื่นของ GrabFood / GrabMart'));
                     
-                    // WHT
-                    dailyData[dateKey].wht += Math.abs(cleanVal(row, 'ภาษีหัก ณ ที่จ่าย'));
+                    // Marketing Fee (Orphaned 72.24)
+                    dailyData[dateKey].mkt += Math.abs(cleanVal(row, 'ค่าธรรมเนียมการตลาด'));
 
                     dailyData[dateKey].orders += 1;
                     const timePart = row['Updated On'].split(' ')[3];
-                    if(timePart) { const h = parseInt(timePart.split(':')[0]); dailyData[dateKey].hourly[h] = (dailyData[dateKey].hourly[h]||0) + cleanVal(row, 'ยอด'); }
+                    if(timePart) { const h = parseInt(timePart.split(':')[0]); dailyData[dateKey].hourly[h] = (dailyData[dateKey].hourly[h]||0) + rawSales; }
                 }
                 
                 // --- LOGIC 2: Ads (Separate Row) ---
@@ -706,7 +705,6 @@
                 }
                 
                 // --- LOGIC 3: Loan (Separate Row) ---
-                // Catching 'สินเชื่อ' category -> 350.64
                 if (row['หมวดหมู่'] === 'สินเชื่อ') {
                     dailyData[dateKey].loan += Math.abs(cleanVal(row, 'ทั้งหมด'));
                 }
@@ -719,13 +717,13 @@
                     timestamp: Timestamp.now() 
                 }, { merge: true });
                 
-                if (val.gp > 0) await saveExp(date, 'grab_gp', '0504-G', val.gp); 
-                if (val.ads > 0) await saveExp(date, 'grab_ads', '0408-G', val.ads);
-                if (val.promo > 0) await saveExp(date, 'grab_promo', '0118-G', val.promo); // Campaign
-                if (val.wht > 0) await saveExp(date, 'grab_wht', '0702', val.wht);
-                if (val.loan > 0) await saveExp(date, 'grab_loan', '0411-G', val.loan); // Loan
+                if (val.gp > 0) await saveExp(date, 'grab_gp', '0504-G', val.gp); // 347.98
+                if (val.promo > 0) await saveExp(date, 'grab_promo', '0118-G', val.promo); // 46.40
+                if (val.ads > 0) await saveExp(date, 'grab_ads', '0408-G', val.ads); // 145.81
+                if (val.mkt > 0) await saveExp(date, 'grab_mkt', '0408-G-MKT', val.mkt); // 72.24 (Required for 120.93 Net)
+                if (val.loan > 0) await saveExp(date, 'grab_loan', '0411-G', val.loan); // 350.64
             }
-            alert(`✅ Import Grab (Custom Logic) สำเร็จ`); loadData();
+            alert(`✅ Import Grab (Exact Logic) สำเร็จ`); loadData();
         }
 
         async function importLinemanDetailed(data) {
