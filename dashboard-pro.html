@@ -1113,12 +1113,18 @@
             showLoading(false); setTimeout(() => { alert("บันทึกสำเร็จ"); e.target.reset(); loadData(); }, 100);
         });
 
-        // Init
-        document.getElementById('dashMonth').value = '2026-01'; 
-        document.getElementById('saleDate').value = '2026-01-11';
-        document.getElementById('expDate').value = '2026-01-11';
-        // setTimeout(loadData, 500); // Removed auto-load, waiting for login
+        // ============================================================
+        // 4. AUTO DATE INIT (Dynamic Today)
+        // ============================================================
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
 
+        document.getElementById('dashMonth').value = `${year}-${month}`; 
+        document.getElementById('saleDate').value = `${year}-${month}-${day}`;
+        document.getElementById('expDate').value = `${year}-${month}-${day}`;
+        
     </script>
 </body>
 </html>
