@@ -579,7 +579,6 @@
                         
                         if(d.category.includes('-G')) {
                             if(d.category.includes('0504') || d.category.includes('0420')) bucket.grab.cost += amt;
-                            // *** แก้ไข: นับเฉพาะ 0408-G เป็น Ads เท่านั้น ไม่รวม MKT ***
                             if(d.category === '0408-G') bucket.grab.ads += amt;
                         }
                         if(d.category.includes('-L')) {
@@ -591,7 +590,6 @@
                             if(d.category.includes('0408') || d.category.includes('Ads')) bucket.rbh.ads += amt;
                         }
 
-                        // *** แก้ไข: ยอดรวม Ads ทั้งหมด ต้องไม่นับ 0408-G-MKT ***
                         if((d.category.includes('0408') || d.category.includes('Ads')) && d.category !== '0408-G-MKT') {
                             bucket.all.ads += amt;
                         }
@@ -683,32 +681,28 @@
                 const dateKey = parseDate(row['Updated On']); if(!dateKey) continue;
                 if (!dailyData[dateKey]) dailyData[dateKey] = { sales: 0, gp: 0, ads: 0, promo: 0, loan: 0, orders: 0, hourly: {}, mkt: 0 };
                 
-                // --- LOGIC 1: Sales (GrabFood Payment) ---
                 if (row['ประเภท'] === 'GrabFood' && row['หมวดหมู่'] === 'ชำระเงิน') {
-                    // 1. Gross Sales
                     const rawSales = cleanVal(row, 'ยอด');
                     const storeDisc = cleanVal(row, 'ส่วนลด (ออกโดยร้าน)'); 
                     dailyData[dateKey].sales += (rawSales + storeDisc);
                     
-                    // 2. Expenses breakdown
                     dailyData[dateKey].gp += Math.abs(cleanVal(row, 'ค่าคอมมิชชันแพลตฟอร์ม'));
-                    
                     dailyData[dateKey].promo += Math.abs(cleanVal(row, 'ค่าคอมมิชชันอื่นของ GrabFood / GrabMart'));
-                    
-                    // Marketing Fee (Orphaned 72.24) - แยกไว้ต่างหาก ไม่รวมกับ Ads
                     dailyData[dateKey].mkt += Math.abs(cleanVal(row, 'ค่าธรรมเนียมการตลาด'));
 
                     dailyData[dateKey].orders += 1;
                     const timePart = row['Updated On'].split(' ')[3];
-                    if(timePart) { const h = parseInt(timePart.split(':')[0]); dailyData[dateKey].hourly[h] = (dailyData[dateKey].hourly[h]||0) + rawSales; }
+                    if(timePart) { 
+                        let h = parseInt(timePart.split(':')[0]); 
+                        h = (h + 7) % 24; // Fix UTC to Thai Time (+7)
+                        dailyData[dateKey].hourly[h] = (dailyData[dateKey].hourly[h]||0) + rawSales; 
+                    }
                 }
                 
-                // --- LOGIC 2: Ads (Separate Row) ---
                 if (row['หมวดหมู่'] === 'โฆษณา') {
                     dailyData[dateKey].ads += Math.abs(cleanVal(row, 'ทั้งหมด'));
                 }
                 
-                // --- LOGIC 3: Loan (Separate Row) ---
                 if (row['หมวดหมู่'] === 'สินเชื่อ') {
                     dailyData[dateKey].loan += Math.abs(cleanVal(row, 'ทั้งหมด'));
                 }
@@ -729,7 +723,7 @@
                 if (val.mkt > 0) await saveExp(date, 'grab_mkt', '0408-G-MKT', val.mkt); 
                 if (val.loan > 0) await saveExp(date, 'grab_loan', '0411-G', val.loan); 
             }
-            alert(`✅ Import Grab (Exact Logic) สำเร็จ`); loadData();
+            alert(`✅ Import Grab (Exact Logic + Time Fix) สำเร็จ`); loadData();
         }
 
         async function importLinemanDetailed(data) {
