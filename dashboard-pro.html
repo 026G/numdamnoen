@@ -579,7 +579,8 @@
                         
                         if(d.category.includes('-G')) {
                             if(d.category.includes('0504') || d.category.includes('0420')) bucket.grab.cost += amt;
-                            if(d.category.includes('0408') || d.category.includes('Ads')) bucket.grab.ads += amt;
+                            // *** แก้ไข: นับเฉพาะ 0408-G เป็น Ads เท่านั้น ไม่รวม MKT ***
+                            if(d.category === '0408-G') bucket.grab.ads += amt;
                         }
                         if(d.category.includes('-L')) {
                             if(d.category.includes('0504') || d.category.includes('0420')) bucket.line.cost += amt;
@@ -590,7 +591,11 @@
                             if(d.category.includes('0408') || d.category.includes('Ads')) bucket.rbh.ads += amt;
                         }
 
-                        if(d.category.includes('0408') || d.category.includes('Ads')) bucket.all.ads += amt;
+                        // *** แก้ไข: ยอดรวม Ads ทั้งหมด ต้องไม่นับ 0408-G-MKT ***
+                        if((d.category.includes('0408') || d.category.includes('Ads')) && d.category !== '0408-G-MKT') {
+                            bucket.all.ads += amt;
+                        }
+
                         if(d.category.startsWith('01')) totalDeductions += amt; 
 
                         expTotals[d.category] = (expTotals[d.category]||0) + amt;
@@ -699,7 +704,6 @@
                 }
                 
                 // --- LOGIC 2: Ads (Separate Row) ---
-                // เจาะจงเฉพาะหมวดหมู่ "โฆษณา" เท่านั้น (สำหรับ 0408-G)
                 if (row['หมวดหมู่'] === 'โฆษณา') {
                     dailyData[dateKey].ads += Math.abs(cleanVal(row, 'ทั้งหมด'));
                 }
@@ -720,10 +724,9 @@
                 if (val.gp > 0) await saveExp(date, 'grab_gp', '0504-G', val.gp); 
                 if (val.promo > 0) await saveExp(date, 'grab_promo', '0118-G', val.promo);
                 
-                // *** ส่วนที่แก้ไข: บันทึกเฉพาะค่าโฆษณา (145.81) ลง 0408-G ***
                 if (val.ads > 0) await saveExp(date, 'grab_ads', '0408-G', val.ads); 
                 
-                if (val.mkt > 0) await saveExp(date, 'grab_mkt', '0408-G-MKT', val.mkt); // Marketing Fee แยกต่างหาก
+                if (val.mkt > 0) await saveExp(date, 'grab_mkt', '0408-G-MKT', val.mkt); 
                 if (val.loan > 0) await saveExp(date, 'grab_loan', '0411-G', val.loan); 
             }
             alert(`✅ Import Grab (Exact Logic) สำเร็จ`); loadData();
