@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant PRO (V.48 Exact Accounting + Security)</title>
+    <title>Restaurant PRO (V.49 Exact Accounting + Stacked Chart)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script> 
@@ -70,7 +70,7 @@
             <div class="container mx-auto flex flex-col md:flex-row justify-between items-center space-y-3 md:space-y-0">
                 <div class="flex items-center w-full md:w-auto justify-between md:justify-start">
                     <h1 class="text-xl font-bold flex items-center mr-4">
-                        📊 Restaurant PRO <span class="text-xs bg-green-500 text-white px-2 rounded ml-2 shadow">V.48 Secure</span>
+                        📊 Restaurant PRO <span class="text-xs bg-green-500 text-white px-2 rounded ml-2 shadow">V.49</span>
                     </h1>
                     <div class="flex items-center space-x-2 bg-indigo-800 p-1.5 rounded border border-indigo-700">
                         <span class="text-xs text-indigo-200">เดือน:</span>
@@ -138,7 +138,7 @@
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                     <div class="bg-white p-6 rounded-lg shadow lg:col-span-2">
-                        <h3 class="font-bold text-gray-700 mb-4">📈 แนวโน้มยอดขายรายวัน (Gross)</h3>
+                        <h3 class="font-bold text-gray-700 mb-4">📈 แนวโน้มยอดขายรายวัน (แยกช่องทาง)</h3>
                         <div class="chart-container"><canvas id="trendChart"></canvas></div>
                     </div>
                     <div class="bg-white p-6 rounded-lg shadow">
@@ -493,7 +493,7 @@
             '0121-R': 'VAT Robinhood',
             '0118': 'ส่วนลดการขาย (รวม)', 
             '0118-G': 'ส่วนลดแคมเปญ Grab (Campaign)', 
-            '0118-G-STORE': 'ส่วนลดที่ร้านสนับสนุน (Store)', // NEW CATEGORY
+            '0118-G-STORE': 'ส่วนลดที่ร้านสนับสนุน (Store)', 
             '0118-L': 'ส่วนลด Lineman', 
             '0118-R': 'ส่วนลด Robinhood',
             '0201': 'วัตถุดิบอาหาร', 
@@ -627,7 +627,7 @@
         });
 
         // ============================================
-        // 1. DATA LOADING (Updated for Stacked Chart)
+        // 1. DATA LOADING
         // ============================================
         window.loadData = async () => {
             const monthVal = document.getElementById('dashMonth').value;
@@ -636,8 +636,7 @@
             
             try {
                 let sales = [], expenses = [];
-                // เปลี่ยน dailyTrend ให้เก็บแยกค่าย
-                let dailyTrend = {}; 
+                let dailyTrend = {};
                 let hourlySales = new Array(24).fill(0);
                 let expTotals = {};
                 let totalDeductions = 0;
@@ -656,12 +655,12 @@
                         sales.push(d);
                         const safeFloat = (v) => parseFloat(v || 0);
                         
-                        // เก็บแยกค่ายเพื่อส่งไปกราฟ
+                        // New: Store channel breakdown for Stacked Chart
                         dailyTrend[d.date] = {
                             instore: safeFloat(d.instore),
                             grab: safeFloat(d.delivery_grab),
                             line: safeFloat(d.delivery_lineman),
-                            rbh: safeFloat(d.delivery_robinhood) + safeFloat(d.delivery_other) // รวมอื่นๆ ไว้ใน RBH หรือแยกก็ได้
+                            rbh: safeFloat(d.delivery_robinhood) + safeFloat(d.delivery_other)
                         };
 
                         const total = safeFloat(d.instore) + safeFloat(d.delivery_grab) + safeFloat(d.delivery_lineman) + safeFloat(d.delivery_robinhood) + safeFloat(d.delivery_other);
@@ -689,7 +688,6 @@
                     }
                 });
 
-                // ... (ส่วนโหลด Expenses เหมือนเดิม ไม่ต้องแก้) ...
                 const qE = await getDocs(collection(db, "expenses"));
                 qE.forEach(doc => {
                     const d = doc.data();
@@ -709,18 +707,20 @@
                             if(d.category.includes('0504') || d.category.includes('0420')) bucket.rbh.cost += amt;
                             if(d.category.includes('0408') || d.category.includes('Ads')) bucket.rbh.ads += amt;
                         }
+
                         if((d.category.includes('0408') || d.category.includes('Ads')) && d.category !== '0408-G-MKT') {
                             bucket.all.ads += amt;
                         }
+
                         if(d.category.startsWith('01')) totalDeductions += amt; 
+
                         expTotals[d.category] = (expTotals[d.category]||0) + amt;
                     }
                 });
-                // ... (จบส่วนโหลด Expenses) ...
 
                 currentAnalyticsData = bucket; 
 
-                // คำนวณ KPI รวม
+                // KPI Calc (Fixed for Object dailyTrend)
                 let m_gross_sales = 0;
                 Object.values(dailyTrend).forEach(v => {
                     m_gross_sales += (v.instore + v.grab + v.line + v.rbh);
@@ -743,7 +743,7 @@
                 }
 
                 requestAnimationFrame(() => {
-                    renderTrendChart(dailyTrend); // ส่ง object ใหม่ไปวาด
+                    renderTrendChart(dailyTrend);
                     renderTopExpenses(expTotals, m_gross_sales);
                     updateRecentTables(sales, expenses);
                     switchAnalyticsTab('all');
@@ -799,7 +799,6 @@
                 const months = {Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
                 return `${parts[2]}-${months[parts[1]]}-${parts[0].padStart(2,'0')}`;
             };
-            // Improved cleanVal to handle commas safely inside this function scope
             const cleanVal = (row, key) => parseFloat((row[key]||'0').toString().replace(/,/g,'')) || 0;
 
             for(const row of data) {
@@ -808,20 +807,14 @@
                 
                 if (row['ประเภท'] === 'GrabFood' && row['หมวดหมู่'] === 'ชำระเงิน') {
                     const rawSales = cleanVal(row, 'ยอด');
-                    
-                    // 1. Capture Gross Sales (Ignore refunds for Gross calculation to match 8184 target)
-                    if (rawSales > 0) {
-                         dailyData[dateKey].sales += rawSales; 
-                    }
+                    if (rawSales > 0) { dailyData[dateKey].sales += rawSales; }
 
-                    // 2. Capture Store Discounts (Supported by Store) - Total 533 logic
                     const storeDisc = Math.abs(cleanVal(row, 'ส่วนลด (ออกโดยร้าน)'));
                     const delDisc = Math.abs(cleanVal(row, 'ส่วนลดค่าจัดส่ง (ออกโดยร้าน)'));
                     dailyData[dateKey].promo_store += (storeDisc + delDisc); 
 
-                    // 3. Keep existing mappings for other expenses
                     dailyData[dateKey].gp += Math.abs(cleanVal(row, 'ค่าคอมมิชชันแพลตฟอร์ม'));
-                    dailyData[dateKey].promo_grab += Math.abs(cleanVal(row, 'ค่าคอมมิชชันอื่นของ GrabFood / GrabMart')); // Grab Campaign only
+                    dailyData[dateKey].promo_grab += Math.abs(cleanVal(row, 'ค่าคอมมิชชันอื่นของ GrabFood / GrabMart')); 
                     dailyData[dateKey].mkt += Math.abs(cleanVal(row, 'ค่าธรรมเนียมการตลาด'));
 
                     dailyData[dateKey].orders += 1;
@@ -851,12 +844,10 @@
                 
                 if (val.gp > 0) await saveExp(date, 'grab_gp', '0504-G', val.gp); 
                 
-                // SAVE PROMO SEPARATELY
                 if (val.promo_store > 0) await saveExp(date, 'grab_promo_store', '0118-G-STORE', val.promo_store);
                 if (val.promo_grab > 0) await saveExp(date, 'grab_promo', '0118-G', val.promo_grab);
                 
                 if (val.ads > 0) await saveExp(date, 'grab_ads', '0408-G', val.ads); 
-                
                 if (val.mkt > 0) await saveExp(date, 'grab_mkt', '0408-G-MKT', val.mkt); 
                 if (val.loan > 0) await saveExp(date, 'grab_loan', '0411-G', val.loan); 
             }
@@ -1055,59 +1046,28 @@
             const ctx = document.getElementById('trendChart'); if(!ctx) return;
             if(charts.trend) charts.trend.destroy();
             
-            // เตรียมข้อมูลแยก Array
             const labels = Object.keys(dataObj).sort();
             const d_instore = labels.map(date => dataObj[date].instore);
             const d_grab = labels.map(date => dataObj[date].grab);
             const d_line = labels.map(date => dataObj[date].line);
             const d_rbh = labels.map(date => dataObj[date].rbh);
-            const displayLabels = labels.map(d => d.slice(8)); // โชว์แค่วันที่
+            const displayLabels = labels.map(d => d.slice(8)); 
 
             charts.trend = new Chart(ctx, { 
                 type: 'bar', 
                 data: { 
                     labels: displayLabels, 
                     datasets: [
-                        { 
-                            label: 'หน้าร้าน', 
-                            data: d_instore, 
-                            backgroundColor: '#3B82F6', // สีฟ้า
-                            stack: 'Stack 0' 
-                        },
-                        { 
-                            label: 'Grab', 
-                            data: d_grab, 
-                            backgroundColor: '#10B981', // สีเขียว
-                            stack: 'Stack 0'
-                        },
-                        { 
-                            label: 'Lineman', 
-                            data: d_line, 
-                            backgroundColor: '#F59E0B', // สีส้ม
-                            stack: 'Stack 0'
-                        },
-                        { 
-                            label: 'Robinhood/อื่นๆ', 
-                            data: d_rbh, 
-                            backgroundColor: '#8B5CF6', // สีม่วง
-                            stack: 'Stack 0',
-                            borderRadius: { topLeft: 4, topRight: 4 } // มนแค่ยอดบนสุด
-                        }
+                        { label: 'หน้าร้าน', data: d_instore, backgroundColor: '#3B82F6', stack: 'Stack 0' },
+                        { label: 'Grab', data: d_grab, backgroundColor: '#10B981', stack: 'Stack 0' },
+                        { label: 'Lineman', data: d_line, backgroundColor: '#F59E0B', stack: 'Stack 0' },
+                        { label: 'Robinhood/อื่นๆ', data: d_rbh, backgroundColor: '#8B5CF6', stack: 'Stack 0', borderRadius: { topLeft: 4, topRight: 4 } }
                     ] 
                 }, 
                 options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: { stacked: true }, // สำคัญ: สั่งให้ซ้อนกันแนวแกน X
-                        y: { stacked: true }  // สำคัญ: สั่งให้ซ้อนกันแนวแกน Y
-                    },
-                    plugins: {
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false
-                        }
-                    }
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { x: { stacked: true }, y: { stacked: true } },
+                    plugins: { tooltip: { mode: 'index', intersect: false } }
                 } 
             });
         }
