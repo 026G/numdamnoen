@@ -404,7 +404,7 @@
         // ============================================================
         // ⚠️ Config Firebase (ใส่ของคุณตรงนี้)
         // ============================================================
-         const firebaseConfig = {
+          const firebaseConfig = {
     apiKey: "AIzaSyDRiTZXUbkdGaCHZVTkOOl1Iu0A-744tE0",
     authDomain: "numdamnoen-6cbd5.firebaseapp.com",
     projectId: "numdamnoen-6cbd5",
@@ -785,7 +785,8 @@
                 const months = {Jan:'01',Feb:'02',Mar:'03',Apr:'04',May:'05',Jun:'06',Jul:'07',Aug:'08',Sep:'09',Oct:'10',Nov:'11',Dec:'12'};
                 return `${parts[2]}-${months[parts[1]]}-${parts[0].padStart(2,'0')}`;
             };
-            const cleanVal = (row, key) => parseFloat(row[key] || 0) || 0;
+            // Improved cleanVal to handle commas safely inside this function scope
+            const cleanVal = (row, key) => parseFloat((row[key]||'0').toString().replace(/,/g,'')) || 0;
 
             for(const row of data) {
                 const dateKey = parseDate(row['Updated On']); if(!dateKey) continue;
@@ -793,19 +794,28 @@
                 
                 if (row['ประเภท'] === 'GrabFood' && row['หมวดหมู่'] === 'ชำระเงิน') {
                     const rawSales = cleanVal(row, 'ยอด');
-                    const storeDisc = cleanVal(row, 'ส่วนลด (ออกโดยร้าน)'); 
-                    dailyData[dateKey].sales += (rawSales + storeDisc);
                     
+                    // 1. Capture Gross Sales (Ignore refunds for Gross calculation to match 8184 target)
+                    if (rawSales > 0) {
+                         dailyData[dateKey].sales += rawSales; 
+                    }
+
+                    // 2. Capture Store Discounts (Supported by Store) - Total 533 logic
+                    const storeDisc = Math.abs(cleanVal(row, 'ส่วนลด (ออกโดยร้าน)'));
+                    const delDisc = Math.abs(cleanVal(row, 'ส่วนลดค่าจัดส่ง (ออกโดยร้าน)'));
+                    dailyData[dateKey].promo += (storeDisc + delDisc); 
+
+                    // 3. Keep existing mappings for other expenses
                     dailyData[dateKey].gp += Math.abs(cleanVal(row, 'ค่าคอมมิชชันแพลตฟอร์ม'));
-                    dailyData[dateKey].promo += Math.abs(cleanVal(row, 'ค่าคอมมิชชันอื่นของ GrabFood / GrabMart'));
+                    dailyData[dateKey].promo += Math.abs(cleanVal(row, 'ค่าคอมมิชชันอื่นของ GrabFood / GrabMart')); // Keep existing promo mapping too
                     dailyData[dateKey].mkt += Math.abs(cleanVal(row, 'ค่าธรรมเนียมการตลาด'));
 
                     dailyData[dateKey].orders += 1;
                     const timePart = row['Updated On'].split(' ')[3];
                     if(timePart) { 
                         let h = parseInt(timePart.split(':')[0]); 
-                        h = (h + 7) % 24; // Fix UTC to Thai Time (+7)
-                        dailyData[dateKey].hourly[h] = (dailyData[dateKey].hourly[h]||0) + rawSales; 
+                        h = (h + 7) % 24; 
+                        if (rawSales > 0) dailyData[dateKey].hourly[h] = (dailyData[dateKey].hourly[h]||0) + rawSales; 
                     }
                 }
                 
