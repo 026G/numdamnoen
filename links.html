@@ -275,10 +275,6 @@
         // รันฟังก์ชันทันทีเมื่อเปิดเว็บ
         checkShopStatus();
     </script>
-    <div class="share-btn" onclick="shareShop()">
-        <i class="fa-solid fa-arrow-up-from-bracket"></i>
-    </div>
-
     <style>
         .share-btn {
             position: absolute;
@@ -320,22 +316,5 @@
 
     <i class="fa-solid fa-leaf bg-element" style="color:#bbf7d0; font-size: 80px; top: 10%; left: -20px; animation-delay: 0s;"></i>
     <i class="fa-solid fa-leaf bg-element" style="color:#bbf7d0; font-size: 60px; bottom: 15%; right: -10px; animation-delay: 2s; transform: scaleX(-1);"></i>
-
-    <script>
-        function shareShop() {
-            if (navigator.share) {
-                navigator.share({
-                    title: 'หนุ่มดำเนิน มะพร้าวปั่น',
-                    text: 'สั่งมะพร้าวปั่นแท้ๆ อร่อยสดชื่น คลิกเลย!',
-                    url: window.location.href
-                })
-                .then(() => gtag('event', 'click_share', {'method': 'native_share'}))
-                .catch((error) => console.log('Error sharing', error));
-            } else {
-                // กรณีคอมพิวเตอร์ทั่วไปที่ไม่รองรับการแชร์แบบมือถือ
-                alert('คัดลอกลิงก์ร้านแล้ว: ' + window.location.href);
-            }
-        }
-    </script>
 </body>
 </html>
