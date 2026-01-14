@@ -43,25 +43,23 @@
             font-size: 22px; margin: 0 0 8px 0; font-weight: 600; color: #166534;
         }
         p { color: #666; margin: 0; font-size: 15px; }
-
-        /* --- ส่วนที่เพิ่ม: สถานะร้านและเวลา --- */
-        .status-bar {
-            display: inline-flex;
+        
+        /* --- สถานะร้าน Minimal --- */
+        .status-text {
+            display: flex;
             align-items: center;
-            background: white;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 14px;
+            justify-content: center;
+            gap: 6px;
+            font-size: 13px;
             color: #555;
-            margin-top: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            gap: 8px;
+            margin-top: 8px;
         }
         .status-dot {
-            width: 10px; height: 10px; border-radius: 50%; display: block;
+            width: 8px; height: 8px; border-radius: 50%; display: block;
+            transition: background-color 0.3s; /* เพิ่ม transition ให้เปลี่ยนสีนุ่มๆ */
         }
-        .dot-green { background-color: #22c55e; box-shadow: 0 0 0 2px #bbf7d0; } /* สีเขียว */
-        .dot-red { background-color: #ef4444; box-shadow: 0 0 0 2px #fecaca; }   /* สีแดง */
+        .dot-green { background-color: #22c55e; }
+        .dot-red { background-color: #ef4444; }
         
         .links-container {
             width: 100%;
