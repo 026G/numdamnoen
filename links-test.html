@@ -65,6 +65,7 @@
             transition: all 0.2s ease;
             position: relative;
             overflow: hidden;
+            cursor: pointer; /* เพิ่ม cursor pointer ให้รู้ว่ากดได้ */
         }
         .link-btn:hover {
             transform: translateY(-3px);
@@ -164,7 +165,7 @@
     
     <div class="links-container">
         
-        <a href="https://wongn.ai/223eD4" class="link-btn">
+        <a href="https://wongn.ai/223eD4" class="link-btn" onclick="gtag('event', 'click_delivery', {'app_name': 'LINE MAN'});">
             <div class="badge-corner bg-green">ค่าส่งถูกสุด</div>
             <div class="btn-logo-wrapper" style="background: #00B900;">
                 <img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN">
@@ -182,7 +183,7 @@
             <i class="fa-solid fa-chevron-right btn-arrow"></i>
         </a>
 
-        <a href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" class="link-btn">
+        <a href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" class="link-btn" onclick="gtag('event', 'click_delivery', {'app_name': 'GrabFood'});">
             <div class="badge-corner bg-orange">ส่งไวสุด</div>
             <div class="btn-logo-wrapper" style="background: white;">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood">
@@ -200,7 +201,7 @@
             <i class="fa-solid fa-chevron-right btn-arrow"></i>
         </a>
 
-        <a href="https://static.robinhood.in.th/app_link.html?URI=robinhoodth://merchantlanding/id/22252" class="link-btn">
+        <a href="https://static.robinhood.in.th/app_link.html?URI=robinhoodth://merchantlanding/id/22252" class="link-btn" onclick="gtag('event', 'click_delivery', {'app_name': 'Robinhood'});">
             <div class="btn-logo-wrapper">
                  <img src="https://placehold.co/200x200/76308B/ffffff?text=Robin\nhood" alt="Robinhood">
             </div>
@@ -216,7 +217,7 @@
             <i class="fa-solid fa-chevron-right btn-arrow"></i>
         </a>
 
-        <a href="https://lin.ee/svRu5ks" class="link-btn" style="border: 2px solid #06C755; background-color: #fcfdfc;">
+        <a href="https://lin.ee/svRu5ks" class="link-btn" style="border: 2px solid #06C755; background-color: #fcfdfc;" onclick="gtag('event', 'click_contact', {'app_name': 'LINE OA'});">
             <div class="btn-logo-wrapper" style="background: transparent;">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" alt="LINE OA">
             </div>
