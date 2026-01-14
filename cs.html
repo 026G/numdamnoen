@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบริหารจัดการธุรกิจน้ำมะพร้าว (V2.1)</title>
+    <title>ระบบบริหารจัดการธุรกิจน้ำมะพร้าว (V2.3 - Select Month)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -46,7 +46,7 @@
             </button>
         </nav>
         <div class="p-4 border-t text-center text-xs text-gray-400">
-            v2.1.0 (Quick Filters)
+            v2.3.0 (Custom Month Picker)
         </div>
     </div>
 
@@ -60,9 +60,15 @@
                     <p class="text-sm text-gray-500" id="filter-status-text">กำลังแสดงข้อมูล: ...</p>
                 </div>
                 
-                <div class="flex items-center gap-2 bg-gray-100 p-1.5 rounded-lg">
+                <div class="flex items-center gap-2 bg-gray-100 p-1.5 rounded-lg flex-wrap">
                     <button onclick="setFilter('prev')" id="btn-filter-prev" class="filter-btn inactive">⏮️ เดือนก่อน</button>
                     <button onclick="setFilter('curr')" id="btn-filter-curr" class="filter-btn inactive">📅 เดือนนี้</button>
+                    
+                    <div class="flex items-center gap-1 bg-white border border-gray-300 rounded-md px-2 py-1">
+                        <span class="text-xs text-gray-400">เลือกเดือน:</span>
+                        <input type="month" id="custom-month-picker" class="text-sm border-none p-0 focus:ring-0 w-32" onchange="setFilter('custom')">
+                    </div>
+
                     <button onclick="setFilter('all')" id="btn-filter-all" class="filter-btn inactive">♾️ ทั้งหมด</button>
                 </div>
             </div>
@@ -161,7 +167,7 @@
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="card">
-                    <h3 class="font-bold text-gray-700 mb-4">📊 ปริมาณการผลิตรายวัน</h3>
+                    <h3 class="font-bold text-gray-700 mb-4">📊 ปริมาณการผลิตรายวัน (รวมทุกรอบ)</h3>
                     <div class="h-64">
                         <canvas id="productionBarChart"></canvas>
                     </div>
@@ -317,7 +323,6 @@
             loadData();
             if (purchases.length === 0 && productions.length === 0) generateMockData();
             
-            // Set default filter to Current Month
             setFilter('curr'); 
         });
 
@@ -331,42 +336,59 @@
             if(tabId === 'dashboard') renderDashboard();
         }
 
-        // --- FILTER BUTTON LOGIC ---
+        // --- FILTER LOGIC (UPDATED WITH DATE PICKER) ---
         function setFilter(type) {
             const now = new Date();
             const year = now.getFullYear();
-            const month = now.getMonth(); // 0-11
-
-            // Helper to pad zero
+            const month = now.getMonth(); 
             const pad = (n) => String(n).padStart(2, '0');
+            const picker = document.getElementById('custom-month-picker');
 
             // Reset buttons style
             ['prev', 'curr', 'all'].forEach(t => {
                 const btn = document.getElementById(`btn-filter-${t}`);
-                btn.classList.remove('active');
-                btn.classList.add('inactive');
+                if(btn) {
+                    btn.classList.remove('active');
+                    btn.classList.add('inactive');
+                }
             });
 
-            // Set new state
-            document.getElementById(`btn-filter-${type}`).classList.add('active');
-            document.getElementById(`btn-filter-${type}`).classList.remove('inactive');
-
+            // Handle types
             if (type === 'curr') {
                 currentFilterMonth = `${year}-${pad(month + 1)}`;
+                picker.value = currentFilterMonth; // Sync picker
                 document.getElementById('filter-status-text').innerText = "กำลังแสดงข้อมูล: เดือนนี้";
+                document.getElementById('btn-filter-curr').classList.add('active');
+                document.getElementById('btn-filter-curr').classList.remove('inactive');
+
             } else if (type === 'prev') {
-                // Handle year rollover
                 let pYear = year;
                 let pMonth = month - 1;
-                if (pMonth < 0) {
-                    pMonth = 11;
-                    pYear = year - 1;
-                }
+                if (pMonth < 0) { pMonth = 11; pYear = year - 1; }
                 currentFilterMonth = `${pYear}-${pad(pMonth + 1)}`;
+                picker.value = currentFilterMonth; // Sync picker
                 document.getElementById('filter-status-text').innerText = "กำลังแสดงข้อมูล: เดือนก่อนหน้า";
-            } else {
+                document.getElementById('btn-filter-prev').classList.add('active');
+                document.getElementById('btn-filter-prev').classList.remove('inactive');
+
+            } else if (type === 'custom') {
+                // User picked from date input
+                currentFilterMonth = picker.value;
+                if(currentFilterMonth) {
+                    const [y, m] = currentFilterMonth.split('-');
+                    document.getElementById('filter-status-text').innerText = `กำลังแสดงข้อมูล: ${m}/${y}`;
+                } else {
+                    // If user cleared the picker, treat as ALL
+                    setFilter('all');
+                    return;
+                }
+
+            } else { // type === 'all'
                 currentFilterMonth = null;
+                picker.value = ''; // Clear picker
                 document.getElementById('filter-status-text').innerText = "กำลังแสดงข้อมูล: ทั้งหมด (All Time)";
+                document.getElementById('btn-filter-all').classList.add('active');
+                document.getElementById('btn-filter-all').classList.remove('inactive');
             }
 
             renderDashboard();
@@ -385,14 +407,10 @@
         function renderDashboard() {
             const { filteredPurch, filteredProd } = getFilteredData();
             
-            // 1. Calculate KPI (Based on Filtered Data)
+            // KPI Calc
             let totalBuyQty = 0, totalBuyCost = 0;
-            filteredPurch.forEach(p => {
-                totalBuyQty += p.qty;
-                totalBuyCost += (p.qty * p.price);
-            });
+            filteredPurch.forEach(p => { totalBuyQty += p.qty; totalBuyCost += (p.qty * p.price); });
             
-            // Stock (Current Balance - Always global)
             let allTotalQty = 0; purchases.forEach(p=> allTotalQty+=p.qty);
             let allUsedQty = 0; productions.forEach(p=> allUsedQty+=p.used);
             let currentStock = allTotalQty - allUsedQty;
@@ -404,24 +422,18 @@
                 periodGoodWater += (p.a2_vol + p.a15_vol);
             });
 
-            // Avg Buy Price (For the filtered period)
             let avgBuyPrice = totalBuyQty > 0 ? totalBuyCost / totalBuyQty : 0;
-            
-            // Fallback: If no purchase in this period, use global avg
+            // Fallback price logic
             if(totalBuyQty === 0 && currentFilterMonth) {
-                let allCost=0, allQty=0;
-                purchases.forEach(p=>{allCost+=(p.qty*p.price); allQty+=p.qty;});
+                let allCost=0, allQty=0; purchases.forEach(p=>{allCost+=(p.qty*p.price); allQty+=p.qty;});
                 avgBuyPrice = allQty>0 ? allCost/allQty : 0;
             }
 
-            // Effective Cost
             let effectiveCostPerNut = 0;
             if (periodUsedQty > 0 && (periodUsedQty - periodDefect) > 0) {
                 let costOfBatch = periodUsedQty * avgBuyPrice;
                 effectiveCostPerNut = costOfBatch / (periodUsedQty - periodDefect);
-            } else {
-                effectiveCostPerNut = avgBuyPrice;
-            }
+            } else { effectiveCostPerNut = avgBuyPrice; }
 
             // UI Updates
             document.getElementById('kpi-stock').innerText = currentStock.toLocaleString() + " ลูก";
@@ -440,7 +452,7 @@
             const avgGoodYield = periodUsedQty > 0 ? periodGoodWater / periodUsedQty : 0;
             document.getElementById('kpi-yield').innerText = avgGoodYield.toFixed(0) + " ml";
 
-            // Profit Calc
+            // Profit
             const sellingPrice = parseFloat(document.getElementById('selling-price').value) || 0;
             const revenue = (periodGoodWater / 1000) * sellingPrice;
             const profit = revenue - totalCostUsed;
@@ -460,23 +472,39 @@
         }
 
         function renderCharts(prodData, purchData) {
+            // Sort data by date
             const sortedProd = [...prodData].sort((a,b) => new Date(a.date) - new Date(b.date));
             const sortedPurch = [...purchData].sort((a,b) => new Date(a.date) - new Date(b.date));
+
+            // --- AGGREGATE DAILY DATA (Same as V2.2) ---
+            const dailyData = {};
+            sortedProd.forEach(p => {
+                if (!dailyData[p.date]) {
+                    dailyData[p.date] = { used: 0, a2: 0, a15: 0, a0: 0 };
+                }
+                dailyData[p.date].used += p.used;
+                dailyData[p.date].a2 += p.a2_vol;
+                dailyData[p.date].a15 += p.a15_vol;
+                dailyData[p.date].a0 += p.a0_vol;
+            });
             
-            const prodLabels = sortedProd.map(p => p.date);
+            const prodLabels = Object.keys(dailyData).sort();
+            const aggGoodYield = prodLabels.map(d => dailyData[d].used > 0 ? (dailyData[d].a2+dailyData[d].a15)/dailyData[d].used : 0);
+            const aggTotalYield = prodLabels.map(d => dailyData[d].used > 0 ? (dailyData[d].a2+dailyData[d].a15+dailyData[d].a0)/dailyData[d].used : 0);
+
+            const aggA2 = prodLabels.map(d => dailyData[d].a2);
+            const aggA15 = prodLabels.map(d => dailyData[d].a15);
+            const aggA0 = prodLabels.map(d => dailyData[d].a0);
 
             // Yield Chart
-            const goodYieldData = sortedProd.map(p => p.used > 0 ? (p.a2_vol+p.a15_vol)/p.used : 0);
-            const totalYieldData = sortedProd.map(p => p.used > 0 ? (p.a2_vol+p.a15_vol+p.a0_vol)/p.used : 0);
-
             if(charts.yield) charts.yield.destroy();
             charts.yield = new Chart(document.getElementById('yieldChart'), {
                 type: 'line',
                 data: {
                     labels: prodLabels,
                     datasets: [
-                        { label: 'Yield ขาย', data: goodYieldData, borderColor: '#059669', backgroundColor: 'rgba(5, 150, 105, 0.1)', fill: true },
-                        { label: 'Yield รวม', data: totalYieldData, borderColor: '#3B82F6', borderDash: [5, 5], fill: false }
+                        { label: 'Yield ขาย', data: aggGoodYield, borderColor: '#059669', backgroundColor: 'rgba(5, 150, 105, 0.1)', fill: true },
+                        { label: 'Yield รวม', data: aggTotalYield, borderColor: '#3B82F6', borderDash: [5, 5], fill: false }
                     ]
                 },
                 options: { responsive: true, maintainAspectRatio: false }
@@ -489,9 +517,9 @@
                 data: {
                     labels: prodLabels,
                     datasets: [
-                        { label: 'A2', data: sortedProd.map(p=>p.a2_vol), backgroundColor: '#059669' },
-                        { label: 'A1.5', data: sortedProd.map(p=>p.a15_vol), backgroundColor: '#34D399' },
-                        { label: 'A0', data: sortedProd.map(p=>p.a0_vol), backgroundColor: '#9CA3AF' },
+                        { label: 'A2', data: aggA2, backgroundColor: '#059669' },
+                        { label: 'A1.5', data: aggA15, backgroundColor: '#34D399' },
+                        { label: 'A0', data: aggA0, backgroundColor: '#9CA3AF' },
                     ]
                 },
                 options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } }
@@ -499,7 +527,7 @@
 
             // Pie Chart
             let sumA2=0, sumA15=0, sumA0=0;
-            sortedProd.forEach(p => { sumA2+=p.a2_vol; sumA15+=p.a15_vol; sumA0+=p.a0_vol; });
+            prodData.forEach(p => { sumA2+=p.a2_vol; sumA15+=p.a15_vol; sumA0+=p.a0_vol; });
             if(charts.pie) charts.pie.destroy();
             charts.pie = new Chart(document.getElementById('brixPieChart'), {
                 type: 'doughnut',
@@ -513,7 +541,6 @@
             // Price Chart
             const priceLabels = sortedPurch.map(p => p.date);
             const priceData = sortedPurch.map(p => p.price);
-            
             if(charts.price) charts.price.destroy();
             charts.price = new Chart(document.getElementById('priceChart'), {
                 type: 'line',
@@ -529,11 +556,7 @@
                         fill: true
                     }]
                 },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false,
-                    scales: { y: { beginAtZero: false } }
-                }
+                options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: false } } }
             });
         }
 
@@ -635,10 +658,11 @@
                 purchases.push({ id: Math.random(), date: d.toISOString().split('T')[0], qty: Math.floor(Math.random()*100)+100, price: price, status: Math.random()>0.3?'paid':'pending', note: 'Mock' });
             }
             for(let i=30; i>0; i--) {
-                if(Math.random()>0.3) {
+                const rounds = Math.random() > 0.8 ? 2 : (Math.random() > 0.4 ? 1 : 0);
+                for(let r=0; r<rounds; r++) {
                     const d = new Date(today); d.setDate(d.getDate() - i);
-                    const used = Math.floor(Math.random()*50)+50;
-                    const defect = Math.random() > 0.7 ? Math.floor(Math.random() * 5) : 0; 
+                    const used = Math.floor(Math.random()*50)+30;
+                    const defect = Math.random() > 0.7 ? Math.floor(Math.random() * 3) : 0; 
                     const totalVol = (used - defect) * (250+Math.random()*100);
                     productions.push({
                         id: Math.random(), date: d.toISOString().split('T')[0], used: used, defect: defect,
