@@ -166,9 +166,9 @@
         <h1>หนุ่มดำเนิน มะพร้าวปั่น</h1>
         <p>หอมมะพร้าวแท้ จากมะพร้าวน้ำหอมแท้ 100%</p>
 
-        <div class="status-bar">
-            <span class="status-dot dot-green"></span>
-            <span>เปิดอยู่ • 10:00 - 19:00 น.</span>
+        <div class="status-text">
+            <span id="shop-status-dot" class="status-dot dot-green"></span> 
+            <span id="shop-status-text">กำลังตรวจสอบเวลา...</span>
         </div>
     </div>
     
@@ -249,6 +249,32 @@
             </a>
         </div>
     </div>
+<script>
+        function checkShopStatus() {
+            const now = new Date();
+            const hour = now.getHours();
+            const minutes = now.getMinutes();
 
+            // ตั้งเวลาเปิด-ปิด ตรงนี้ (06:00 - 22:00)
+            const openHour = 6;
+            const closeHour = 22;
+
+            const statusDot = document.getElementById('shop-status-dot');
+            const statusText = document.getElementById('shop-status-text');
+
+            if (hour >= openHour && hour < closeHour) {
+                // ร้านเปิด
+                statusDot.className = 'status-dot dot-green';
+                statusText.innerHTML = 'เปิดอยู่ • 06:00 - 22:00 น.';
+            } else {
+                // ร้านปิด
+                statusDot.className = 'status-dot dot-red';
+                statusText.innerHTML = 'ปิดแล้ว • เปิดพรุ่งนี้ 06:00 น.';
+            }
+        }
+
+        // รันฟังก์ชันทันทีเมื่อเปิดเว็บ
+        checkShopStatus();
+    </script>
 </body>
 </html>
