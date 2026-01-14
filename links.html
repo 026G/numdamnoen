@@ -27,7 +27,7 @@
         }
         .profile-area {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
         .profile-img {
             width: 110px;
@@ -44,12 +44,30 @@
         }
         p { color: #666; margin: 0; font-size: 15px; }
         
+        /* --- สถานะร้าน Minimal --- */
+        .status-text {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #555;
+            margin-top: 8px;
+        }
+        .status-dot {
+            width: 8px; height: 8px; border-radius: 50%; display: block;
+            transition: background-color 0.3s; /* เพิ่ม transition ให้เปลี่ยนสีนุ่มๆ */
+        }
+        .dot-green { background-color: #22c55e; }
+        .dot-red { background-color: #ef4444; }
+        
         .links-container {
             width: 100%;
             max-width: 420px;
             display: flex;
             flex-direction: column;
             gap: 12px;
+            margin-top: 20px;
         }
 
         .link-btn {
@@ -65,7 +83,7 @@
             transition: all 0.2s ease;
             position: relative;
             overflow: hidden;
-            cursor: pointer; /* เพิ่ม cursor pointer ให้รู้ว่ากดได้ */
+            cursor: pointer;
         }
         .link-btn:hover {
             transform: translateY(-3px);
@@ -73,7 +91,6 @@
             border-color: #4ade80;
         }
 
-        /* กรอบใส่รูปโลโก้ */
         .btn-logo-wrapper {
             width: 50px;
             height: 50px;
@@ -84,74 +101,59 @@
             justify-content: center;
             border-radius: 12px;
             overflow: hidden;
-            background-color: #f9fafb; /* พื้นหลังจางๆ เผื่อรูปเป็นพื้นใส */
+            background-color: #f9fafb;
         }
-        
-        .btn-logo-wrapper img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain; /* ปรับรูปให้พอดีกรอบ */
-        }
+        .btn-logo-wrapper img { width: 100%; height: 100%; object-fit: contain; }
 
-        .btn-text {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
+        .btn-text { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
         .btn-title {
-            font-weight: 600;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 5px;
-            line-height: 1.2;
+            font-weight: 600; font-size: 16px; display: flex; align-items: center; flex-wrap: wrap; gap: 5px; line-height: 1.2;
         }
         .btn-subtitle {
-            font-size: 12px;
-            color: #666;
-            margin-top: 4px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
+            font-size: 12px; color: #666; margin-top: 4px; display: flex; align-items: center; gap: 5px;
         }
         
-        /* ป้ายโปรโมชั่น (Tag) */
         .promo-tag {
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: normal;
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
+            font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: normal; display: inline-flex; align-items: center; gap: 3px;
         }
-        .tag-green { 
-            background-color: #e8fce8; /* พื้นหลังเขียวอ่อน */
-            color: #00B900;            /* สีเขียว LINE MAN */
-            border: 1px solid #66d966; /* ขอบสีเขียว */
-        }
+        .tag-green { background-color: #e8fce8; color: #00B900; border: 1px solid #66d966; }
         .tag-red { background-color: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
         .tag-purple { background-color: #f3e8ff; color: #9333ea; border: 1px solid #e9d5ff; }
 
         .btn-arrow { color: #ccc; font-size: 14px; margin-left: 10px; }
         .rating { color: #f59e0b; font-size: 13px; font-weight: normal; display: flex; align-items: center; gap: 3px; }
         
-        /* Badge มุมขวาบน */
         .badge-corner {
-            position: absolute;
-            top: 0;
-            right: 0;
-            font-size: 9px;
-            padding: 3px 8px;
-            border-bottom-left-radius: 8px;
-            color: white;
-            font-weight: bold;
-            z-index: 10;
+            position: absolute; top: 0; right: 0; font-size: 9px; padding: 3px 8px;
+            border-bottom-left-radius: 8px; color: white; font-weight: bold; z-index: 10;
         }
         .bg-green { background-color: #10b981; }
         .bg-orange { background-color: #f97316; }
+
+        /* --- ส่วนที่เพิ่ม: Footer Social --- */
+        .footer-area {
+            margin-top: 40px;
+            width: 100%;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            border-top: 1px dashed #ccc;
+            padding-top: 20px;
+        }
+        .social-icons {
+            display: flex; gap: 15px;
+        }
+        .social-btn {
+            width: 45px; height: 45px; border-radius: 50%; background: white;
+            display: flex; align-items: center; justify-content: center;
+            text-decoration: none; color: #333; font-size: 22px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .social-btn:hover { transform: scale(1.1); }
+        .contact-label { font-size: 14px; color: #888; margin-bottom: 5px; }
 
     </style>
 </head>
@@ -161,6 +163,11 @@
         <img src="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8" class="profile-img" alt="โลโก้ร้าน"> 
         <h1>หนุ่มดำเนิน มะพร้าวปั่น</h1>
         <p>หอมมะพร้าวแท้ จากมะพร้าวน้ำหอมแท้ 100%</p>
+
+        <div class="status-text">
+            <span id="shop-status-dot" class="status-dot dot-green"></span> 
+            <span id="shop-status-text">กำลังตรวจสอบเวลา...</span>
+        </div>
     </div>
     
     <div class="links-container">
@@ -171,13 +178,10 @@
                 <img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN">
             </div>
             <div class="btn-text">
-                <span class="btn-title">
-                    LINE MAN
-                    <span class="rating"><i class="fa-solid fa-star"></i> 5.0 (623)</span>
-                </span>
+                <span class="btn-title">LINE MAN <span class="rating"><i class="fa-solid fa-star"></i> 5.0 (623)</span></span>
                 <span class="btn-subtitle">
                     <span class="promo-tag tag-green"><i class="fa-solid fa-tag"></i> ใส่โค้ด 'AROI'</span>
-                ค่าส่งถูกสุด ส่งฟรี
+                    ค่าส่งถูกสุด ส่งฟรี
                 </span>
             </div>
             <i class="fa-solid fa-chevron-right btn-arrow"></i>
@@ -189,10 +193,7 @@
                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood">
             </div>
             <div class="btn-text">
-                <span class="btn-title">
-                    GrabFood
-                    <span class="rating"><i class="fa-solid fa-star"></i> 4.9 (252)</span>
-                </span>
+                <span class="btn-title">GrabFood <span class="rating"><i class="fa-solid fa-star"></i> 4.9 (252)</span></span>
                 <span class="btn-subtitle">
                     <span class="promo-tag tag-red"><i class="fa-solid fa-tag"></i> เก็บโค๊ดลด</span>
                     ค่าส่งถูก
@@ -206,10 +207,7 @@
                  <img src="https://placehold.co/200x200/76308B/ffffff?text=Robin\nhood" alt="Robinhood">
             </div>
             <div class="btn-text">
-                <span class="btn-title">
-                    Robinhood
-                    <span class="rating"><i class="fa-solid fa-star"></i> 5.0 (20)</span>
-                </span>
+                <span class="btn-title">Robinhood <span class="rating"><i class="fa-solid fa-star"></i> 5.0 (20)</span></span>
                 <span class="btn-subtitle">
                     <span class="promo-tag tag-purple"><i class="fa-solid fa-heart"></i> ร้านใจดีลดเพิ่ม 5%</span>
                 </span>
@@ -230,5 +228,51 @@
 
     </div>
 
+    <div class="footer-area">
+        <div class="contact-label">ติดต่อสอบถามเพิ่มเติม</div>
+        <div class="social-icons">
+            <a href="tel:0622467746" class="social-btn" style="color: #00B900;" onclick="gtag('event', 'click_contact', {'type': 'phone'});">
+                <i class="fa-solid fa-phone"></i>
+            </a>
+            
+            <a href="https://facebook.com/NUMDAMNOEN" class="social-btn" style="color: #1877F2;" target="_blank" onclick="gtag('event', 'click_social', {'type': 'facebook'});">
+                <i class="fa-brands fa-facebook"></i>
+            </a>
+
+            <a href="https://tiktok.com/@numdamnoen" class="social-btn" style="color: #000000;" target="_blank" onclick="gtag('event', 'click_social', {'type': 'tiktok'});">
+                <i class="fa-brands fa-tiktok"></i>
+            </a>
+            <a href="https://maps.app.goo.gl/vaAUR6ve7G5WwtjH8" class="social-btn" style="color: #000000;" target="_blank" onclick="gtag('event', 'click_social', {'type': 'googlemap'});">
+                <i class="fa fa-map-marker"></i>
+            </a>
+        </div>
+    </div>
+<script>
+        function checkShopStatus() {
+            const now = new Date();
+            const hour = now.getHours();
+            const minutes = now.getMinutes();
+
+            // ตั้งเวลาเปิด-ปิด ตรงนี้ (06:00 - 22:00)
+            const openHour = 6;
+            const closeHour = 22;
+
+            const statusDot = document.getElementById('shop-status-dot');
+            const statusText = document.getElementById('shop-status-text');
+
+            if (hour >= openHour && hour < closeHour) {
+                // ร้านเปิด
+                statusDot.className = 'status-dot dot-green';
+                statusText.innerHTML = 'เปิดอยู่ • 06:00 - 22:00 น.';
+            } else {
+                // ร้านปิด
+                statusDot.className = 'status-dot dot-red';
+                statusText.innerHTML = 'ปิดแล้ว • เปิดพรุ่งนี้ 06:00 น.';
+            }
+        }
+
+        // รันฟังก์ชันทันทีเมื่อเปิดเว็บ
+        checkShopStatus();
+    </script>
 </body>
 </html>
