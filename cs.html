@@ -41,15 +41,25 @@
             </button>
         </nav>
         <div class="p-4 border-t text-center text-xs text-gray-400">
-            v1.3.0 (Profit & Defects)
+            v2.0.0 (Month Filter & Price Chart)
         </div>
     </div>
 
     <div class="flex-1 overflow-y-auto p-8" id="main-content">
         
         <div id="tab-dashboard" class="space-y-6">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-2xl font-bold text-gray-800">ภาพรวมกำไร & ประสิทธิภาพ</h2>
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">ภาพรวมกำไร & ประสิทธิภาพ</h2>
+                    <p class="text-xs text-gray-500" id="filter-display-text">แสดงข้อมูลทั้งหมด</p>
+                </div>
+                
+                <div class="flex items-center gap-2 bg-white p-2 rounded-lg shadow-sm border">
+                    <span class="text-sm font-bold text-gray-600">📅 เลือกเดือน:</span>
+                    <input type="month" id="month-filter" class="border-gray-300 text-sm py-1" onchange="applyFilter()">
+                    <button onclick="clearFilter()" class="text-xs text-blue-600 hover:text-blue-800 underline px-2">ดูทั้งหมด</button>
+                </div>
+
                 <button onclick="resetData()" class="text-sm text-red-500 hover:text-red-700 underline">รีเซ็ตข้อมูลตัวอย่าง</button>
             </div>
 
@@ -57,11 +67,11 @@
                 <div class="flex flex-col md:flex-row justify-between items-center gap-4">
                     <div class="flex-1">
                         <h3 class="text-xl font-bold text-yellow-800">💰 คำนวณกำไรเบื้องต้น (Profit Estimator)</h3>
-                        <p class="text-sm text-yellow-600">วิเคราะห์จากน้ำเกรดขาย (A2+A1.5) ที่ผลิตได้ทั้งหมด</p>
+                        <p class="text-sm text-yellow-600">วิเคราะห์จากน้ำเกรดขาย (A2+A1.5) ตามช่วงเวลาที่เลือก</p>
                     </div>
                     <div class="w-full md:w-auto bg-white p-3 rounded-lg shadow-sm border flex items-center gap-3">
                         <label class="whitespace-nowrap mb-0 text-gray-600">สมมติราคาขาย:</label>
-                        <input type="number" id="selling-price" value="100" class="w-24 font-bold text-right text-green-700" onchange="calculateKPIs()">
+                        <input type="number" id="selling-price" value="100" class="w-24 font-bold text-right text-green-700" onchange="renderDashboard()">
                         <span class="text-gray-500 font-bold">฿/ลิตร</span>
                     </div>
                 </div>
@@ -87,14 +97,14 @@
 
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div class="card border-l-4 border-blue-500">
-                    <p class="text-gray-500 text-sm">สต็อกคงเหลือ</p>
+                    <p class="text-gray-500 text-sm">สต็อกคงเหลือ (ปัจจุบัน)</p>
                     <div class="text-3xl font-bold text-gray-800 mt-1" id="kpi-stock">0 ลูก</div>
                     <p class="text-xs text-gray-400 mt-1" id="kpi-stock-val">มูลค่า: 0 บาท</p>
                 </div>
                 <div class="card border-l-4 border-red-500 bg-red-50">
-                    <p class="text-red-800 text-sm font-bold">ต้นทุนจริง/ลูก (Effective)</p>
+                    <p class="text-red-800 text-sm font-bold">ต้นทุนจริง/ลูก (ช่วงนี้)</p>
                     <div class="text-3xl font-bold text-red-600 mt-1" id="kpi-eff-cost">0 ฿</div>
-                    <p class="text-xs text-red-400 mt-1">ราคาซื้อ <span id="kpi-buy-cost">0</span> + ภาระลูกเสีย</p>
+                    <p class="text-xs text-red-400 mt-1">ราคาซื้อเฉลี่ย <span id="kpi-buy-cost">0</span> + ลูกเสีย</p>
                 </div>
                 <div class="card border-l-4 border-green-500">
                     <p class="text-gray-500 text-sm">ต้นทุนเนื้อน้ำ (Good)</p>
@@ -105,6 +115,16 @@
                     <p class="text-gray-500 text-sm">Yield น้ำขาย/ลูก</p>
                     <div class="text-3xl font-bold text-gray-800 mt-1" id="kpi-yield">0 ml</div>
                     <p class="text-xs text-green-600 mt-1">เฉลี่ยต่อลูกที่ทุบ</p>
+                </div>
+            </div>
+
+            <div class="card border-l-4 border-indigo-500">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-indigo-800">📉 แนวโน้มราคามะพร้าว (Price Trend)</h3>
+                    <div class="text-xs text-gray-500">ราคาซื้อต่อลูก (บาท)</div>
+                </div>
+                <div class="h-64">
+                    <canvas id="priceChart"></canvas>
                 </div>
             </div>
 
@@ -124,7 +144,7 @@
                             <p class="text-xs text-gray-400">จากลูกที่เบิกมาทั้งหมด</p>
                         </div>
                         <div class="text-center">
-                            <p class="text-sm text-gray-500">ทิ้งไปแล้ว</p>
+                            <p class="text-sm text-gray-500">ทิ้งไปแล้ว (ช่วงนี้)</p>
                             <p class="text-2xl font-bold text-gray-700" id="kpi-total-waste">0 ลูก</p>
                         </div>
                     </div>
@@ -265,7 +285,6 @@
                             <th class="p-3 text-right th-group-good">น้ำขาย (ml)<br><span class="text-xs font-normal">(A2+A1.5)</span></th>
                             <th class="p-3 text-right th-group-good">Yield ขาย<br><span class="text-xs font-normal">(ml/ลูก)</span></th>
                             <th class="p-3 text-right th-group-total">น้ำรวม<br><span class="text-xs font-normal">(+A0)</span></th>
-                            
                             <th class="p-3 text-right">Brix<br><span class="text-xs font-normal">(เฉลี่ย)</span></th>
                             <th class="p-3 text-center">จัดการ</th>
                         </tr>
@@ -281,10 +300,18 @@
         let purchases = [];
         let productions = [];
         let charts = {};
+        let currentFilterMonth = null; // เก็บค่าเดือนที่เลือก (YYYY-MM)
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('p-date').valueAsDate = new Date();
             document.getElementById('prod-date').valueAsDate = new Date();
+            
+            // ตั้งค่าเดือนปัจจุบันให้ตัวเลือก filter
+            const now = new Date();
+            const currentMonthStr = now.toISOString().slice(0, 7); // YYYY-MM
+            // document.getElementById('month-filter').value = currentMonthStr; 
+            // currentFilterMonth = currentMonthStr; // ถ้าอยากให้เปิดมาเป็นเดือนปัจจุบันเลย ให้เปิด 2 บรรทัดนี้
+
             loadData();
             if (purchases.length === 0 && productions.length === 0) generateMockData();
             renderAll();
@@ -297,10 +324,200 @@
             });
             document.getElementById(`tab-${tabId}`).classList.remove('hidden');
             document.getElementById(`btn-${tabId}`).classList.add('active');
-            if(tabId === 'dashboard') renderCharts();
+            if(tabId === 'dashboard') renderDashboard();
         }
 
-        // --- CORE LOGIC ---
+        // --- FILTER LOGIC ---
+        function applyFilter() {
+            currentFilterMonth = document.getElementById('month-filter').value;
+            renderDashboard();
+        }
+
+        function clearFilter() {
+            document.getElementById('month-filter').value = '';
+            currentFilterMonth = null;
+            renderDashboard();
+        }
+
+        function getFilteredData() {
+            if (!currentFilterMonth) {
+                document.getElementById('filter-display-text').innerText = "แสดงข้อมูลทั้งหมด";
+                return { filteredPurch: purchases, filteredProd: productions };
+            }
+            
+            // แสดงข้อความว่ากำลังดูเดือนไหน
+            const [y, m] = currentFilterMonth.split('-');
+            document.getElementById('filter-display-text').innerText = `แสดงข้อมูลเฉพาะเดือน ${m}/${y}`;
+
+            const filteredPurch = purchases.filter(p => p.date.startsWith(currentFilterMonth));
+            const filteredProd = productions.filter(p => p.date.startsWith(currentFilterMonth));
+            return { filteredPurch, filteredProd };
+        }
+
+        // --- RENDER DASHBOARD ---
+        function renderDashboard() {
+            const { filteredPurch, filteredProd } = getFilteredData();
+            
+            // 1. Calculate KPI
+            let totalBuyQty = 0, totalBuyCost = 0;
+            filteredPurch.forEach(p => {
+                totalBuyQty += p.qty;
+                totalBuyCost += (p.qty * p.price);
+            });
+            
+            // *Stock KPI calculates from ALL time (Current Balance)*
+            // But cost/eff cost should reflect the filtered period if looking at history
+            let allTotalQty = 0; purchases.forEach(p=> allTotalQty+=p.qty);
+            let allUsedQty = 0; productions.forEach(p=> allUsedQty+=p.used);
+            let currentStock = allTotalQty - allUsedQty;
+
+            let periodUsedQty = 0, periodDefect = 0, periodGoodWater = 0;
+            filteredProd.forEach(p => {
+                periodUsedQty += p.used;
+                periodDefect += (p.defect || 0);
+                periodGoodWater += (p.a2_vol + p.a15_vol);
+            });
+
+            // Avg Buy Price (Period)
+            let avgBuyPrice = totalBuyQty > 0 ? totalBuyCost / totalBuyQty : 0;
+            if(totalBuyQty === 0 && currentFilterMonth) {
+                // ถ้าเดือนนี้ไม่มีซื้อ ให้ใช้ราคาเฉลี่ยรวมทั้งหมดแทนเพื่อการคำนวณ
+                let allCost=0, allQty=0;
+                purchases.forEach(p=>{allCost+=(p.qty*p.price); allQty+=p.qty;});
+                avgBuyPrice = allQty>0 ? allCost/allQty : 0;
+            }
+
+            // Effective Cost
+            let effectiveCostPerNut = 0;
+            if (periodUsedQty > 0 && (periodUsedQty - periodDefect) > 0) {
+                let costOfBatch = periodUsedQty * avgBuyPrice;
+                effectiveCostPerNut = costOfBatch / (periodUsedQty - periodDefect);
+            } else {
+                effectiveCostPerNut = avgBuyPrice;
+            }
+
+            // Render KPI Cards
+            document.getElementById('kpi-stock').innerText = currentStock.toLocaleString() + " ลูก";
+            // มูลค่าสต็อกคิดจากราคาเฉลี่ยรวม
+            let allAvgPrice = allTotalQty>0 ? (purchases.reduce((s,p)=>s+(p.qty*p.price),0)/allTotalQty) : 0;
+            document.getElementById('kpi-stock-val').innerText = `มูลค่า: ${(currentStock * allAvgPrice).toLocaleString(undefined, {maximumFractionDigits:0})} บาท`;
+
+            document.getElementById('kpi-buy-cost').innerText = avgBuyPrice.toFixed(2);
+            document.getElementById('kpi-eff-cost').innerText = effectiveCostPerNut.toFixed(2) + " ฿";
+            document.getElementById('kpi-defect-rate').innerText = (periodUsedQty > 0 ? (periodDefect/periodUsedQty)*100 : 0).toFixed(1) + "%";
+            document.getElementById('kpi-total-waste').innerText = periodDefect + " ลูก";
+
+            // Cost per Liter
+            const totalCostUsed = periodUsedQty * avgBuyPrice;
+            const costPerLiter = periodGoodWater > 0 ? (totalCostUsed / (periodGoodWater/1000)) : 0;
+            document.getElementById('kpi-cost-liter').innerText = costPerLiter.toFixed(1) + " ฿/L";
+
+            const avgGoodYield = periodUsedQty > 0 ? periodGoodWater / periodUsedQty : 0;
+            document.getElementById('kpi-yield').innerText = avgGoodYield.toFixed(0) + " ml";
+
+            // Profit Calc
+            const sellingPrice = parseFloat(document.getElementById('selling-price').value) || 0;
+            const revenue = (periodGoodWater / 1000) * sellingPrice;
+            const profit = revenue - totalCostUsed;
+            const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
+
+            document.getElementById('calc-revenue').innerText = revenue.toLocaleString(undefined, {maximumFractionDigits:0}) + " ฿";
+            document.getElementById('calc-vol').innerText = `จากน้ำขาย ${(periodGoodWater/1000).toFixed(1)} ลิตร`;
+            document.getElementById('calc-cost').innerText = totalCostUsed.toLocaleString(undefined, {maximumFractionDigits:0}) + " ฿";
+            document.getElementById('calc-profit').innerText = profit.toLocaleString(undefined, {maximumFractionDigits:0}) + " ฿";
+            
+            const profitEl = document.getElementById('calc-profit');
+            if(profit >= 0) { profitEl.classList.remove('text-red-600'); profitEl.classList.add('text-blue-600'); }
+            else { profitEl.classList.remove('text-blue-600'); profitEl.classList.add('text-red-600'); }
+            document.getElementById('calc-margin').innerText = `Margin: ${margin.toFixed(1)}%`;
+
+            // Render Charts
+            renderCharts(filteredProd, filteredPurch);
+        }
+
+        function renderCharts(prodData, purchData) {
+            // Sort data by date
+            const sortedProd = [...prodData].sort((a,b) => new Date(a.date) - new Date(b.date));
+            const sortedPurch = [...purchData].sort((a,b) => new Date(a.date) - new Date(b.date));
+            
+            const prodLabels = sortedProd.map(p => p.date);
+
+            // 1. Yield Chart
+            const goodYieldData = sortedProd.map(p => p.used > 0 ? (p.a2_vol+p.a15_vol)/p.used : 0);
+            const totalYieldData = sortedProd.map(p => p.used > 0 ? (p.a2_vol+p.a15_vol+p.a0_vol)/p.used : 0);
+
+            if(charts.yield) charts.yield.destroy();
+            charts.yield = new Chart(document.getElementById('yieldChart'), {
+                type: 'line',
+                data: {
+                    labels: prodLabels,
+                    datasets: [
+                        { label: 'Yield ขาย (A2+A1.5)', data: goodYieldData, borderColor: '#059669', backgroundColor: 'rgba(5, 150, 105, 0.1)', fill: true },
+                        { label: 'Yield รวม (ทั้งหมด)', data: totalYieldData, borderColor: '#3B82F6', borderDash: [5, 5], fill: false }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // 2. Bar Chart
+            if(charts.bar) charts.bar.destroy();
+            charts.bar = new Chart(document.getElementById('productionBarChart'), {
+                type: 'bar',
+                data: {
+                    labels: prodLabels,
+                    datasets: [
+                        { label: 'A2', data: sortedProd.map(p=>p.a2_vol), backgroundColor: '#059669' },
+                        { label: 'A1.5', data: sortedProd.map(p=>p.a15_vol), backgroundColor: '#34D399' },
+                        { label: 'A0', data: sortedProd.map(p=>p.a0_vol), backgroundColor: '#9CA3AF' },
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } }
+            });
+
+            // 3. Pie Chart
+            let sumA2=0, sumA15=0, sumA0=0;
+            sortedProd.forEach(p => { sumA2+=p.a2_vol; sumA15+=p.a15_vol; sumA0+=p.a0_vol; });
+            if(charts.pie) charts.pie.destroy();
+            charts.pie = new Chart(document.getElementById('brixPieChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['A2', 'A1.5', 'A0'],
+                    datasets: [{ data: [sumA2, sumA15, sumA0], backgroundColor: ['#059669', '#34D399', '#9CA3AF'] }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // 4. NEW: Price Chart
+            const priceLabels = sortedPurch.map(p => p.date);
+            const priceData = sortedPurch.map(p => p.price);
+            
+            if(charts.price) charts.price.destroy();
+            charts.price = new Chart(document.getElementById('priceChart'), {
+                type: 'line',
+                data: {
+                    labels: priceLabels,
+                    datasets: [{
+                        label: 'ราคาซื้อต่อลูก (บาท)',
+                        data: priceData,
+                        borderColor: '#6366f1', // Indigo
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.1,
+                        fill: true,
+                        pointBackgroundColor: '#4f46e5'
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    scales: { 
+                        y: { beginAtZero: false, title: {display: true, text: 'บาท'} } 
+                    }
+                }
+            });
+        }
+
+        // --- CORE & CRUD ---
         document.getElementById('purchaseForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const entry = {
@@ -325,7 +542,7 @@
                 id: Date.now(),
                 date: document.getElementById('prod-date').value,
                 used: parseInt(document.getElementById('prod-used').value),
-                defect: parseInt(document.getElementById('prod-defect').value) || 0, // รับค่าลูกเสีย
+                defect: parseInt(document.getElementById('prod-defect').value) || 0,
                 a2_vol: parseFloat(document.getElementById('a2-vol').value) || 0,
                 a2_brix: parseFloat(document.getElementById('a2-brix').value) || 0,
                 a15_vol: parseFloat(document.getElementById('a15-vol').value) || 0,
@@ -344,7 +561,8 @@
             const item = purchases.find(p => p.id === id);
             if(item) {
                 item.status = item.status === 'paid' ? 'pending' : 'paid';
-                saveData(); renderTables(); calculateKPIs();
+                saveData(); renderTables(); 
+                // ไม่ต้องเรียก renderDashboard() เพราะ table แยกส่วนกัน
             }
         }
 
@@ -355,7 +573,10 @@
             saveData(); renderAll();
         }
 
-        function renderAll() { renderTables(); calculateKPIs(); renderCharts(); }
+        function renderAll() { 
+            renderTables(); 
+            renderDashboard(); // เรียก render dashboard ซึ่งจะเช็ค filter เอง
+        }
 
         function renderTables() {
             // Purchase Table
@@ -379,10 +600,7 @@
                 const goodVol = p.a2_vol + p.a15_vol; 
                 const totalVol = p.a2_vol + p.a15_vol + p.a0_vol; 
                 const defect = p.defect || 0;
-                
-                // Yield calculation based on Total Used (Standard practice to see efficiency per batch)
                 const goodYield = p.used > 0 ? goodVol / p.used : 0;
-                
                 const weightedBrix = totalVol > 0 ? 
                     ((p.a2_vol*p.a2_brix) + (p.a15_vol*p.a15_brix) + (p.a0_vol*p.a0_brix)) / totalVol : 0;
 
@@ -391,133 +609,13 @@
                     <td class="p-3">${p.date}</td>
                     <td class="p-3 text-right font-bold">${p.used}</td>
                     <td class="p-3 text-center text-red-500 font-bold">${defect > 0 ? defect : '-'}</td>
-                    
                     <td class="p-3 text-right font-bold text-green-700 bg-green-50">${goodVol.toLocaleString()}</td>
                     <td class="p-3 text-right font-bold text-green-700 bg-green-50">${goodYield.toFixed(0)}</td>
-                    
                     <td class="p-3 text-right text-blue-800 bg-blue-50">${totalVol.toLocaleString()}</td>
-                    
                     <td class="p-3 text-right"><span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">${weightedBrix.toFixed(1)}</span></td>
                     <td class="p-3 text-center"><button onclick="deleteItem('production', ${p.id})" class="text-red-500 hover:text-red-700">ลบ</button></td>
                 </tr>`;
             }).join('');
-        }
-
-        function calculateKPIs() {
-            // 1. Cost & Stock
-            let totalQty = 0, totalCost = 0;
-            purchases.forEach(p => {
-                totalQty += p.qty;
-                totalCost += (p.qty * p.price);
-            });
-            let usedQty = 0;
-            let totalDefect = 0;
-            let totalGoodWater = 0; // A2+A1.5
-            
-            productions.forEach(p => {
-                usedQty += p.used;
-                totalDefect += (p.defect || 0);
-                totalGoodWater += (p.a2_vol + p.a15_vol);
-            });
-            
-            let avgBuyPrice = totalQty > 0 ? totalCost / totalQty : 0;
-            
-            // Effective Cost Calculation
-            // ต้นทุนจริงต่อลูก = (ราคากลาง x จำนวนที่ใช้) / (จำนวนที่ใช้ - จำนวนเสีย)
-            // หรือคิดง่ายๆว่า จ่ายเงินซื้อมา 100 ลูก แต่ใช้ได้แค่ 95 ลูก เงินที่จ่ายไป 100 ลูก ต้องหารด้วย 95
-            let effectiveCostPerNut = 0;
-            if (usedQty > 0 && (usedQty - totalDefect) > 0) {
-                let costOfBatch = usedQty * avgBuyPrice;
-                effectiveCostPerNut = costOfBatch / (usedQty - totalDefect);
-            } else {
-                effectiveCostPerNut = avgBuyPrice;
-            }
-
-            document.getElementById('kpi-stock').innerText = (totalQty - usedQty).toLocaleString() + " ลูก";
-            document.getElementById('kpi-stock-val').innerText = `มูลค่า: ${((totalQty - usedQty) * avgBuyPrice).toLocaleString()} บาท`;
-            
-            document.getElementById('kpi-buy-cost').innerText = avgBuyPrice.toFixed(2);
-            document.getElementById('kpi-eff-cost').innerText = effectiveCostPerNut.toFixed(2) + " ฿"; // Show effective cost
-            
-            document.getElementById('kpi-defect-rate').innerText = (usedQty > 0 ? (totalDefect/usedQty)*100 : 0).toFixed(1) + "%";
-            document.getElementById('kpi-total-waste').innerText = totalDefect + " ลูก";
-
-            // 2. Cost Per Liter (Based on Effective Cost)
-            // ต้นทุนน้ำ 1 ลิตร = (ต้นทุนมะพร้าวที่ใช้ทั้งหมด รวมเสีย) / ปริมาณน้ำขายได้
-            const totalCostUsed = usedQty * avgBuyPrice;
-            const costPerLiter = totalGoodWater > 0 ? (totalCostUsed / (totalGoodWater/1000)) : 0;
-            document.getElementById('kpi-cost-liter').innerText = costPerLiter.toFixed(1) + " ฿/L";
-            
-            const avgGoodYield = usedQty > 0 ? totalGoodWater / usedQty : 0;
-            document.getElementById('kpi-yield').innerText = avgGoodYield.toFixed(0) + " ml";
-
-            // 3. Profit Calculation (New)
-            const sellingPrice = parseFloat(document.getElementById('selling-price').value) || 0;
-            const revenue = (totalGoodWater / 1000) * sellingPrice;
-            const profit = revenue - totalCostUsed;
-            const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
-
-            document.getElementById('calc-revenue').innerText = revenue.toLocaleString(undefined, {maximumFractionDigits:0}) + " ฿";
-            document.getElementById('calc-vol').innerText = `จากน้ำขาย ${(totalGoodWater/1000).toFixed(1)} ลิตร`;
-            document.getElementById('calc-cost').innerText = totalCostUsed.toLocaleString(undefined, {maximumFractionDigits:0}) + " ฿";
-            document.getElementById('calc-profit').innerText = profit.toLocaleString(undefined, {maximumFractionDigits:0}) + " ฿";
-            
-            // Color logic for profit
-            const profitEl = document.getElementById('calc-profit');
-            if(profit >= 0) { profitEl.classList.remove('text-red-600'); profitEl.classList.add('text-blue-600'); }
-            else { profitEl.classList.remove('text-blue-600'); profitEl.classList.add('text-red-600'); }
-            
-            document.getElementById('calc-margin').innerText = `Margin: ${margin.toFixed(1)}%`;
-        }
-
-        function renderCharts() {
-            const sorted = [...productions].sort((a,b) => new Date(a.date) - new Date(b.date));
-            const labels = sorted.map(p => p.date);
-            
-            // Yield Chart
-            const goodYieldData = sorted.map(p => p.used > 0 ? (p.a2_vol+p.a15_vol)/p.used : 0);
-            const totalYieldData = sorted.map(p => p.used > 0 ? (p.a2_vol+p.a15_vol+p.a0_vol)/p.used : 0);
-
-            if(charts.yield) charts.yield.destroy();
-            charts.yield = new Chart(document.getElementById('yieldChart'), {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: 'Yield ขาย (A2+A1.5)', data: goodYieldData, borderColor: '#059669', backgroundColor: 'rgba(5, 150, 105, 0.1)', fill: true },
-                        { label: 'Yield รวม (ทั้งหมด)', data: totalYieldData, borderColor: '#3B82F6', borderDash: [5, 5], fill: false }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-
-            // Bar Chart
-            if(charts.bar) charts.bar.destroy();
-            charts.bar = new Chart(document.getElementById('productionBarChart'), {
-                type: 'bar',
-                data: {
-                    labels: labels.slice(-7),
-                    datasets: [
-                        { label: 'A2', data: sorted.slice(-7).map(p=>p.a2_vol), backgroundColor: '#059669' },
-                        { label: 'A1.5', data: sorted.slice(-7).map(p=>p.a15_vol), backgroundColor: '#34D399' },
-                        { label: 'A0', data: sorted.slice(-7).map(p=>p.a0_vol), backgroundColor: '#9CA3AF' },
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } }
-            });
-
-            // Pie Chart
-            let sumA2=0, sumA15=0, sumA0=0;
-            sorted.forEach(p => { sumA2+=p.a2_vol; sumA15+=p.a15_vol; sumA0+=p.a0_vol; });
-            if(charts.pie) charts.pie.destroy();
-            charts.pie = new Chart(document.getElementById('brixPieChart'), {
-                type: 'doughnut',
-                data: {
-                    labels: ['A2', 'A1.5', 'A0'],
-                    datasets: [{ data: [sumA2, sumA15, sumA0], backgroundColor: ['#059669', '#34D399', '#9CA3AF'] }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
         }
 
         function generateMockData() {
@@ -525,14 +623,15 @@
             // Mock Purchase
             for(let i=30; i>0; i-=3) {
                 const d = new Date(today); d.setDate(d.getDate() - i);
-                purchases.push({ id: Math.random(), date: d.toISOString().split('T')[0], qty: Math.floor(Math.random()*100)+100, price: 7, status: Math.random()>0.3?'paid':'pending', note: 'Mock' });
+                let price = 6 + (Math.random()*2); // ราคาแกว่งๆ
+                purchases.push({ id: Math.random(), date: d.toISOString().split('T')[0], qty: Math.floor(Math.random()*100)+100, price: price, status: Math.random()>0.3?'paid':'pending', note: 'Mock' });
             }
             // Mock Prod
             for(let i=30; i>0; i--) {
                 if(Math.random()>0.3) {
                     const d = new Date(today); d.setDate(d.getDate() - i);
                     const used = Math.floor(Math.random()*50)+50;
-                    const defect = Math.random() > 0.7 ? Math.floor(Math.random() * 5) : 0; // สุ่มลูกเสีย
+                    const defect = Math.random() > 0.7 ? Math.floor(Math.random() * 5) : 0; 
                     const totalVol = (used - defect) * (250+Math.random()*100);
                     productions.push({
                         id: Math.random(), date: d.toISOString().split('T')[0], used: used, defect: defect,
