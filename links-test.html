@@ -353,7 +353,68 @@
             </div>
             <i class="fa-solid fa-comment-dots btn-arrow" style="color:#06C755"></i>
         </a>
+        <div class="faq-section">
+        <h3 style="text-align: center; color: #166534; font-size: 16px; margin-bottom: 15px;">คำถามพบบ่อย (Q&A)</h3>
+        
+        <details class="faq-item">
+            <summary>🥤 มะพร้าวปั่นเก็บได้กี่วัน?</summary>
+            <p>แนะนำให้ทานทันทีจะอร่อยที่สุดครับ แต่ถ้าแช่ตู้เย็นช่องธรรมดา เก็บได้ 1-2 วันครับ (ไม่ใส่วัตถุกันเสีย)</p>
+        </details>
 
+        <details class="faq-item">
+            <summary>🥛 ใช้นมสดหรือนมข้น?</summary>
+            <p>เราใช้นมสดแท้ 100% ครับ หอมมัน นัว ไม่เลี่ยนแน่นอนครับ</p>
+        </details>
+
+        <details class="faq-item">
+            <summary>🍭 เลือกความหวานได้ไหม?</summary>
+            <p>ได้ครับ! ลูกค้าสามารถระบุความหวาน (0% - 100%) ในโน้ตตอนสั่งได้เลยครับ</p>
+        </details>
+    </div>
+
+    <style>
+        .faq-section {
+            width: 100%;
+            max-width: 420px;
+            margin-top: 30px;
+            border-top: 1px dashed #ccc;
+            padding-top: 20px;
+        }
+        .faq-item {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .faq-item summary {
+            padding: 12px 15px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            list-style: none; /* ซ่อนสามเหลี่ยมเดิม */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .faq-item summary::after {
+            content: '+'; 
+            font-weight: bold;
+            color: #166534;
+        }
+        .faq-item[open] summary::after {
+            content: '-';
+        }
+        .faq-item p {
+            padding: 0 15px 12px 15px;
+            margin: 0;
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+            border-top: 1px solid #f0f0f0;
+            padding-top: 10px;
+        }
+    </style>
     </div>
 <div class="profile-area">
                 <div class="trust-badges">
