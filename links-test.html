@@ -170,6 +170,51 @@
             <span id="shop-status-dot" class="status-dot dot-green"></span> 
             <span id="shop-status-text">กำลังตรวจสอบเวลา...</span>
         </div>
+        <div class="trust-badges">
+        <div class="badge-item">
+            <i class="fa-solid fa-leaf" style="color: #4ade80;"></i>
+            <span>แท้ 100%</span>
+        </div>
+        <div class="badge-separator"></div>
+        <div class="badge-item">
+            <i class="fa-solid fa-bottle-water" style="color: #38bdf8;"></i>
+            <span>สดใหม่ทุกวัน</span>
+        </div>
+        <div class="badge-separator"></div>
+        <div class="badge-item">
+            <i class="fa-solid fa-heart-circle-check" style="color: #f472b6;"></i>
+            <span>หวานกำลังดี</span>
+        </div>
+    </div>
+
+    <style>
+        .trust-badges {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.6); /* พื้นหลังจางๆ */
+            border-radius: 12px;
+            padding: 8px 15px;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            gap: 10px;
+            backdrop-filter: blur(4px); /* เอฟเฟกต์เบลอพื้นหลังให้ดูแพง */
+            border: 1px solid rgba(255,255,255,0.8);
+        }
+        .badge-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            color: #555;
+            font-weight: 400;
+        }
+        .badge-separator {
+            width: 1px;
+            height: 12px;
+            background-color: #ccc;
+        }
+    </style>
     </div>
     
     <div class="links-container">
