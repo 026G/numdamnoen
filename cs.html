@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบบริหารจัดการธุรกิจน้ำมะพร้าว</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #f3f4f6; }
+        .nav-btn.active { background-color: #059669; color: white; } /* สีเขียว */
+        .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        input { border: 1px solid #d1d5db; border-radius: 6px; padding: 8px; width: 100%; }
+        input:focus { outline: none; border-color: #059669; ring: 2px; }
+        label { font-size: 0.9rem; font-weight: 600; color: #374151; margin-bottom: 4px; display: block; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <div class="w-64 bg-white shadow-lg z-10 flex flex-col">
+        <div class="p-6 border-b">
+            <h1 class="text-2xl font-bold text-green-700">🥥 CocoManager</h1>
+            <p class="text-xs text-gray-500">ระบบบริหารโรงงานน้ำมะพร้าว</p>
+        </div>
+        <nav class="flex-1 p-4 space-y-2">
+            <button onclick="switchTab('dashboard')" id="btn-dashboard" class="nav-btn w-full text-left p-3 rounded-lg hover:bg-green-50 transition active">
+                📊 แดชบอร์ดสรุปผล
+            </button>
+            <button onclick="switchTab('purchase')" id="btn-purchase" class="nav-btn w-full text-left p-3 rounded-lg hover:bg-green-50 transition">
+                🛒 บันทึกซื้อเข้า (Stock)
+            </button>
+            <button onclick="switchTab('production')" id="btn-production" class="nav-btn w-full text-left p-3 rounded-lg hover:bg-green-50 transition">
+                ⚙️ บันทึกการผลิต (QC)
+            </button>
+        </nav>
+        <div class="p-4 border-t text-center text-xs text-gray-400">
+            v1.0.0 (Simulated Data)
+        </div>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-8" id="main-content">
+        
+        <div id="tab-dashboard" class="space-y-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-gray-800">ภาพรวมธุรกิจ (Overview)</h2>
+                <button onclick="resetData()" class="text-sm text-red-500 hover:text-red-700 underline">รีเซ็ตข้อมูลตัวอย่าง</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="card border-l-4 border-blue-500">
+                    <p class="text-gray-500 text-sm">สต็อกคงเหลือ</p>
+                    <div class="text-3xl font-bold text-gray-800 mt-1" id="kpi-stock">0 ลูก</div>
+                    <p class="text-xs text-gray-400 mt-1" id="kpi-stock-val">มูลค่า: 0 บาท</p>
+                </div>
+                <div class="card border-l-4 border-green-500">
+                    <p class="text-gray-500 text-sm">ต้นทุนเนื้อน้ำเฉลี่ย</p>
+                    <div class="text-3xl font-bold text-gray-800 mt-1" id="kpi-cost-liter">0 ฿/L</div>
+                    <p class="text-xs text-gray-400 mt-1">จากต้นทุนลูกเฉลี่ย <span id="kpi-avg-cost">0</span> บ.</p>
+                </div>
+                <div class="card border-l-4 border-yellow-500">
+                    <p class="text-gray-500 text-sm">Yield เฉลี่ย/ลูก</p>
+                    <div class="text-3xl font-bold text-gray-800 mt-1" id="kpi-yield">0 ml</div>
+                    <p class="text-xs text-green-600 mt-1" id="kpi-yield-trend">--</p>
+                </div>
+                <div class="card border-l-4 border-purple-500">
+                    <p class="text-gray-500 text-sm">Brix เฉลี่ยรวม</p>
+                    <div class="text-3xl font-bold text-gray-800 mt-1" id="kpi-brix">0</div>
+                    <p class="text-xs text-gray-400 mt-1">Weighted Average</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="card col-span-2">
+                    <h3 class="font-bold text-gray-700 mb-4">📈 แนวโน้มปริมาณน้ำต่อลูก (Yield Analysis)</h3>
+                    <div class="h-64">
+                        <canvas id="yieldChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 class="font-bold text-gray-700 mb-4">💰 วิเคราะห์ความคุ้มค่า</h3>
+                    <div class="h-64 flex flex-col justify-center items-center">
+                        <div class="text-center mb-6">
+                            <p class="text-sm text-gray-500">เกรด A2 (Premium) Ratio</p>
+                            <p class="text-4xl font-bold text-green-600" id="kpi-a2-ratio">0%</p>
+                            <p class="text-xs text-gray-400">สัดส่วนน้ำเกรดดีที่สุดเทียบทั้งหมด</p>
+                        </div>
+                        <div class="text-center">
+                            <p class="text-sm text-gray-500">Recovery Rate</p>
+                            <p class="text-2xl font-bold text-blue-600" id="kpi-recovery">0%</p>
+                            <p class="text-xs text-gray-400">เปอร์เซ็นต์น้ำที่ใช้ได้จริง (ไม่ทิ้ง)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card">
+                    <h3 class="font-bold text-gray-700 mb-4">📊 ปริมาณการผลิตแยกเกรด (Daily Production)</h3>
+                    <div class="h-64">
+                        <canvas id="productionBarChart"></canvas>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 class="font-bold text-gray-700 mb-4">🎯 การกระจายตัวความหวาน (Brix Distribution)</h3>
+                    <div class="h-64">
+                        <canvas id="brixPieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-purchase" class="hidden space-y-6">
+            <h2 class="text-2xl font-bold text-gray-800">🛒 บันทึกการซื้อ (Stock In)</h2>
+            
+            <div class="card">
+                <form id="purchaseForm" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+                    <div>
+                        <label>วันที่</label>
+                        <input type="date" id="p-date" required>
+                    </div>
+                    <div>
+                        <label>จำนวน (ลูก)</label>
+                        <input type="number" id="p-qty" placeholder="0" required>
+                    </div>
+                    <div>
+                        <label>ราคาต่อลูก (บาท)</label>
+                        <input type="number" id="p-price" placeholder="0.0" step="0.1" required>
+                    </div>
+                    <div>
+                        <label>หมายเหตุ</label>
+                        <input type="text" id="p-note" placeholder="เช่น สวนลุงเอ">
+                    </div>
+                    <div>
+                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition">
+                            + เพิ่มรายการ
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="text-sm text-gray-500 border-b">
+                            <th class="p-3">วันที่</th>
+                            <th class="p-3">รายการ</th>
+                            <th class="p-3 text-right">จำนวน</th>
+                            <th class="p-3 text-right">ราคา/ลูก</th>
+                            <th class="p-3 text-right">รวมเงิน</th>
+                            <th class="p-3 text-center">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="purchaseTableBody" class="text-sm">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="tab-production" class="hidden space-y-6">
+            <h2 class="text-2xl font-bold text-gray-800">⚙️ บันทึกการผลิต (Processing)</h2>
+
+            <div class="card bg-blue-50 border border-blue-200">
+                <form id="productionForm">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                        <div>
+                            <label>วันที่ผลิต</label>
+                            <input type="date" id="prod-date" required>
+                        </div>
+                        <div>
+                            <label>จำนวนลูกที่ใช้ (ลูก)</label>
+                            <input type="number" id="prod-used" class="bg-white" placeholder="ตัดสต็อกกี่ลูก" required>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="bg-white p-4 rounded-lg shadow-sm border-t-4 border-green-500">
+                            <h4 class="font-bold text-green-700 mb-2">เกรด A2 (ดีเยี่ยม)</h4>
+                            <div class="space-y-2">
+                                <label>ปริมาณ (ml)</label>
+                                <input type="number" id="a2-vol" placeholder="0">
+                                <label>Brix (ความหวาน)</label>
+                                <input type="number" id="a2-brix" placeholder="0.0" step="0.1">
+                            </div>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow-sm border-t-4 border-green-300">
+                            <h4 class="font-bold text-green-600 mb-2">เกรด A1.5 (กลาง)</h4>
+                            <div class="space-y-2">
+                                <label>ปริมาณ (ml)</label>
+                                <input type="number" id="a15-vol" placeholder="0">
+                                <label>Brix (ความหวาน)</label>
+                                <input type="number" id="a15-brix" placeholder="0.0" step="0.1">
+                            </div>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow-sm border-t-4 border-yellow-400">
+                            <h4 class="font-bold text-yellow-600 mb-2">เกรด A0 (จืด/ปรุง)</h4>
+                            <div class="space-y-2">
+                                <label>ปริมาณ (ml)</label>
+                                <input type="number" id="a0-vol" placeholder="0">
+                                <label>Brix (ความหวาน)</label>
+                                <input type="number" id="a0-brix" placeholder="0.0" step="0.1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition shadow-md">
+                        💾 บันทึกผลการผลิต
+                    </button>
+                </form>
+            </div>
+
+            <div class="card overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="text-sm text-gray-500 border-b">
+                            <th class="p-3">วันที่</th>
+                            <th class="p-3 text-right">ใช้ไป (ลูก)</th>
+                            <th class="p-3 text-right">น้ำรวม (ml)</th>
+                            <th class="p-3 text-right">Yield (ml/ลูก)</th>
+                            <th class="p-3 text-right">Brix เฉลี่ย</th>
+                            <th class="p-3 text-center">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productionTableBody" class="text-sm">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- DATA STORE ---
+        let purchases = [];
+        let productions = [];
+        let charts = {};
+
+        // --- INIT ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // ตั้งค่าวันที่ปัจจุบันให้ฟอร์ม
+            document.getElementById('p-date').valueAsDate = new Date();
+            document.getElementById('prod-date').valueAsDate = new Date();
+
+            loadData();
+            
+            // ถ้าไม่มีข้อมูล ให้สร้าง Mock Data
+            if (purchases.length === 0 && productions.length === 0) {
+                generateMockData();
+            }
+
+            renderAll();
+        });
+
+        // --- NAVIGATION ---
+        function switchTab(tabId) {
+            // Hide all tabs
+            ['dashboard', 'purchase', 'production'].forEach(id => {
+                document.getElementById(`tab-${id}`).classList.add('hidden');
+                document.getElementById(`btn-${id}`).classList.remove('active');
+            });
+            // Show selected
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            document.getElementById(`btn-${tabId}`).classList.add('active');
+            
+            // Re-render chart if dashboard to fix sizing issues
+            if(tabId === 'dashboard') renderCharts();
+        }
+
+        // --- MOCK DATA GENERATOR ---
+        function generateMockData() {
+            const today = new Date();
+            // Mock Purchases (ย้อนหลัง 30 วัน)
+            for(let i=30; i>0; i-=3) {
+                const d = new Date(today);
+                d.setDate(d.getDate() - i);
+                purchases.push({
+                    id: Date.now() + Math.random(),
+                    date: d.toISOString().split('T')[0],
+                    qty: Math.floor(Math.random() * 100) + 100, // 100-200 ลูก
+                    price: [6, 7, 7.5, 8][Math.floor(Math.random()*4)], // ราคาซื้อ
+                    note: 'สวน Mockup'
+                });
+            }
+
+            // Mock Production (ย้อนหลัง 30 วัน)
+            for(let i=30; i>0; i--) {
+                if(Math.random() > 0.3) { // ไม่ได้ผลิตทุกวัน
+                    const d = new Date(today);
+                    d.setDate(d.getDate() - i);
+                    
+                    const used = Math.floor(Math.random() * 50) + 50; // ใช้ 50-100 ลูก
+                    const yieldPerNut = 250 + Math.random() * 100; // 250-350 ml/ลูก
+                    const totalVol = used * yieldPerNut;
+
+                    // สุ่มสัดส่วนเกรด
+                    const a2 = totalVol * 0.4;
+                    const a15 = totalVol * 0.4;
+                    const a0 = totalVol * 0.2;
+
+                    productions.push({
+                        id: Date.now() + Math.random(),
+                        date: d.toISOString().split('T')[0],
+                        used: used,
+                        a2_vol: Math.floor(a2),
+                        a2_brix: (7.5 + Math.random()).toFixed(1),
+                        a15_vol: Math.floor(a15),
+                        a15_brix: (7.0 + Math.random()).toFixed(1),
+                        a0_vol: Math.floor(a0),
+                        a0_brix: (6.5 + Math.random()).toFixed(1)
+                    });
+                }
+            }
+            saveData();
+            renderAll();
+            alert('สร้างข้อมูลจำลองเรียบร้อย!');
+        }
+
+        function resetData() {
+            if(confirm('ต้องการล้างข้อมูลทั้งหมดและเริ่มใหม่?')) {
+                purchases = [];
+                productions = [];
+                saveData();
+                renderAll();
+            }
+        }
+
+        // --- FORM HANDLERS ---
+        document.getElementById('purchaseForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const entry = {
+                id: Date.now(),
+                date: document.getElementById('p-date').value,
+                qty: parseInt(document.getElementById('p-qty').value),
+                price: parseFloat(document.getElementById('p-price').value),
+                note: document.getElementById('p-note').value
+            };
+            purchases.push(entry);
+            purchases.sort((a,b) => new Date(b.date) - new Date(a.date)); // เรียงใหม่สุดก่อน
+            saveData();
+            renderAll();
+            e.target.reset();
+            document.getElementById('p-date').valueAsDate = new Date();
+            alert('บันทึกการซื้อสำเร็จ');
+        });
+
+        document.getElementById('productionForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            // รับค่า
+            const a2v = parseFloat(document.getElementById('a2-vol').value) || 0;
+            const a15v = parseFloat(document.getElementById('a15-vol').value) || 0;
+            const a0v = parseFloat(document.getElementById('a0-vol').value) || 0;
+
+            const entry = {
+                id: Date.now(),
+                date: document.getElementById('prod-date').value,
+                used: parseInt(document.getElementById('prod-used').value),
+                a2_vol: a2v,
+                a2_brix: parseFloat(document.getElementById('a2-brix').value) || 0,
+                a15_vol: a15v,
+                a15_brix: parseFloat(document.getElementById('a15-brix').value) || 0,
+                a0_vol: a0v,
+                a0_brix: parseFloat(document.getElementById('a0-brix').value) || 0
+            };
+
+            productions.push(entry);
+            productions.sort((a,b) => new Date(b.date) - new Date(a.date));
+            saveData();
+            renderAll();
+            e.target.reset();
+            document.getElementById('prod-date').valueAsDate = new Date();
+            alert('บันทึกการผลิตสำเร็จ');
+        });
+
+        // --- RENDER LOGIC ---
+        function renderAll() {
+            renderTables();
+            calculateKPIs();
+            renderCharts();
+        }
+
+        function renderTables() {
+            // Purchase Table
+            const pBody = document.getElementById('purchaseTableBody');
+            pBody.innerHTML = purchases.map(p => `
+                <tr class="hover:bg-gray-50 border-b">
+                    <td class="p-3">${p.date}</td>
+                    <td class="p-3">${p.note}</td>
+                    <td class="p-3 text-right text-blue-600 font-bold">${p.qty}</td>
+                    <td class="p-3 text-right">${p.price.toFixed(2)}</td>
+                    <td class="p-3 text-right">${(p.qty * p.price).toLocaleString()}</td>
+                    <td class="p-3 text-center">
+                        <button onclick="deleteItem('purchase', ${p.id})" class="text-red-500 hover:text-red-700">ลบ</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            // Production Table
+            const prodBody = document.getElementById('productionTableBody');
+            prodBody.innerHTML = productions.map(p => {
+                const totalVol = p.a2_vol + p.a15_vol + p.a0_vol;
+                const weightedBrix = totalVol > 0 ? 
+                    ((p.a2_vol*p.a2_brix) + (p.a15_vol*p.a15_brix) + (p.a0_vol*p.a0_brix)) / totalVol : 0;
+                const yieldPerNut = p.used > 0 ? totalVol / p.used : 0;
+
+                return `
+                <tr class="hover:bg-gray-50 border-b">
+                    <td class="p-3">${p.date}</td>
+                    <td class="p-3 text-right font-bold">${p.used}</td>
+                    <td class="p-3 text-right text-green-600">${totalVol.toLocaleString()}</td>
+                    <td class="p-3 text-right">${yieldPerNut.toFixed(0)}</td>
+                    <td class="p-3 text-right"><span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">${weightedBrix.toFixed(1)}</span></td>
+                    <td class="p-3 text-center">
+                        <button onclick="deleteItem('production', ${p.id})" class="text-red-500 hover:text-red-700">ลบ</button>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+        }
+
+        function calculateKPIs() {
+            // 1. Stock & Cost
+            let totalQty = 0;
+            let totalCost = 0;
+            purchases.forEach(p => {
+                totalQty += p.qty;
+                totalCost += (p.qty * p.price);
+            });
+            let usedQty = productions.reduce((sum, p) => sum + p.used, 0);
+            let remainingStock = totalQty - usedQty;
+            let avgCostPerNut = totalQty > 0 ? totalCost / totalQty : 0;
+
+            document.getElementById('kpi-stock').innerText = remainingStock.toLocaleString() + " ลูก";
+            document.getElementById('kpi-stock-val').innerText = `มูลค่า: ${(remainingStock * avgCostPerNut).toLocaleString()} บาท`;
+            document.getElementById('kpi-avg-cost').innerText = avgCostPerNut.toFixed(2);
+
+            // 2. Production Metrics
+            let totalWater = 0;
+            let totalBrixMass = 0;
+            let totalA2 = 0;
+            
+            productions.forEach(p => {
+                const vol = p.a2_vol + p.a15_vol + p.a0_vol;
+                totalWater += vol;
+                totalBrixMass += (p.a2_vol*p.a2_brix) + (p.a15_vol*p.a15_brix) + (p.a0_vol*p.a0_brix);
+                totalA2 += p.a2_vol;
+            });
+
+            // Cost per Liter (Nut Cost Only)
+            // ต้นทุนมะพร้าวที่ใช้ไปทั้งหมด = จำนวนลูกที่ใช้ * ต้นทุนเฉลี่ย
+            const costOfUsedNuts = usedQty * avgCostPerNut;
+            const costPerLiter = totalWater > 0 ? (costOfUsedNuts / (totalWater/1000)) : 0; // Water is in ml
+
+            document.getElementById('kpi-cost-liter').innerText = costPerLiter.toFixed(1) + " ฿/L";
+
+            // Avg Yield
+            const avgYield = usedQty > 0 ? totalWater / usedQty : 0;
+            document.getElementById('kpi-yield').innerText = avgYield.toFixed(0) + " ml";
+
+            // Avg Brix
+            const avgBrix = totalWater > 0 ? totalBrixMass / totalWater : 0;
+            document.getElementById('kpi-brix').innerText = avgBrix.toFixed(2);
+
+            // Ratios
+            const a2Ratio = totalWater > 0 ? (totalA2 / totalWater) * 100 : 0;
+            document.getElementById('kpi-a2-ratio').innerText = a2Ratio.toFixed(1) + "%";
+            document.getElementById('kpi-recovery').innerText = "98%"; // Mockup value for demo
+        }
+
+        function renderCharts() {
+            // Prepare Data sorted by date ascending for charts
+            const sortedProd = [...productions].sort((a,b) => new Date(a.date) - new Date(b.date));
+            const labels = sortedProd.map(p => p.date);
+
+            // 1. Yield Trend Chart
+            const yieldData = sortedProd.map(p => p.used > 0 ? (p.a2_vol+p.a15_vol+p.a0_vol)/p.used : 0);
+            
+            if(charts.yield) charts.yield.destroy();
+            const ctxYield = document.getElementById('yieldChart').getContext('2d');
+            charts.yield = new Chart(ctxYield, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'ปริมาณน้ำต่อลูก (ml)',
+                        data: yieldData,
+                        borderColor: '#10B981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            // 2. Production Stacked Bar
+            if(charts.bar) charts.bar.destroy();
+            const ctxBar = document.getElementById('productionBarChart').getContext('2d');
+            charts.bar = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: labels.slice(-7), // Show last 7 records
+                    datasets: [
+                        { label: 'A2', data: sortedProd.slice(-7).map(p=>p.a2_vol), backgroundColor: '#059669' },
+                        { label: 'A1.5', data: sortedProd.slice(-7).map(p=>p.a15_vol), backgroundColor: '#34D399' },
+                        { label: 'A0', data: sortedProd.slice(-7).map(p=>p.a0_vol), backgroundColor: '#FCD34D' },
+                    ]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    scales: { x: { stacked: true }, y: { stacked: true } }
+                }
+            });
+
+            // 3. Brix Pie Chart (Total Volume Breakdown)
+            let sumA2=0, sumA15=0, sumA0=0;
+            sortedProd.forEach(p => { sumA2+=p.a2_vol; sumA15+=p.a15_vol; sumA0+=p.a0_vol; });
+            
+            if(charts.pie) charts.pie.destroy();
+            const ctxPie = document.getElementById('brixPieChart').getContext('2d');
+            charts.pie = new Chart(ctxPie, {
+                type: 'doughnut',
+                data: {
+                    labels: ['A2 (หวานมาก)', 'A1.5 (หวานกลาง)', 'A0 (จืด)'],
+                    datasets: [{
+                        data: [sumA2, sumA15, sumA0],
+                        backgroundColor: ['#059669', '#34D399', '#FCD34D']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        // --- UTILS ---
+        function saveData() {
+            localStorage.setItem('coco_purchases', JSON.stringify(purchases));
+            localStorage.setItem('coco_productions', JSON.stringify(productions));
+        }
+
+        function loadData() {
+            const p = localStorage.getItem('coco_purchases');
+            const pr = localStorage.getItem('coco_productions');
+            if(p) purchases = JSON.parse(p);
+            if(pr) productions = JSON.parse(pr);
+        }
+
+        function deleteItem(type, id) {
+            if(!confirm('ยืนยันการลบ?')) return;
+            if(type === 'purchase') {
+                purchases = purchases.filter(p => p.id !== id);
+            } else {
+                productions = productions.filter(p => p.id !== id);
+            }
+            saveData();
+            renderAll();
+        }
+    </script>
+</body>
+</html>
