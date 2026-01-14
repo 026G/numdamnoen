@@ -275,5 +275,67 @@
         // รันฟังก์ชันทันทีเมื่อเปิดเว็บ
         checkShopStatus();
     </script>
+    <div class="share-btn" onclick="shareShop()">
+        <i class="fa-solid fa-arrow-up-from-bracket"></i>
+    </div>
+
+    <style>
+        .share-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+            color: #166534;
+            font-size: 18px;
+            z-index: 100;
+            transition: transform 0.2s;
+        }
+        .share-btn:hover {
+            transform: scale(1.1);
+            background-color: #f0fdf4;
+        }
+
+        /* 2. พื้นหลังใบไม้ลอย (ตกแต่ง) */
+        .bg-element {
+            position: fixed;
+            z-index: -1;
+            opacity: 0.4;
+            animation: float 6s ease-in-out infinite;
+            pointer-events: none; /* กดทะลุได้ ไม่บังปุ่ม */
+        }
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(5deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+    </style>
+
+    <i class="fa-solid fa-leaf bg-element" style="color:#bbf7d0; font-size: 80px; top: 10%; left: -20px; animation-delay: 0s;"></i>
+    <i class="fa-solid fa-leaf bg-element" style="color:#bbf7d0; font-size: 60px; bottom: 15%; right: -10px; animation-delay: 2s; transform: scaleX(-1);"></i>
+
+    <script>
+        function shareShop() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'หนุ่มดำเนิน มะพร้าวปั่น',
+                    text: 'สั่งมะพร้าวปั่นแท้ๆ อร่อยสดชื่น คลิกเลย!',
+                    url: window.location.href
+                })
+                .then(() => gtag('event', 'click_share', {'method': 'native_share'}))
+                .catch((error) => console.log('Error sharing', error));
+            } else {
+                // กรณีคอมพิวเตอร์ทั่วไปที่ไม่รองรับการแชร์แบบมือถือ
+                alert('คัดลอกลิงก์ร้านแล้ว: ' + window.location.href);
+            }
+        }
+    </script>
 </body>
 </html>
