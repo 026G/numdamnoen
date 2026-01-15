@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบริหารจัดการธุรกิจน้ำมะพร้าว (V3.2 - Status Fix)</title>
+    <title>ระบบบริหารจัดการธุรกิจน้ำมะพร้าว (V3.3 - Thai Date)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -67,7 +67,7 @@
             </nav>
             <div class="p-4 border-t">
                 <button onclick="doLogout()" class="w-full text-left text-sm text-red-500 hover:text-red-700 flex items-center gap-2 p-2 rounded hover:bg-red-50">🔒 ออกจากระบบ</button>
-                <div class="text-center text-xs text-gray-400 mt-2">v3.2.0 (Status Fix)</div>
+                <div class="text-center text-xs text-gray-400 mt-2">v3.3.0 (Thai Date)</div>
             </div>
         </div>
 
@@ -127,7 +127,7 @@
                         <div class="md:col-span-1"><label>วันที่</label><input type="date" id="p-date" required></div>
                         <div class="md:col-span-1"><label>จำนวน (ลูก)</label><input type="number" id="p-qty" placeholder="0" required></div>
                         <div class="md:col-span-1"><label>ราคา/ลูก</label><input type="number" id="p-price" placeholder="0.0" step="0.1" required></div>
-                        <div class="md:col-span-1"><label>สถานะ</label><select id="p-status" class="bg-gray-50"><option value="pending">⏳ รอจ่าย</option><option value="paid">✅ จ่ายแล้ว</option></select></div>
+                        <div class="md:col-span-1"><label>สถานะ</label><select id="p-status" class="bg-gray-50"><option value="paid">✅ จ่ายแล้ว</option><option value="pending">⏳ รอจ่าย</option></select></div>
                         <div class="md:col-span-1"><label>หมายเหตุ</label><input type="text" id="p-note" placeholder="เช่น สวนลุงเอ"></div>
                         <div class="md:col-span-1"><button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition">บันทึกขึ้น Cloud ☁️</button></div>
                     </form>
@@ -170,10 +170,10 @@
 
     <script>
         // --- ☁️ CONFIGURATION ---
-        // ⚠️ วางลิงก์ Google Script ที่ได้จากขั้นตอน Deploy ที่นี่ครับ ⚠️
+        // ⚠️ วางลิงก์ Google Script ที่นี่ ⚠️
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzruBmQXRYeHiLl3OzDK6jCUo-zwmF1UNpCoBqixRm35PGGsTDVP_IasUli2gntmY2A/exec"; 
         
-        const APP_HASH = "2a136d0d529a93b70feba60132bfed23bb652232d54209d02236ff781e113dc2"; 
+        const APP_HASH = "2a136d0d529a93b70feba60132bfed23bb652232d54209d02236ff781e113dc2";
 
         // --- GLOBAL DATA ---
         let purchases = [];
@@ -192,6 +192,22 @@
             setFilter('curr');
         });
 
+        // --- NEW: Thai Date Formatter ---
+        function formatDateThai(dateStr) {
+            if (!dateStr) return "-";
+            const date = new Date(dateStr);
+            if (isNaN(date.getTime())) return dateStr;
+
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear(); // ใช้ ค.ศ. ตามที่ขอ
+            
+            const daysThai = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
+            const dayName = daysThai[date.getDay()];
+
+            return `${day}-${month}-${year} ${dayName}`;
+        }
+
         // --- AUTH ---
         async function attemptLogin() {
             const input = document.getElementById('password-input').value;
@@ -209,7 +225,11 @@
         }
         function unlockSystem() {
             document.getElementById('login-overlay').style.opacity = '0';
-            setTimeout(() => { document.getElementById('login-overlay').style.display = 'none'; document.getElementById('app-wrapper').classList.remove('blur-content'); loadDataFromCloud(); }, 300);
+            setTimeout(() => { 
+                document.getElementById('login-overlay').style.display = 'none'; 
+                document.getElementById('app-wrapper').classList.remove('blur-content'); 
+                loadDataFromCloud(); 
+            }, 300);
         }
         function doLogout() { sessionStorage.removeItem('coco_auth_token'); location.reload(); }
 
@@ -239,30 +259,21 @@
                 body: JSON.stringify(data)
             })
             .then(() => {
-                // Because no-cors, we assume success
                 if (action !== 'update_status') {
                     alert("บันทึกข้อมูลเรียบร้อย!");
                     if(action==='save_purchase') document.getElementById('purchaseForm').reset();
                     if(action==='save_production') document.getElementById('productionForm').reset();
                 }
-                loadDataFromCloud(); // Reload data
+                loadDataFromCloud(); 
             })
             .catch(err => alert("Error: " + err))
             .finally(() => document.getElementById('loading-overlay').classList.add('hidden'));
         }
 
-        // --- NEW: TOGGLE STATUS ---
         function togglePaymentStatus(id, currentStatus) {
             const newStatus = currentStatus === 'paid' ? 'pending' : 'paid';
-            
-            // 1. Optimistic Update (แก้ที่หน้าจอทันที ไม่ต้องรอเน็ต)
-            const item = purchases.find(p => p.id == id); // Loose equality for string/num match
-            if (item) {
-                item.status = newStatus;
-                renderTables(); // รีโหลดตารางทันที
-            }
-
-            // 2. Send to Cloud (ส่งไปแก้ที่ Sheet)
+            const item = purchases.find(p => p.id == id);
+            if (item) { item.status = newStatus; renderTables(); }
             sendDataToCloud('update_status', { id: id, status: newStatus });
         }
 
@@ -325,7 +336,6 @@
         function renderAll() { renderTables(); renderDashboard(); }
 
         function renderTables() {
-            // Purchase Table (Updated with toggle button)
             const pBody = document.getElementById('purchaseTableBody');
             pBody.innerHTML = purchases.sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,50).map(p=> {
                 const statusClass = p.status === 'paid' ? 'bg-green-100 text-green-800 border-green-200 hover:bg-green-200' : 'bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-200';
@@ -333,7 +343,7 @@
                 
                 return `
                 <tr class="border-b hover:bg-gray-50">
-                    <td class="p-3">${p.date}</td>
+                    <td class="p-3 text-sm">${formatDateThai(p.date)}</td>
                     <td class="p-3">${p.note}</td>
                     <td class="p-3 text-right font-bold text-blue-600">${p.qty}</td>
                     <td class="p-3 text-right">${Number(p.price).toFixed(2)}</td>
@@ -346,13 +356,12 @@
                 </tr>`;
             }).join('');
             
-            // Production Table
             const prodBody = document.getElementById('productionTableBody');
             prodBody.innerHTML = productions.sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,50).map(p=> {
                 let good = Number(p.a2_vol)+Number(p.a15_vol);
                 let total = good + Number(p.a0_vol);
                 let brix = total>0 ? ((p.a2_vol*p.a2_brix)+(p.a15_vol*p.a15_brix)+(p.a0_vol*p.a0_brix))/total : 0;
-                return `<tr class="border-b hover:bg-gray-50"><td class="p-3">${p.date}</td><td class="p-3 text-right font-bold">${p.used}</td><td class="p-3 text-right text-red-500 font-bold">${p.defect}</td><td class="p-3 text-right text-green-600 font-bold">${good.toLocaleString()}</td><td class="p-3 text-right font-bold text-green-700 bg-green-50">${(p.used>0?good/p.used:0).toFixed(0)}</td><td class="p-3 text-right text-blue-800 bg-blue-50">${total.toLocaleString()}</td><td class="p-3 text-right">${brix.toFixed(1)}</td></tr>`;
+                return `<tr class="border-b hover:bg-gray-50"><td class="p-3 text-sm">${formatDateThai(p.date)}</td><td class="p-3 text-right font-bold">${p.used}</td><td class="p-3 text-right text-red-500 font-bold">${p.defect}</td><td class="p-3 text-right text-green-600 font-bold">${good.toLocaleString()}</td><td class="p-3 text-right font-bold text-green-700 bg-green-50">${(p.used>0?good/p.used:0).toFixed(0)}</td><td class="p-3 text-right text-blue-800 bg-blue-50">${total.toLocaleString()}</td><td class="p-3 text-right">${brix.toFixed(1)}</td></tr>`;
             }).join('');
         }
 
