@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบริหารจัดการธุรกิจน้ำมะพร้าว (V3.3 - Thai Date)</title>
+    <title>ระบบบริหารจัดการธุรกิจน้ำมะพร้าว (V3.4 - Brix A1.5 & %)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script> <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
     
     <style>
         body { font-family: 'Sarabun', sans-serif; background-color: #f3f4f6; }
@@ -44,12 +44,12 @@
         <div class="bg-white p-10 rounded-3xl shadow-2xl w-96 text-center transform scale-100 transition-transform duration-300">
             <div class="text-7xl mb-4">🥥☁️</div>
             <h1 class="text-2xl font-bold text-gray-800 mb-1">Coco Cloud</h1>
-            <p class="text-gray-400 text-xs mb-8 uppercase tracking-widest">Online System</p>
+            <p class="text-gray-400 text-xs mb-8 uppercase tracking-widest">Secured System</p>
             <div class="relative mb-2">
                 <input type="password" id="password-input" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-xl text-center tracking-widest focus:border-green-500 focus:ring-0 outline-none" placeholder="PIN">
             </div>
             <button onclick="attemptLogin()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 mt-4 rounded-xl shadow-lg transition active:scale-95 text-lg">UNLOCK</button>
-            <p id="login-error" class="text-red-500 text-sm mt-4 hidden font-bold bg-red-50 p-2 rounded">⛔ รหัสผิด</p>
+            <p id="login-error" class="text-red-500 text-sm mt-4 hidden font-bold bg-red-50 p-2 rounded border border-red-100">⛔ รหัสผิด</p>
         </div>
     </div>
 
@@ -67,19 +67,20 @@
             </nav>
             <div class="p-4 border-t">
                 <button onclick="doLogout()" class="w-full text-left text-sm text-red-500 hover:text-red-700 flex items-center gap-2 p-2 rounded hover:bg-red-50">🔒 ออกจากระบบ</button>
-                <div class="text-center text-xs text-gray-400 mt-2">v3.3.0 (Thai Date)</div>
+                <div class="text-center text-xs text-gray-400 mt-2">v3.4.0 (Brix Fix)</div>
             </div>
         </div>
 
         <div class="flex-1 overflow-y-auto p-8" id="main-content">
             
             <div id="tab-dashboard" class="space-y-6">
+                
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-2 gap-4">
                     <div><h2 class="text-2xl font-bold text-gray-800">ภาพรวมธุรกิจ</h2><p class="text-sm text-gray-500" id="filter-status-text">...</p></div>
                     <div class="flex items-center gap-2 bg-gray-100 p-1.5 rounded-lg flex-wrap">
                         <button onclick="setFilter('prev')" id="btn-filter-prev" class="filter-btn inactive">⏮️ เดือนก่อน</button>
                         <button onclick="setFilter('curr')" id="btn-filter-curr" class="filter-btn inactive">📅 เดือนนี้</button>
-                        <div class="flex items-center gap-1 bg-white border border-gray-300 rounded-md px-2 py-1"><span class="text-xs text-gray-400">เลือก:</span><input type="month" id="custom-month-picker" class="text-sm border-none p-0 focus:ring-0 w-32" onchange="setFilter('custom')"></div>
+                        <div class="flex items-center gap-1 bg-white border border-gray-300 rounded-md px-2 py-1"><span class="text-xs text-gray-400">เลือกเดือน:</span><input type="month" id="custom-month-picker" class="text-sm border-none p-0 focus:ring-0 w-32" onchange="setFilter('custom')"></div>
                         <button onclick="setFilter('all')" id="btn-filter-all" class="filter-btn inactive">♾️ ทั้งหมด</button>
                     </div>
                 </div>
@@ -160,7 +161,7 @@
                 </div>
                 <div class="card overflow-x-auto">
                     <table class="w-full text-left border-collapse">
-                        <thead><tr class="text-sm text-gray-500 border-b"><th class="p-3">วันที่</th><th class="p-3 text-right">ใช้</th><th class="p-3 text-center text-red-500">เสีย</th><th class="p-3 text-right th-group-good">น้ำขาย (ml)</th><th class="p-3 text-right th-group-good">Yield</th><th class="p-3 text-right th-group-total">น้ำรวม</th><th class="p-3 text-right">Brix</th></tr></thead>
+                        <thead><tr class="text-sm text-gray-500 border-b"><th class="p-3">วันที่</th><th class="p-3 text-right">ใช้</th><th class="p-3 text-center text-red-500">เสีย</th><th class="p-3 text-right th-group-good">น้ำขาย (ml)</th><th class="p-3 text-right th-group-good">Yield</th><th class="p-3 text-right th-group-total">น้ำรวม</th><th class="p-3 text-right">Brix (A1.5)</th></tr></thead>
                         <tbody id="productionTableBody" class="text-sm"></tbody>
                     </table>
                 </div>
@@ -170,7 +171,7 @@
 
     <script>
         // --- ☁️ CONFIGURATION ---
-        // ⚠️ วางลิงก์ Google Script ที่นี่ ⚠️
+        // ⚠️ วางลิงก์ Google Script ที่ได้จากขั้นตอน Deploy ที่นี่ ⚠️
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzruBmQXRYeHiLl3OzDK6jCUo-zwmF1UNpCoBqixRm35PGGsTDVP_IasUli2gntmY2A/exec"; 
         
         const APP_HASH = "2a136d0d529a93b70feba60132bfed23bb652232d54209d02236ff781e113dc2";
@@ -197,14 +198,11 @@
             if (!dateStr) return "-";
             const date = new Date(dateStr);
             if (isNaN(date.getTime())) return dateStr;
-
             const day = String(date.getDate()).padStart(2, '0');
             const month = String(date.getMonth() + 1).padStart(2, '0');
-            const year = date.getFullYear(); // ใช้ ค.ศ. ตามที่ขอ
-            
+            const year = date.getFullYear();
             const daysThai = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
             const dayName = daysThai[date.getDay()];
-
             return `${day}-${month}-${year} ${dayName}`;
         }
 
@@ -225,11 +223,7 @@
         }
         function unlockSystem() {
             document.getElementById('login-overlay').style.opacity = '0';
-            setTimeout(() => { 
-                document.getElementById('login-overlay').style.display = 'none'; 
-                document.getElementById('app-wrapper').classList.remove('blur-content'); 
-                loadDataFromCloud(); 
-            }, 300);
+            setTimeout(() => { document.getElementById('login-overlay').style.display = 'none'; document.getElementById('app-wrapper').classList.remove('blur-content'); loadDataFromCloud(); }, 300);
         }
         function doLogout() { sessionStorage.removeItem('coco_auth_token'); location.reload(); }
 
@@ -253,10 +247,7 @@
         function sendDataToCloud(action, data) {
             document.getElementById('loading-overlay').classList.remove('hidden');
             fetch(GOOGLE_SCRIPT_URL + "?action=" + action, {
-                method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data)
+                method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data)
             })
             .then(() => {
                 if (action !== 'update_status') {
@@ -318,17 +309,14 @@
             const now = new Date();
             const pad = (n) => String(n).padStart(2, '0');
             ['prev','curr','all'].forEach(b=>document.getElementById(`btn-filter-${b}`).className="filter-btn inactive");
-            
             if(t==='curr') { currentFilterMonth = `${now.getFullYear()}-${pad(now.getMonth()+1)}`; document.getElementById('btn-filter-curr').className="filter-btn active"; }
             else if(t==='prev') { 
                 let m = now.getMonth(), y = now.getFullYear();
                 if(m===0) { m=12; y--; }
-                currentFilterMonth = `${y}-${pad(m)}`; 
-                document.getElementById('btn-filter-prev').className="filter-btn active";
+                currentFilterMonth = `${y}-${pad(m)}`; document.getElementById('btn-filter-prev').className="filter-btn active";
             }
             else if(t==='custom') { currentFilterMonth = document.getElementById('custom-month-picker').value; }
             else { currentFilterMonth=null; document.getElementById('btn-filter-all').className="filter-btn active"; }
-            
             document.getElementById('filter-status-text').innerText = currentFilterMonth ? `เดือน: ${currentFilterMonth}` : "ทั้งหมด";
             renderDashboard();
         }
@@ -340,28 +328,15 @@
             pBody.innerHTML = purchases.sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,50).map(p=> {
                 const statusClass = p.status === 'paid' ? 'bg-green-100 text-green-800 border-green-200 hover:bg-green-200' : 'bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-200';
                 const statusText = p.status === 'paid' ? '✅ จ่ายแล้ว' : '⏳ รอจ่าย';
-                
-                return `
-                <tr class="border-b hover:bg-gray-50">
-                    <td class="p-3 text-sm">${formatDateThai(p.date)}</td>
-                    <td class="p-3">${p.note}</td>
-                    <td class="p-3 text-right font-bold text-blue-600">${p.qty}</td>
-                    <td class="p-3 text-right">${Number(p.price).toFixed(2)}</td>
-                    <td class="p-3 text-right font-bold">${(p.qty*p.price).toLocaleString()}</td>
-                    <td class="p-3 text-center">
-                        <button onclick="togglePaymentStatus('${p.id}', '${p.status}')" class="status-badge px-3 py-1 rounded-full text-xs border ${statusClass}">
-                            ${statusText}
-                        </button>
-                    </td>
-                </tr>`;
+                return `<tr class="border-b hover:bg-gray-50"><td class="p-3 text-sm">${formatDateThai(p.date)}</td><td class="p-3">${p.note}</td><td class="p-3 text-right font-bold text-blue-600">${p.qty}</td><td class="p-3 text-right">${Number(p.price).toFixed(2)}</td><td class="p-3 text-right font-bold">${(p.qty*p.price).toLocaleString()}</td><td class="p-3 text-center"><button onclick="togglePaymentStatus('${p.id}', '${p.status}')" class="status-badge px-3 py-1 rounded-full text-xs border ${statusClass}">${statusText}</button></td></tr>`;
             }).join('');
             
             const prodBody = document.getElementById('productionTableBody');
             prodBody.innerHTML = productions.sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,50).map(p=> {
                 let good = Number(p.a2_vol)+Number(p.a15_vol);
                 let total = good + Number(p.a0_vol);
-                let brix = total>0 ? ((p.a2_vol*p.a2_brix)+(p.a15_vol*p.a15_brix)+(p.a0_vol*p.a0_brix))/total : 0;
-                return `<tr class="border-b hover:bg-gray-50"><td class="p-3 text-sm">${formatDateThai(p.date)}</td><td class="p-3 text-right font-bold">${p.used}</td><td class="p-3 text-right text-red-500 font-bold">${p.defect}</td><td class="p-3 text-right text-green-600 font-bold">${good.toLocaleString()}</td><td class="p-3 text-right font-bold text-green-700 bg-green-50">${(p.used>0?good/p.used:0).toFixed(0)}</td><td class="p-3 text-right text-blue-800 bg-blue-50">${total.toLocaleString()}</td><td class="p-3 text-right">${brix.toFixed(1)}</td></tr>`;
+                let brix = p.a15_brix ? Number(p.a15_brix).toFixed(1) : '-'; // Show only A1.5 Brix
+                return `<tr class="border-b hover:bg-gray-50"><td class="p-3 text-sm">${formatDateThai(p.date)}</td><td class="p-3 text-right font-bold">${p.used}</td><td class="p-3 text-right text-red-500 font-bold">${p.defect}</td><td class="p-3 text-right text-green-600 font-bold">${good.toLocaleString()}</td><td class="p-3 text-right font-bold text-green-700 bg-green-50">${(p.used>0?good/p.used:0).toFixed(0)}</td><td class="p-3 text-right text-blue-800 bg-blue-50">${total.toLocaleString()}</td><td class="p-3 text-right font-bold text-indigo-600">${brix}</td></tr>`;
             }).join('');
         }
 
@@ -406,7 +381,6 @@
         function renderCharts(prod, purch) {
             const sortedP = [...prod].sort((a,b)=>new Date(a.date)-new Date(b.date));
             const sortedPurch = [...purch].sort((a,b)=>new Date(a.date)-new Date(b.date));
-            
             const days = {};
             sortedP.forEach(p => {
                 if(!days[p.date]) days[p.date] = {u:0, g:0, t:0, a2:0, a15:0, a0:0};
@@ -448,10 +422,59 @@
 
             let sA2=0, sA15=0, sA0=0;
             prod.forEach(p=>{ sA2+=Number(p.a2_vol); sA15+=Number(p.a15_vol); sA0+=Number(p.a0_vol); });
+            let total = sA2+sA15+sA0;
+            
             if(charts.pie) charts.pie.destroy();
             charts.pie = new Chart(document.getElementById('brixPieChart'), {
-                type: 'doughnut', data: { labels: ['A2','A1.5','A0'], datasets: [{ data: [sA2, sA15, sA0], backgroundColor: ['#059669', '#34D399', '#9CA3AF'] }] },
-                options: { maintainAspectRatio: false }
+                type: 'doughnut', 
+                data: { 
+                    labels: ['A2', 'A1.5', 'A0'], 
+                    datasets: [{ 
+                        data: [sA2, sA15, sA0], 
+                        backgroundColor: ['#059669', '#34D399', '#9CA3AF'] 
+                    }] 
+                },
+                options: { 
+                    maintainAspectRatio: false,
+                    plugins: {
+                        datalabels: { // Show % on chart
+                            color: '#fff',
+                            formatter: (value, ctx) => {
+                                let sum = 0;
+                                let dataArr = ctx.chart.data.datasets[0].data;
+                                dataArr.map(data => { sum += data; });
+                                let percentage = (value*100 / sum).toFixed(1)+"%";
+                                return percentage;
+                            },
+                            font: { weight: 'bold', size: 12 }
+                        },
+                        legend: { // Show % in legend
+                            labels: {
+                                generateLabels: (chart) => {
+                                    const data = chart.data;
+                                    if (data.labels.length && data.datasets.length) {
+                                        return data.labels.map((label, i) => {
+                                            const meta = chart.getDatasetMeta(0);
+                                            const style = meta.controller.getStyle(i);
+                                            const value = data.datasets[0].data[i];
+                                            const percentage = total > 0 ? ((value / total) * 100).toFixed(1) + '%' : '0%';
+                                            return {
+                                                text: `${label} (${percentage})`,
+                                                fillStyle: style.backgroundColor,
+                                                strokeStyle: style.borderColor,
+                                                lineWidth: style.borderWidth,
+                                                hidden: isNaN(data.datasets[0].data[i]) || meta.data[i].hidden,
+                                                index: i
+                                            };
+                                        });
+                                    }
+                                    return [];
+                                }
+                            }
+                        }
+                    }
+                },
+                plugins: [ChartDataLabels]
             });
         }
     </script>
