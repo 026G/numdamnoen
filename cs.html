@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบริหารจัดการธุรกิจน้ำมะพร้าว (V3.1 - Full Cloud)</title>
+    <title>ระบบบริหารจัดการธุรกิจน้ำมะพร้าว (V3.2 - Status Fix)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -17,6 +17,8 @@
         label { font-size: 0.9rem; font-weight: 600; color: #374151; margin-bottom: 4px; display: block; }
         
         .status-badge { transition: all 0.2s; cursor: pointer; user-select: none; }
+        .status-badge:hover { transform: scale(1.05); opacity: 0.9; }
+        
         .th-group-good { background-color: #d1fae5; color: #065f46; } 
         .th-group-total { background-color: #e0f2fe; color: #075985; }
 
@@ -35,26 +37,19 @@
 
     <div id="loading-overlay" class="fixed inset-0 flex flex-col items-center justify-center hidden">
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-600"></div>
-        <p class="mt-4 text-green-800 font-bold animate-pulse">กำลังเชื่อมต่อฐานข้อมูล...</p>
+        <p class="mt-4 text-green-800 font-bold animate-pulse">กำลังทำงาน...</p>
     </div>
 
     <div id="login-overlay" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-all duration-500">
         <div class="bg-white p-10 rounded-3xl shadow-2xl w-96 text-center transform scale-100 transition-transform duration-300">
             <div class="text-7xl mb-4">🥥☁️</div>
-            <h1 class="text-2xl font-bold text-gray-800 mb-1">Coco Cloud System</h1>
-            <p class="text-gray-400 text-xs mb-8 uppercase tracking-widest">Secured Database</p>
-            
+            <h1 class="text-2xl font-bold text-gray-800 mb-1">Coco Cloud</h1>
+            <p class="text-gray-400 text-xs mb-8 uppercase tracking-widest">Online System</p>
             <div class="relative mb-2">
-                <input type="password" id="password-input" 
-                    class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-xl text-center tracking-widest focus:border-green-500 focus:ring-0 outline-none transition-colors" 
-                    placeholder="Enter PIN">
+                <input type="password" id="password-input" class="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-xl text-center tracking-widest focus:border-green-500 focus:ring-0 outline-none" placeholder="PIN">
             </div>
-            
-            <button onclick="attemptLogin()" 
-                    class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 mt-4 rounded-xl shadow-lg transition active:scale-95 text-lg">
-                UNLOCK
-            </button>
-            <p id="login-error" class="text-red-500 text-sm mt-4 hidden font-bold bg-red-50 p-2 rounded border border-red-100">⛔ รหัสผ่านไม่ถูกต้อง!</p>
+            <button onclick="attemptLogin()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 mt-4 rounded-xl shadow-lg transition active:scale-95 text-lg">UNLOCK</button>
+            <p id="login-error" class="text-red-500 text-sm mt-4 hidden font-bold bg-red-50 p-2 rounded">⛔ รหัสผิด</p>
         </div>
     </div>
 
@@ -66,140 +61,63 @@
                 <p class="text-xs text-gray-500">ระบบออนไลน์ (Cloud)</p>
             </div>
             <nav class="flex-1 p-4 space-y-2">
-                <button onclick="switchTab('dashboard')" id="btn-dashboard" class="nav-btn w-full text-left p-3 rounded-lg hover:bg-green-50 transition active">
-                    📊 แดชบอร์ด & กำไร
-                </button>
-                <button onclick="switchTab('purchase')" id="btn-purchase" class="nav-btn w-full text-left p-3 rounded-lg hover:bg-green-50 transition">
-                    🛒 บันทึกซื้อเข้า (Stock)
-                </button>
-                <button onclick="switchTab('production')" id="btn-production" class="nav-btn w-full text-left p-3 rounded-lg hover:bg-green-50 transition">
-                    ⚙️ บันทึกการผลิต (QC)
-                </button>
+                <button onclick="switchTab('dashboard')" id="btn-dashboard" class="nav-btn w-full text-left p-3 rounded-lg hover:bg-green-50 transition active">📊 แดชบอร์ด & กำไร</button>
+                <button onclick="switchTab('purchase')" id="btn-purchase" class="nav-btn w-full text-left p-3 rounded-lg hover:bg-green-50 transition">🛒 บันทึกซื้อเข้า (Stock)</button>
+                <button onclick="switchTab('production')" id="btn-production" class="nav-btn w-full text-left p-3 rounded-lg hover:bg-green-50 transition">⚙️ บันทึกการผลิต (QC)</button>
             </nav>
             <div class="p-4 border-t">
-                <button onclick="doLogout()" class="w-full text-left text-sm text-red-500 hover:text-red-700 flex items-center gap-2 p-2 rounded hover:bg-red-50">
-                    🔒 ออกจากระบบ
-                </button>
-                <div class="text-center text-xs text-gray-400 mt-2">v3.1.0 Full</div>
+                <button onclick="doLogout()" class="w-full text-left text-sm text-red-500 hover:text-red-700 flex items-center gap-2 p-2 rounded hover:bg-red-50">🔒 ออกจากระบบ</button>
+                <div class="text-center text-xs text-gray-400 mt-2">v3.2.0 (Status Fix)</div>
             </div>
         </div>
 
         <div class="flex-1 overflow-y-auto p-8" id="main-content">
             
             <div id="tab-dashboard" class="space-y-6">
-                
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-2 gap-4">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-800">ภาพรวมธุรกิจ</h2>
-                        <p class="text-sm text-gray-500" id="filter-status-text">กำลังแสดงข้อมูล: ...</p>
-                    </div>
-                    
+                    <div><h2 class="text-2xl font-bold text-gray-800">ภาพรวมธุรกิจ</h2><p class="text-sm text-gray-500" id="filter-status-text">...</p></div>
                     <div class="flex items-center gap-2 bg-gray-100 p-1.5 rounded-lg flex-wrap">
                         <button onclick="setFilter('prev')" id="btn-filter-prev" class="filter-btn inactive">⏮️ เดือนก่อน</button>
                         <button onclick="setFilter('curr')" id="btn-filter-curr" class="filter-btn inactive">📅 เดือนนี้</button>
-                        <div class="flex items-center gap-1 bg-white border border-gray-300 rounded-md px-2 py-1">
-                            <span class="text-xs text-gray-400">เลือกเดือน:</span>
-                            <input type="month" id="custom-month-picker" class="text-sm border-none p-0 focus:ring-0 w-32" onchange="setFilter('custom')">
-                        </div>
+                        <div class="flex items-center gap-1 bg-white border border-gray-300 rounded-md px-2 py-1"><span class="text-xs text-gray-400">เลือก:</span><input type="month" id="custom-month-picker" class="text-sm border-none p-0 focus:ring-0 w-32" onchange="setFilter('custom')"></div>
                         <button onclick="setFilter('all')" id="btn-filter-all" class="filter-btn inactive">♾️ ทั้งหมด</button>
                     </div>
                 </div>
                 
                 <div class="flex justify-end mb-4">
-                     <button onclick="loadDataFromCloud()" class="text-xs text-blue-500 hover:text-blue-700 underline flex items-center gap-1">
-                        🔄 กดปุ่มนี้เพื่อดึงข้อมูลล่าสุดจาก Google Sheet
-                     </button>
+                     <button onclick="loadDataFromCloud()" class="text-xs text-blue-500 hover:text-blue-700 underline flex items-center gap-1">🔄 รีเฟรชข้อมูลจาก Sheet</button>
                 </div>
 
                 <div class="card border-2 border-yellow-400 bg-yellow-50 mb-6">
                     <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                        <div class="flex-1">
-                            <h3 class="text-xl font-bold text-yellow-800">💰 ผลประกอบการ (Profit)</h3>
-                            <p class="text-sm text-yellow-600">คำนวณตามช่วงเวลาที่เลือก</p>
-                        </div>
-                        <div class="w-full md:w-auto bg-white p-3 rounded-lg shadow-sm border flex items-center gap-3">
-                            <label class="whitespace-nowrap mb-0 text-gray-600">ราคาขาย:</label>
-                            <input type="number" id="selling-price" value="100" class="w-24 font-bold text-right text-green-700" onchange="renderDashboard()">
-                            <span class="text-gray-500 font-bold">฿/ลิตร</span>
-                        </div>
+                        <div class="flex-1"><h3 class="text-xl font-bold text-yellow-800">💰 ผลประกอบการ (Profit)</h3><p class="text-sm text-yellow-600">คำนวณตามช่วงเวลาที่เลือก</p></div>
+                        <div class="w-full md:w-auto bg-white p-3 rounded-lg shadow-sm border flex items-center gap-3"><label class="whitespace-nowrap mb-0 text-gray-600">ราคาขาย:</label><input type="number" id="selling-price" value="100" class="w-24 font-bold text-right text-green-700" onchange="renderDashboard()"><span class="text-gray-500 font-bold">฿/ลิตร</span></div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4 text-center divide-y md:divide-y-0 md:divide-x divide-yellow-200">
-                        <div>
-                            <p class="text-sm text-gray-500">ยอดขายรวม</p>
-                            <p class="text-2xl font-bold text-green-600" id="calc-revenue">0 ฿</p>
-                            <p class="text-xs text-gray-400" id="calc-vol">จากน้ำขาย 0 ลิตร</p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500">ต้นทุนวัตถุดิบ</p>
-                            <p class="text-2xl font-bold text-red-500" id="calc-cost">0 ฿</p>
-                            <p class="text-xs text-gray-400" id="calc-used-cost">รวมลูกเสียแล้ว</p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500">กำไรขั้นต้น</p>
-                            <p class="text-3xl font-bold text-blue-600" id="calc-profit">0 ฿</p>
-                            <p class="text-xs font-bold text-blue-400" id="calc-margin">Margin: 0%</p>
-                        </div>
+                        <div><p class="text-sm text-gray-500">ยอดขายรวม</p><p class="text-2xl font-bold text-green-600" id="calc-revenue">0 ฿</p><p class="text-xs text-gray-400" id="calc-vol">จากน้ำขาย 0 ลิตร</p></div>
+                        <div><p class="text-sm text-gray-500">ต้นทุนวัตถุดิบ</p><p class="text-2xl font-bold text-red-500" id="calc-cost">0 ฿</p><p class="text-xs text-gray-400" id="calc-used-cost">รวมลูกเสียแล้ว</p></div>
+                        <div><p class="text-sm text-gray-500">กำไรขั้นต้น</p><p class="text-3xl font-bold text-blue-600" id="calc-profit">0 ฿</p><p class="text-xs font-bold text-blue-400" id="calc-margin">Margin: 0%</p></div>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div class="card border-l-4 border-blue-500">
-                        <p class="text-gray-500 text-sm">สต็อกคงเหลือ (ปัจจุบัน)</p>
-                        <div class="text-3xl font-bold text-gray-800 mt-1" id="kpi-stock">0 ลูก</div>
-                        <p class="text-xs text-gray-400 mt-1" id="kpi-stock-val">มูลค่า: 0 บาท</p>
-                    </div>
-                    <div class="card border-l-4 border-red-500 bg-red-50">
-                        <p class="text-red-800 text-sm font-bold">ต้นทุนจริง/ลูก</p>
-                        <div class="text-3xl font-bold text-red-600 mt-1" id="kpi-eff-cost">0 ฿</div>
-                        <p class="text-xs text-red-400 mt-1">ราคาซื้อ <span id="kpi-buy-cost">0</span></p>
-                    </div>
-                    <div class="card border-l-4 border-green-500">
-                        <p class="text-gray-500 text-sm">ต้นทุนเนื้อน้ำ (Good)</p>
-                        <div class="text-3xl font-bold text-gray-800 mt-1" id="kpi-cost-liter">0 ฿/L</div>
-                        <p class="text-xs text-gray-400 mt-1">บาท/ลิตร</p>
-                    </div>
-                    <div class="card border-l-4 border-yellow-500">
-                        <p class="text-gray-500 text-sm">Yield น้ำขาย/ลูก</p>
-                        <div class="text-3xl font-bold text-gray-800 mt-1" id="kpi-yield">0 ml</div>
-                        <p class="text-xs text-green-600 mt-1">เฉลี่ยต่อลูก</p>
-                    </div>
+                    <div class="card border-l-4 border-blue-500"><p class="text-gray-500 text-sm">สต็อกคงเหลือ (ปัจจุบัน)</p><div class="text-3xl font-bold text-gray-800 mt-1" id="kpi-stock">0 ลูก</div><p class="text-xs text-gray-400 mt-1" id="kpi-stock-val">มูลค่า: 0 บาท</p></div>
+                    <div class="card border-l-4 border-red-500 bg-red-50"><p class="text-red-800 text-sm font-bold">ต้นทุนจริง/ลูก</p><div class="text-3xl font-bold text-red-600 mt-1" id="kpi-eff-cost">0 ฿</div><p class="text-xs text-red-400 mt-1">ราคาซื้อ <span id="kpi-buy-cost">0</span></p></div>
+                    <div class="card border-l-4 border-green-500"><p class="text-gray-500 text-sm">ต้นทุนเนื้อน้ำ (Good)</p><div class="text-3xl font-bold text-gray-800 mt-1" id="kpi-cost-liter">0 ฿/L</div><p class="text-xs text-gray-400 mt-1">บาท/ลิตร</p></div>
+                    <div class="card border-l-4 border-yellow-500"><p class="text-gray-500 text-sm">Yield น้ำขาย/ลูก</p><div class="text-3xl font-bold text-gray-800 mt-1" id="kpi-yield">0 ml</div><p class="text-xs text-green-600 mt-1">เฉลี่ยต่อลูก</p></div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="card col-span-2">
-                        <h3 class="font-bold text-indigo-800 mb-4">📉 แนวโน้มราคามะพร้าว (บาท/ลูก)</h3>
-                        <div class="h-64"><canvas id="priceChart"></canvas></div>
-                    </div>
-                    <div class="card">
-                        <h3 class="font-bold text-gray-700 mb-4">🗑️ วิเคราะห์ของเสีย (Defect)</h3>
-                        <div class="h-64 flex flex-col justify-center items-center">
-                            <div class="text-center mb-6">
-                                <p class="text-sm text-gray-500">อัตราสูญเสีย</p>
-                                <p class="text-4xl font-bold text-red-600" id="kpi-defect-rate">0%</p>
-                            </div>
-                            <div class="text-center">
-                                <p class="text-sm text-gray-500">ทิ้งไปแล้ว</p>
-                                <p class="text-2xl font-bold text-gray-700" id="kpi-total-waste">0 ลูก</p>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="card col-span-2"><h3 class="font-bold text-indigo-800 mb-4">📉 แนวโน้มราคามะพร้าว</h3><div class="h-64"><canvas id="priceChart"></canvas></div></div>
+                    <div class="card"><h3 class="font-bold text-gray-700 mb-4">🗑️ วิเคราะห์ของเสีย (Defect)</h3><div class="h-64 flex flex-col justify-center items-center text-center"><p class="text-sm text-gray-500">อัตราสูญเสีย</p><p class="text-4xl font-bold text-red-600" id="kpi-defect-rate">0%</p><p class="text-2xl font-bold text-gray-700 mt-2" id="kpi-total-waste">0 ลูก</p></div></div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="card col-span-2">
-                        <h3 class="font-bold text-gray-700 mb-4">📈 แนวโน้ม Yield (น้ำขาย vs น้ำรวม)</h3>
-                        <div class="h-64"><canvas id="yieldChart"></canvas></div>
-                    </div>
-                    <div class="card">
-                        <h3 class="font-bold text-gray-700 mb-4">🎯 สัดส่วนเกรดน้ำ</h3>
-                        <div class="h-64"><canvas id="brixPieChart"></canvas></div>
-                    </div>
+                    <div class="card col-span-2"><h3 class="font-bold text-gray-700 mb-4">📈 แนวโน้ม Yield</h3><div class="h-64"><canvas id="yieldChart"></canvas></div></div>
+                    <div class="card"><h3 class="font-bold text-gray-700 mb-4">🎯 สัดส่วนเกรดน้ำ</h3><div class="h-64"><canvas id="brixPieChart"></canvas></div></div>
                 </div>
                 
-                <div class="card">
-                    <h3 class="font-bold text-gray-700 mb-4">📊 ปริมาณการผลิตรายวัน (รวมทุกรอบ)</h3>
-                    <div class="h-64"><canvas id="productionBarChart"></canvas></div>
-                </div>
+                <div class="card"><h3 class="font-bold text-gray-700 mb-4">📊 ปริมาณการผลิตรายวัน</h3><div class="h-64"><canvas id="productionBarChart"></canvas></div></div>
             </div>
 
             <div id="tab-purchase" class="hidden space-y-6">
@@ -215,6 +133,7 @@
                     </form>
                 </div>
                 <div class="card overflow-x-auto">
+                    <p class="text-xs text-gray-500 mb-2">* คลิกที่ปุ่มสถานะเพื่อเปลี่ยนสถานะและอัปเดต Google Sheet</p>
                     <table class="w-full text-left border-collapse">
                         <thead><tr class="text-sm text-gray-500 border-b"><th class="p-3">วันที่</th><th class="p-3">รายการ</th><th class="p-3 text-right">จำนวน</th><th class="p-3 text-right">ราคา/ลูก</th><th class="p-3 text-right">รวมเงิน</th><th class="p-3 text-center">สถานะ</th></tr></thead>
                         <tbody id="purchaseTableBody" class="text-sm"></tbody>
@@ -232,18 +151,9 @@
                             <div><label class="text-red-600">⚠ เสีย/ทิ้ง</label><input type="number" id="prod-defect" class="bg-red-50 border-red-300 text-red-700" value="0"></div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                            <div class="bg-white p-4 rounded-lg shadow-sm border-t-4 border-green-500">
-                                <h4 class="font-bold text-green-700 mb-2">A2 (ดีเยี่ยม)</h4>
-                                <div class="space-y-2"><input type="number" id="a2-vol" placeholder="ml"><input type="number" id="a2-brix" placeholder="Brix" step="0.1"></div>
-                            </div>
-                            <div class="bg-white p-4 rounded-lg shadow-sm border-t-4 border-green-300">
-                                <h4 class="font-bold text-green-600 mb-2">A1.5 (กลาง)</h4>
-                                <div class="space-y-2"><input type="number" id="a15-vol" placeholder="ml"><input type="number" id="a15-brix" placeholder="Brix" step="0.1"></div>
-                            </div>
-                            <div class="bg-white p-4 rounded-lg shadow-sm border-t-4 border-yellow-400">
-                                <h4 class="font-bold text-yellow-600 mb-2">A0 (จืด/ปรุง)</h4>
-                                <div class="space-y-2"><input type="number" id="a0-vol" placeholder="ml"><input type="number" id="a0-brix" placeholder="Brix" step="0.1"></div>
-                            </div>
+                            <div class="bg-white p-4 rounded-lg shadow-sm border-t-4 border-green-500"><h4 class="font-bold text-green-700 mb-2">A2 (ดีเยี่ยม)</h4><div class="space-y-2"><input type="number" id="a2-vol" placeholder="ml"><input type="number" id="a2-brix" placeholder="Brix" step="0.1"></div></div>
+                            <div class="bg-white p-4 rounded-lg shadow-sm border-t-4 border-green-300"><h4 class="font-bold text-green-600 mb-2">A1.5 (กลาง)</h4><div class="space-y-2"><input type="number" id="a15-vol" placeholder="ml"><input type="number" id="a15-brix" placeholder="Brix" step="0.1"></div></div>
+                            <div class="bg-white p-4 rounded-lg shadow-sm border-t-4 border-yellow-400"><h4 class="font-bold text-yellow-600 mb-2">A0 (จืด/ปรุง)</h4><div class="space-y-2"><input type="number" id="a0-vol" placeholder="ml"><input type="number" id="a0-brix" placeholder="Brix" step="0.1"></div></div>
                         </div>
                         <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition shadow-md">บันทึกขึ้น Cloud ☁️</button>
                     </form>
@@ -260,11 +170,10 @@
 
     <script>
         // --- ☁️ CONFIGURATION ---
-        // ⚠️ เอาลิงก์ Google Script มาวางแทนข้อความนี้ (อย่าลืมเครื่องหมายฟันหนู "...") ⚠️
+        // ⚠️ วางลิงก์ Google Script ที่ได้จากขั้นตอน Deploy ที่นี่ครับ ⚠️
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzruBmQXRYeHiLl3OzDK6jCUo-zwmF1UNpCoBqixRm35PGGsTDVP_IasUli2gntmY2A/exec"; 
         
-        // รหัสผ่าน: 259438 (SHA-256 Hash)
-        const APP_HASH = "2a136d0d529a93b70feba60132bfed23bb652232d54209d02236ff781e113dc2"; 
+        const APP_HASH = "2a136d0d529a93b70feba60132bfed23bb652232d54209d02236ff781e113dc2"; // Pin: 259438
 
         // --- GLOBAL DATA ---
         let purchases = [];
@@ -273,18 +182,12 @@
         let currentFilterMonth = null; 
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Security Check
             if (sessionStorage.getItem('coco_auth_token') === APP_HASH) unlockSystem();
             else document.getElementById('password-input').focus();
 
             document.getElementById('password-input').addEventListener('keypress', (e) => { if(e.key==='Enter') attemptLogin(); });
-            
-            // Init
             document.getElementById('p-date').valueAsDate = new Date();
             document.getElementById('prod-date').valueAsDate = new Date();
-            
-            // Mock Data for offline testing (Optional: remove in production)
-            // if (purchases.length === 0) generateMockData(); // Uncomment to test without Sheet
             
             setFilter('curr');
         });
@@ -306,20 +209,13 @@
         }
         function unlockSystem() {
             document.getElementById('login-overlay').style.opacity = '0';
-            setTimeout(() => { 
-                document.getElementById('login-overlay').style.display = 'none'; 
-                document.getElementById('app-wrapper').classList.remove('blur-content'); 
-                loadDataFromCloud(); // Auto Load on Unlock
-            }, 300);
+            setTimeout(() => { document.getElementById('login-overlay').style.display = 'none'; document.getElementById('app-wrapper').classList.remove('blur-content'); loadDataFromCloud(); }, 300);
         }
         function doLogout() { sessionStorage.removeItem('coco_auth_token'); location.reload(); }
 
         // --- CLOUD SYNC ---
         function loadDataFromCloud() {
-            if(GOOGLE_SCRIPT_URL.includes("วางลิงก์")) { 
-                alert('กรุณาใส่ลิงก์ Google Script ในโค้ดบรรทัดที่ 425 ก่อนครับ'); 
-                return; 
-            }
+            if(GOOGLE_SCRIPT_URL.includes("วางลิงก์")) { alert('กรุณาใส่ลิงก์ Google Script ในโค้ดก่อนครับ'); return; }
             document.getElementById('loading-overlay').classList.remove('hidden');
             fetch(GOOGLE_SCRIPT_URL + "?action=load")
                 .then(response => response.json())
@@ -328,31 +224,46 @@
                         purchases = data.purchases;
                         productions = data.productions;
                         renderAll();
-                    } else { alert("เกิดข้อผิดพลาดจาก Sheet: " + data.message); }
+                    } else { alert("Error: " + data.message); }
                 })
-                .catch(err => console.error("Load Error:", err)) // Silent error
+                .catch(err => console.error("Load Error:", err))
                 .finally(() => document.getElementById('loading-overlay').classList.add('hidden'));
         }
 
         function sendDataToCloud(action, data) {
             document.getElementById('loading-overlay').classList.remove('hidden');
-            // Use 'no-cors' mode if standard CORS fails, or standard
             fetch(GOOGLE_SCRIPT_URL + "?action=" + action, {
                 method: "POST",
-                mode: "no-cors", // สำคัญ: Google Script บางทีต้องใช้ mode นี้
+                mode: "no-cors",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(data)
             })
             .then(() => {
-                // เพราะ no-cors เราจะไม่รู้ response จริง แต่สมมติว่าสำเร็จ
-                alert("ส่งข้อมูลเรียบร้อย!");
+                // Because no-cors, we assume success
+                if (action !== 'update_status') {
+                    alert("บันทึกข้อมูลเรียบร้อย!");
+                    if(action==='save_purchase') document.getElementById('purchaseForm').reset();
+                    if(action==='save_production') document.getElementById('productionForm').reset();
+                }
                 loadDataFromCloud(); // Reload data
-                // Clear forms
-                if(action==='save_purchase') document.getElementById('purchaseForm').reset();
-                if(action==='save_production') document.getElementById('productionForm').reset();
             })
             .catch(err => alert("Error: " + err))
             .finally(() => document.getElementById('loading-overlay').classList.add('hidden'));
+        }
+
+        // --- NEW: TOGGLE STATUS ---
+        function togglePaymentStatus(id, currentStatus) {
+            const newStatus = currentStatus === 'paid' ? 'pending' : 'paid';
+            
+            // 1. Optimistic Update (แก้ที่หน้าจอทันที ไม่ต้องรอเน็ต)
+            const item = purchases.find(p => p.id == id); // Loose equality for string/num match
+            if (item) {
+                item.status = newStatus;
+                renderTables(); // รีโหลดตารางทันที
+            }
+
+            // 2. Send to Cloud (ส่งไปแก้ที่ Sheet)
+            sendDataToCloud('update_status', { id: id, status: newStatus });
         }
 
         // --- FORMS ---
@@ -386,13 +297,12 @@
             sendDataToCloud('save_production', data);
         });
 
-        // --- APP LOGIC ---
+        // --- LOGIC & RENDER ---
         function switchTab(t) { 
             ['dashboard','purchase','production'].forEach(id=>document.getElementById(`tab-${id}`).classList.add('hidden'));
             document.getElementById(`tab-${t}`).classList.remove('hidden');
             if(t==='dashboard') renderDashboard();
         }
-
         function setFilter(t) {
             const now = new Date();
             const pad = (n) => String(n).padStart(2, '0');
@@ -415,17 +325,34 @@
         function renderAll() { renderTables(); renderDashboard(); }
 
         function renderTables() {
+            // Purchase Table (Updated with toggle button)
             const pBody = document.getElementById('purchaseTableBody');
-            pBody.innerHTML = purchases.sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,50).map(p=>
-                `<tr class="border-b hover:bg-gray-50"><td class="p-3">${p.date}</td><td class="p-3">${p.note}</td><td class="p-3 text-right font-bold text-blue-600">${p.qty}</td><td class="p-3 text-right">${Number(p.price).toFixed(2)}</td><td class="p-3 text-right font-bold">${(p.qty*p.price).toLocaleString()}</td><td class="p-3 text-center">${p.status}</td></tr>`
-            ).join('');
+            pBody.innerHTML = purchases.sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,50).map(p=> {
+                const statusClass = p.status === 'paid' ? 'bg-green-100 text-green-800 border-green-200 hover:bg-green-200' : 'bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-200';
+                const statusText = p.status === 'paid' ? '✅ จ่ายแล้ว' : '⏳ รอจ่าย';
+                
+                return `
+                <tr class="border-b hover:bg-gray-50">
+                    <td class="p-3">${p.date}</td>
+                    <td class="p-3">${p.note}</td>
+                    <td class="p-3 text-right font-bold text-blue-600">${p.qty}</td>
+                    <td class="p-3 text-right">${Number(p.price).toFixed(2)}</td>
+                    <td class="p-3 text-right font-bold">${(p.qty*p.price).toLocaleString()}</td>
+                    <td class="p-3 text-center">
+                        <button onclick="togglePaymentStatus('${p.id}', '${p.status}')" class="status-badge px-3 py-1 rounded-full text-xs border ${statusClass}">
+                            ${statusText}
+                        </button>
+                    </td>
+                </tr>`;
+            }).join('');
             
+            // Production Table
             const prodBody = document.getElementById('productionTableBody');
             prodBody.innerHTML = productions.sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,50).map(p=> {
                 let good = Number(p.a2_vol)+Number(p.a15_vol);
                 let total = good + Number(p.a0_vol);
                 let brix = total>0 ? ((p.a2_vol*p.a2_brix)+(p.a15_vol*p.a15_brix)+(p.a0_vol*p.a0_brix))/total : 0;
-                return `<tr class="border-b hover:bg-gray-50"><td class="p-3">${p.date}</td><td class="p-3 text-right font-bold">${p.used}</td><td class="p-3 text-right text-red-500 font-bold">${p.defect}</td><td class="p-3 text-right text-green-600 font-bold">${good.toLocaleString()}</td><td class="p-3 text-right font-bold text-green-700 bg-green-50">${(good/p.used).toFixed(0)}</td><td class="p-3 text-right text-blue-800 bg-blue-50">${total.toLocaleString()}</td><td class="p-3 text-right">${brix.toFixed(1)}</td></tr>`;
+                return `<tr class="border-b hover:bg-gray-50"><td class="p-3">${p.date}</td><td class="p-3 text-right font-bold">${p.used}</td><td class="p-3 text-right text-red-500 font-bold">${p.defect}</td><td class="p-3 text-right text-green-600 font-bold">${good.toLocaleString()}</td><td class="p-3 text-right font-bold text-green-700 bg-green-50">${(p.used>0?good/p.used:0).toFixed(0)}</td><td class="p-3 text-right text-blue-800 bg-blue-50">${total.toLocaleString()}</td><td class="p-3 text-right">${brix.toFixed(1)}</td></tr>`;
             }).join('');
         }
 
@@ -471,7 +398,6 @@
             const sortedP = [...prod].sort((a,b)=>new Date(a.date)-new Date(b.date));
             const sortedPurch = [...purch].sort((a,b)=>new Date(a.date)-new Date(b.date));
             
-            // Aggregate Days
             const days = {};
             sortedP.forEach(p => {
                 if(!days[p.date]) days[p.date] = {u:0, g:0, t:0, a2:0, a15:0, a0:0};
@@ -485,14 +411,12 @@
             const lbls = Object.keys(days).sort();
             const yData = lbls.map(d => days[d].u>0 ? days[d].g/days[d].u : 0);
             
-            // 1. Yield Chart
             if(charts.yield) charts.yield.destroy();
             charts.yield = new Chart(document.getElementById('yieldChart'), {
                 type: 'line', data: { labels: lbls, datasets: [{ label: 'Yield ขาย (ml/ลูก)', data: yData, borderColor: '#059669', backgroundColor: 'rgba(5, 150, 105, 0.1)', fill: true }] },
                 options: { maintainAspectRatio: false }
             });
 
-            // 2. Bar Chart
             if(charts.bar) charts.bar.destroy();
             charts.bar = new Chart(document.getElementById('productionBarChart'), {
                 type: 'bar', data: { 
@@ -502,18 +426,17 @@
                         { label: 'A1.5', data: lbls.map(d=>days[d].a15), backgroundColor: '#34D399' },
                         { label: 'A0', data: lbls.map(d=>days[d].a0), backgroundColor: '#9CA3AF' }
                     ]
-                },
-                options: { maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } }
+                }, options: { maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } } }
             });
 
-            // 3. Price Chart
+            const priceLabels = sortedPurch.map(p => p.date);
+            const priceData = sortedPurch.map(p => p.price);
             if(charts.price) charts.price.destroy();
             charts.price = new Chart(document.getElementById('priceChart'), {
-                type: 'line', data: { labels: sortedPurch.map(p=>p.date), datasets: [{ label: 'ราคาซื้อ', data: sortedPurch.map(p=>p.price), borderColor: '#6366f1', tension: 0.1 }] },
+                type: 'line', data: { labels: priceLabels, datasets: [{ label: 'ราคาซื้อ', data: priceData, borderColor: '#6366f1', tension: 0.1 }] },
                 options: { maintainAspectRatio: false }
             });
 
-            // 4. Pie Chart
             let sA2=0, sA15=0, sA0=0;
             prod.forEach(p=>{ sA2+=Number(p.a2_vol); sA15+=Number(p.a15_vol); sA0+=Number(p.a0_vol); });
             if(charts.pie) charts.pie.destroy();
@@ -522,9 +445,6 @@
                 options: { maintainAspectRatio: false }
             });
         }
-
-        // Mock data for initial testing if empty
-        function generateMockData() { /* ... (Optional logic) ... */ }
     </script>
 </body>
 </html>
