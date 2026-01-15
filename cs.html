@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบริหารจัดการธุรกิจน้ำมะพร้าว (V3.4 - Brix A1.5 & %)</title>
+    <title>ระบบบริหารจัดการธุรกิจน้ำมะพร้าว (V3.4 Full)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script> <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
     
     <style>
         body { font-family: 'Sarabun', sans-serif; background-color: #f3f4f6; }
@@ -37,7 +38,7 @@
 
     <div id="loading-overlay" class="fixed inset-0 flex flex-col items-center justify-center hidden">
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-600"></div>
-        <p class="mt-4 text-green-800 font-bold animate-pulse">กำลังทำงาน...</p>
+        <p class="mt-4 text-green-800 font-bold animate-pulse">กำลังติดต่อฐานข้อมูล...</p>
     </div>
 
     <div id="login-overlay" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-all duration-500">
@@ -67,7 +68,7 @@
             </nav>
             <div class="p-4 border-t">
                 <button onclick="doLogout()" class="w-full text-left text-sm text-red-500 hover:text-red-700 flex items-center gap-2 p-2 rounded hover:bg-red-50">🔒 ออกจากระบบ</button>
-                <div class="text-center text-xs text-gray-400 mt-2">v3.4.0 (Brix Fix)</div>
+                <div class="text-center text-xs text-gray-400 mt-2">v3.4.0 (Full)</div>
             </div>
         </div>
 
@@ -193,7 +194,12 @@
             setFilter('curr');
         });
 
-        // --- NEW: Thai Date Formatter ---
+        // --- UTILS ---
+        function parseNum(val) {
+            if (!val) return 0;
+            return parseFloat(String(val).replace(/,/g, '')) || 0;
+        }
+
         function formatDateThai(dateStr) {
             if (!dateStr) return "-";
             const date = new Date(dateStr);
@@ -223,7 +229,11 @@
         }
         function unlockSystem() {
             document.getElementById('login-overlay').style.opacity = '0';
-            setTimeout(() => { document.getElementById('login-overlay').style.display = 'none'; document.getElementById('app-wrapper').classList.remove('blur-content'); loadDataFromCloud(); }, 300);
+            setTimeout(() => { 
+                document.getElementById('login-overlay').style.display = 'none'; 
+                document.getElementById('app-wrapper').classList.remove('blur-content'); 
+                loadDataFromCloud(); 
+            }, 300);
         }
         function doLogout() { sessionStorage.removeItem('coco_auth_token'); location.reload(); }
 
@@ -247,7 +257,10 @@
         function sendDataToCloud(action, data) {
             document.getElementById('loading-overlay').classList.remove('hidden');
             fetch(GOOGLE_SCRIPT_URL + "?action=" + action, {
-                method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data)
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
             })
             .then(() => {
                 if (action !== 'update_status') {
@@ -333,8 +346,8 @@
             
             const prodBody = document.getElementById('productionTableBody');
             prodBody.innerHTML = productions.sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,50).map(p=> {
-                let good = Number(p.a2_vol)+Number(p.a15_vol);
-                let total = good + Number(p.a0_vol);
+                let good = parseNum(p.a2_vol)+parseNum(p.a15_vol);
+                let total = good + parseNum(p.a0_vol);
                 let brix = p.a15_brix ? Number(p.a15_brix).toFixed(1) : '-'; // Show only A1.5 Brix
                 return `<tr class="border-b hover:bg-gray-50"><td class="p-3 text-sm">${formatDateThai(p.date)}</td><td class="p-3 text-right font-bold">${p.used}</td><td class="p-3 text-right text-red-500 font-bold">${p.defect}</td><td class="p-3 text-right text-green-600 font-bold">${good.toLocaleString()}</td><td class="p-3 text-right font-bold text-green-700 bg-green-50">${(p.used>0?good/p.used:0).toFixed(0)}</td><td class="p-3 text-right text-blue-800 bg-blue-50">${total.toLocaleString()}</td><td class="p-3 text-right font-bold text-indigo-600">${brix}</td></tr>`;
             }).join('');
@@ -345,12 +358,17 @@
             let fPurch = currentFilterMonth ? purchases.filter(p=>p.date.startsWith(currentFilterMonth)) : purchases;
 
             let used=0, defect=0, goodVol=0, totalVol=0, buyQty=0, buyCost=0;
-            fProd.forEach(p=>{ used+=Number(p.used); defect+=Number(p.defect); goodVol+=(Number(p.a2_vol)+Number(p.a15_vol)); totalVol+=(Number(p.a2_vol)+Number(p.a15_vol)+Number(p.a0_vol)); });
-            fPurch.forEach(p=>{ buyQty+=Number(p.qty); buyCost+=(Number(p.qty)*Number(p.price)); });
+            fProd.forEach(p=>{ 
+                used+=parseNum(p.used); 
+                defect+=parseNum(p.defect); 
+                goodVol+=(parseNum(p.a2_vol)+parseNum(p.a15_vol)); 
+                totalVol+=(parseNum(p.a2_vol)+parseNum(p.a15_vol)+parseNum(p.a0_vol)); 
+            });
+            fPurch.forEach(p=>{ buyQty+=parseNum(p.qty); buyCost+=(parseNum(p.qty)*parseNum(p.price)); });
 
-            let allBuy=purchases.reduce((s,p)=>s+Number(p.qty),0);
-            let allUsed=productions.reduce((s,p)=>s+Number(p.used),0);
-            let allCost=purchases.reduce((s,p)=>s+(Number(p.qty)*Number(p.price)),0);
+            let allBuy=purchases.reduce((s,p)=>s+parseNum(p.qty),0);
+            let allUsed=productions.reduce((s,p)=>s+parseNum(p.used),0);
+            let allCost=purchases.reduce((s,p)=>s+(parseNum(p.qty)*parseNum(p.price)),0);
             
             document.getElementById('kpi-stock').innerText = (allBuy-allUsed).toLocaleString();
             document.getElementById('kpi-stock-val').innerText = "ทุนเฉลี่ย: " + (allBuy>0?allCost/allBuy:0).toFixed(2);
@@ -384,12 +402,12 @@
             const days = {};
             sortedP.forEach(p => {
                 if(!days[p.date]) days[p.date] = {u:0, g:0, t:0, a2:0, a15:0, a0:0};
-                days[p.date].u += Number(p.used);
-                days[p.date].g += (Number(p.a2_vol)+Number(p.a15_vol));
-                days[p.date].t += (Number(p.a2_vol)+Number(p.a15_vol)+Number(p.a0_vol));
-                days[p.date].a2 += Number(p.a2_vol);
-                days[p.date].a15 += Number(p.a15_vol);
-                days[p.date].a0 += Number(p.a0_vol);
+                days[p.date].u += parseNum(p.used);
+                days[p.date].g += (parseNum(p.a2_vol)+parseNum(p.a15_vol));
+                days[p.date].t += (parseNum(p.a2_vol)+parseNum(p.a15_vol)+parseNum(p.a0_vol));
+                days[p.date].a2 += parseNum(p.a2_vol);
+                days[p.date].a15 += parseNum(p.a15_vol);
+                days[p.date].a0 += parseNum(p.a0_vol);
             });
             const lbls = Object.keys(days).sort();
             const yData = lbls.map(d => days[d].u>0 ? days[d].g/days[d].u : 0);
@@ -421,7 +439,7 @@
             });
 
             let sA2=0, sA15=0, sA0=0;
-            prod.forEach(p=>{ sA2+=Number(p.a2_vol); sA15+=Number(p.a15_vol); sA0+=Number(p.a0_vol); });
+            prod.forEach(p=>{ sA2+=parseNum(p.a2_vol); sA15+=parseNum(p.a15_vol); sA0+=parseNum(p.a0_vol); });
             let total = sA2+sA15+sA0;
             
             if(charts.pie) charts.pie.destroy();
