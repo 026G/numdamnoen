@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบบริหารจัดการธุรกิจน้ำมะพร้าว (V3.5 - Final Fix)</title>
+    <title>ระบบบริหารจัดการธุรกิจน้ำมะพร้าว (V3.6 - Fix Zero)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
@@ -16,14 +16,18 @@
         input, select { border: 1px solid #d1d5db; border-radius: 6px; padding: 8px; width: 100%; background-color: #fff; transition: all 0.2s; }
         input:focus, select:focus { outline: none; border-color: #059669; ring: 2px; ring-color: #A7F3D0; }
         label { font-size: 0.9rem; font-weight: 600; color: #374151; margin-bottom: 4px; display: block; }
+        
         .status-badge { transition: all 0.2s; cursor: pointer; user-select: none; }
         .status-badge:hover { transform: scale(1.05); opacity: 0.9; }
+        
         .th-group-good { background-color: #d1fae5; color: #065f46; } 
         .th-group-total { background-color: #e0f2fe; color: #075985; }
+
         .filter-btn { padding: 6px 16px; font-size: 0.9rem; border-radius: 6px; transition: all 0.2s; border: 1px solid transparent; }
         .filter-btn.active { background-color: #2563eb; color: white; font-weight: bold; box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3); }
         .filter-btn.inactive { background-color: white; color: #4b5563; border-color: #e5e7eb; }
-        
+        .filter-btn.inactive:hover { background-color: #f9fafb; border-color: #d1d5db; }
+
         /* Security & Loading Styles */
         .blur-content { filter: blur(15px); pointer-events: none; user-select: none; overflow: hidden; height: 100vh; }
         #login-overlay { background-color: rgba(15, 23, 42, 0.98); backdrop-filter: blur(10px); }
@@ -34,7 +38,7 @@
 
     <div id="loading-overlay" class="fixed inset-0 flex flex-col items-center justify-center hidden">
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-600"></div>
-        <p class="mt-4 text-green-800 font-bold animate-pulse">กำลังซิงค์ข้อมูล...</p>
+        <p class="mt-4 text-green-800 font-bold animate-pulse">กำลังดึงข้อมูล...</p>
     </div>
 
     <div id="login-overlay" class="fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-all duration-500">
@@ -51,17 +55,25 @@
     </div>
 
     <div id="app-wrapper" class="flex h-screen w-full blur-content transition-all duration-1000">
+        
         <div class="w-64 bg-white shadow-lg z-10 flex flex-col">
-            <div class="p-6 border-b"><h1 class="text-2xl font-bold text-green-700">🥥 CocoManager</h1><p class="text-xs text-gray-500">ระบบออนไลน์ (Cloud)</p></div>
+            <div class="p-6 border-b">
+                <h1 class="text-2xl font-bold text-green-700">🥥 CocoManager</h1>
+                <p class="text-xs text-gray-500">ระบบออนไลน์ (Cloud)</p>
+            </div>
             <nav class="flex-1 p-4 space-y-2">
                 <button onclick="switchTab('dashboard')" id="btn-dashboard" class="nav-btn w-full text-left p-3 rounded-lg hover:bg-green-50 transition active">📊 แดชบอร์ด & กำไร</button>
                 <button onclick="switchTab('purchase')" id="btn-purchase" class="nav-btn w-full text-left p-3 rounded-lg hover:bg-green-50 transition">🛒 บันทึกซื้อเข้า (Stock)</button>
                 <button onclick="switchTab('production')" id="btn-production" class="nav-btn w-full text-left p-3 rounded-lg hover:bg-green-50 transition">⚙️ บันทึกการผลิต (QC)</button>
             </nav>
-            <div class="p-4 border-t"><button onclick="doLogout()" class="w-full text-left text-sm text-red-500 hover:text-red-700 flex items-center gap-2 p-2 rounded hover:bg-red-50">🔒 ออกจากระบบ</button><div class="text-center text-xs text-gray-400 mt-2">v3.5.0 (Final Fix)</div></div>
+            <div class="p-4 border-t">
+                <button onclick="doLogout()" class="w-full text-left text-sm text-red-500 hover:text-red-700 flex items-center gap-2 p-2 rounded hover:bg-red-50">🔒 ออกจากระบบ</button>
+                <div class="text-center text-xs text-gray-400 mt-2">v3.6.0 (Fix Zero)</div>
+            </div>
         </div>
 
         <div class="flex-1 overflow-y-auto p-8" id="main-content">
+            
             <div id="tab-dashboard" class="space-y-6">
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-2 gap-4">
                     <div><h2 class="text-2xl font-bold text-gray-800">ภาพรวมธุรกิจ</h2><p class="text-sm text-gray-500" id="filter-status-text">...</p></div>
@@ -73,16 +85,16 @@
                     </div>
                 </div>
                 
-                <div class="flex justify-end mb-4"><button onclick="loadDataFromCloud()" class="text-xs text-blue-500 hover:text-blue-700 underline flex items-center gap-1">🔄 รีเฟรชข้อมูล</button></div>
+                <div class="flex justify-end mb-4"><button onclick="loadDataFromCloud()" class="text-xs text-blue-500 hover:text-blue-700 underline flex items-center gap-1">🔄 รีเฟรชข้อมูลจาก Sheet</button></div>
 
                 <div class="card border-2 border-yellow-400 bg-yellow-50 mb-6">
                     <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                        <div class="flex-1"><h3 class="text-xl font-bold text-yellow-800">💰 ผลประกอบการ</h3><p class="text-sm text-yellow-600">วิเคราะห์ข้อมูลตามช่วงเวลาที่เลือก</p></div>
+                        <div class="flex-1"><h3 class="text-xl font-bold text-yellow-800">💰 ผลประกอบการ (Profit)</h3><p class="text-sm text-yellow-600">คำนวณตามช่วงเวลาที่เลือก</p></div>
                         <div class="w-full md:w-auto bg-white p-3 rounded-lg shadow-sm border flex items-center gap-3"><label class="whitespace-nowrap mb-0 text-gray-600">ราคาขาย:</label><input type="number" id="selling-price" value="100" class="w-24 font-bold text-right text-green-700" onchange="renderDashboard()"><span class="text-gray-500 font-bold">฿/ลิตร</span></div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4 text-center divide-y md:divide-y-0 md:divide-x divide-yellow-200">
                         <div><p class="text-sm text-gray-500">ยอดขายรวม</p><p class="text-2xl font-bold text-green-600" id="calc-revenue">0 ฿</p><p class="text-xs text-gray-400" id="calc-vol">จากน้ำขาย 0 ลิตร</p></div>
-                        <div><p class="text-sm text-gray-500">ต้นทุนวัตถุดิบ</p><p class="text-2xl font-bold text-red-500" id="calc-cost">0 ฿</p><p class="text-xs text-gray-400" id="calc-used-cost">รวมลูกเสีย</p></div>
+                        <div><p class="text-sm text-gray-500">ต้นทุนวัตถุดิบ</p><p class="text-2xl font-bold text-red-500" id="calc-cost">0 ฿</p><p class="text-xs text-gray-400" id="calc-used-cost">รวมลูกเสียแล้ว</p></div>
                         <div><p class="text-sm text-gray-500">กำไรขั้นต้น</p><p class="text-3xl font-bold text-blue-600" id="calc-profit">0 ฿</p><p class="text-xs font-bold text-blue-400" id="calc-margin">Margin: 0%</p></div>
                     </div>
                 </div>
@@ -96,17 +108,19 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="card col-span-2"><h3 class="font-bold text-indigo-800 mb-4">📉 แนวโน้มราคามะพร้าว</h3><div class="h-64"><canvas id="priceChart"></canvas></div></div>
-                    <div class="card"><h3 class="font-bold text-gray-700 mb-4">🗑️ วิเคราะห์ของเสีย</h3><div class="h-64 flex flex-col justify-center items-center text-center"><p class="text-sm text-gray-500">อัตราสูญเสีย</p><p class="text-4xl font-bold text-red-600" id="kpi-defect-rate">0%</p><p class="text-2xl font-bold text-gray-700 mt-2" id="kpi-total-waste">0 ลูก</p></div></div>
+                    <div class="card"><h3 class="font-bold text-gray-700 mb-4">🗑️ วิเคราะห์ของเสีย (Defect)</h3><div class="h-64 flex flex-col justify-center items-center text-center"><p class="text-sm text-gray-500">อัตราสูญเสีย</p><p class="text-4xl font-bold text-red-600" id="kpi-defect-rate">0%</p><p class="text-2xl font-bold text-gray-700 mt-2" id="kpi-total-waste">0 ลูก</p></div></div>
                 </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="card col-span-2"><h3 class="font-bold text-gray-700 mb-4">📈 แนวโน้ม Yield</h3><div class="h-64"><canvas id="yieldChart"></canvas></div></div>
                     <div class="card"><h3 class="font-bold text-gray-700 mb-4">🎯 สัดส่วนเกรดน้ำ</h3><div class="h-64"><canvas id="brixPieChart"></canvas></div></div>
                 </div>
+                
                 <div class="card"><h3 class="font-bold text-gray-700 mb-4">📊 ปริมาณการผลิตรายวัน</h3><div class="h-64"><canvas id="productionBarChart"></canvas></div></div>
             </div>
 
             <div id="tab-purchase" class="hidden space-y-6">
-                <h2 class="text-2xl font-bold text-gray-800">🛒 บันทึกการซื้อ</h2>
+                <h2 class="text-2xl font-bold text-gray-800">🛒 บันทึกการซื้อ (Stock In)</h2>
                 <div class="card">
                     <form id="purchaseForm" class="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
                         <div class="md:col-span-1"><label>วันที่</label><input type="date" id="p-date" required></div>
@@ -117,11 +131,17 @@
                         <div class="md:col-span-1"><button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition">บันทึกขึ้น Cloud ☁️</button></div>
                     </form>
                 </div>
-                <div class="card overflow-x-auto"><table class="w-full text-left border-collapse"><thead><tr class="text-sm text-gray-500 border-b"><th class="p-3">วันที่</th><th class="p-3">รายการ</th><th class="p-3 text-right">จำนวน</th><th class="p-3 text-right">ราคา/ลูก</th><th class="p-3 text-right">รวมเงิน</th><th class="p-3 text-center">สถานะ</th></tr></thead><tbody id="purchaseTableBody" class="text-sm"></tbody></table></div>
+                <div class="card overflow-x-auto">
+                    <p class="text-xs text-gray-500 mb-2">* คลิกที่ปุ่มสถานะเพื่อเปลี่ยนสถานะและอัปเดต Google Sheet</p>
+                    <table class="w-full text-left border-collapse">
+                        <thead><tr class="text-sm text-gray-500 border-b"><th class="p-3">วันที่</th><th class="p-3">รายการ</th><th class="p-3 text-right">จำนวน</th><th class="p-3 text-right">ราคา/ลูก</th><th class="p-3 text-right">รวมเงิน</th><th class="p-3 text-center">สถานะ</th></tr></thead>
+                        <tbody id="purchaseTableBody" class="text-sm"></tbody>
+                    </table>
+                </div>
             </div>
 
             <div id="tab-production" class="hidden space-y-6">
-                <h2 class="text-2xl font-bold text-gray-800">⚙️ บันทึกการผลิต</h2>
+                <h2 class="text-2xl font-bold text-gray-800">⚙️ บันทึกการผลิต (Processing)</h2>
                 <div class="card bg-blue-50 border border-blue-200">
                     <form id="productionForm">
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4 items-end">
@@ -137,16 +157,24 @@
                         <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition shadow-md">บันทึกขึ้น Cloud ☁️</button>
                     </form>
                 </div>
-                <div class="card overflow-x-auto"><table class="w-full text-left border-collapse"><thead><tr class="text-sm text-gray-500 border-b"><th class="p-3">วันที่</th><th class="p-3 text-right">ใช้</th><th class="p-3 text-center text-red-500">เสีย</th><th class="p-3 text-right th-group-good">น้ำขาย (ml)</th><th class="p-3 text-right th-group-good">Yield</th><th class="p-3 text-right th-group-total">น้ำรวม</th><th class="p-3 text-right">Brix (A1.5)</th></tr></thead><tbody id="productionTableBody" class="text-sm"></tbody></table></div>
+                <div class="card overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead><tr class="text-sm text-gray-500 border-b"><th class="p-3">วันที่</th><th class="p-3 text-right">ใช้</th><th class="p-3 text-center text-red-500">เสีย</th><th class="p-3 text-right th-group-good">น้ำขาย (ml)</th><th class="p-3 text-right th-group-good">Yield</th><th class="p-3 text-right th-group-total">น้ำรวม</th><th class="p-3 text-right">Brix (A1.5)</th></tr></thead>
+                        <tbody id="productionTableBody" class="text-sm"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // ⚠️ วางลิงก์ Google Script ที่นี่ ⚠️
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzruBmQXRYeHiLl3OzDK6jCUo-zwmF1UNpCoBqixRm35PGGsTDVP_IasUli2gntmY2A/exec"; 
-        const APP_HASH = "2a136d0d529a93b70feba60132bfed23bb652232d54209d02236ff781e113dc2"; 
+        // --- ☁️ CONFIGURATION ---
+        // ⚠️ วางลิงก์ Google Script ที่ได้จากขั้นตอน Deploy ที่นี่ ⚠️
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyvwvvlYsH1t_YSRDhOO-UyrMjokg6ZHeibN-tznX_J72RCaFTanPynvFwrFRN2NmeE/exec"; 
+        
+        const APP_HASH = "2a136d0d529a93b70feba60132bfed23bb652232d54209d02236ff781e113dc2";
 
+        // --- GLOBAL DATA ---
         let purchases = [];
         let productions = [];
         let charts = {};
@@ -155,42 +183,61 @@
         document.addEventListener('DOMContentLoaded', () => {
             if (sessionStorage.getItem('coco_auth_token') === APP_HASH) unlockSystem();
             else document.getElementById('password-input').focus();
+
             document.getElementById('password-input').addEventListener('keypress', (e) => { if(e.key==='Enter') attemptLogin(); });
             document.getElementById('p-date').valueAsDate = new Date();
             document.getElementById('prod-date').valueAsDate = new Date();
+            
             setFilter('curr');
         });
 
-        // Utils
-        function parseNum(val) { if (!val) return 0; return parseFloat(String(val).replace(/,/g, '')) || 0; }
+        // --- UTILS ---
+        function parseNum(val) {
+            if (!val) return 0;
+            // ลบ comma ออกก่อนแปลง
+            return parseFloat(String(val).replace(/,/g, '')) || 0;
+        }
+
         function formatDateThai(dateStr) {
             if (!dateStr) return "-";
             const date = new Date(dateStr);
-            if (isNaN(date.getTime())) return dateStr;
+            if (isNaN(date.getTime())) return dateStr; // ถ้าแปลงไม่ได้ให้คืนค่าเดิมไปก่อน
             const day = String(date.getDate()).padStart(2, '0');
             const month = String(date.getMonth() + 1).padStart(2, '0');
             const year = date.getFullYear();
             const daysThai = ['อาทิตย์', 'จันทร์', 'อังคาร', 'พุธ', 'พฤหัสบดี', 'ศุกร์', 'เสาร์'];
-            return `${day}-${month}-${year} ${daysThai[date.getDay()]}`;
+            const dayName = daysThai[date.getDay()];
+            return `${day}-${month}-${year} ${dayName}`;
         }
 
-        // Auth
+        // --- AUTH ---
         async function attemptLogin() {
             const input = document.getElementById('password-input').value;
             const hashedInput = await sha256(input);
             if (hashedInput === APP_HASH) { sessionStorage.setItem('coco_auth_token', APP_HASH); unlockSystem(); } 
-            else { document.getElementById('login-error').classList.remove('hidden'); setTimeout(()=>document.getElementById('login-error').classList.add('hidden'), 2000); document.getElementById('password-input').value = ''; }
+            else { 
+                document.getElementById('login-error').classList.remove('hidden'); 
+                setTimeout(()=>document.getElementById('login-error').classList.add('hidden'), 2000);
+                document.getElementById('password-input').value = '';
+            }
         }
-        async function sha256(msg) { const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg)); return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join(''); }
+        async function sha256(msg) {
+            const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(msg));
+            return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
         function unlockSystem() {
             document.getElementById('login-overlay').style.opacity = '0';
-            setTimeout(() => { document.getElementById('login-overlay').style.display = 'none'; document.getElementById('app-wrapper').classList.remove('blur-content'); loadDataFromCloud(); }, 300);
+            setTimeout(() => { 
+                document.getElementById('login-overlay').style.display = 'none'; 
+                document.getElementById('app-wrapper').classList.remove('blur-content'); 
+                loadDataFromCloud(); 
+            }, 300);
         }
         function doLogout() { sessionStorage.removeItem('coco_auth_token'); location.reload(); }
 
-        // Cloud
+        // --- CLOUD SYNC ---
         function loadDataFromCloud() {
-            if(GOOGLE_SCRIPT_URL.includes("วางลิงก์")) { alert('กรุณาใส่ลิงก์ Google Script ก่อนครับ'); return; }
+            if(GOOGLE_SCRIPT_URL.includes("วางลิงก์")) { alert('กรุณาใส่ลิงก์ Google Script ในโค้ดก่อนครับ'); return; }
             document.getElementById('loading-overlay').classList.remove('hidden');
             fetch(GOOGLE_SCRIPT_URL + "?action=load")
                 .then(response => response.json())
@@ -208,11 +255,14 @@
         function sendDataToCloud(action, data) {
             document.getElementById('loading-overlay').classList.remove('hidden');
             fetch(GOOGLE_SCRIPT_URL + "?action=" + action, {
-                method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data)
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
             })
             .then(() => {
                 if (action !== 'update_status') {
-                    alert("บันทึกสำเร็จ!");
+                    alert("บันทึกข้อมูลเรียบร้อย!");
                     if(action==='save_purchase') document.getElementById('purchaseForm').reset();
                     if(action==='save_production') document.getElementById('productionForm').reset();
                 }
@@ -229,22 +279,23 @@
             sendDataToCloud('update_status', { id: id, status: newStatus });
         }
 
-        // Forms
+        // --- FORMS ---
         document.getElementById('purchaseForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            sendDataToCloud('save_purchase', {
+            const data = {
                 id: Date.now().toString(),
                 date: document.getElementById('p-date').value,
                 qty: document.getElementById('p-qty').value,
                 price: document.getElementById('p-price').value,
                 status: document.getElementById('p-status').value,
                 note: document.getElementById('p-note').value
-            });
+            };
+            sendDataToCloud('save_purchase', data);
         });
 
         document.getElementById('productionForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            sendDataToCloud('save_production', {
+            const data = {
                 id: Date.now().toString(),
                 date: document.getElementById('prod-date').value,
                 used: document.getElementById('prod-used').value,
@@ -255,10 +306,11 @@
                 a15_brix: document.getElementById('a15-brix').value || 0,
                 a0_vol: document.getElementById('a0-vol').value || 0,
                 a0_brix: document.getElementById('a0-brix').value || 0
-            });
+            };
+            sendDataToCloud('save_production', data);
         });
 
-        // Logic
+        // --- LOGIC & RENDER ---
         function switchTab(t) { 
             ['dashboard','purchase','production'].forEach(id=>document.getElementById(`tab-${id}`).classList.add('hidden'));
             document.getElementById(`tab-${t}`).classList.remove('hidden');
@@ -268,14 +320,22 @@
             const now = new Date();
             const pad = (n) => String(n).padStart(2, '0');
             ['prev','curr','all'].forEach(b=>document.getElementById(`btn-filter-${b}`).className="filter-btn inactive");
-            if(t==='curr') { currentFilterMonth = `${now.getFullYear()}-${pad(now.getMonth()+1)}`; document.getElementById('btn-filter-curr').className="filter-btn active"; }
-            else if(t==='prev') { 
+            
+            if(t==='curr') { 
+                currentFilterMonth = `${now.getFullYear()}-${pad(now.getMonth()+1)}`; 
+                document.getElementById('btn-filter-curr').className="filter-btn active"; 
+            } else if(t==='prev') { 
                 let m = now.getMonth(), y = now.getFullYear();
                 if(m===0) { m=12; y--; }
-                currentFilterMonth = `${y}-${pad(m)}`; document.getElementById('btn-filter-prev').className="filter-btn active";
+                currentFilterMonth = `${y}-${pad(m)}`; 
+                document.getElementById('btn-filter-prev').className="filter-btn active";
+            } else if(t==='custom') { 
+                currentFilterMonth = document.getElementById('custom-month-picker').value; 
+            } else { 
+                currentFilterMonth=null; 
+                document.getElementById('btn-filter-all').className="filter-btn active"; 
             }
-            else if(t==='custom') { currentFilterMonth = document.getElementById('custom-month-picker').value; }
-            else { currentFilterMonth=null; document.getElementById('btn-filter-all').className="filter-btn active"; }
+            
             document.getElementById('filter-status-text').innerText = currentFilterMonth ? `เดือน: ${currentFilterMonth}` : "ทั้งหมด";
             renderDashboard();
         }
@@ -294,49 +354,56 @@
             prodBody.innerHTML = productions.sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,50).map(p=> {
                 let good = parseNum(p.a2_vol)+parseNum(p.a15_vol);
                 let total = good + parseNum(p.a0_vol);
-                let brix = p.a15_brix ? Number(p.a15_brix).toFixed(1) : '-';
+                let brix = p.a15_brix ? parseNum(p.a15_brix).toFixed(1) : '-';
                 return `<tr class="border-b hover:bg-gray-50"><td class="p-3 text-sm">${formatDateThai(p.date)}</td><td class="p-3 text-right font-bold">${p.used}</td><td class="p-3 text-right text-red-500 font-bold">${p.defect}</td><td class="p-3 text-right text-green-600 font-bold">${good.toLocaleString()}</td><td class="p-3 text-right font-bold text-green-700 bg-green-50">${(p.used>0?good/p.used:0).toFixed(0)}</td><td class="p-3 text-right text-blue-800 bg-blue-50">${total.toLocaleString()}</td><td class="p-3 text-right font-bold text-indigo-600">${brix}</td></tr>`;
             }).join('');
         }
 
         function renderDashboard() {
-            let fProd = currentFilterMonth ? productions.filter(p=>p.date.startsWith(currentFilterMonth)) : productions;
-            let fPurch = currentFilterMonth ? purchases.filter(p=>p.date.startsWith(currentFilterMonth)) : purchases;
+            // Filter Logic (Strict Date Matching)
+            let fProd = currentFilterMonth ? productions.filter(p => p.date.startsWith(currentFilterMonth)) : productions;
+            let fPurch = currentFilterMonth ? purchases.filter(p => p.date.startsWith(currentFilterMonth)) : purchases;
 
             let used=0, defect=0, goodVol=0, totalVol=0, buyQty=0, buyCost=0;
+            
             fProd.forEach(p=>{ 
-                used+=parseNum(p.used); 
-                defect+=parseNum(p.defect); 
-                goodVol+=(parseNum(p.a2_vol)+parseNum(p.a15_vol)); 
-                totalVol+=(parseNum(p.a2_vol)+parseNum(p.a15_vol)+parseNum(p.a0_vol)); 
+                used += parseNum(p.used); 
+                defect += parseNum(p.defect); 
+                goodVol += (parseNum(p.a2_vol) + parseNum(p.a15_vol)); 
+                totalVol += (parseNum(p.a2_vol) + parseNum(p.a15_vol) + parseNum(p.a0_vol)); 
             });
-            fPurch.forEach(p=>{ buyQty+=parseNum(p.qty); buyCost+=(parseNum(p.qty)*parseNum(p.price)); });
+            
+            fPurch.forEach(p=>{ 
+                buyQty += parseNum(p.qty); 
+                buyCost += (parseNum(p.qty) * parseNum(p.price)); 
+            });
 
-            let allBuy=purchases.reduce((s,p)=>s+parseNum(p.qty),0);
-            let allUsed=productions.reduce((s,p)=>s+parseNum(p.used),0);
-            let allCost=purchases.reduce((s,p)=>s+(parseNum(p.qty)*parseNum(p.price)),0);
+            let allBuy = purchases.reduce((s,p) => s + parseNum(p.qty), 0);
+            let allUsed = productions.reduce((s,p) => s + parseNum(p.used), 0);
+            let allCost = purchases.reduce((s,p) => s + (parseNum(p.qty) * parseNum(p.price)), 0);
             
-            document.getElementById('kpi-stock').innerText = (allBuy-allUsed).toLocaleString();
-            document.getElementById('kpi-stock-val').innerText = "ทุนเฉลี่ย: " + (allBuy>0?allCost/allBuy:0).toFixed(2);
+            document.getElementById('kpi-stock').innerText = (allBuy - allUsed).toLocaleString();
+            document.getElementById('kpi-stock-val').innerText = "ทุนเฉลี่ย: " + (allBuy>0 ? allCost/allBuy : 0).toFixed(2);
             
-            let avgPrice = buyQty>0 ? buyCost/buyQty : (allBuy>0?allCost/allBuy:0);
+            let avgPrice = buyQty>0 ? buyCost/buyQty : (allBuy>0 ? allCost/allBuy : 0);
             let effCost = (used-defect)>0 ? (used*avgPrice)/(used-defect) : avgPrice;
+            
             document.getElementById('kpi-buy-cost').innerText = avgPrice.toFixed(2);
             document.getElementById('kpi-eff-cost').innerText = effCost.toFixed(2);
-            document.getElementById('kpi-defect-rate').innerText = (used>0?(defect/used)*100:0).toFixed(1)+"%";
+            document.getElementById('kpi-defect-rate').innerText = (used>0 ? (defect/used)*100 : 0).toFixed(1) + "%";
             document.getElementById('kpi-total-waste').innerText = defect.toLocaleString();
             
             let costL = goodVol>0 ? (used*avgPrice)/(goodVol/1000) : 0;
             document.getElementById('kpi-cost-liter').innerText = costL.toFixed(1);
-            document.getElementById('kpi-yield').innerText = (used>0?goodVol/used:0).toFixed(0);
+            document.getElementById('kpi-yield').innerText = (used>0 ? goodVol/used : 0).toFixed(0);
 
             let sellPrice = document.getElementById('selling-price').value;
-            let rev = (goodVol/1000)*sellPrice;
-            let cogs = used*avgPrice;
+            let rev = (goodVol/1000) * sellPrice;
+            let cogs = used * avgPrice;
             document.getElementById('calc-revenue').innerText = rev.toLocaleString(undefined,{maximumFractionDigits:0}) + " ฿";
             document.getElementById('calc-cost').innerText = cogs.toLocaleString(undefined,{maximumFractionDigits:0}) + " ฿";
             document.getElementById('calc-profit').innerText = (rev-cogs).toLocaleString(undefined,{maximumFractionDigits:0}) + " ฿";
-            document.getElementById('calc-margin').innerText = "Margin: " + (rev>0?((rev-cogs)/rev)*100:0).toFixed(1) + "%";
+            document.getElementById('calc-margin').innerText = "Margin: " + (rev>0 ? ((rev-cogs)/rev)*100 : 0).toFixed(1) + "%";
 
             renderCharts(fProd, fPurch);
         }
@@ -345,11 +412,12 @@
             const sortedP = [...prod].sort((a,b)=>new Date(a.date)-new Date(b.date));
             const sortedPurch = [...purch].sort((a,b)=>new Date(a.date)-new Date(b.date));
             const days = {};
+            
             sortedP.forEach(p => {
                 if(!days[p.date]) days[p.date] = {u:0, g:0, t:0, a2:0, a15:0, a0:0};
                 days[p.date].u += parseNum(p.used);
-                days[p.date].g += (parseNum(p.a2_vol)+parseNum(p.a15_vol));
-                days[p.date].t += (parseNum(p.a2_vol)+parseNum(p.a15_vol)+parseNum(p.a0_vol));
+                days[p.date].g += (parseNum(p.a2_vol) + parseNum(p.a15_vol));
+                days[p.date].t += (parseNum(p.a2_vol) + parseNum(p.a15_vol) + parseNum(p.a0_vol));
                 days[p.date].a2 += parseNum(p.a2_vol);
                 days[p.date].a15 += parseNum(p.a15_vol);
                 days[p.date].a0 += parseNum(p.a0_vol);
@@ -359,7 +427,7 @@
             
             if(charts.yield) charts.yield.destroy();
             charts.yield = new Chart(document.getElementById('yieldChart'), {
-                type: 'line', data: { labels: lbls, datasets: [{ label: 'Yield ขาย', data: yData, borderColor: '#059669', backgroundColor: 'rgba(5, 150, 105, 0.1)', fill: true }] },
+                type: 'line', data: { labels: lbls, datasets: [{ label: 'Yield ขาย (ml/ลูก)', data: yData, borderColor: '#059669', backgroundColor: 'rgba(5, 150, 105, 0.1)', fill: true }] },
                 options: { maintainAspectRatio: false }
             });
 
