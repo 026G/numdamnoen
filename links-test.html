@@ -21,52 +21,10 @@
         .dot-green { background-color: #22c55e; }
         .dot-red { background-color: #ef4444; }
 
-        /* --- VIDEO AD STYLE --- */
-        .video-container {
-            width: 100%;
-            max-width: 420px;
-            margin-top: 25px;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            background: white;
-            padding: 10px;
-            position: relative;
-        }
-
-        .video-label {
-            font-size: 15px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: #166534;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding-left: 5px;
-        }
-
-        .youtube-wrapper {
-            position: relative;
-            padding-bottom: 56.25%; /* อัตราส่วน 16:9 */
-            height: 0;
-            overflow: hidden;
-            border-radius: 12px;
-            background: #000;
-        }
-        
-        .youtube-wrapper iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none; /* ห้ามคลิกที่วิดีโอ */
-        }
-
-        /* --- TOGGLE BUTTON STYLE --- */
+        /* --- TOGGLE BUTTON STYLE (ปุ่มกดดูโค้ด) --- */
         .coupon-trigger-btn {
             background-color: #fff;
-            border: 2px dashed #00B900;
+            border: 2px dashed #00B900; /* ขอบเส้นประสีเขียว */
             color: #00B900;
             padding: 12px 25px;
             border-radius: 50px;
@@ -82,7 +40,7 @@
             width: 100%;
             max-width: 320px;
             justify-content: center;
-            animation: bounce 2s infinite;
+            animation: bounce 2s infinite; /* อนิเมชั่นเด้งดึ๋ง */
         }
         
         .coupon-trigger-btn:hover {
@@ -95,7 +53,7 @@
             background-color: #00B900;
             color: white;
             border-style: solid;
-            animation: none;
+            animation: none; /* หยุดเด้งเมื่อกดแล้ว */
         }
 
         @keyframes bounce {
@@ -104,9 +62,9 @@
             60% {transform: translateY(-3px);}
         }
 
-        /* --- PROMO SECTION WRAPPER --- */
+        /* --- PROMO SECTION WRAPPER (ส่วนที่จะซ่อน/แสดง) --- */
         #promo-section-wrapper {
-            display: none;
+            display: none; /* ซ่อนไว้ก่อน */
             width: 100%;
             max-width: 420px;
             flex-direction: column;
@@ -292,6 +250,49 @@
         .contact-label { font-size: 14px; color: #888; margin-bottom: 5px; }
         .bg-element { position: fixed; z-index: -1; opacity: 0.4; animation: float 6s ease-in-out infinite; pointer-events: none; }
         @keyframes float { 0% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-15px) rotate(5deg); } 100% { transform: translateY(0px) rotate(0deg); } }
+
+        /* --- VIDEO CONTAINER STYLE --- */
+        .video-container {
+            width: 100%;
+            max-width: 420px;
+            margin-top: 25px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            background: white;
+            padding: 10px;
+            position: relative;
+        }
+
+        .video-label {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #166534;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-left: 5px;
+        }
+
+        .youtube-wrapper {
+            position: relative;
+            /* ปรับอัตราส่วนเป็น 16:9 มาตรฐาน */
+            padding-bottom: 56.25%; 
+            height: 0;
+            overflow: hidden;
+            border-radius: 12px;
+            background: #000;
+        }
+        
+        .youtube-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* ห้ามคลิกวิดีโอ */
+        }
     </style>
 </head>
 <body>
@@ -441,6 +442,7 @@
             </div>
         </div>
     </div>
+
     <div class="links-container">
         <a id="btn-lineman" href="https://wongn.ai/223eD4" class="link-btn" onclick="handleClickApp('LINE MAN')">
             <div class="badge-corner bg-green">🔥 ค่าส่งถูกสุด</div>
@@ -465,7 +467,7 @@
             <div class="btn-text">
                 <span class="btn-title">สั่ง GrabFood <span class="rating"><i class="fa-solid fa-star"></i> 4.9 (252)</span></span>
                 <span class="btn-subtitle">
-                    <span class="promo-tag tag-red"><i class="fa-solid fa-tag"></i> เก็บโค้ดหน้าร้าน</span>
+                    <span class="promo-tag tag-red"><i class="fa-solid fa-tag"></i> เก็บโค้ดในแอพ</span>
                     ✅ ค่าส่งถูก
                 </span>
             </div>
