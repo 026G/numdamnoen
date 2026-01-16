@@ -156,10 +156,6 @@
         <span id="toast-msg">คัดลอกโค้ดเรียบร้อย!</span>
     </div>
 
-    <div class="share-btn" onclick="shareProfile()" title="แชร์หน้านี้">
-        <i class="fa-solid fa-share-nodes"></i>
-    </div>
-
     <div class="profile-area">
         <img src="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8" class="profile-img" alt="โลโก้ร้าน"> 
         <h1 style="display: flex; align-items: center; justify-content: center; gap: 6px;">
@@ -325,20 +321,6 @@
             } else {
                 statusDot.className = 'status-dot dot-red';
                 statusText.innerHTML = 'ปิดแล้ว • เปิดพรุ่งนี้ 06:00 น.';
-            }
-        }
-
-        function shareProfile() {
-            gtag('event', 'click_share', {'content_type': 'profile_card'});
-            if (navigator.share) {
-                navigator.share({
-                    title: 'หนุ่มดำเนิน - เมนูสั่งซื้อ',
-                    text: 'สั่งมะพร้าวปั่นแท้ 100% ร้านหนุ่มดำเนิน อร่อยมาก!',
-                    url: window.location.href
-                }).catch(console.error);
-            } else {
-                navigator.clipboard.writeText(window.location.href);
-                showToast("คัดลอกลิงก์ร้านแล้ว!");
             }
         }
 
