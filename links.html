@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>หนุ่มดำเนิน - เมนูสั่งซื้อ</title>
     <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8">
-    <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8">
-    
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-9P4HMHGDM2"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -14,167 +12,258 @@
       gtag('js', new Date());
       gtag('config', 'G-9P4HMHGDM2');
     </script>
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
     
     <style>
-        body {
-            font-family: 'Kanit', sans-serif;
-            background-color: #f0fdf4;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 40px 20px;
-            color: #333;
-            min-height: 100vh;
-        }
-        .profile-area {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .profile-img {
-            width: 110px;
-            height: 110px;
-            border-radius: 50%;
-            background-color: #fff;
-            margin-bottom: 15px;
-            object-fit: cover;
-            border: 4px solid #fff;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        h1 { 
-            font-size: 22px; margin: 0 0 8px 0; font-weight: 600; color: #166534;
-        }
+        /* --- Styles หลัก --- */
+        body { font-family: 'Kanit', sans-serif; background-color: #f0fdf4; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; color: #333; min-height: 100vh; }
+        .profile-area { text-align: center; margin-bottom: 20px; position: relative; z-index: 2; }
+        .profile-img { width: 110px; height: 110px; border-radius: 50%; background-color: #fff; margin-bottom: 15px; object-fit: cover; border: 4px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1 { font-size: 22px; margin: 0 0 8px 0; font-weight: 600; color: #166534; }
         p { color: #666; margin: 0; font-size: 15px; }
-        
-        /* --- สถานะร้าน Minimal --- */
-        .status-text {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            font-size: 13px;
-            color: #555;
-            margin-top: 8px;
-        }
-        .status-dot {
-            width: 8px; height: 8px; border-radius: 50%; display: block;
-            transition: background-color 0.3s;
-        }
+        .status-text { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; color: #555; margin-top: 8px; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: block; transition: background-color 0.3s; }
         .dot-green { background-color: #22c55e; }
         .dot-red { background-color: #ef4444; }
-        
-        .links-container {
-            width: 100%;
-            max-width: 420px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-top: 20px;
-        }
 
-        .link-btn {
-            background-color: white;
-            border: 1px solid #e5e7eb;
-            padding: 12px 16px;
-            border-radius: 16px;
-            text-decoration: none;
-            color: #333;
+        /* --- TOGGLE BUTTON STYLE (ปุ่มกดดูโค้ด) --- */
+        .coupon-trigger-btn {
+            background-color: #fff;
+            border: 2px dashed #00B900; /* ขอบเส้นประสีเขียว */
+            color: #00B900;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
             display: flex;
             align-items: center;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-            transition: all 0.2s ease;
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
+            gap: 10px;
+            box-shadow: 0 4px 6px rgba(0, 185, 0, 0.1);
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 320px;
+            justify-content: center;
+            animation: bounce 2s infinite; /* อนิเมชั่นเด้งดึ๋ง */
         }
-        .link-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(22, 101, 52, 0.15);
-            border-color: #4ade80;
+        
+        .coupon-trigger-btn:hover {
+            background-color: #e8fce8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 185, 0, 0.2);
         }
 
-        .btn-logo-wrapper {
-            width: 50px;
-            height: 50px;
-            margin-right: 15px;
-            flex-shrink: 0;
+        .coupon-trigger-btn.active {
+            background-color: #00B900;
+            color: white;
+            border-style: solid;
+            animation: none; /* หยุดเด้งเมื่อกดแล้ว */
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-5px);}
+            60% {transform: translateY(-3px);}
+        }
+
+        /* --- PROMO SECTION WRAPPER (ส่วนที่จะซ่อน/แสดง) --- */
+        #promo-section-wrapper {
+            display: none; /* ซ่อนไว้ก่อน */
+            width: 100%;
+            max-width: 420px;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        #promo-section-wrapper.show {
+            display: flex;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- TAB FILTER STYLES --- */
+        .tab-container {
+            width: 100%;
+            margin-bottom: 15px;
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+        }
+
+        .tab-nav {
+            display: flex;
+            justify-content: space-between;
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 5px;
+            border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            backdrop-filter: blur(5px);
+            gap: 5px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 10px 0;
+            border-radius: 25px;
+            font-family: 'Kanit', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 12px;
-            overflow: hidden;
-            background-color: #f9fafb;
+            gap: 5px;
+            white-space: nowrap;
         }
-        .btn-logo-wrapper img { width: 100%; height: 100%; object-fit: contain; }
 
-        .btn-text { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
-        .btn-title {
-            font-weight: 600; font-size: 16px; display: flex; align-items: center; flex-wrap: wrap; gap: 5px; line-height: 1.2;
+        .tab-btn.active {
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            color: white;
+            transform: scale(1.02);
         }
-        .btn-subtitle {
-            font-size: 12px; color: #666; margin-top: 4px; display: flex; align-items: center; gap: 5px;
+
+        .tab-btn.active[data-target="grab"] { background: linear-gradient(45deg, #00B14F, #009e46); }
+        .tab-btn.active[data-target="lineman"] { background: linear-gradient(45deg, #10C110, #009900); }
+        .tab-btn.active[data-target="robinhood"] { background: linear-gradient(45deg, #76308B, #5a236b); }
+
+        .tab-content {
+            display: none;
+            width: 100%;
+            animation: fadeIn 0.4s ease;
         }
         
-        .promo-tag {
-            font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: normal; display: inline-flex; align-items: center; gap: 3px;
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
+        
+        /* --- CARD STYLES --- */
+        .promo-scroll-container {
+            width: 100%;
+            overflow-x: auto;
+            white-space: nowrap;
+            padding: 5px 5px 15px 5px;
+            scrollbar-width: none; 
+            -ms-overflow-style: none;
+            scroll-behavior: smooth;
+        }
+        .promo-scroll-container::-webkit-scrollbar { display: none; }
+
+        .promo-card {
+            display: inline-block;
+            width: 160px;
+            height: 90px;
+            margin-right: 10px;
+            border-radius: 10px;
+            position: relative;
+            cursor: pointer;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+            overflow: hidden;
+            scroll-snap-align: start;
+            vertical-align: top;
+            text-decoration: none;
+            color: inherit;
+        }
+        .promo-card:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.12); }
+
+        .promo-content {
+            height: 65%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding-top: 5px;
+        }
+
+        .promo-badge {
+            position: absolute; top: 7px; right: 7px; background-color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 5; padding: 4px; overflow: hidden;
+        }
+        .promo-badge img { width: 100%; height: 100%; object-fit: contain; }
+        
+        .promo-text-sm { font-size: 10px; font-weight: 600; margin-bottom: 2px; opacity: 0.9; }
+        .promo-amount { font-size: 28px; font-weight: 800; line-height: 0.9; letter-spacing: -0.5px; }
+        .promo-unit { font-size: 14px; margin-left: 2px;}
+        
+        .promo-footer {
+            height: 35%; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font-weight: 600; font-size: 11px;
+        }
+
+        /* --- THEME COLORS --- */
+        .card-lineman { background: #00B900; color: white; }
+        .card-lineman .promo-text-sm { color: #eaffea; }
+        .card-lineman .promo-amount { color: white; }
+        .card-lineman .promo-footer { background: #009000; color: white; }
+
+        .card-grab { background: #fff; border: 1.5px solid #00B14F; color: #333; }
+        .card-grab .promo-content { height: 63%; } 
+        .card-grab .promo-text-sm { color: #666; }
+        .card-grab .promo-amount { color: #00B14F; }
+        .card-grab .promo-footer { background: #00B14F; color: white; }
+
+        .card-flash { background: linear-gradient(135deg, #FF512F 0%, #DD2476 100%); color: white; border: none; }
+        .card-flash .promo-text-sm { color: #ffd1d1; font-weight: bold; }
+        .card-flash .promo-amount { color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); }
+        .card-flash .promo-footer { background: rgba(0,0,0,0.15); color: white; justify-content: center; }
+
+        .card-cashback { background: #E8FCE8; border: 1.5px solid #00B900; color: #006800; }
+        .card-cashback .promo-amount { color: #00B900; }
+        .card-cashback .promo-footer { background: #cdf5cd; color: #006800; }
+
+        .card-robin { background: #76308B; color: white; border: none; }
+        .card-robin .promo-text-sm { color: #f3e8ff; }
+        .card-robin .promo-footer { background: #5a236b; color: white; }
+
+        /* Link Buttons Styles */
+        .links-container { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+        .link-btn { background-color: white; border: 1px solid #e5e7eb; padding: 12px 16px; border-radius: 16px; text-decoration: none; color: #333; display: flex; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,0.04); transition: all 0.2s ease; position: relative; overflow: hidden; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .link-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(22, 101, 52, 0.15); border-color: #4ade80; }
+        .btn-logo-wrapper { width: 50px; height: 50px; margin-right: 15px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 12px; overflow: hidden; background-color: #f9fafb; }
+        .btn-logo-wrapper img { width: 100%; height: 100%; object-fit: contain; }
+        .btn-text { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
+        .btn-title { font-weight: 600; font-size: 16px; display: flex; align-items: center; flex-wrap: wrap; gap: 5px; line-height: 1.2; }
+        .btn-subtitle { font-size: 12px; color: #666; margin-top: 4px; display: flex; align-items: center; gap: 5px; }
+        .promo-tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: normal; display: inline-flex; align-items: center; gap: 3px; }
         .tag-green { background-color: #e8fce8; color: #00B900; border: 1px solid #66d966; }
         .tag-red { background-color: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
         .tag-purple { background-color: #f3e8ff; color: #9333ea; border: 1px solid #e9d5ff; }
-
         .btn-arrow { color: #ccc; font-size: 14px; margin-left: 10px; }
         .rating { color: #f59e0b; font-size: 13px; font-weight: normal; display: flex; align-items: center; gap: 3px; }
-        
-        .badge-corner {
-            position: absolute; top: 0; right: 0; font-size: 9px; padding: 3px 8px;
-            border-bottom-left-radius: 8px; color: white; font-weight: bold; z-index: 10;
-        }
+        .badge-corner { position: absolute; top: 0; right: 0; font-size: 9px; padding: 3px 8px; border-bottom-left-radius: 8px; color: white; font-weight: 400; z-index: 10; }
         .bg-green { background-color: #10b981; }
         .bg-orange { background-color: #f97316; }
 
-        /* --- Footer Social --- */
-        .footer-area {
-            margin-top: 40px;
-            width: 100%;
-            max-width: 420px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-            border-top: 1px dashed #ccc;
-            padding-top: 20px;
-        }
-        .social-icons {
-            display: flex; gap: 15px;
-        }
-        .social-btn {
-            width: 45px; height: 45px; border-radius: 50%; background: white;
-            display: flex; align-items: center; justify-content: center;
-            text-decoration: none; color: #333; font-size: 22px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-        }
+        /* Notification & Footer */
+        #copy-toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 50px; padding: 10px 20px; position: fixed; z-index: 999; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 13px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; gap: 8px; opacity: 0; transition: opacity 0.3s, bottom 0.3s; }
+        #copy-toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+        #copy-toast i { color: #4ade80; font-size: 16px; }
+        .footer-area { margin-top: 40px; width: 100%; max-width: 420px; display: flex; flex-direction: column; align-items: center; gap: 15px; border-top: 1px dashed #ccc; padding-top: 20px; }
+        .social-icons { display: flex; gap: 15px; }
+        .social-btn { width: 45px; height: 45px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; text-decoration: none; color: #333; font-size: 22px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.2s; }
         .social-btn:hover { transform: scale(1.1); }
         .contact-label { font-size: 14px; color: #888; margin-bottom: 5px; }
-
-        /* 2. พื้นหลังใบไม้ลอย (ตกแต่ง) */
-        .bg-element {
-            position: fixed;
-            z-index: -1;
-            opacity: 0.4;
-            animation: float 6s ease-in-out infinite;
-            pointer-events: none;
-        }
-        @keyframes float {
-            0% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-15px) rotate(5deg); }
-            100% { transform: translateY(0px) rotate(0deg); }
-        }
+        .bg-element { position: fixed; z-index: -1; opacity: 0.4; animation: float 6s ease-in-out infinite; pointer-events: none; }
+        @keyframes float { 0% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-15px) rotate(5deg); } 100% { transform: translateY(0px) rotate(0deg); } }
     </style>
 </head>
 <body>
+
+    <div id="copy-toast">
+        <i class="fa-solid fa-circle-check"></i> 
+        <span id="toast-msg">คัดลอกโค้ดเรียบร้อย!</span>
+    </div>
 
     <div class="profile-area">
         <img src="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8" class="profile-img" alt="โลโก้ร้าน"> 
@@ -183,22 +272,147 @@
         <i class="fa-solid fa-circle-check" style="color: #1da1f2; font-size: 18px;" title="ร้านค้าทางการ"></i>
         </h1>
         <p>หอมมะพร้าวแท้ จากมะพร้าวน้ำหอมแท้ 100%</p>
-
         <div class="status-text">
             <span id="shop-status-dot" class="status-dot dot-green"></span> 
             <span id="shop-status-text">กำลังตรวจสอบเวลา...</span>
         </div>
     </div>
     
+    <button class="coupon-trigger-btn" id="couponTriggerBtn" onclick="togglePromoSection()">
+        <i class="fa-solid fa-ticket"></i> เก็บโค้ดส่วนลด (Grab/Lineman)
+    </button>
+
+    <div id="promo-section-wrapper">
+        <div class="tab-container">
+            <div class="tab-nav">
+                <button class="tab-btn active" data-target="grab" onclick="openTab('grab')">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" width="16" alt=""> Grab
+                </button>
+                <button class="tab-btn" data-target="lineman" onclick="openTab('lineman')">
+                    <img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" width="16" alt=""> LINEMAN
+                </button>
+                <button class="tab-btn" data-target="robinhood" onclick="openTab('robinhood')">
+                    <i class="fa-solid fa-store" style="color: #76308B;"></i> Robinhood
+                </button>
+            </div>
+        </div>
+
+        <div id="grab" class="tab-content active">
+            <div class="promo-scroll-container">
+                <a href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" 
+                   class="promo-card card-flash" onclick="handleClickApp('GrabFood')">
+                    <div class="promo-badge"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood"></div>
+                    <div class="promo-content">
+                        <div class="promo-text-sm"><i class="fa-solid fa-bolt"></i> ลดแรง 15 นาที</div>
+                        <div class="promo-amount">50<span class="promo-unit">.-</span></div>
+                    </div>
+                    <div class="promo-footer"><span>ขั้นต่ำ 180.- กดเลย!</span></div>
+                </a>
+
+                <a href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" 
+                   class="promo-card card-cashback" onclick="handleClickApp('GrabFood')">
+                    <div class="promo-badge"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood"></div>
+                    <div class="promo-content">
+                        <div class="promo-text-sm">เงินคืน</div>
+                        <div class="promo-amount">200<span class="promo-unit">.-</span></div>
+                    </div>
+                    <div class="promo-footer"><span>ไม่มีขั้นต่ำ</span></div>
+                </a>
+
+                <a href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" 
+                   class="promo-card card-grab" onclick="handleClickApp('GrabFood')">
+                    <div class="promo-badge"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood"></div>
+                    <div class="promo-content">
+                        <div class="promo-text-sm">ลดสูงสุด</div>
+                        <div class="promo-amount">100<span class="promo-unit">.-</span></div>
+                    </div>
+                    <div class="promo-footer"><span>ขั้นต่ำ 320.-</span></div>
+                </a>
+
+                <a href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" 
+                   class="promo-card card-grab" onclick="handleClickApp('GrabFood')">
+                    <div class="promo-badge"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood"></div>
+                    <div class="promo-content">
+                        <div class="promo-text-sm">ลดเพิ่ม</div>
+                        <div class="promo-amount">80<span class="promo-unit">.-</span></div>
+                    </div>
+                    <div class="promo-footer"><span>ขั้นต่ำ 280.-</span></div>
+                </a>
+            </div>
+        </div>
+
+        <div id="lineman" class="tab-content">
+            <div class="promo-scroll-container">
+                <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="copyCode('LM69', 'LINE MAN')">
+                    <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN"></div>
+                    <div class="promo-content">
+                        <div class="promo-text-sm"><i class="fa-solid fa-clock"></i> โปรเวลาทอง </div>
+                        <div class="promo-amount">50<span class="promo-unit">%</span></div>
+                    </div>
+                    <div class="promo-footer" style="font-size: 10px;"><span>Code: LM69</span></div>
+                </a>
+
+                <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="copyCode('SAVE100', 'LINE MAN')">
+                    <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN"></div>
+                    <div class="promo-content">
+                        <div class="promo-text-sm">ลูกค้าใหม่</div>
+                        <div class="promo-amount">100<span class="promo-unit">.-</span></div>
+                    </div>
+                    <div class="promo-footer"><span>Code: SAVE100 | สูงสุด 100.-</span></div>
+                </a>
+
+                <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="copyCode('AROI', 'LINE MAN')">
+                    <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN"></div>
+                    <div class="promo-content">
+                        <div class="promo-text-sm">ไม่มีขั้นต่ำ</div>
+                        <div class="promo-amount">100<span class="promo-unit">.-</span></div>
+                    </div>
+                    <div class="promo-footer"><span>Code: AROI | สูงสุด 100.-</span></div>
+                </a>
+                
+                <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="handleClickApp('LINE MAN')">
+                    <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN"></div>
+                    <div class="promo-content">
+                        <div class="promo-text-sm">ลดสูงสุด</div>
+                        <div class="promo-amount">70<span class="promo-unit">.-</span></div>
+                    </div>
+                    <div class="promo-footer"><span>ขั้นต่ำ 300.- | สูงสุด 70.-</span></div>
+                </a>
+            </div>
+        </div>
+
+        <div id="robinhood" class="tab-content">
+            <div class="promo-scroll-container">
+                <a href="https://static.robinhood.in.th/app_link.html?URI=robinhoodth://merchantlanding/id/22252" 
+                   class="promo-card card-robin" onclick="handleClickApp('Robinhood')">
+                    <div class="promo-badge"><img src="https://placehold.co/200x200/76308B/ffffff?text=RH" alt="Robinhood"></div>
+                    <div class="promo-content">
+                        <div class="promo-text-sm"><i class="fa-solid fa-heart"></i> ร้านใจดี</div>
+                        <div class="promo-amount">ลด 5<span class="promo-unit">%</span></div>
+                    </div>
+                    <div class="promo-footer"><span>กดสั่งเลย</span></div>
+                </a>
+                
+                <a href="https://static.robinhood.in.th/app_link.html?URI=robinhoodth://merchantlanding/id/22252" 
+                   class="promo-card card-robin" onclick="handleClickApp('Robinhood')">
+                    <div class="promo-badge"><img src="https://placehold.co/200x200/76308B/ffffff?text=RH" alt="Robinhood"></div>
+                    <div class="promo-content">
+                        <div class="promo-text-sm">ค่าส่งถูก</div>
+                        <div class="promo-amount" style="font-size: 22px;">เริ่มต้น 10.-</div>
+                    </div>
+                    <div class="promo-footer"><span>ระยะใกล้</span></div>
+                </a>
+            </div>
+        </div>
+    </div>
     <div class="links-container">
-        
-        <a id="btn-lineman" href="https://wongn.ai/223eD4" class="link-btn" onclick="gtag('event', 'click_delivery', {'app_name': 'LINE MAN'});">
+        <a id="btn-lineman" href="https://wongn.ai/223eD4" class="link-btn" onclick="handleClickApp('LINE MAN')">
             <div class="badge-corner bg-green">🔥 ค่าส่งถูกสุด</div>
             <div class="btn-logo-wrapper" style="background: #00B900;">
                 <img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN">
             </div>
             <div class="btn-text">
-                <span class="btn-title">LINE MAN <span class="rating"><i class="fa-solid fa-star"></i> 5.0 (623)</span></span>
+                <span class="btn-title">สั่ง LINE MAN <span class="rating"><i class="fa-solid fa-star"></i> 5.0 (623)</span></span>
                 <span class="btn-subtitle">
                     <span class="promo-tag tag-green"><i class="fa-solid fa-tag"></i> ใส่โค้ด 'AROI'</span>
                     ✅ ค่าส่งถูกสุด ส่งฟรี
@@ -207,27 +421,27 @@
             <i class="fa-solid fa-chevron-right btn-arrow"></i>
         </a>
 
-        <a id="btn-grab" href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" class="link-btn" onclick="gtag('event', 'click_delivery', {'app_name': 'GrabFood'});">
+        <a id="btn-grab" href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" class="link-btn" onclick="handleClickApp('GrabFood')">
             <div class="badge-corner bg-orange">ส่งไวสุด</div>
             <div class="btn-logo-wrapper" style="background: white;">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood">
             </div>
             <div class="btn-text">
-                <span class="btn-title">GrabFood <span class="rating"><i class="fa-solid fa-star"></i> 4.9 (252)</span></span>
+                <span class="btn-title">สั่ง GrabFood <span class="rating"><i class="fa-solid fa-star"></i> 4.9 (252)</span></span>
                 <span class="btn-subtitle">
-                    <span class="promo-tag tag-red"><i class="fa-solid fa-tag"></i> เก็บโค๊ดลด</span>
+                    <span class="promo-tag tag-red"><i class="fa-solid fa-tag"></i> เก็บโค้ดหน้าร้าน</span>
                     ✅ ค่าส่งถูก
                 </span>
             </div>
             <i class="fa-solid fa-chevron-right btn-arrow"></i>
         </a>
 
-        <a id="btn-robinhood" href="https://static.robinhood.in.th/app_link.html?URI=robinhoodth://merchantlanding/id/22252" class="link-btn" onclick="gtag('event', 'click_delivery', {'app_name': 'Robinhood'});">
+        <a id="btn-robinhood" href="https://static.robinhood.in.th/app_link.html?URI=robinhoodth://merchantlanding/id/22252" class="link-btn" onclick="handleClickApp('Robinhood')">
             <div class="btn-logo-wrapper">
                  <img src="https://placehold.co/200x200/76308B/ffffff?text=Robin\nhood" alt="Robinhood">
             </div>
             <div class="btn-text">
-                <span class="btn-title">Robinhood <span class="rating"><i class="fa-solid fa-star"></i> 5.0 (20)</span></span>
+                <span class="btn-title">สั่ง Robinhood <span class="rating"><i class="fa-solid fa-star"></i> 5.0 (20)</span></span>
                 <span class="btn-subtitle">
                     <span class="promo-tag tag-purple"><i class="fa-solid fa-heart"></i> ร้านใจดีลดเพิ่ม 5%</span>
                     ✅ ค่าส่งถูก
@@ -236,7 +450,7 @@
             <i class="fa-solid fa-chevron-right btn-arrow"></i>
         </a>
 
-        <a id="btn-lineoa" href="https://lin.ee/svRu5ks" class="link-btn" style="border: 2px solid #06C755; background-color: #fcfdfc;" onclick="gtag('event', 'click_contact', {'app_name': 'LINE OA'});">
+        <a id="btn-lineoa" href="https://lin.ee/svRu5ks" class="link-btn" style="border: 2px solid #06C755; background-color: #fcfdfc;" onclick="handleClickApp('LINE OA')">
             <div class="btn-logo-wrapper" style="background: transparent;">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" alt="LINE OA">
             </div>
@@ -252,51 +466,135 @@
     <div class="footer-area">
         <div class="contact-label">ติดต่อสอบถามเพิ่มเติม</div>
         <div class="social-icons">
-            <a id="social-phone" href="tel:0622467746" class="social-btn" style="color: #00B900;" onclick="gtag('event', 'click_contact', {'type': 'phone'});">
-                <i class="fa-solid fa-phone"></i>
-            </a>
-            
-            <a id="social-facebook" href="https://facebook.com/NUMDAMNOEN" class="social-btn" style="color: #1877F2;" target="_blank" onclick="gtag('event', 'click_social', {'type': 'facebook'});">
-                <i class="fa-brands fa-facebook"></i>
-            </a>
-
-            <a id="social-tiktok" href="https://tiktok.com/@numdamnoen" class="social-btn" style="color: #000000;" target="_blank" onclick="gtag('event', 'click_social', {'type': 'tiktok'});">
-                <i class="fa-brands fa-tiktok"></i>
-            </a>
-
-            <a id="social-map" href="https://maps.app.goo.gl/vaAUR6ve7G5WwtjH8" class="social-btn" style="color: #000000;" target="_blank" onclick="gtag('event', 'click_social', {'type': 'googlemap'});">
-                <i class="fa fa-map-marker"></i>
-            </a>
+            <a id="social-phone" href="tel:0622467746" class="social-btn" style="color: #00B900;" onclick="gtag('event', 'click_contact', {'type': 'phone'});"><i class="fa-solid fa-phone"></i></a>
+            <a id="social-facebook" href="https://facebook.com/NUMDAMNOEN" class="social-btn" style="color: #1877F2;" target="_blank" onclick="gtag('event', 'click_social', {'type': 'facebook'});"><i class="fa-brands fa-facebook"></i></a>
+            <a id="social-tiktok" href="https://tiktok.com/@numdamnoen" class="social-btn" style="color: #000000;" target="_blank" onclick="gtag('event', 'click_social', {'type': 'tiktok'});"><i class="fa-brands fa-tiktok"></i></a>
+            <a id="social-map" href="https://maps.app.goo.gl/vaAUR6ve7G5WwtjH8" class="social-btn" style="color: #000000;" target="_blank" onclick="gtag('event', 'click_social', {'type': 'googlemap'});"><i class="fa fa-map-marker"></i></a>
         </div>
     </div>
 
     <script>
+        // ฟังก์ชันเปิด/ปิด ส่วนลด
+        function togglePromoSection() {
+            var wrapper = document.getElementById('promo-section-wrapper');
+            var btn = document.getElementById('couponTriggerBtn');
+            
+            if (wrapper.classList.contains('show')) {
+                wrapper.classList.remove('show');
+                setTimeout(() => { wrapper.style.display = 'none'; }, 400); // รอ animation จบ
+                btn.classList.remove('active');
+                btn.innerHTML = '<i class="fa-solid fa-ticket"></i> เก็บโค้ดส่วนลด (Grab/Lineman)';
+                stopAutoScroll(); // ปิดแล้วหยุด scroll ประหยัดทรัพยากร
+            } else {
+                wrapper.style.display = 'flex';
+                // Delay เล็กน้อยเพื่อให้ display flex ทำงานก่อน add class show เพื่อให้ transition ทำงาน
+                setTimeout(() => { wrapper.classList.add('show'); }, 10); 
+                btn.classList.add('active');
+                btn.innerHTML = '<i class="fa-solid fa-xmark"></i> ปิดหน้าต่างโค้ดส่วนลด';
+                startAutoScroll(); // เปิดแล้วค่อยเริ่ม scroll
+            }
+        }
+
+        function openTab(appName) {
+            var buttons = document.getElementsByClassName('tab-btn');
+            for (var i = 0; i < buttons.length; i++) {
+                buttons[i].classList.remove('active');
+            }
+            
+            var contents = document.getElementsByClassName('tab-content');
+            for (var i = 0; i < contents.length; i++) {
+                contents[i].classList.remove('active');
+            }
+
+            document.querySelector('.tab-btn[data-target="' + appName + '"]').classList.add('active');
+            document.getElementById(appName).classList.add('active');
+
+            gtag('event', 'switch_tab', {'app_name': appName});
+            
+            startAutoScroll();
+        }
+
         function checkShopStatus() {
             const now = new Date();
             const hour = now.getHours();
-            
-            // ตั้งเวลาเปิด-ปิด ตรงนี้ (06:00 - 22:00)
             const openHour = 6;
             const closeHour = 22;
-
             const statusDot = document.getElementById('shop-status-dot');
             const statusText = document.getElementById('shop-status-text');
 
             if (hour >= openHour && hour < closeHour) {
-                // ร้านเปิด
                 statusDot.className = 'status-dot dot-green';
                 statusText.innerHTML = 'เปิดอยู่ • 06:00 - 22:00 น.';
             } else {
-                // ร้านปิด
                 statusDot.className = 'status-dot dot-red';
                 statusText.innerHTML = 'ปิดแล้ว • เปิดพรุ่งนี้ 06:00 น.';
             }
         }
 
-        // รันฟังก์ชันทันทีเมื่อเปิดเว็บ
+        function copyCode(code, appName) {
+            gtag('event', 'copy_coupon', {'coupon_code': code, 'app_name': appName});
+            navigator.clipboard.writeText(code).then(() => {
+                showToast("คัดลอก '" + code + "' แล้ว!");
+            }).catch(err => { console.error(err); });
+        }
+
+        function handleClickApp(appName) {
+            gtag('event', 'click_delivery', {'app_name': appName});
+            showToast("กำลังเปิด " + appName + "...");
+        }
+
+        function showToast(message) {
+            var x = document.getElementById("copy-toast");
+            var msg = document.getElementById("toast-msg");
+            msg.innerText = message;
+            x.className = "show"; 
+            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000); 
+        }
+
+        /* --- LOGIC AUTO SCROLL --- */
+        let scrollInterval;
+        
+        function getActiveContainer() {
+            const activeTab = document.querySelector('.tab-content.active');
+            return activeTab ? activeTab.querySelector('.promo-scroll-container') : null;
+        }
+
+        function startAutoScroll() {
+            clearInterval(scrollInterval);
+            
+            // ตรวจสอบว่า wrapper เปิดอยู่ไหม ถ้าปิดอยู่ไม่ต้อง scroll
+            var wrapper = document.getElementById('promo-section-wrapper');
+            if (!wrapper || !wrapper.classList.contains('show')) return;
+
+            scrollInterval = setInterval(() => {
+                const scrollContainer = getActiveContainer();
+                if (!scrollContainer) return;
+
+                const cardWidth = 170; 
+                const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
+                
+                if (scrollContainer.scrollLeft >= maxScroll - 10) {
+                    scrollContainer.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    scrollContainer.scrollBy({ left: cardWidth, behavior: 'smooth' });
+                }
+            }, 3500);
+        }
+
+        function stopAutoScroll() {
+            clearInterval(scrollInterval);
+        }
+
+        // หยุด scroll เมื่อเอาเมาส์ไปชี้หรือแตะ
+        document.querySelectorAll('.promo-scroll-container').forEach(container => {
+            container.addEventListener('touchstart', stopAutoScroll);
+            container.addEventListener('touchend', startAutoScroll);
+            container.addEventListener('mouseenter', stopAutoScroll);
+            container.addEventListener('mouseleave', startAutoScroll);
+        });
+
         checkShopStatus();
     </script>
-
     <i class="fa-solid fa-leaf bg-element" style="color:#bbf7d0; font-size: 80px; top: 10%; left: -20px; animation-delay: 0s;"></i>
     <i class="fa-solid fa-leaf bg-element" style="color:#bbf7d0; font-size: 60px; bottom: 15%; right: -10px; animation-delay: 2s; transform: scaleX(-1);"></i>
 </body>
