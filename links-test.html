@@ -13,12 +13,12 @@
       gtag('config', 'G-9P4HMHGDM2');
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
     
     <style>
         /* --- Styles เดิม --- */
         body { font-family: 'Kanit', sans-serif; background-color: #f0fdf4; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; color: #333; min-height: 100vh; }
-        .profile-area { text-align: center; margin-bottom: 20px; }
+        .profile-area { text-align: center; margin-bottom: 20px; position: relative; z-index: 2; }
         .profile-img { width: 110px; height: 110px; border-radius: 50%; background-color: #fff; margin-bottom: 15px; object-fit: cover; border: 4px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         h1 { font-size: 22px; margin: 0 0 8px 0; font-weight: 600; color: #166534; }
         p { color: #666; margin: 0; font-size: 15px; }
@@ -52,40 +52,103 @@
         .bg-element { position: fixed; z-index: -1; opacity: 0.4; animation: float 6s ease-in-out infinite; pointer-events: none; }
         @keyframes float { 0% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-15px) rotate(5deg); } 100% { transform: translateY(0px) rotate(0deg); } }
 
-        /* --- ส่วนที่เพิ่มใหม่: COPY NOTIFICATION BAR (ป้ายวิ่งแจ้งเตือน) --- */
+        /* --- NOTIFICATION BAR --- */
         #copy-toast {
-            visibility: hidden;
-            min-width: 280px;
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            border-radius: 50px;
-            padding: 12px 20px;
-            position: fixed;
-            z-index: 999;
-            left: 50%;
-            bottom: 30px;
-            transform: translateX(-50%);
-            font-size: 14px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            visibility: hidden; min-width: 280px; background-color: #333; color: #fff; text-align: center; border-radius: 50px; padding: 12px 20px; position: fixed; z-index: 999; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 14px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; gap: 10px; opacity: 0; transition: opacity 0.3s, bottom 0.3s;
+        }
+        #copy-toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+        #copy-toast i { color: #4ade80; font-size: 18px; }
+
+        /* --- STYLE ใหม่สำหรับ PROMO SLIDER (คูปองด้านบน) --- */
+        .promo-scroll-container {
+            width: 100%;
+            max-width: 420px;
+            overflow-x: auto;
+            white-space: nowrap;
+            padding: 10px 5px;
+            margin-bottom: 10px;
+            scrollbar-width: none; /* ซ่อน Scrollbar (Firefox) */
+            -ms-overflow-style: none; /* ซ่อน Scrollbar (IE/Edge) */
+            scroll-snap-type: x mandatory; /* เลื่อนแล้วเด้งเข้าล็อค */
+        }
+        .promo-scroll-container::-webkit-scrollbar { display: none; } /* ซ่อน Scrollbar (Chrome/Safari) */
+
+        .promo-card {
+            display: inline-block;
+            width: 240px;
+            height: 140px;
+            margin-right: 15px;
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+            overflow: hidden;
+            background-color: #FFC400; /* สีเหลืองพื้นหลัง */
+            scroll-snap-align: center; /* จัดกึ่งกลางเมื่อเลื่อน */
+            vertical-align: top;
+        }
+        .promo-card:hover { transform: translateY(-3px); box-shadow: 0 8px 16px rgba(0,0,0,0.15); }
+
+        .promo-content {
+            height: 70%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        .promo-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #FF1744;
+            color: white;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 8px;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            opacity: 0;
-            transition: opacity 0.3s, bottom 0.3s;
+            text-align: center;
+            line-height: 1;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transform: rotate(15deg);
         }
+        
+        .promo-text-sm { font-size: 14px; font-weight: 600; color: #333; margin-top: 10px; }
+        .promo-amount { font-size: 48px; font-weight: 800; color: #333; line-height: 1; letter-spacing: -1px; }
+        .promo-unit { font-size: 24px; }
+        
+        .promo-footer {
+            height: 30%;
+            background-color: #00BFA5; /* สีเขียว Teal ตามแบบ */
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .tap-hint { font-size: 11px; opacity: 0.9; font-weight: normal; }
 
-        #copy-toast.show {
-            visibility: visible;
-            opacity: 1;
-            bottom: 50px; /* เด้งขึ้นมาเล็กน้อย */
-        }
+        /* สีพิเศษสำหรับบัตรใบอื่น */
+        .card-lineman { background: #FFC400; }
+        .card-lineman .promo-footer { background: #06C755; } /* สีเขียว LINE */
+        
+        .card-grab { background: #fff; border: 2px solid #00B14F; }
+        .card-grab .promo-content { height: 68%; }
+        .card-grab .promo-amount { color: #00B14F; }
+        .card-grab .promo-footer { background: #00B14F; color: white; }
 
-        #copy-toast i {
-            color: #4ade80; /* สีไอคอนถูก */
-            font-size: 18px;
-        }
+        .card-robinhood { background: #F3E5F5; }
+        .card-robinhood .promo-amount { color: #76308B; }
+        .card-robinhood .promo-footer { background: #76308B; }
+
     </style>
 </head>
 <body>
@@ -112,6 +175,44 @@
         </div>
     </div>
     
+    <div class="promo-scroll-container">
+        
+        <div class="promo-card card-lineman" onclick="copyCode('AROI', 'LINE MAN')">
+            <div class="promo-badge">ONLY<br>YOU</div>
+            <div class="promo-content">
+                <div class="promo-text-sm">ใส่โค้ดลดเพิ่ม</div>
+                <div class="promo-amount">50<span class="promo-unit">.-</span></div>
+            </div>
+            <div class="promo-footer">
+                <span><i class="fa-solid fa-tag"></i> AROI</span>
+                <span class="tap-hint">แตะเพื่อคัดลอก</span>
+            </div>
+        </div>
+
+        <div class="promo-card card-grab" onclick="copyCode('GRAB50', 'GrabFood')">
+            <div class="promo-badge" style="background: #00B14F;">NEW</div>
+            <div class="promo-content">
+                <div class="promo-text-sm">ลูกค้าใหม่ลด</div>
+                <div class="promo-amount">40<span class="promo-unit">%</span></div>
+            </div>
+            <div class="promo-footer">
+                <span><i class="fa-solid fa-tag"></i> GRAB50</span>
+                <span class="tap-hint">แตะเพื่อคัดลอก</span>
+            </div>
+        </div>
+
+        <div class="promo-card card-robinhood" onclick="copyCode('LOVE5', 'Robinhood')">
+            <div class="promo-content">
+                <div class="promo-text-sm" style="color:#76308B">ร้านใจดีลด</div>
+                <div class="promo-amount">5<span class="promo-unit">%</span></div>
+            </div>
+            <div class="promo-footer">
+                <span><i class="fa-solid fa-heart"></i> LOVE5</span>
+                <span class="tap-hint">ลดทั้งร้าน</span>
+            </div>
+        </div>
+
+    </div>
     <div class="links-container">
         
         <div id="btn-lineman" class="link-btn" onclick="handleCopyAndRedirect('LINE MAN', 'AROI', 'https://wongn.ai/223eD4')">
@@ -182,7 +283,6 @@
     </div>
 
     <script>
-        // 1. ฟังก์ชันเช็คเวลาเปิด-ปิด
         function checkShopStatus() {
             const now = new Date();
             const hour = now.getHours();
@@ -200,7 +300,6 @@
             }
         }
 
-        // 2. ฟังก์ชันแชร์
         function shareProfile() {
             gtag('event', 'click_share', {'content_type': 'profile_card'});
             if (navigator.share) {
@@ -215,36 +314,39 @@
             }
         }
 
-        // 3. ฟังก์ชันไฮไลท์: ก็อปปี้โค้ด + แจ้งเตือน + ไปหน้าแอป
-        function handleCopyAndRedirect(appName, code, url) {
-            // ส่งค่าไป Analytics
-            gtag('event', 'click_delivery', {'app_name': appName});
+        // ฟังก์ชันใหม่: สำหรับกดที่ป้ายคูปองด้านบน (แค่ก็อปปี้ ไม่ไปหน้าอื่น)
+        function copyCode(code, appName) {
+            gtag('event', 'copy_coupon', {'coupon_code': code, 'app_name': appName});
+            
+            navigator.clipboard.writeText(code).then(() => {
+                showToast("คัดลอกโค้ด '" + code + "' แล้ว!");
+            }).catch(err => {
+                console.error('Error copying text: ', err);
+            });
+        }
 
-            // ถ้ามีโค้ด ให้ก็อปปี้
+        function handleCopyAndRedirect(appName, code, url) {
+            gtag('event', 'click_delivery', {'app_name': appName});
             if (code) {
                 navigator.clipboard.writeText(code).then(() => {
                     showToast("คัดลอกโค้ด '" + code + "' แล้ว!");
-                    // หน่วงเวลา 1.5 วินาที ให้คนเห็นป้ายแจ้งเตือนก่อน แล้วค่อยเปลี่ยนหน้า
                     setTimeout(() => { window.location.href = url; }, 1500);
                 }).catch(err => {
-                    // ถ้าก็อปไม่ได้ ให้ไปตามปกติ
                     window.location.href = url;
                 });
             } else {
-                // ถ้าไม่มีโค้ด (เช่น Grab/Robinhood) ให้ไปเลย หรือขึ้นเตือนว่ากำลังไป
                 showToast("กำลังเปิด " + appName + "...");
                 setTimeout(() => { window.location.href = url; }, 800);
             }
         }
 
-        // 4. ฟังก์ชันแสดงป้ายแจ้งเตือน (Toast)
         function showToast(message) {
             var x = document.getElementById("copy-toast");
             var msg = document.getElementById("toast-msg");
             msg.innerText = message;
             
-            x.className = "show"; // เพิ่ม class เพื่อแสดง
-            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000); // ซ่อนหลังจาก 3 วิ
+            x.className = "show"; 
+            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000); 
         }
 
         checkShopStatus();
