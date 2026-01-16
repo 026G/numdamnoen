@@ -16,7 +16,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
     
     <style>
-        /* --- Styles หลัก (เหมือนเดิม) --- */
+        /* --- Styles หลัก --- */
         body { font-family: 'Kanit', sans-serif; background-color: #f0fdf4; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; color: #333; min-height: 100vh; }
         .profile-area { text-align: center; margin-bottom: 20px; position: relative; z-index: 2; }
         .profile-img { width: 110px; height: 110px; border-radius: 50%; background-color: #fff; margin-bottom: 15px; object-fit: cover; border: 4px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
@@ -26,9 +26,14 @@
         .status-dot { width: 8px; height: 8px; border-radius: 50%; display: block; transition: background-color 0.3s; }
         .dot-green { background-color: #22c55e; }
         .dot-red { background-color: #ef4444; }
+        
+        /* Links Container */
         .links-container { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
-        .link-btn { background-color: white; border: 1px solid #e5e7eb; padding: 12px 16px; border-radius: 16px; text-decoration: none; color: #333; display: flex; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,0.04); transition: all 0.2s ease; position: relative; overflow: hidden; cursor: pointer; }
+        
+        /* ปรับ link-btn ให้รองรับ <a> tag เต็มรูปแบบ */
+        .link-btn { background-color: white; border: 1px solid #e5e7eb; padding: 12px 16px; border-radius: 16px; text-decoration: none; color: #333; display: flex; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,0.04); transition: all 0.2s ease; position: relative; overflow: hidden; cursor: pointer; -webkit-tap-highlight-color: transparent; }
         .link-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(22, 101, 52, 0.15); border-color: #4ade80; }
+        
         .btn-logo-wrapper { width: 50px; height: 50px; margin-right: 15px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 12px; overflow: hidden; background-color: #f9fafb; }
         .btn-logo-wrapper img { width: 100%; height: 100%; object-fit: contain; }
         .btn-text { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
@@ -43,12 +48,16 @@
         .badge-corner { position: absolute; top: 0; right: 0; font-size: 9px; padding: 3px 8px; border-bottom-left-radius: 8px; color: white; font-weight: bold; z-index: 10; }
         .bg-green { background-color: #10b981; }
         .bg-orange { background-color: #f97316; }
+
         .footer-area { margin-top: 40px; width: 100%; max-width: 420px; display: flex; flex-direction: column; align-items: center; gap: 15px; border-top: 1px dashed #ccc; padding-top: 20px; }
         .social-icons { display: flex; gap: 15px; }
         .social-btn { width: 45px; height: 45px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; text-decoration: none; color: #333; font-size: 22px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.2s; }
         .social-btn:hover { transform: scale(1.1); }
         .contact-label { font-size: 14px; color: #888; margin-bottom: 5px; }
-        .share-btn { position: absolute; top: 20px; right: 20px; width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer; color: #166534; font-size: 18px; z-index: 100; transition: transform 0.2s; }
+        
+        /* ลบ Share Btn Style ออกไปเลย หรือปล่อยทิ้งไว้ก็ได้ แต่ผมเอา HTML ออกแล้ว */
+        .share-btn { display: none; } 
+
         .bg-element { position: fixed; z-index: -1; opacity: 0.4; animation: float 6s ease-in-out infinite; pointer-events: none; }
         @keyframes float { 0% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-15px) rotate(5deg); } 100% { transform: translateY(0px) rotate(0deg); } }
 
@@ -70,6 +79,7 @@
             scrollbar-width: none; 
             -ms-overflow-style: none;
             scroll-snap-type: x mandatory;
+            scroll-behavior: smooth; /* เพิ่มความสมูท */
         }
         .promo-scroll-container::-webkit-scrollbar { display: none; }
 
@@ -169,7 +179,7 @@
         </div>
     </div>
     
-    <div class="promo-scroll-container">
+    <div class="promo-scroll-container" id="promoContainer">
         
         <div class="promo-card card-lineman" onclick="copyCode('LMNEW100', 'LINE MAN')">
             <div class="promo-badge">
@@ -237,9 +247,10 @@
         </div>
 
     </div>
+
     <div class="links-container">
         
-        <div id="btn-lineman" class="link-btn" onclick="handleCopyAndRedirect('LINE MAN', '', 'https://wongn.ai/223eD4')">
+        <a id="btn-lineman" href="https://wongn.ai/223eD4" class="link-btn" onclick="handleClickApp('LINE MAN')">
             <div class="badge-corner bg-green">🔥 ค่าส่งถูกสุด</div>
             <div class="btn-logo-wrapper" style="background: #00B900;">
                 <img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN">
@@ -252,9 +263,9 @@
                 </span>
             </div>
             <i class="fa-solid fa-chevron-right btn-arrow"></i>
-        </div>
+        </a>
 
-        <div id="btn-grab" class="link-btn" onclick="handleCopyAndRedirect('GrabFood', '', 'https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload')">
+        <a id="btn-grab" href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" class="link-btn" onclick="handleClickApp('GrabFood')">
             <div class="badge-corner bg-orange">ส่งไวสุด</div>
             <div class="btn-logo-wrapper" style="background: white;">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood">
@@ -267,9 +278,9 @@
                 </span>
             </div>
             <i class="fa-solid fa-chevron-right btn-arrow"></i>
-        </div>
+        </a>
 
-        <div id="btn-robinhood" class="link-btn" onclick="handleCopyAndRedirect('Robinhood', '', 'https://static.robinhood.in.th/app_link.html?URI=robinhoodth://merchantlanding/id/22252')">
+        <a id="btn-robinhood" href="https://static.robinhood.in.th/app_link.html?URI=robinhoodth://merchantlanding/id/22252" class="link-btn" onclick="handleClickApp('Robinhood')">
             <div class="btn-logo-wrapper">
                  <img src="https://placehold.co/200x200/76308B/ffffff?text=Robin\nhood" alt="Robinhood">
             </div>
@@ -281,9 +292,9 @@
                 </span>
             </div>
             <i class="fa-solid fa-chevron-right btn-arrow"></i>
-        </div>
+        </a>
 
-        <a id="btn-lineoa" href="https://lin.ee/svRu5ks" class="link-btn" style="border: 2px solid #06C755; background-color: #fcfdfc;" onclick="gtag('event', 'click_contact', {'app_name': 'LINE OA'});">
+        <a id="btn-lineoa" href="https://lin.ee/svRu5ks" class="link-btn" style="border: 2px solid #06C755; background-color: #fcfdfc;" onclick="handleClickApp('LINE OA')">
             <div class="btn-logo-wrapper" style="background: transparent;">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" alt="LINE OA">
             </div>
@@ -324,6 +335,7 @@
             }
         }
 
+        // ฟังก์ชัน copyCode สำหรับบัตรโปรโมชั่นด้านบน
         function copyCode(code, appName) {
             gtag('event', 'copy_coupon', {'coupon_code': code, 'app_name': appName});
             navigator.clipboard.writeText(code).then(() => {
@@ -331,18 +343,10 @@
             }).catch(err => { console.error(err); });
         }
 
-        function handleCopyAndRedirect(appName, code, url) {
+        // ฟังก์ชันแสดง Toast และเก็บ Stat เมื่อกดปุ่มแอพ (แต่การเปลี่ยนหน้าใช้ href ของ <a>)
+        function handleClickApp(appName) {
             gtag('event', 'click_delivery', {'app_name': appName});
-            // เช็คว่ามี code ส่งมาไหม ถ้าว่างเปล่า ('') จะเข้าเงื่อนไข else ทันที
-            if (code) {
-                navigator.clipboard.writeText(code).then(() => {
-                    showToast("คัดลอก '" + code + "' แล้ว!");
-                    setTimeout(() => { window.location.href = url; }, 1500);
-                }).catch(err => { window.location.href = url; });
-            } else {
-                showToast("กำลังเปิด " + appName + "...");
-                setTimeout(() => { window.location.href = url; }, 800);
-            }
+            showToast("กำลังเปิด " + appName + "...");
         }
 
         function showToast(message) {
@@ -352,6 +356,40 @@
             x.className = "show"; 
             setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000); 
         }
+
+        /* --- LOGIC AUTO SCROLL --- */
+        let scrollInterval;
+        const scrollContainer = document.getElementById('promoContainer');
+
+        function startAutoScroll() {
+            if (!scrollContainer) return;
+            
+            scrollInterval = setInterval(() => {
+                const cardWidth = 170; // 160px width + 10px margin-right
+                const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
+                
+                // ถ้าเลื่อนไปเกือบสุดแล้ว ให้วนกลับมาจุดเริ่มต้น
+                if (scrollContainer.scrollLeft >= maxScroll - 10) {
+                    scrollContainer.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    // ถ้ายังไม่สุด ให้เลื่อนไปขวา
+                    scrollContainer.scrollBy({ left: cardWidth, behavior: 'smooth' });
+                }
+            }, 3500); // 3.5 วินาที
+        }
+
+        function stopAutoScroll() {
+            clearInterval(scrollInterval);
+        }
+
+        // เริ่มทำงานเมื่อโหลดเสร็จ
+        startAutoScroll();
+
+        // หยุดเลื่อนเมื่อผู้ใช้เอานิ้วไปแตะหรือเอาเมาส์ไปชี้ (จะได้กดสะดวก)
+        scrollContainer.addEventListener('touchstart', stopAutoScroll);
+        scrollContainer.addEventListener('touchend', startAutoScroll);
+        scrollContainer.addEventListener('mouseenter', stopAutoScroll);
+        scrollContainer.addEventListener('mouseleave', startAutoScroll);
 
         checkShopStatus();
     </script>
