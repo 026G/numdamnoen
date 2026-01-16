@@ -27,12 +27,12 @@
         .dot-green { background-color: #22c55e; }
         .dot-red { background-color: #ef4444; }
 
-        /* --- TAB FILTER STYLES (ส่วนใหม่: ทำให้เด่น) --- */
+        /* --- TAB FILTER STYLES --- */
         .tab-container {
             width: 100%;
             max-width: 420px;
             margin-bottom: 15px;
-            position: sticky; /* ลอยติดด้านบน */
+            position: sticky;
             top: 10px;
             z-index: 100;
         }
@@ -148,31 +148,26 @@
         }
 
         /* --- THEME COLORS --- */
-        /* LINEMAN: เขียว (ทำให้เหมือน Grab ตามขอ) */
         .card-lineman { background: #00B900; color: white; }
         .card-lineman .promo-text-sm { color: #eaffea; }
         .card-lineman .promo-amount { color: white; }
         .card-lineman .promo-footer { background: #009000; color: white; }
 
-        /* GRAB: ขาว ขอบเขียว */
         .card-grab { background: #fff; border: 1.5px solid #00B14F; color: #333; }
         .card-grab .promo-content { height: 63%; } 
         .card-grab .promo-text-sm { color: #666; }
         .card-grab .promo-amount { color: #00B14F; }
         .card-grab .promo-footer { background: #00B14F; color: white; }
 
-        /* FLASH DEAL: ส้ม-แดง */
         .card-flash { background: linear-gradient(135deg, #FF512F 0%, #DD2476 100%); color: white; border: none; }
         .card-flash .promo-text-sm { color: #ffd1d1; font-weight: bold; }
         .card-flash .promo-amount { color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); }
         .card-flash .promo-footer { background: rgba(0,0,0,0.15); color: white; justify-content: center; }
 
-        /* CASHBACK: เขียวอ่อน */
         .card-cashback { background: #E8FCE8; border: 1.5px solid #00B900; color: #006800; }
         .card-cashback .promo-amount { color: #00B900; }
         .card-cashback .promo-footer { background: #cdf5cd; color: #006800; }
 
-        /* ROBINHOOD: ม่วง */
         .card-robin { background: #76308B; color: white; border: none; }
         .card-robin .promo-text-sm { color: #f3e8ff; }
         .card-robin .promo-footer { background: #5a236b; color: white; }
@@ -245,7 +240,6 @@
 
     <div id="grab" class="tab-content active">
         <div class="promo-scroll-container">
-            
             <a href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" 
                class="promo-card card-flash" onclick="handleClickApp('GrabFood')">
                 <div class="promo-badge"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood"></div>
@@ -290,50 +284,51 @@
 
     <div id="lineman" class="tab-content">
         <div class="promo-scroll-container">
-            <div class="promo-card card-lineman" onclick="copyCode('LMNEW100', 'LINE MAN')">
+            
+            <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="copyCode('LMNEW100', 'LINE MAN')">
                 <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN"></div>
                 <div class="promo-content">
                     <div class="promo-text-sm">ลูกค้าใหม่ลด</div>
                     <div class="promo-amount">100<span class="promo-unit">.-</span></div>
                 </div>
                 <div class="promo-footer"><span>Code: LMNEW100</span></div>
-            </div>
+            </a>
             
-            <div class="promo-card card-lineman" onclick="handleClickApp('LINE MAN')">
+            <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="handleClickApp('LINE MAN')">
                 <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN"></div>
                 <div class="promo-content">
                     <div class="promo-text-sm">ลดสูงสุด</div>
                     <div class="promo-amount">70<span class="promo-unit">.-</span></div>
                 </div>
                 <div class="promo-footer"><span>ขั้นต่ำ 300.-</span></div>
-            </div>
+            </a>
 
-             <div class="promo-card card-lineman" onclick="handleClickApp('LINE MAN')">
+             <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="handleClickApp('LINE MAN')">
                 <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN"></div>
                 <div class="promo-content">
                     <div class="promo-text-sm">ลด 30% สูงสุด</div>
                     <div class="promo-amount">50<span class="promo-unit">.-</span></div>
                 </div>
                 <div class="promo-footer"><span>ขั้นต่ำ 120.-</span></div>
-            </div>
+            </a>
 
-            <div class="promo-card card-lineman" onclick="handleClickApp('LINE MAN')">
+            <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="handleClickApp('LINE MAN')">
                  <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN"></div>
                 <div class="promo-content">
                     <div class="promo-text-sm">ส่วนลดอาหาร</div>
                     <div class="promo-amount">20<span class="promo-unit">%</span></div>
                 </div>
                 <div class="promo-footer"><span>ขั้นต่ำ 130.-</span></div>
-            </div>
+            </a>
 
-            <div class="promo-card card-lineman" onclick="handleClickApp('LINE MAN')" style="border: 2px dashed #aaffaa;">
+            <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="handleClickApp('LINE MAN')" style="border: 2px dashed #aaffaa;">
                  <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN"></div>
                 <div class="promo-content">
                     <div class="promo-text-sm">คูปองเงินคืน</div>
                     <div class="promo-amount">40<span class="promo-unit">%</span></div>
                 </div>
                 <div class="promo-footer"><span>ขั้นต่ำ 120.-</span></div>
-            </div>
+            </a>
         </div>
     </div>
 
@@ -430,7 +425,6 @@
     </div>
 
     <script>
-        // --- TAB SWITCHER LOGIC ---
         function openTab(appName) {
             var buttons = document.getElementsByClassName('tab-btn');
             for (var i = 0; i < buttons.length; i++) {
@@ -447,7 +441,6 @@
 
             gtag('event', 'switch_tab', {'app_name': appName});
             
-            // รีเซ็ตการเลื่อน Auto Scroll ให้เริ่มใหม่ทันทีที่เปลี่ยน Tab
             startAutoScroll();
         }
 
@@ -488,7 +481,7 @@
             setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000); 
         }
 
-        /* --- LOGIC AUTO SCROLL (เฉพาะ Tab ที่ Active) --- */
+        /* --- LOGIC AUTO SCROLL --- */
         let scrollInterval;
         
         function getActiveContainer() {
