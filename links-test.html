@@ -26,62 +26,87 @@
         .status-dot { width: 8px; height: 8px; border-radius: 50%; display: block; transition: background-color 0.3s; }
         .dot-green { background-color: #22c55e; }
         .dot-red { background-color: #ef4444; }
-        
-        /* Links Container */
-        .links-container { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
-        
-        .link-btn { background-color: white; border: 1px solid #e5e7eb; padding: 12px 16px; border-radius: 16px; text-decoration: none; color: #333; display: flex; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,0.04); transition: all 0.2s ease; position: relative; overflow: hidden; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-        .link-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(22, 101, 52, 0.15); border-color: #4ade80; }
-        
-        .btn-logo-wrapper { width: 50px; height: 50px; margin-right: 15px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 12px; overflow: hidden; background-color: #f9fafb; }
-        .btn-logo-wrapper img { width: 100%; height: 100%; object-fit: contain; }
-        .btn-text { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
-        .btn-title { font-weight: 600; font-size: 16px; display: flex; align-items: center; flex-wrap: wrap; gap: 5px; line-height: 1.2; }
-        .btn-subtitle { font-size: 12px; color: #666; margin-top: 4px; display: flex; align-items: center; gap: 5px; }
-        .promo-tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: normal; display: inline-flex; align-items: center; gap: 3px; }
-        .tag-green { background-color: #e8fce8; color: #00B900; border: 1px solid #66d966; }
-        .tag-red { background-color: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
-        .tag-purple { background-color: #f3e8ff; color: #9333ea; border: 1px solid #e9d5ff; }
-        .btn-arrow { color: #ccc; font-size: 14px; margin-left: 10px; }
-        .rating { color: #f59e0b; font-size: 13px; font-weight: normal; display: flex; align-items: center; gap: 3px; }
-        .badge-corner { position: absolute; top: 0; right: 0; font-size: 9px; padding: 3px 8px; border-bottom-left-radius: 8px; color: white; font-weight: bold; z-index: 10; }
-        .bg-green { background-color: #10b981; }
-        .bg-orange { background-color: #f97316; }
 
-        .footer-area { margin-top: 40px; width: 100%; max-width: 420px; display: flex; flex-direction: column; align-items: center; gap: 15px; border-top: 1px dashed #ccc; padding-top: 20px; }
-        .social-icons { display: flex; gap: 15px; }
-        .social-btn { width: 45px; height: 45px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; text-decoration: none; color: #333; font-size: 22px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.2s; }
-        .social-btn:hover { transform: scale(1.1); }
-        .contact-label { font-size: 14px; color: #888; margin-bottom: 5px; }
-        
-        .share-btn { display: none; } 
-
-        .bg-element { position: fixed; z-index: -1; opacity: 0.4; animation: float 6s ease-in-out infinite; pointer-events: none; }
-        @keyframes float { 0% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-15px) rotate(5deg); } 100% { transform: translateY(0px) rotate(0deg); } }
-
-        /* --- NOTIFICATION BAR --- */
-        #copy-toast {
-            visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 50px; padding: 10px 20px; position: fixed; z-index: 999; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 13px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; gap: 8px; opacity: 0; transition: opacity 0.3s, bottom 0.3s;
-        }
-        #copy-toast.show { visibility: visible; opacity: 1; bottom: 50px; }
-        #copy-toast i { color: #4ade80; font-size: 16px; }
-
-        /* --- SLIDER --- */
-        .promo-scroll-container {
+        /* --- TAB FILTER STYLES (ส่วนใหม่) --- */
+        .tab-container {
             width: 100%;
             max-width: 420px;
+            margin-bottom: 15px;
+            position: sticky; /* ทำให้ลอยติดด้านบน */
+            top: 10px;
+            z-index: 100;
+        }
+
+        .tab-nav {
+            display: flex;
+            justify-content: space-between;
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 5px;
+            border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            backdrop-filter: blur(5px);
+            gap: 5px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 10px 0;
+            border-radius: 25px;
+            font-family: 'Kanit', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        /* Active States for Tabs */
+        .tab-btn.active {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            color: white;
+            transform: scale(1.02);
+        }
+
+        /* สีเฉพาะแบรนด์เมื่อ Active */
+        .tab-btn.active[data-target="grab"] { background-color: #00B14F; }
+        .tab-btn.active[data-target="lineman"] { background-color: #00B900; }
+        .tab-btn.active[data-target="robinhood"] { background-color: #76308B; }
+
+        /* Content Area */
+        .tab-content {
+            display: none; /* ซ่อนไว้ก่อน */
+            width: 100%;
+            max-width: 420px;
+            animation: fadeIn 0.4s ease;
+        }
+        
+        .tab-content.active {
+            display: block; /* แสดงเมื่อมี class active */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* --- CARD STYLES --- */
+        .promo-scroll-container {
+            width: 100%;
             overflow-x: auto;
             white-space: nowrap;
             padding: 5px 5px 15px 5px;
-            margin-bottom: 5px;
             scrollbar-width: none; 
             -ms-overflow-style: none;
-            scroll-snap-type: x mandatory;
             scroll-behavior: smooth;
         }
         .promo-scroll-container::-webkit-scrollbar { display: none; }
 
-        /* ปรับปรุง Promo Card ให้รองรับ <a> tag */
         .promo-card {
             display: inline-block;
             width: 160px;
@@ -95,7 +120,7 @@
             overflow: hidden;
             scroll-snap-align: start;
             vertical-align: top;
-            text-decoration: none; /* สำหรับ <a> */
+            text-decoration: none;
             color: inherit;
         }
         .promo-card:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.12); }
@@ -111,20 +136,7 @@
         }
 
         .promo-badge {
-            position: absolute;
-            top: 7px;
-            right: 7px;
-            background-color: white;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            z-index: 5;
-            padding: 4px;
-            overflow: hidden;
+            position: absolute; top: 7px; right: 7px; background-color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 5; padding: 4px; overflow: hidden;
         }
         .promo-badge img { width: 100%; height: 100%; object-fit: contain; }
         
@@ -133,16 +145,10 @@
         .promo-unit { font-size: 14px; margin-left: 2px;}
         
         .promo-footer {
-            height: 35%;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 10px;
-            font-weight: 600;
-            font-size: 11px;
+            height: 35%; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font-weight: 600; font-size: 11px;
         }
 
-        /* --- THEME SPECIFIC --- */
+        /* Theme Colors */
         .card-lineman { background: #00B900; color: white; }
         .card-lineman .promo-text-sm { color: #eaffea; }
         .card-lineman .promo-amount { color: white; }
@@ -154,21 +160,52 @@
         .card-grab .promo-amount { color: #00B14F; }
         .card-grab .promo-footer { background: #00B14F; color: white; }
 
-        /* ใหม่! ธีมโค้ดลดแรง (Flash Deal) */
-        .card-flash { 
-            background: linear-gradient(135deg, #FF512F 0%, #DD2476 100%); 
-            color: white; 
-            border: none;
-        }
+        /* Flash Deal Theme (ส้ม-แดง) */
+        .card-flash { background: linear-gradient(135deg, #FF512F 0%, #DD2476 100%); color: white; border: none; }
         .card-flash .promo-text-sm { color: #ffd1d1; font-weight: bold; }
         .card-flash .promo-amount { color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); }
         .card-flash .promo-footer { background: rgba(0,0,0,0.15); color: white; justify-content: center; }
 
-        /* ธีมเงินคืน (Cashback) */
+        /* Cashback Theme */
         .card-cashback { background: #E8FCE8; border: 1.5px solid #00B900; color: #006800; }
         .card-cashback .promo-amount { color: #00B900; }
         .card-cashback .promo-footer { background: #cdf5cd; color: #006800; }
 
+        /* Robinhood Theme */
+        .card-robin { background: #76308B; color: white; border: none; }
+        .card-robin .promo-text-sm { color: #f3e8ff; }
+        .card-robin .promo-footer { background: #5a236b; color: white; }
+
+        /* Link Buttons Styles */
+        .links-container { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+        .link-btn { background-color: white; border: 1px solid #e5e7eb; padding: 12px 16px; border-radius: 16px; text-decoration: none; color: #333; display: flex; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,0.04); transition: all 0.2s ease; position: relative; overflow: hidden; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .link-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(22, 101, 52, 0.15); border-color: #4ade80; }
+        .btn-logo-wrapper { width: 50px; height: 50px; margin-right: 15px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 12px; overflow: hidden; background-color: #f9fafb; }
+        .btn-logo-wrapper img { width: 100%; height: 100%; object-fit: contain; }
+        .btn-text { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
+        .btn-title { font-weight: 600; font-size: 16px; display: flex; align-items: center; flex-wrap: wrap; gap: 5px; line-height: 1.2; }
+        .btn-subtitle { font-size: 12px; color: #666; margin-top: 4px; display: flex; align-items: center; gap: 5px; }
+        .promo-tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: normal; display: inline-flex; align-items: center; gap: 3px; }
+        .tag-green { background-color: #e8fce8; color: #00B900; border: 1px solid #66d966; }
+        .tag-red { background-color: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+        .tag-purple { background-color: #f3e8ff; color: #9333ea; border: 1px solid #e9d5ff; }
+        .btn-arrow { color: #ccc; font-size: 14px; margin-left: 10px; }
+        .rating { color: #f59e0b; font-size: 13px; font-weight: normal; display: flex; align-items: center; gap: 3px; }
+        .badge-corner { position: absolute; top: 0; right: 0; font-size: 9px; padding: 3px 8px; border-bottom-left-radius: 8px; color: white; font-weight: bold; z-index: 10; }
+        .bg-green { background-color: #10b981; }
+        .bg-orange { background-color: #f97316; }
+
+        /* Notification & Footer */
+        #copy-toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 50px; padding: 10px 20px; position: fixed; z-index: 999; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 13px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; gap: 8px; opacity: 0; transition: opacity 0.3s, bottom 0.3s; }
+        #copy-toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+        #copy-toast i { color: #4ade80; font-size: 16px; }
+        .footer-area { margin-top: 40px; width: 100%; max-width: 420px; display: flex; flex-direction: column; align-items: center; gap: 15px; border-top: 1px dashed #ccc; padding-top: 20px; }
+        .social-icons { display: flex; gap: 15px; }
+        .social-btn { width: 45px; height: 45px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; text-decoration: none; color: #333; font-size: 22px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.2s; }
+        .social-btn:hover { transform: scale(1.1); }
+        .contact-label { font-size: 14px; color: #888; margin-bottom: 5px; }
+        .bg-element { position: fixed; z-index: -1; opacity: 0.4; animation: float 6s ease-in-out infinite; pointer-events: none; }
+        @keyframes float { 0% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-15px) rotate(5deg); } 100% { transform: translateY(0px) rotate(0deg); } }
     </style>
 </head>
 <body>
@@ -191,81 +228,132 @@
         </div>
     </div>
     
-    <div class="promo-scroll-container" id="promoContainer">
-        
-        <a href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" 
-           class="promo-card card-flash" onclick="handleClickApp('GrabFood')">
-            <div class="promo-badge">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood">
-            </div>
-            <div class="promo-content">
-                <div class="promo-text-sm"><i class="fa-solid fa-fire"></i> ลดแรง 15 นาที</div>
-                <div class="promo-amount">50<span class="promo-unit">.-</span></div>
-            </div>
-            <div class="promo-footer">
-                <span>ขั้นต่ำ 180.- กดเลย!</span>
-            </div>
-        </a>
+    <div class="tab-container">
+        <div class="tab-nav">
+            <button class="tab-btn active" data-target="grab" onclick="openTab('grab')">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" width="16" alt=""> Grab
+            </button>
+            <button class="tab-btn" data-target="lineman" onclick="openTab('lineman')">
+                <img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" width="16" alt=""> LINEMAN
+            </button>
+            <button class="tab-btn" data-target="robinhood" onclick="openTab('robinhood')">
+                <i class="fa-solid fa-store" style="color: #76308B;"></i> Robinhood
+            </button>
+        </div>
+    </div>
 
-        <a href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" 
-           class="promo-card card-cashback" onclick="handleClickApp('GrabFood')">
-            <div class="promo-badge">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood">
-            </div>
-            <div class="promo-content">
-                <div class="promo-text-sm">รับเงินคืน</div>
-                <div class="promo-amount">200<span class="promo-unit">.-</span></div>
-            </div>
-            <div class="promo-footer">
-                <span>ไม่มีขั้นต่ำ</span>
-            </div>
-        </a>
+    <div id="grab" class="tab-content active">
+        <div class="promo-scroll-container">
+            
+            <a href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" 
+               class="promo-card card-flash" onclick="handleClickApp('GrabFood')">
+                <div class="promo-badge"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood"></div>
+                <div class="promo-content">
+                    <div class="promo-text-sm"><i class="fa-solid fa-bolt"></i> ลดแรง 15 นาที</div>
+                    <div class="promo-amount">50<span class="promo-unit">.-</span></div>
+                </div>
+                <div class="promo-footer"><span>ขั้นต่ำ 180.- กดเลย!</span></div>
+            </a>
 
-        <a href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" 
-           class="promo-card card-grab" onclick="handleClickApp('GrabFood')">
-            <div class="promo-badge">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood">
-            </div>
-            <div class="promo-content">
-                <div class="promo-text-sm">ลดสูงสุด</div>
-                <div class="promo-amount">100<span class="promo-unit">.-</span></div>
-            </div>
-            <div class="promo-footer">
-                <span>ขั้นต่ำ 320.-</span>
-            </div>
-        </a>
+            <a href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" 
+               class="promo-card card-cashback" onclick="handleClickApp('GrabFood')">
+                <div class="promo-badge"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood"></div>
+                <div class="promo-content">
+                    <div class="promo-text-sm">เงินคืน</div>
+                    <div class="promo-amount">200<span class="promo-unit">.-</span></div>
+                </div>
+                <div class="promo-footer"><span>ไม่มีขั้นต่ำ</span></div>
+            </a>
 
-         <a href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" 
-            class="promo-card card-grab" onclick="handleClickApp('GrabFood')">
-             <div class="promo-badge">
-                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood">
-             </div>
-             <div class="promo-content">
-                 <div class="promo-text-sm">ลดเพิ่ม</div>
-                 <div class="promo-amount">60<span class="promo-unit">.-</span></div>
-             </div>
-             <div class="promo-footer">
-                 <span>ขั้นต่ำ 220.-</span>
-             </div>
-         </a>
+            <a href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" 
+               class="promo-card card-grab" onclick="handleClickApp('GrabFood')">
+                <div class="promo-badge"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood"></div>
+                <div class="promo-content">
+                    <div class="promo-text-sm">ลดสูงสุด</div>
+                    <div class="promo-amount">100<span class="promo-unit">.-</span></div>
+                </div>
+                <div class="promo-footer"><span>ขั้นต่ำ 320.-</span></div>
+            </a>
 
-        <div class="promo-card card-lineman" onclick="copyCode('LMNEW100', 'LINE MAN')">
-            <div class="promo-badge">
-                <img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN">
+            <a href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" 
+               class="promo-card card-grab" onclick="handleClickApp('GrabFood')">
+                <div class="promo-badge"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood"></div>
+                <div class="promo-content">
+                    <div class="promo-text-sm">ลดเพิ่ม</div>
+                    <div class="promo-amount">80<span class="promo-unit">.-</span></div>
+                </div>
+                <div class="promo-footer"><span>ขั้นต่ำ 280.-</span></div>
+            </a>
+
+             <a href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" 
+                class="promo-card card-grab" onclick="handleClickApp('GrabFood')">
+                <div class="promo-badge"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood"></div>
+                <div class="promo-content">
+                    <div class="promo-text-sm">ลดเพิ่ม</div>
+                    <div class="promo-amount">60<span class="promo-unit">.-</span></div>
+                </div>
+                <div class="promo-footer"><span>ขั้นต่ำ 220.-</span></div>
+            </a>
+
+        </div>
+    </div>
+
+    <div id="lineman" class="tab-content">
+        <div class="promo-scroll-container">
+            <div class="promo-card card-lineman" onclick="copyCode('LMNEW100', 'LINE MAN')">
+                <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN"></div>
+                <div class="promo-content">
+                    <div class="promo-text-sm">ลูกค้าใหม่ลด</div>
+                    <div class="promo-amount">100<span class="promo-unit">.-</span></div>
+                </div>
+                <div class="promo-footer"><span>Code: LMNEW100</span></div>
             </div>
-            <div class="promo-content">
-                <div class="promo-text-sm">ลูกค้าใหม่ลด</div>
-                <div class="promo-amount">100<span class="promo-unit">.-</span></div>
+            
+            <div class="promo-card card-lineman" onclick="copyCode('AROI50', 'LINE MAN')">
+                <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN"></div>
+                <div class="promo-content">
+                    <div class="promo-text-sm">ลดเพิ่ม</div>
+                    <div class="promo-amount">50<span class="promo-unit">.-</span></div>
+                </div>
+                <div class="promo-footer"><span>Code: AROI50</span></div>
             </div>
-            <div class="promo-footer">
-                <span>Code: LMNEW100</span>
+
+            <div class="promo-card card-lineman" onclick="copyCode('FREESHIP', 'LINE MAN')">
+                 <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN"></div>
+                <div class="promo-content">
+                    <div class="promo-text-sm">โค้ดพิเศษ</div>
+                    <div class="promo-amount" style="font-size: 22px;">ส่งฟรี</div>
+                </div>
+                <div class="promo-footer"><span>Code: FREESHIP</span></div>
             </div>
         </div>
+    </div>
 
+    <div id="robinhood" class="tab-content">
+        <div class="promo-scroll-container">
+            <a href="https://static.robinhood.in.th/app_link.html?URI=robinhoodth://merchantlanding/id/22252" 
+               class="promo-card card-robin" onclick="handleClickApp('Robinhood')">
+                <div class="promo-badge"><img src="https://placehold.co/200x200/76308B/ffffff?text=RH" alt="Robinhood"></div>
+                <div class="promo-content">
+                    <div class="promo-text-sm"><i class="fa-solid fa-heart"></i> ร้านใจดี</div>
+                    <div class="promo-amount">ลด 5<span class="promo-unit">%</span></div>
+                </div>
+                <div class="promo-footer"><span>กดสั่งเลย</span></div>
+            </a>
+            
+            <a href="https://static.robinhood.in.th/app_link.html?URI=robinhoodth://merchantlanding/id/22252" 
+               class="promo-card card-robin" onclick="handleClickApp('Robinhood')">
+                <div class="promo-badge"><img src="https://placehold.co/200x200/76308B/ffffff?text=RH" alt="Robinhood"></div>
+                <div class="promo-content">
+                    <div class="promo-text-sm">ค่าส่งถูก</div>
+                    <div class="promo-amount" style="font-size: 22px;">เริ่มต้น 10.-</div>
+                </div>
+                <div class="promo-footer"><span>ระยะใกล้</span></div>
+            </a>
+        </div>
     </div>
 
     <div class="links-container">
-        
         <a id="btn-lineman" href="https://wongn.ai/223eD4" class="link-btn" onclick="handleClickApp('LINE MAN')">
             <div class="badge-corner bg-green">🔥 ค่าส่งถูกสุด</div>
             <div class="btn-logo-wrapper" style="background: #00B900;">
@@ -289,7 +377,7 @@
             <div class="btn-text">
                 <span class="btn-title">GrabFood <span class="rating"><i class="fa-solid fa-star"></i> 4.9 (252)</span></span>
                 <span class="btn-subtitle">
-                    <span class="promo-tag tag-red"><i class="fa-solid fa-tag"></i> เก็บโค๊ดหน้าร้าน</span>
+                    <span class="promo-tag tag-red"><i class="fa-solid fa-tag"></i> เก็บโค้ดหน้าร้าน</span>
                     ✅ ค่าส่งถูก
                 </span>
             </div>
@@ -334,6 +422,28 @@
     </div>
 
     <script>
+        // --- TAB SWITCHER LOGIC ---
+        function openTab(appName) {
+            // 1. เอา active ออกจากปุ่มทั้งหมด
+            var buttons = document.getElementsByClassName('tab-btn');
+            for (var i = 0; i < buttons.length; i++) {
+                buttons[i].classList.remove('active');
+            }
+            
+            // 2. เอา active ออกจาก content ทั้งหมด
+            var contents = document.getElementsByClassName('tab-content');
+            for (var i = 0; i < contents.length; i++) {
+                contents[i].classList.remove('active');
+            }
+
+            // 3. ใส่ active ให้ปุ่มที่กด และ content ที่เลือก
+            document.querySelector('.tab-btn[data-target="' + appName + '"]').classList.add('active');
+            document.getElementById(appName).classList.add('active');
+
+            // 4. ส่ง Event Tracking
+            gtag('event', 'switch_tab', {'app_name': appName});
+        }
+
         function checkShopStatus() {
             const now = new Date();
             const hour = now.getHours();
@@ -351,7 +461,6 @@
             }
         }
 
-        // ฟังก์ชัน copyCode (สำหรับ LINE MAN)
         function copyCode(code, appName) {
             gtag('event', 'copy_coupon', {'coupon_code': code, 'app_name': appName});
             navigator.clipboard.writeText(code).then(() => {
@@ -359,7 +468,6 @@
             }).catch(err => { console.error(err); });
         }
 
-        // ฟังก์ชันแสดง Toast และเก็บ Stat (สำหรับ Grab ที่เป็น Link)
         function handleClickApp(appName) {
             gtag('event', 'click_delivery', {'app_name': appName});
             showToast("กำลังเปิด " + appName + "...");
@@ -373,38 +481,48 @@
             setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000); 
         }
 
-        /* --- LOGIC AUTO SCROLL --- */
+        /* --- LOGIC AUTO SCROLL (เฉพาะ Tab ที่ Active) --- */
         let scrollInterval;
-        const scrollContainer = document.getElementById('promoContainer');
+        
+        function getActiveContainer() {
+            // หา container ที่อยู่ใน tab active
+            const activeTab = document.querySelector('.tab-content.active');
+            return activeTab ? activeTab.querySelector('.promo-scroll-container') : null;
+        }
 
         function startAutoScroll() {
-            if (!scrollContainer) return;
+            // เคลียร์อันเก่าก่อนเสมอ
+            clearInterval(scrollInterval);
             
             scrollInterval = setInterval(() => {
-                const cardWidth = 170; // 160px width + 10px margin-right
+                const scrollContainer = getActiveContainer();
+                if (!scrollContainer) return;
+
+                const cardWidth = 170; 
                 const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
                 
-                // ถ้าเลื่อนไปเกือบสุดแล้ว ให้วนกลับมาจุดเริ่มต้น
                 if (scrollContainer.scrollLeft >= maxScroll - 10) {
                     scrollContainer.scrollTo({ left: 0, behavior: 'smooth' });
                 } else {
-                    // ถ้ายังไม่สุด ให้เลื่อนไปขวา
                     scrollContainer.scrollBy({ left: cardWidth, behavior: 'smooth' });
                 }
-            }, 3500); // 3.5 วินาที
+            }, 3500);
         }
 
         function stopAutoScroll() {
             clearInterval(scrollInterval);
         }
 
+        // เริ่มทำงาน
         startAutoScroll();
 
-        // หยุดเลื่อนเมื่อผู้ใช้เอานิ้วไปแตะหรือเอาเมาส์ไปชี้
-        scrollContainer.addEventListener('touchstart', stopAutoScroll);
-        scrollContainer.addEventListener('touchend', startAutoScroll);
-        scrollContainer.addEventListener('mouseenter', stopAutoScroll);
-        scrollContainer.addEventListener('mouseleave', startAutoScroll);
+        // เพิ่ม Listener ให้กับทุก Container เพราะมันสลับไปมาได้
+        document.querySelectorAll('.promo-scroll-container').forEach(container => {
+            container.addEventListener('touchstart', stopAutoScroll);
+            container.addEventListener('touchend', startAutoScroll);
+            container.addEventListener('mouseenter', stopAutoScroll);
+            container.addEventListener('mouseleave', startAutoScroll);
+        });
 
         checkShopStatus();
     </script>
