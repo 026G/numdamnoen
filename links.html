@@ -256,6 +256,47 @@
         .contact-label { font-size: 14px; color: #888; margin-bottom: 5px; }
         .bg-element { position: fixed; z-index: -1; opacity: 0.4; animation: float 6s ease-in-out infinite; pointer-events: none; }
         @keyframes float { 0% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-15px) rotate(5deg); } 100% { transform: translateY(0px) rotate(0deg); } }
+        /* --- VIDEO CONTAINER STYLE (ปรับปรุง) --- */
+        .video-container {
+            width: 100%;
+            max-width: 420px;
+            margin-top: 25px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            background: white;
+            padding: 10px;
+            position: relative;
+        }
+
+        .video-label {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #166534;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-left: 5px;
+        }
+
+        .youtube-wrapper {
+            position: relative;
+            padding-bottom: 56.25%; /* อัตราส่วน 16:9 มาตรฐาน */
+            height: 0;
+            overflow: hidden;
+            border-radius: 12px;
+            background: #000;
+        }
+        
+        .youtube-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* ⛔️ สำคัญ: ห้ามคลิกที่วิดีโอ */
+        }
     </style>
 </head>
 <body>
@@ -460,29 +501,11 @@
             </div>
             <i class="fa-solid fa-comment-dots btn-arrow" style="color:#06C755"></i>
         </a>
-<style>
-        .youtube-wrapper {
-            position: relative;
-            /* ปรับอัตราส่วนเป็น 16:9 มาตรฐาน (เพราะคลิปต้นฉบับเป็นแนวนอน) */
-            padding-bottom: 56.25%; 
-            height: 0;
-            overflow: hidden;
-            border-radius: 12px;
-            background: #000;
-        }
-        .youtube-wrapper iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none; /* ⛔️ สำคัญ: ห้ามคลิกที่วิดีโอ */
-        }
-    </style>
+    </div>
 
     <div class="video-container">
         <div class="video-label">
-            <i class="fa-solid fa-video"></i>  ขนมทองม้วนสด ทำใหม่ทุกออเดอร์!!
+            <i class="fa-solid fa-video"></i> ขนมทองม้วนสด ทำใหม่ทุกออเดอร์!!
         </div>
         
         <div class="youtube-wrapper">
@@ -495,8 +518,6 @@
             </iframe>
         </div>
     </div>
-    </div>
-
     <div class="footer-area">
         <div class="contact-label">ติดต่อสอบถามเพิ่มเติม</div>
         <div class="social-icons">
