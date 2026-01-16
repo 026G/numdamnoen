@@ -21,52 +21,10 @@
         .dot-green { background-color: #22c55e; }
         .dot-red { background-color: #ef4444; }
 
-        /* --- VIDEO AD STYLE --- */
-        .video-container {
-            width: 100%;
-            max-width: 420px;
-            margin-top: 25px;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            background: white;
-            padding: 10px;
-            position: relative;
-        }
-
-        .video-label {
-            font-size: 15px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: #166534;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding-left: 5px;
-        }
-
-        .youtube-wrapper {
-            position: relative;
-            padding-bottom: 56.25%; 
-            height: 0;
-            overflow: hidden;
-            border-radius: 12px;
-            background: #000;
-        }
-        
-        .youtube-wrapper iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none; /* ห้ามคลิกวิดีโอ */
-        }
-
-        /* --- TOGGLE BUTTON STYLE --- */
+        /* --- TOGGLE BUTTON STYLE (ปุ่มกดดูโค้ด) --- */
         .coupon-trigger-btn {
             background-color: #fff;
-            border: 2px dashed #00B900; 
+            border: 2px dashed #00B900; /* ขอบเส้นประสีเขียว */
             color: #00B900;
             padding: 12px 25px;
             border-radius: 50px;
@@ -82,7 +40,7 @@
             width: 100%;
             max-width: 320px;
             justify-content: center;
-            animation: bounce 2s infinite; 
+            animation: bounce 2s infinite; /* อนิเมชั่นเด้งดึ๋ง */
         }
         
         .coupon-trigger-btn:hover {
@@ -95,7 +53,7 @@
             background-color: #00B900;
             color: white;
             border-style: solid;
-            animation: none; 
+            animation: none; /* หยุดเด้งเมื่อกดแล้ว */
         }
 
         @keyframes bounce {
@@ -104,9 +62,9 @@
             60% {transform: translateY(-3px);}
         }
 
-        /* --- PROMO SECTION WRAPPER --- */
+        /* --- PROMO SECTION WRAPPER (ส่วนที่จะซ่อน/แสดง) --- */
         #promo-section-wrapper {
-            display: none; 
+            display: none; /* ซ่อนไว้ก่อน */
             width: 100%;
             max-width: 420px;
             flex-direction: column;
@@ -292,6 +250,48 @@
         .contact-label { font-size: 14px; color: #888; margin-bottom: 5px; }
         .bg-element { position: fixed; z-index: -1; opacity: 0.4; animation: float 6s ease-in-out infinite; pointer-events: none; }
         @keyframes float { 0% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-15px) rotate(5deg); } 100% { transform: translateY(0px) rotate(0deg); } }
+
+        /* --- VIDEO CONTAINER STYLE (ปรับปรุง) --- */
+        .video-container {
+            width: 100%;
+            max-width: 420px;
+            margin-top: 25px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            background: white;
+            padding: 10px;
+            position: relative;
+        }
+
+        .video-label {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #166534;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-left: 5px;
+        }
+
+        .youtube-wrapper {
+            position: relative;
+            padding-bottom: 56.25%; /* อัตราส่วน 16:9 มาตรฐาน */
+            height: 0;
+            overflow: hidden;
+            border-radius: 12px;
+            background: #000;
+        }
+        
+        .youtube-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* ⛔️ สำคัญ: ห้ามคลิกที่วิดีโอ */
+        }
     </style>
 </head>
 <body>
@@ -379,7 +379,7 @@
 
         <div id="lineman" class="tab-content">
             <div class="promo-scroll-container">
-                <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="copyAndGo(event, 'LM69', 'https://wongn.ai/223eD4')">
+                <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="copyCode('LM69', 'LINE MAN')">
                     <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN"></div>
                     <div class="promo-content">
                         <div class="promo-text-sm"><i class="fa-solid fa-clock"></i> โปรเวลาทอง </div>
@@ -388,7 +388,7 @@
                     <div class="promo-footer" style="font-size: 10px;"><span>Code: LM69</span></div>
                 </a>
 
-                <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="copyAndGo(event, 'SAVE100', 'https://wongn.ai/223eD4')">
+                <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="copyCode('SAVE100', 'LINE MAN')">
                     <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN"></div>
                     <div class="promo-content">
                         <div class="promo-text-sm">ลูกค้าใหม่</div>
@@ -397,7 +397,7 @@
                     <div class="promo-footer"><span>Code: SAVE100 | สูงสุด 100.-</span></div>
                 </a>
 
-                <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="copyAndGo(event, 'AROI', 'https://wongn.ai/223eD4')">
+                <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="copyCode('AROI', 'LINE MAN')">
                     <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN"></div>
                     <div class="promo-content">
                         <div class="promo-text-sm">ไม่มีขั้นต่ำ</div>
@@ -534,16 +534,17 @@
             
             if (wrapper.classList.contains('show')) {
                 wrapper.classList.remove('show');
-                setTimeout(() => { wrapper.style.display = 'none'; }, 400); 
+                setTimeout(() => { wrapper.style.display = 'none'; }, 400); // รอ animation จบ
                 btn.classList.remove('active');
                 btn.innerHTML = '<i class="fa-solid fa-ticket"></i> เก็บโค้ดส่วนลด (Grab/Lineman)';
-                stopAutoScroll(); 
+                stopAutoScroll(); // ปิดแล้วหยุด scroll ประหยัดทรัพยากร
             } else {
                 wrapper.style.display = 'flex';
+                // Delay เล็กน้อยเพื่อให้ display flex ทำงานก่อน add class show เพื่อให้ transition ทำงาน
                 setTimeout(() => { wrapper.classList.add('show'); }, 10); 
                 btn.classList.add('active');
                 btn.innerHTML = '<i class="fa-solid fa-xmark"></i> ปิดหน้าต่างโค้ดส่วนลด';
-                startAutoScroll(); 
+                startAutoScroll(); // เปิดแล้วค่อยเริ่ม scroll
             }
         }
 
@@ -583,24 +584,11 @@
             }
         }
 
-        // ฟังก์ชันใหม่: คัดลอก + แจ้งเตือน + รอ 1 วิ + เปิดแอพ
-        function copyAndGo(event, code, url) {
-            event.preventDefault(); // หยุดการเปิดลิ้งก์ทันที
-            
-            gtag('event', 'copy_coupon', {'coupon_code': code, 'app_name': 'LINE MAN'});
-
+        function copyCode(code, appName) {
+            gtag('event', 'copy_coupon', {'coupon_code': code, 'app_name': appName});
             navigator.clipboard.writeText(code).then(() => {
-                showToast("คัดลอก '" + code + "' แล้ว! กำลังเปิดแอพ...");
-                
-                // รอ 1.2 วินาทีให้ลูกค้าอ่าน Toast แล้วค่อยไป
-                setTimeout(() => {
-                    window.location.href = url;
-                }, 1200); 
-            }).catch(err => {
-                // ถ้าก็อปไม่ได้ ให้ไปเลยไม่ต้องรอ
-                console.error('Copy failed', err);
-                window.location.href = url;
-            });
+                showToast("คัดลอก '" + code + "' แล้ว!");
+            }).catch(err => { console.error(err); });
         }
 
         function handleClickApp(appName) {
@@ -627,6 +615,7 @@
         function startAutoScroll() {
             clearInterval(scrollInterval);
             
+            // ตรวจสอบว่า wrapper เปิดอยู่ไหม ถ้าปิดอยู่ไม่ต้อง scroll
             var wrapper = document.getElementById('promo-section-wrapper');
             if (!wrapper || !wrapper.classList.contains('show')) return;
 
@@ -649,6 +638,7 @@
             clearInterval(scrollInterval);
         }
 
+        // หยุด scroll เมื่อเอาเมาส์ไปชี้หรือแตะ
         document.querySelectorAll('.promo-scroll-container').forEach(container => {
             container.addEventListener('touchstart', stopAutoScroll);
             container.addEventListener('touchend', startAutoScroll);
