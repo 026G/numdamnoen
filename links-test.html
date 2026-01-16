@@ -454,10 +454,10 @@
             <i class="fa-solid fa-comment-dots btn-arrow" style="color:#06C755"></i>
         </a>
     <style>
-        /* CSS เสริมสำหรับ YouTube ให้เต็มจอสวยๆ */
         .youtube-wrapper {
             position: relative;
-            padding-bottom: 56.25%; /* อัตราส่วน 16:9 */
+            /* ปรับอัตราส่วนเป็น 16:9 มาตรฐาน (เพราะคลิปต้นฉบับเป็นแนวนอน) */
+            padding-bottom: 56.25%; 
             height: 0;
             overflow: hidden;
             border-radius: 12px;
@@ -479,7 +479,7 @@
         
         <div class="youtube-wrapper">
             <iframe 
-                src="https://www.youtube.com/embed/SdU5NTPXiQ4?autoplay=1&mute=1&loop=1&playlist=VIDEO_ID&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1" 
+                src="https://www.youtube.com/embed/SdU5NTPXiQ4?autoplay=1&mute=1&loop=1&playlist=SdU5NTPXiQ4&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1" 
                 title="Tongmun Video" 
                 frameborder="0" 
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
