@@ -6,6 +6,7 @@
     <title>หนุ่มดำเนิน - เมนูสั่งซื้อ</title>
     <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8">
     <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8">
+    
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-9P4HMHGDM2"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -13,6 +14,7 @@
       gtag('js', new Date());
       gtag('config', 'G-9P4HMHGDM2');
     </script>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     
@@ -58,7 +60,7 @@
         }
         .status-dot {
             width: 8px; height: 8px; border-radius: 50%; display: block;
-            transition: background-color 0.3s; /* เพิ่ม transition ให้เปลี่ยนสีนุ่มๆ */
+            transition: background-color 0.3s;
         }
         .dot-green { background-color: #22c55e; }
         .dot-red { background-color: #ef4444; }
@@ -132,7 +134,7 @@
         .bg-green { background-color: #10b981; }
         .bg-orange { background-color: #f97316; }
 
-        /* --- ส่วนที่เพิ่ม: Footer Social --- */
+        /* --- Footer Social --- */
         .footer-area {
             margin-top: 40px;
             width: 100%;
@@ -157,6 +159,19 @@
         .social-btn:hover { transform: scale(1.1); }
         .contact-label { font-size: 14px; color: #888; margin-bottom: 5px; }
 
+        /* 2. พื้นหลังใบไม้ลอย (ตกแต่ง) */
+        .bg-element {
+            position: fixed;
+            z-index: -1;
+            opacity: 0.4;
+            animation: float 6s ease-in-out infinite;
+            pointer-events: none;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-15px) rotate(5deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
     </style>
 </head>
 <body>
@@ -177,7 +192,7 @@
     
     <div class="links-container">
         
-        <a href="https://wongn.ai/223eD4" class="link-btn" onclick="gtag('event', 'click_delivery', {'app_name': 'LINE MAN'});">
+        <a id="btn-lineman" href="https://wongn.ai/223eD4" class="link-btn" onclick="gtag('event', 'click_delivery', {'app_name': 'LINE MAN'});">
             <div class="badge-corner bg-green">🔥 ค่าส่งถูกสุด</div>
             <div class="btn-logo-wrapper" style="background: #00B900;">
                 <img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN">
@@ -192,7 +207,7 @@
             <i class="fa-solid fa-chevron-right btn-arrow"></i>
         </a>
 
-        <a href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" class="link-btn" onclick="gtag('event', 'click_delivery', {'app_name': 'GrabFood'});">
+        <a id="btn-grab" href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" class="link-btn" onclick="gtag('event', 'click_delivery', {'app_name': 'GrabFood'});">
             <div class="badge-corner bg-orange">ส่งไวสุด</div>
             <div class="btn-logo-wrapper" style="background: white;">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood">
@@ -207,7 +222,7 @@
             <i class="fa-solid fa-chevron-right btn-arrow"></i>
         </a>
 
-        <a href="https://static.robinhood.in.th/app_link.html?URI=robinhoodth://merchantlanding/id/22252" class="link-btn" onclick="gtag('event', 'click_delivery', {'app_name': 'Robinhood'});">
+        <a id="btn-robinhood" href="https://static.robinhood.in.th/app_link.html?URI=robinhoodth://merchantlanding/id/22252" class="link-btn" onclick="gtag('event', 'click_delivery', {'app_name': 'Robinhood'});">
             <div class="btn-logo-wrapper">
                  <img src="https://placehold.co/200x200/76308B/ffffff?text=Robin\nhood" alt="Robinhood">
             </div>
@@ -221,7 +236,7 @@
             <i class="fa-solid fa-chevron-right btn-arrow"></i>
         </a>
 
-        <a href="https://lin.ee/svRu5ks" class="link-btn" style="border: 2px solid #06C755; background-color: #fcfdfc;" onclick="gtag('event', 'click_contact', {'app_name': 'LINE OA'});">
+        <a id="btn-lineoa" href="https://lin.ee/svRu5ks" class="link-btn" style="border: 2px solid #06C755; background-color: #fcfdfc;" onclick="gtag('event', 'click_contact', {'app_name': 'LINE OA'});">
             <div class="btn-logo-wrapper" style="background: transparent;">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" alt="LINE OA">
             </div>
@@ -237,28 +252,29 @@
     <div class="footer-area">
         <div class="contact-label">ติดต่อสอบถามเพิ่มเติม</div>
         <div class="social-icons">
-            <a href="tel:0622467746" class="social-btn" style="color: #00B900;" onclick="gtag('event', 'click_contact', {'type': 'phone'});">
+            <a id="social-phone" href="tel:0622467746" class="social-btn" style="color: #00B900;" onclick="gtag('event', 'click_contact', {'type': 'phone'});">
                 <i class="fa-solid fa-phone"></i>
             </a>
             
-            <a href="https://facebook.com/NUMDAMNOEN" class="social-btn" style="color: #1877F2;" target="_blank" onclick="gtag('event', 'click_social', {'type': 'facebook'});">
+            <a id="social-facebook" href="https://facebook.com/NUMDAMNOEN" class="social-btn" style="color: #1877F2;" target="_blank" onclick="gtag('event', 'click_social', {'type': 'facebook'});">
                 <i class="fa-brands fa-facebook"></i>
             </a>
 
-            <a href="https://tiktok.com/@numdamnoen" class="social-btn" style="color: #000000;" target="_blank" onclick="gtag('event', 'click_social', {'type': 'tiktok'});">
+            <a id="social-tiktok" href="https://tiktok.com/@numdamnoen" class="social-btn" style="color: #000000;" target="_blank" onclick="gtag('event', 'click_social', {'type': 'tiktok'});">
                 <i class="fa-brands fa-tiktok"></i>
             </a>
-            <a href="https://maps.app.goo.gl/vaAUR6ve7G5WwtjH8" class="social-btn" style="color: #000000;" target="_blank" onclick="gtag('event', 'click_social', {'type': 'googlemap'});">
+
+            <a id="social-map" href="https://maps.app.goo.gl/vaAUR6ve7G5WwtjH8" class="social-btn" style="color: #000000;" target="_blank" onclick="gtag('event', 'click_social', {'type': 'googlemap'});">
                 <i class="fa fa-map-marker"></i>
             </a>
         </div>
     </div>
-<script>
+
+    <script>
         function checkShopStatus() {
             const now = new Date();
             const hour = now.getHours();
-            const minutes = now.getMinutes();
-
+            
             // ตั้งเวลาเปิด-ปิด ตรงนี้ (06:00 - 22:00)
             const openHour = 6;
             const closeHour = 22;
@@ -280,44 +296,6 @@
         // รันฟังก์ชันทันทีเมื่อเปิดเว็บ
         checkShopStatus();
     </script>
-    <style>
-        .share-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 40px;
-            height: 40px;
-            background: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            cursor: pointer;
-            color: #166534;
-            font-size: 18px;
-            z-index: 100;
-            transition: transform 0.2s;
-        }
-        .share-btn:hover {
-            transform: scale(1.1);
-            background-color: #f0fdf4;
-        }
-
-        /* 2. พื้นหลังใบไม้ลอย (ตกแต่ง) */
-        .bg-element {
-            position: fixed;
-            z-index: -1;
-            opacity: 0.4;
-            animation: float 6s ease-in-out infinite;
-            pointer-events: none; /* กดทะลุได้ ไม่บังปุ่ม */
-        }
-        @keyframes float {
-            0% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-15px) rotate(5deg); }
-            100% { transform: translateY(0px) rotate(0deg); }
-        }
-    </style>
 
     <i class="fa-solid fa-leaf bg-element" style="color:#bbf7d0; font-size: 80px; top: 10%; left: -20px; animation-delay: 0s;"></i>
     <i class="fa-solid fa-leaf bg-element" style="color:#bbf7d0; font-size: 60px; bottom: 15%; right: -10px; animation-delay: 2s; transform: scaleX(-1);"></i>
