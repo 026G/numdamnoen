@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>หนุ่มดำเนิน - เมนูสั่งซื้อ</title>
     <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
     
@@ -20,10 +21,52 @@
         .dot-green { background-color: #22c55e; }
         .dot-red { background-color: #ef4444; }
 
-        /* --- TOGGLE BUTTON STYLE (ปุ่มกดดูโค้ด) --- */
+        /* --- VIDEO AD STYLE (ห้ามคลิก) --- */
+        .video-container {
+            width: 100%;
+            max-width: 420px;
+            margin-top: 25px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            background: white;
+            padding: 10px;
+            position: relative;
+        }
+
+        .video-label {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #166534;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-left: 5px;
+        }
+
+        .youtube-wrapper {
+            position: relative;
+            padding-bottom: 56.25%; /* อัตราส่วน 16:9 */
+            height: 0;
+            overflow: hidden;
+            border-radius: 12px;
+            background: #000;
+        }
+        
+        .youtube-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* ⛔️ คำสั่งนี้ทำให้คลิกไม่ได้ครับ */
+        }
+
+        /* --- TOGGLE BUTTON STYLE --- */
         .coupon-trigger-btn {
             background-color: #fff;
-            border: 2px dashed #00B900; /* ขอบเส้นประสีเขียว */
+            border: 2px dashed #00B900;
             color: #00B900;
             padding: 12px 25px;
             border-radius: 50px;
@@ -39,7 +82,7 @@
             width: 100%;
             max-width: 320px;
             justify-content: center;
-            animation: bounce 2s infinite; /* อนิเมชั่นเด้งดึ๋ง */
+            animation: bounce 2s infinite;
         }
         
         .coupon-trigger-btn:hover {
@@ -52,7 +95,7 @@
             background-color: #00B900;
             color: white;
             border-style: solid;
-            animation: none; /* หยุดเด้งเมื่อกดแล้ว */
+            animation: none;
         }
 
         @keyframes bounce {
@@ -61,9 +104,9 @@
             60% {transform: translateY(-3px);}
         }
 
-        /* --- PROMO SECTION WRAPPER (ส่วนที่จะซ่อน/แสดง) --- */
+        /* --- PROMO SECTION WRAPPER --- */
         #promo-section-wrapper {
-            display: none; /* ซ่อนไว้ก่อน */
+            display: none;
             width: 100%;
             max-width: 420px;
             flex-direction: column;
@@ -234,7 +277,7 @@
         .tag-purple { background-color: #f3e8ff; color: #9333ea; border: 1px solid #e9d5ff; }
         .btn-arrow { color: #ccc; font-size: 14px; margin-left: 10px; }
         .rating { color: #f59e0b; font-size: 13px; font-weight: normal; display: flex; align-items: center; gap: 3px; }
-        .badge-corner { position: absolute; top: 0; right: 0; font-size: 9px; padding: 3px 8px; border-bottom-left-radius: 8px; color: white; font-weight: 400; z-index: 10; }
+        .badge-corner { position: absolute; top: 0; right: 0; font-size: 9px; padding: 3px 8px; border-bottom-left-radius: 8px; color: white; font-weight: bold; z-index: 10; }
         .bg-green { background-color: #10b981; }
         .bg-orange { background-color: #f97316; }
 
@@ -339,10 +382,10 @@
                 <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="copyCode('LM69', 'LINE MAN')">
                     <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN"></div>
                     <div class="promo-content">
-                        <div class="promo-text-sm"><i class="fa-solid fa-clock"></i> โปรเวลาทอง </div>
+                        <div class="promo-text-sm"><i class="fa-solid fa-clock"></i> โปรพิเศษเวลาทอง</div>
                         <div class="promo-amount">50<span class="promo-unit">%</span></div>
                     </div>
-                    <div class="promo-footer" style="font-size: 10px;"><span>Code: LM69</span></div>
+                    <div class="promo-footer" style="font-size: 10px;"><span>Code: LM69 (แถม 690.-)</span></div>
                 </a>
 
                 <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="copyCode('SAVE100', 'LINE MAN')">
@@ -351,7 +394,7 @@
                         <div class="promo-text-sm">ลูกค้าใหม่</div>
                         <div class="promo-amount">100<span class="promo-unit">.-</span></div>
                     </div>
-                    <div class="promo-footer"><span>Code: SAVE100 | สูงสุด 100.-</span></div>
+                    <div class="promo-footer"><span>Code: SAVE100</span></div>
                 </a>
 
                 <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="copyCode('AROI', 'LINE MAN')">
@@ -360,7 +403,7 @@
                         <div class="promo-text-sm">ไม่มีขั้นต่ำ</div>
                         <div class="promo-amount">100<span class="promo-unit">.-</span></div>
                     </div>
-                    <div class="promo-footer"><span>Code: AROI | สูงสุด 100.-</span></div>
+                    <div class="promo-footer"><span>Code: AROI</span></div>
                 </a>
                 
                 <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="handleClickApp('LINE MAN')">
@@ -369,7 +412,7 @@
                         <div class="promo-text-sm">ลดสูงสุด</div>
                         <div class="promo-amount">70<span class="promo-unit">.-</span></div>
                     </div>
-                    <div class="promo-footer"><span>ขั้นต่ำ 300.- | สูงสุด 70.-</span></div>
+                    <div class="promo-footer"><span>ขั้นต่ำ 300.-</span></div>
                 </a>
             </div>
         </div>
@@ -405,7 +448,7 @@
                 <img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN">
             </div>
             <div class="btn-text">
-                <span class="btn-title">สั่ง LINE MAN <span class="rating"><i class="fa-solid fa-star"></i> 5.0 (623)</span></span>
+                <span class="btn-title">LINE MAN <span class="rating"><i class="fa-solid fa-star"></i> 5.0 (623)</span></span>
                 <span class="btn-subtitle">
                     <span class="promo-tag tag-green"><i class="fa-solid fa-tag"></i> ใส่โค้ด 'AROI'</span>
                     ✅ ค่าส่งถูกสุด ส่งฟรี
@@ -420,9 +463,9 @@
                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood">
             </div>
             <div class="btn-text">
-                <span class="btn-title">สั่ง GrabFood <span class="rating"><i class="fa-solid fa-star"></i> 4.9 (252)</span></span>
+                <span class="btn-title">GrabFood <span class="rating"><i class="fa-solid fa-star"></i> 4.9 (252)</span></span>
                 <span class="btn-subtitle">
-                    <span class="promo-tag tag-red"><i class="fa-solid fa-tag"></i> เก็บโค้ดในแอพ</span>
+                    <span class="promo-tag tag-red"><i class="fa-solid fa-tag"></i> เก็บโค้ดหน้าร้าน</span>
                     ✅ ค่าส่งถูก
                 </span>
             </div>
@@ -434,7 +477,7 @@
                  <img src="https://placehold.co/200x200/76308B/ffffff?text=Robin\nhood" alt="Robinhood">
             </div>
             <div class="btn-text">
-                <span class="btn-title">สั่ง Robinhood <span class="rating"><i class="fa-solid fa-star"></i> 5.0 (20)</span></span>
+                <span class="btn-title">Robinhood <span class="rating"><i class="fa-solid fa-star"></i> 5.0 (20)</span></span>
                 <span class="btn-subtitle">
                     <span class="promo-tag tag-purple"><i class="fa-solid fa-heart"></i> ร้านใจดีลดเพิ่ม 5%</span>
                     ✅ ค่าส่งถูก
@@ -453,24 +496,8 @@
             </div>
             <i class="fa-solid fa-comment-dots btn-arrow" style="color:#06C755"></i>
         </a>
-    <style>
-        .youtube-wrapper {
-            position: relative;
-            /* ปรับอัตราส่วนเป็น 16:9 มาตรฐาน (เพราะคลิปต้นฉบับเป็นแนวนอน) */
-            padding-bottom: 56.25%; 
-            height: 0;
-            overflow: hidden;
-            border-radius: 12px;
-            background: #000;
-        }
-        .youtube-wrapper iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-    </style>
+
+    </div>
 
     <div class="video-container">
         <div class="video-label">
@@ -486,7 +513,6 @@
                 allowfullscreen>
             </iframe>
         </div>
-    </div>
     </div>
 
     <div class="footer-area">
