@@ -30,7 +30,6 @@
         /* Links Container */
         .links-container { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
         
-        /* ปรับ link-btn ให้รองรับ <a> tag เต็มรูปแบบ */
         .link-btn { background-color: white; border: 1px solid #e5e7eb; padding: 12px 16px; border-radius: 16px; text-decoration: none; color: #333; display: flex; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,0.04); transition: all 0.2s ease; position: relative; overflow: hidden; cursor: pointer; -webkit-tap-highlight-color: transparent; }
         .link-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(22, 101, 52, 0.15); border-color: #4ade80; }
         
@@ -55,7 +54,6 @@
         .social-btn:hover { transform: scale(1.1); }
         .contact-label { font-size: 14px; color: #888; margin-bottom: 5px; }
         
-        /* ลบ Share Btn Style ออกไปเลย หรือปล่อยทิ้งไว้ก็ได้ แต่ผมเอา HTML ออกแล้ว */
         .share-btn { display: none; } 
 
         .bg-element { position: fixed; z-index: -1; opacity: 0.4; animation: float 6s ease-in-out infinite; pointer-events: none; }
@@ -68,7 +66,7 @@
         #copy-toast.show { visibility: visible; opacity: 1; bottom: 50px; }
         #copy-toast i { color: #4ade80; font-size: 16px; }
 
-        /* --- SLIDER แบบเล็ก (Compact) --- */
+        /* --- SLIDER --- */
         .promo-scroll-container {
             width: 100%;
             max-width: 420px;
@@ -79,10 +77,11 @@
             scrollbar-width: none; 
             -ms-overflow-style: none;
             scroll-snap-type: x mandatory;
-            scroll-behavior: smooth; /* เพิ่มความสมูท */
+            scroll-behavior: smooth;
         }
         .promo-scroll-container::-webkit-scrollbar { display: none; }
 
+        /* ปรับปรุง Promo Card ให้รองรับ <a> tag */
         .promo-card {
             display: inline-block;
             width: 160px;
@@ -96,6 +95,8 @@
             overflow: hidden;
             scroll-snap-align: start;
             vertical-align: top;
+            text-decoration: none; /* สำหรับ <a> */
+            color: inherit;
         }
         .promo-card:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.12); }
 
@@ -125,11 +126,7 @@
             padding: 4px;
             overflow: hidden;
         }
-        .promo-badge img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
+        .promo-badge img { width: 100%; height: 100%; object-fit: contain; }
         
         .promo-text-sm { font-size: 10px; font-weight: 600; margin-bottom: 2px; opacity: 0.9; }
         .promo-amount { font-size: 28px; font-weight: 800; line-height: 0.9; letter-spacing: -0.5px; }
@@ -157,6 +154,21 @@
         .card-grab .promo-amount { color: #00B14F; }
         .card-grab .promo-footer { background: #00B14F; color: white; }
 
+        /* ใหม่! ธีมโค้ดลดแรง (Flash Deal) */
+        .card-flash { 
+            background: linear-gradient(135deg, #FF512F 0%, #DD2476 100%); 
+            color: white; 
+            border: none;
+        }
+        .card-flash .promo-text-sm { color: #ffd1d1; font-weight: bold; }
+        .card-flash .promo-amount { color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); }
+        .card-flash .promo-footer { background: rgba(0,0,0,0.15); color: white; justify-content: center; }
+
+        /* ธีมเงินคืน (Cashback) */
+        .card-cashback { background: #E8FCE8; border: 1.5px solid #00B900; color: #006800; }
+        .card-cashback .promo-amount { color: #00B900; }
+        .card-cashback .promo-footer { background: #cdf5cd; color: #006800; }
+
     </style>
 </head>
 <body>
@@ -181,6 +193,62 @@
     
     <div class="promo-scroll-container" id="promoContainer">
         
+        <a href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" 
+           class="promo-card card-flash" onclick="handleClickApp('GrabFood')">
+            <div class="promo-badge">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood">
+            </div>
+            <div class="promo-content">
+                <div class="promo-text-sm"><i class="fa-solid fa-fire"></i> ลดแรง 15 นาที</div>
+                <div class="promo-amount">50<span class="promo-unit">.-</span></div>
+            </div>
+            <div class="promo-footer">
+                <span>ขั้นต่ำ 180.- กดเลย!</span>
+            </div>
+        </a>
+
+        <a href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" 
+           class="promo-card card-cashback" onclick="handleClickApp('GrabFood')">
+            <div class="promo-badge">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood">
+            </div>
+            <div class="promo-content">
+                <div class="promo-text-sm">รับเงินคืน</div>
+                <div class="promo-amount">200<span class="promo-unit">.-</span></div>
+            </div>
+            <div class="promo-footer">
+                <span>ไม่มีขั้นต่ำ</span>
+            </div>
+        </a>
+
+        <a href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" 
+           class="promo-card card-grab" onclick="handleClickApp('GrabFood')">
+            <div class="promo-badge">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood">
+            </div>
+            <div class="promo-content">
+                <div class="promo-text-sm">ลดสูงสุด</div>
+                <div class="promo-amount">100<span class="promo-unit">.-</span></div>
+            </div>
+            <div class="promo-footer">
+                <span>ขั้นต่ำ 320.-</span>
+            </div>
+        </a>
+
+         <a href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" 
+            class="promo-card card-grab" onclick="handleClickApp('GrabFood')">
+             <div class="promo-badge">
+                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood">
+             </div>
+             <div class="promo-content">
+                 <div class="promo-text-sm">ลดเพิ่ม</div>
+                 <div class="promo-amount">60<span class="promo-unit">.-</span></div>
+             </div>
+             <div class="promo-footer">
+                 <span>ขั้นต่ำ 220.-</span>
+             </div>
+         </a>
+
         <div class="promo-card card-lineman" onclick="copyCode('LMNEW100', 'LINE MAN')">
             <div class="promo-badge">
                 <img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN">
@@ -191,58 +259,6 @@
             </div>
             <div class="promo-footer">
                 <span>Code: LMNEW100</span>
-            </div>
-        </div>
-
-        <div class="promo-card card-grab" onclick="copyCode('GRAB40', 'GrabFood')">
-            <div class="promo-badge">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood">
-            </div>
-            <div class="promo-content">
-                <div class="promo-text-sm">ลดสูงสุด</div>
-                <div class="promo-amount">40<span class="promo-unit">%</span></div>
-            </div>
-            <div class="promo-footer">
-                <span>Code: GRAB40</span>
-            </div>
-        </div>
-
-        <div class="promo-card card-lineman" onclick="copyCode('AROI50', 'LINE MAN')">
-            <div class="promo-badge">
-                <img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN">
-            </div>
-            <div class="promo-content">
-                <div class="promo-text-sm">ใส่โค้ดลดเพิ่ม</div>
-                <div class="promo-amount">50<span class="promo-unit">.-</span></div>
-            </div>
-            <div class="promo-footer">
-                <span>Code: AROI50</span>
-            </div>
-        </div>
-
-        <div class="promo-card card-grab" onclick="copyCode('SAVE80', 'GrabFood')">
-            <div class="promo-badge">
-                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood">
-            </div>
-            <div class="promo-content">
-                <div class="promo-text-sm">ลดเพิ่มทันที</div>
-                <div class="promo-amount">80<span class="promo-unit">.-</span></div>
-            </div>
-            <div class="promo-footer">
-                <span>Code: SAVE80</span>
-            </div>
-        </div>
-
-        <div class="promo-card card-lineman" onclick="copyCode('FREESHIP', 'LINE MAN')">
-             <div class="promo-badge">
-                <img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN">
-            </div>
-            <div class="promo-content">
-                <div class="promo-text-sm">โค้ดพิเศษ</div>
-                <div class="promo-amount" style="font-size: 22px;">ส่งฟรี<span class="promo-unit"></span></div>
-            </div>
-            <div class="promo-footer">
-                <span>Code: FREESHIP</span>
             </div>
         </div>
 
@@ -273,7 +289,7 @@
             <div class="btn-text">
                 <span class="btn-title">GrabFood <span class="rating"><i class="fa-solid fa-star"></i> 4.9 (252)</span></span>
                 <span class="btn-subtitle">
-                    <span class="promo-tag tag-red"><i class="fa-solid fa-tag"></i> เก็บโค๊ดลด</span>
+                    <span class="promo-tag tag-red"><i class="fa-solid fa-tag"></i> เก็บโค๊ดหน้าร้าน</span>
                     ✅ ค่าส่งถูก
                 </span>
             </div>
@@ -335,7 +351,7 @@
             }
         }
 
-        // ฟังก์ชัน copyCode สำหรับบัตรโปรโมชั่นด้านบน
+        // ฟังก์ชัน copyCode (สำหรับ LINE MAN)
         function copyCode(code, appName) {
             gtag('event', 'copy_coupon', {'coupon_code': code, 'app_name': appName});
             navigator.clipboard.writeText(code).then(() => {
@@ -343,7 +359,7 @@
             }).catch(err => { console.error(err); });
         }
 
-        // ฟังก์ชันแสดง Toast และเก็บ Stat เมื่อกดปุ่มแอพ (แต่การเปลี่ยนหน้าใช้ href ของ <a>)
+        // ฟังก์ชันแสดง Toast และเก็บ Stat (สำหรับ Grab ที่เป็น Link)
         function handleClickApp(appName) {
             gtag('event', 'click_delivery', {'app_name': appName});
             showToast("กำลังเปิด " + appName + "...");
@@ -382,10 +398,9 @@
             clearInterval(scrollInterval);
         }
 
-        // เริ่มทำงานเมื่อโหลดเสร็จ
         startAutoScroll();
 
-        // หยุดเลื่อนเมื่อผู้ใช้เอานิ้วไปแตะหรือเอาเมาส์ไปชี้ (จะได้กดสะดวก)
+        // หยุดเลื่อนเมื่อผู้ใช้เอานิ้วไปแตะหรือเอาเมาส์ไปชี้
         scrollContainer.addEventListener('touchstart', stopAutoScroll);
         scrollContainer.addEventListener('touchend', startAutoScroll);
         scrollContainer.addEventListener('mouseenter', stopAutoScroll);
