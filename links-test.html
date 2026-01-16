@@ -99,12 +99,11 @@
             padding-top: 5px;
         }
 
-        /* --- แก้ไข: ปรับปรุง Badge ให้ใส่โลโก้ --- */
         .promo-badge {
             position: absolute;
             top: 7px;
             right: 7px;
-            background-color: white; /* พื้นหลังขาวเพื่อให้โลโก้เด่น */
+            background-color: white;
             border-radius: 50%;
             width: 30px;
             height: 30px;
@@ -113,13 +112,13 @@
             justify-content: center;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             z-index: 5;
-            padding: 4px; /* เว้นระยะขอบให้โลโก้ */
+            padding: 4px;
             overflow: hidden;
         }
         .promo-badge img {
             width: 100%;
             height: 100%;
-            object-fit: contain; /* ให้โลโก้พอดีในวงกลม */
+            object-fit: contain;
         }
         
         .promo-text-sm { font-size: 10px; font-weight: 600; margin-bottom: 2px; opacity: 0.9; }
@@ -137,13 +136,11 @@
         }
 
         /* --- THEME SPECIFIC --- */
-        /* LINE MAN: เขียว */
         .card-lineman { background: #00B900; color: white; }
         .card-lineman .promo-text-sm { color: #eaffea; }
         .card-lineman .promo-amount { color: white; }
         .card-lineman .promo-footer { background: #009900; color: white; }
 
-        /* Grab: ขาว ขอบเขียว */
         .card-grab { background: #fff; border: 1.5px solid #00B14F; color: #333; }
         .card-grab .promo-content { height: 63%; } 
         .card-grab .promo-text-sm { color: #666; }
@@ -246,7 +243,7 @@
     </div>
     <div class="links-container">
         
-        <div id="btn-lineman" class="link-btn" onclick="handleCopyAndRedirect('LINE MAN', 'AROI', 'https://wongn.ai/223eD4')">
+        <div id="btn-lineman" class="link-btn" onclick="handleCopyAndRedirect('LINE MAN', '', 'https://wongn.ai/223eD4')">
             <div class="badge-corner bg-green">🔥 ค่าส่งถูกสุด</div>
             <div class="btn-logo-wrapper" style="background: #00B900;">
                 <img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN">
@@ -354,6 +351,7 @@
 
         function handleCopyAndRedirect(appName, code, url) {
             gtag('event', 'click_delivery', {'app_name': appName});
+            // เช็คว่ามี code ส่งมาไหม ถ้าว่างเปล่า ('') จะเข้าเงื่อนไข else ทันที
             if (code) {
                 navigator.clipboard.writeText(code).then(() => {
                     showToast("คัดลอก '" + code + "' แล้ว!");
