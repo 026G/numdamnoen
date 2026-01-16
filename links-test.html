@@ -3,10 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ร้านหนุ่มดำเนิน - เมนูสั่งซื้อ</title>
+    <title>หนุ่มดำเนิน - เมนูสั่งซื้อ</title>
     <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8">
     <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8">
+    
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-9P4HMHGDM2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-9P4HMHGDM2');
+    </script>
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     
@@ -52,7 +60,7 @@
         }
         .status-dot {
             width: 8px; height: 8px; border-radius: 50%; display: block;
-            transition: background-color 0.3s; /* เพิ่ม transition ให้เปลี่ยนสีนุ่มๆ */
+            transition: background-color 0.3s;
         }
         .dot-green { background-color: #22c55e; }
         .dot-red { background-color: #ef4444; }
@@ -126,7 +134,7 @@
         .bg-green { background-color: #10b981; }
         .bg-orange { background-color: #f97316; }
 
-        /* --- ส่วนที่เพิ่ม: Footer Social --- */
+        /* --- Footer Social --- */
         .footer-area {
             margin-top: 40px;
             width: 100%;
@@ -151,339 +159,6 @@
         .social-btn:hover { transform: scale(1.1); }
         .contact-label { font-size: 14px; color: #888; margin-bottom: 5px; }
 
-    </style>
-</head>
-<body>
-
-    <div class="profile-area">
-        <img src="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8" class="profile-img" alt="โลโก้ร้าน"> 
-        <h1 style="display: flex; align-items: center; justify-content: center; gap: 6px;">
-        หนุ่มดำเนิน มะพร้าวปั่น 
-        <i class="fa-solid fa-circle-check" style="color: #1da1f2; font-size: 18px;" title="ร้านค้าทางการ"></i>
-    </h1>
-        <p>หอมมะพร้าวแท้ จากมะพร้าวน้ำหอมแท้ 100%</p>
-
-        <div class="status-text">
-            <span id="shop-status-dot" class="status-dot dot-green"></span> 
-            <span id="shop-status-text">กำลังตรวจสอบเวลา...</span>
-        </div>
-        <div class="review-highlight">
-        <i class="fa-solid fa-quote-left quote-icon"></i>
-        <span class="review-text">"อร่อยมาก หอมมะพร้าวแท้ๆ สั่งประจำไม่ผิดหวังเลยค่ะ"</span>
-        <div class="review-author">- ลูกค้า LINE MAN (⭐⭐⭐⭐⭐)</div>
-    </div>
-
-    <style>
-        .review-highlight {
-            background-color: #fffbeb; /* สีเหลืองอ่อนจางๆ ดูอบอุ่น */
-            color: #92400e;
-            padding: 12px 20px;
-            border-radius: 12px;
-            font-size: 13px;
-            text-align: center;
-            margin-bottom: 15px;
-            border: 1px dashed #fcd34d;
-            position: relative;
-            max-width: 380px;
-            width: 90%;
-        }
-        .quote-icon {
-            color: #fbbf24;
-            font-size: 14px;
-            margin-right: 5px;
-        }
-        .review-text {
-            font-style: italic;
-            font-weight: 500;
-        }
-        .review-author {
-            font-size: 11px;
-            color: #b45309;
-            margin-top: 4px;
-            opacity: 0.8;
-        }
-    </style>
-    </div>
-
-    <style>
-        .story-container {
-            display: flex;
-            gap: 15px;
-            overflow-x: auto; /* เลื่อนแนวนอนได้ */
-            padding: 5px 5px 15px 5px;
-            margin-bottom: 5px;
-            width: 100%;
-            justify-content: center; /* จัดกึ่งกลาง */
-        }
-        /* ซ่อน Scrollbar ให้สวยงาม */
-        .story-container::-webkit-scrollbar { display: none; }
-        
-        .story-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .story-item:hover { transform: translateY(-3px); }
-
-        .story-ring {
-            width: 55px; /* ขนาดวงกลม */
-            height: 55px;
-            border-radius: 50%;
-            padding: 2px;
-            border: 2px solid #4ade80; /* สีวงแหวน */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: white;
-        }
-        .story-ring img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #fff; /* ขอบขาวตัดกับรูป */
-        }
-        .story-item span {
-            font-size: 11px;
-            color: #444;
-        }
-    </style>
-        <div class="trust-badges">
-        <div class="badge-item">
-            <i class="fa-solid fa-leaf" style="color: #4ade80;"></i>
-            <span>แท้ 100%</span>
-        </div>
-        <div class="badge-separator"></div>
-        <div class="badge-item">
-            <i class="fa-solid fa-bottle-water" style="color: #38bdf8;"></i>
-            <span>สดใหม่ทุกวัน</span>
-        </div>
-        <div class="badge-separator"></div>
-        <div class="badge-item">
-            <i class="fa-solid fa-heart-circle-check" style="color: #f472b6;"></i>
-            <span>หวานกำลังดี</span>
-        </div>
-    </div>
-
-    <style>
-        .trust-badges {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.6); /* พื้นหลังจางๆ */
-            border-radius: 12px;
-            padding: 8px 15px;
-            margin-top: 15px;
-            margin-bottom: 5px;
-            gap: 10px;
-            backdrop-filter: blur(4px); /* เอฟเฟกต์เบลอพื้นหลังให้ดูแพง */
-            border: 1px solid rgba(255,255,255,0.8);
-        }
-        .badge-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 12px;
-            color: #555;
-            font-weight: 400;
-        }
-        .badge-separator {
-            width: 1px;
-            height: 12px;
-            background-color: #ccc;
-        }
-    </style>
-    </div>
-    
-    <div class="links-container">
-        
-        <a href="https://wongn.ai/223eD4" class="link-btn" onclick="gtag('event', 'click_delivery', {'app_name': 'LINE MAN'});">
-            <div class="badge-corner bg-green">ค่าส่งถูกสุด</div>
-            <div class="btn-logo-wrapper" style="background: #00B900;">
-                <img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN">
-            </div>
-            <div class="btn-text">
-                <span class="btn-title">LINE MAN <span class="rating"><i class="fa-solid fa-star"></i> 5.0 (623)</span></span>
-                <span class="btn-subtitle">
-                    <span class="promo-tag tag-green"><i class="fa-solid fa-tag"></i> ใส่โค้ด 'AROI'</span>
-                    ค่าส่งถูกสุด ส่งฟรี
-                </span>
-            </div>
-            <i class="fa-solid fa-chevron-right btn-arrow"></i>
-        </a>
-
-        <a href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" class="link-btn" onclick="gtag('event', 'click_delivery', {'app_name': 'GrabFood'});">
-            <div class="badge-corner bg-orange">ส่งไวสุด</div>
-            <div class="btn-logo-wrapper" style="background: white;">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood">
-            </div>
-            <div class="btn-text">
-                <span class="btn-title">GrabFood <span class="rating"><i class="fa-solid fa-star"></i> 4.9 (252)</span></span>
-                <span class="btn-subtitle">
-                    <span class="promo-tag tag-red"><i class="fa-solid fa-tag"></i> เก็บโค๊ดลด</span>
-                    ค่าส่งถูก
-                </span>
-            </div>
-            <i class="fa-solid fa-chevron-right btn-arrow"></i>
-        </a>
-
-        <a href="https://static.robinhood.in.th/app_link.html?URI=robinhoodth://merchantlanding/id/22252" class="link-btn" onclick="gtag('event', 'click_delivery', {'app_name': 'Robinhood'});">
-            <div class="btn-logo-wrapper">
-                 <img src="https://placehold.co/200x200/76308B/ffffff?text=Robin\nhood" alt="Robinhood">
-            </div>
-            <div class="btn-text">
-                <span class="btn-title">Robinhood <span class="rating"><i class="fa-solid fa-star"></i> 5.0 (20)</span></span>
-                <span class="btn-subtitle">
-                    <span class="promo-tag tag-purple"><i class="fa-solid fa-heart"></i> ร้านใจดีลดเพิ่ม 5%</span>
-                </span>
-            </div>
-            <i class="fa-solid fa-chevron-right btn-arrow"></i>
-        </a>
-
-        <a href="https://lin.ee/svRu5ks" class="link-btn" style="border: 2px solid #06C755; background-color: #fcfdfc;" onclick="gtag('event', 'click_contact', {'app_name': 'LINE OA'});">
-            <div class="btn-logo-wrapper" style="background: transparent;">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" alt="LINE OA">
-            </div>
-            <div class="btn-text">
-                <span class="btn-title" style="color: #06C755;">ทักแชทสั่งร้านโดยตรง</span>
-                <span class="btn-subtitle">สั่ง 200.- ส่งฟรี (ระยะใกล้)</span>
-            </div>
-            <i class="fa-solid fa-comment-dots btn-arrow" style="color:#06C755"></i>
-        </a>
-        <div class="faq-section">
-        <h3 style="text-align: center; color: #166534; font-size: 16px; margin-bottom: 15px;">คำถามพบบ่อย (Q&A)</h3>
-        
-        <details class="faq-item">
-            <summary>🥤 มะพร้าวปั่นเก็บได้กี่วัน?</summary>
-            <p>แนะนำให้ทานทันทีจะอร่อยที่สุดครับ แต่ถ้าแช่ตู้เย็นช่องธรรมดา เก็บได้ 1-2 วันครับ (ไม่ใส่วัตถุกันเสีย)</p>
-        </details>
-
-        <details class="faq-item">
-            <summary>🥛 ใช้นมสดหรือนมข้น?</summary>
-            <p>เราใช้นมสดแท้ 100% ครับ หอมมัน นัว ไม่เลี่ยนแน่นอนครับ</p>
-        </details>
-
-        <details class="faq-item">
-            <summary>🍭 เลือกความหวานได้ไหม?</summary>
-            <p>ได้ครับ! ลูกค้าสามารถระบุความหวาน (0% - 100%) ในโน้ตตอนสั่งได้เลยครับ</p>
-        </details>
-    </div>
-
-    <style>
-        .faq-section {
-            width: 100%;
-            max-width: 420px;
-            margin-top: 30px;
-            border-top: 1px dashed #ccc;
-            padding-top: 20px;
-        }
-        .faq-item {
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            margin-bottom: 10px;
-            overflow: hidden;
-        }
-        .faq-item summary {
-            padding: 12px 15px;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 14px;
-            list-style: none; /* ซ่อนสามเหลี่ยมเดิม */
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .faq-item summary::after {
-            content: '+'; 
-            font-weight: bold;
-            color: #166534;
-        }
-        .faq-item[open] summary::after {
-            content: '-';
-        }
-        .faq-item p {
-            padding: 0 15px 12px 15px;
-            margin: 0;
-            font-size: 13px;
-            color: #666;
-            line-height: 1.5;
-            border-top: 1px solid #f0f0f0;
-            padding-top: 10px;
-        }
-    </style>
-    </div>
-<div class="profile-area">
-                <div class="trust-badges">
-                <div class="badge-item">
-                    <i class="fa-solid fa-leaf" style="color: #4ade80;"></i>
-                    <span>แท้ 100%</span>
-                </div>
-                <div class="badge-separator"></div>
-                <div class="badge-item">
-                    <i class="fa-solid fa-bottle-water" style="color: #38bdf8;"></i>
-                    <span>สดใหม่ทุกวัน</span>
-                </div>
-                <div class="badge-separator"></div>
-                <div class="badge-item">
-                    <i class="fa-solid fa-heart-circle-check" style="color: #f472b6;"></i>
-                    <span>หวานกำลังดี</span>
-                </div>
-        </div> 
-    <div class="footer-area">      
-        <div class="contact-label">ติดต่อสอบถามเพิ่มเติม</div>
-        <div class="social-icons">
-            <a href="tel:081xxxxxxx" class="social-btn" style="color: #00B900;" onclick="gtag('event', 'click_contact', {'type': 'phone'});">
-                <i class="fa-solid fa-phone"></i>
-            </a>
-            
-            <a href="https://facebook.com/YOURPAGE" class="social-btn" style="color: #1877F2;" target="_blank" onclick="gtag('event', 'click_social', {'type': 'facebook'});">
-                <i class="fa-brands fa-facebook"></i>
-            </a>
-
-            <a href="https://tiktok.com/@YOURTIKTOK" class="social-btn" style="color: #000000;" target="_blank" onclick="gtag('event', 'click_social', {'type': 'tiktok'});">
-                <i class="fa-brands fa-tiktok"></i>
-            </a>
-            <a href="https://goo.gl/maps/YOUR_MAP_LINK_HERE" class="social-btn" style="color: #000000;" target="_blank" onclick="gtag('event', 'click_social', {'type': 'googlemap'});">
-                <i class="fa fa-map-marker"></i>
-            </a>
-        </div>
-    </div>
-<script>
-        function checkShopStatus() {
-            const now = new Date();
-            const hour = now.getHours();
-            const minutes = now.getMinutes();
-
-            // ตั้งเวลาเปิด-ปิด ตรงนี้ (06:00 - 22:00)
-            const openHour = 6;
-            const closeHour = 22;
-
-            const statusDot = document.getElementById('shop-status-dot');
-            const statusText = document.getElementById('shop-status-text');
-
-            if (hour >= openHour && hour < closeHour) {
-                // ร้านเปิด
-                statusDot.className = 'status-dot dot-green';
-                statusText.innerHTML = 'เปิดอยู่ • 06:00 - 22:00 น.';
-            } else {
-                // ร้านปิด
-                statusDot.className = 'status-dot dot-red';
-                statusText.innerHTML = 'ปิดแล้ว • เปิดพรุ่งนี้ 06:00 น.';
-            }
-        }
-
-        // รันฟังก์ชันทันทีเมื่อเปิดเว็บ
-        checkShopStatus();
-    </script>
-    <div class="share-btn" onclick="shareShop()">
-        <i class="fa-solid fa-arrow-up-from-bracket"></i>
-    </div>
-
-    <style>
         .share-btn {
             position: absolute;
             top: 20px;
@@ -513,7 +188,7 @@
             z-index: -1;
             opacity: 0.4;
             animation: float 6s ease-in-out infinite;
-            pointer-events: none; /* กดทะลุได้ ไม่บังปุ่ม */
+            pointer-events: none;
         }
         @keyframes float {
             0% { transform: translateY(0px) rotate(0deg); }
@@ -521,25 +196,154 @@
             100% { transform: translateY(0px) rotate(0deg); }
         }
     </style>
+</head>
+<body>
+
+    <div class="share-btn" onclick="shareProfile()" title="แชร์หน้านี้">
+        <i class="fa-solid fa-share-nodes"></i>
+    </div>
+
+    <div class="profile-area">
+        <img src="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8" class="profile-img" alt="โลโก้ร้าน"> 
+        <h1 style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+        หนุ่มดำเนิน มะพร้าวปั่น 
+        <i class="fa-solid fa-circle-check" style="color: #1da1f2; font-size: 18px;" title="ร้านค้าทางการ"></i>
+        </h1>
+        <p>หอมมะพร้าวแท้ จากมะพร้าวน้ำหอมแท้ 100%</p>
+
+        <div class="status-text">
+            <span id="shop-status-dot" class="status-dot dot-green"></span> 
+            <span id="shop-status-text">กำลังตรวจสอบเวลา...</span>
+        </div>
+    </div>
+    
+    <div class="links-container">
+        
+        <a id="btn-lineman" href="https://wongn.ai/223eD4" class="link-btn" onclick="gtag('event', 'click_delivery', {'app_name': 'LINE MAN'});">
+            <div class="badge-corner bg-green">🔥 ค่าส่งถูกสุด</div>
+            <div class="btn-logo-wrapper" style="background: #00B900;">
+                <img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN">
+            </div>
+            <div class="btn-text">
+                <span class="btn-title">LINE MAN <span class="rating"><i class="fa-solid fa-star"></i> 5.0 (623)</span></span>
+                <span class="btn-subtitle">
+                    <span class="promo-tag tag-green"><i class="fa-solid fa-tag"></i> ใส่โค้ด 'AROI'</span>
+                    ✅ ค่าส่งถูกสุด ส่งฟรี
+                </span>
+            </div>
+            <i class="fa-solid fa-chevron-right btn-arrow"></i>
+        </a>
+
+        <a id="btn-grab" href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" class="link-btn" onclick="gtag('event', 'click_delivery', {'app_name': 'GrabFood'});">
+            <div class="badge-corner bg-orange">ส่งไวสุด</div>
+            <div class="btn-logo-wrapper" style="background: white;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood">
+            </div>
+            <div class="btn-text">
+                <span class="btn-title">GrabFood <span class="rating"><i class="fa-solid fa-star"></i> 4.9 (252)</span></span>
+                <span class="btn-subtitle">
+                    <span class="promo-tag tag-red"><i class="fa-solid fa-tag"></i> เก็บโค๊ดลด</span>
+                    ✅ ค่าส่งถูก
+                </span>
+            </div>
+            <i class="fa-solid fa-chevron-right btn-arrow"></i>
+        </a>
+
+        <a id="btn-robinhood" href="https://static.robinhood.in.th/app_link.html?URI=robinhoodth://merchantlanding/id/22252" class="link-btn" onclick="gtag('event', 'click_delivery', {'app_name': 'Robinhood'});">
+            <div class="btn-logo-wrapper">
+                 <img src="https://placehold.co/200x200/76308B/ffffff?text=Robin\nhood" alt="Robinhood">
+            </div>
+            <div class="btn-text">
+                <span class="btn-title">Robinhood <span class="rating"><i class="fa-solid fa-star"></i> 5.0 (20)</span></span>
+                <span class="btn-subtitle">
+                    <span class="promo-tag tag-purple"><i class="fa-solid fa-heart"></i> ร้านใจดีลดเพิ่ม 5%</span>
+                    ✅ ค่าส่งถูก
+                </span>
+            </div>
+            <i class="fa-solid fa-chevron-right btn-arrow"></i>
+        </a>
+
+        <a id="btn-lineoa" href="https://lin.ee/svRu5ks" class="link-btn" style="border: 2px solid #06C755; background-color: #fcfdfc;" onclick="gtag('event', 'click_contact', {'app_name': 'LINE OA'});">
+            <div class="btn-logo-wrapper" style="background: transparent;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" alt="LINE OA">
+            </div>
+            <div class="btn-text">
+                <span class="btn-title" style="color: #06C755;">ทักแชทสั่งร้านโดยตรง</span>
+                <span class="btn-subtitle">สั่ง 200.- ส่งฟรี (ระยะใกล้)</span>
+            </div>
+            <i class="fa-solid fa-comment-dots btn-arrow" style="color:#06C755"></i>
+        </a>
+
+    </div>
+
+    <div class="footer-area">
+        <div class="contact-label">ติดต่อสอบถามเพิ่มเติม</div>
+        <div class="social-icons">
+            <a id="social-phone" href="tel:0622467746" class="social-btn" style="color: #00B900;" onclick="gtag('event', 'click_contact', {'type': 'phone'});">
+                <i class="fa-solid fa-phone"></i>
+            </a>
+            
+            <a id="social-facebook" href="https://facebook.com/NUMDAMNOEN" class="social-btn" style="color: #1877F2;" target="_blank" onclick="gtag('event', 'click_social', {'type': 'facebook'});">
+                <i class="fa-brands fa-facebook"></i>
+            </a>
+
+            <a id="social-tiktok" href="https://tiktok.com/@numdamnoen" class="social-btn" style="color: #000000;" target="_blank" onclick="gtag('event', 'click_social', {'type': 'tiktok'});">
+                <i class="fa-brands fa-tiktok"></i>
+            </a>
+
+            <a id="social-map" href="https://maps.app.goo.gl/vaAUR6ve7G5WwtjH8" class="social-btn" style="color: #000000;" target="_blank" onclick="gtag('event', 'click_social', {'type': 'googlemap'});">
+                <i class="fa fa-map-marker"></i>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        function checkShopStatus() {
+            const now = new Date();
+            const hour = now.getHours();
+            
+            // ตั้งเวลาเปิด-ปิด ตรงนี้ (06:00 - 22:00)
+            const openHour = 6;
+            const closeHour = 22;
+
+            const statusDot = document.getElementById('shop-status-dot');
+            const statusText = document.getElementById('shop-status-text');
+
+            if (hour >= openHour && hour < closeHour) {
+                // ร้านเปิด
+                statusDot.className = 'status-dot dot-green';
+                statusText.innerHTML = 'เปิดอยู่ • 06:00 - 22:00 น.';
+            } else {
+                // ร้านปิด
+                statusDot.className = 'status-dot dot-red';
+                statusText.innerHTML = 'ปิดแล้ว • เปิดพรุ่งนี้ 06:00 น.';
+            }
+        }
+
+        // ฟังก์ชันแชร์ (เพิ่มใหม่)
+        function shareProfile() {
+            // ส่งค่าไป Analytics ว่ามีการกดปุ่มแชร์
+            gtag('event', 'click_share', {
+                'content_type': 'profile_card'
+            });
+
+            if (navigator.share) {
+                navigator.share({
+                    title: 'หนุ่มดำเนิน - เมนูสั่งซื้อ',
+                    text: 'สั่งมะพร้าวปั่นแท้ 100% ร้านหนุ่มดำเนิน อร่อยมาก!',
+                    url: window.location.href
+                }).catch(console.error);
+            } else {
+                alert('URL ของร้านถูกคัดลอกแล้ว!');
+                navigator.clipboard.writeText(window.location.href);
+            }
+        }
+
+        // รันฟังก์ชันทันทีเมื่อเปิดเว็บ
+        checkShopStatus();
+    </script>
 
     <i class="fa-solid fa-leaf bg-element" style="color:#bbf7d0; font-size: 80px; top: 10%; left: -20px; animation-delay: 0s;"></i>
     <i class="fa-solid fa-leaf bg-element" style="color:#bbf7d0; font-size: 60px; bottom: 15%; right: -10px; animation-delay: 2s; transform: scaleX(-1);"></i>
-
-    <script>
-        function shareShop() {
-            if (navigator.share) {
-                navigator.share({
-                    title: 'หนุ่มดำเนิน มะพร้าวปั่น',
-                    text: 'สั่งมะพร้าวปั่นแท้ๆ อร่อยสดชื่น คลิกเลย!',
-                    url: window.location.href
-                })
-                .then(() => gtag('event', 'click_share', {'method': 'native_share'}))
-                .catch((error) => console.log('Error sharing', error));
-            } else {
-                // กรณีคอมพิวเตอร์ทั่วไปที่ไม่รองรับการแชร์แบบมือถือ
-                alert('คัดลอกลิงก์ร้านแล้ว: ' + window.location.href);
-            }
-        }
-    </script>
 </body>
 </html>
