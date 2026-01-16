@@ -59,7 +59,7 @@
         #copy-toast.show { visibility: visible; opacity: 1; bottom: 50px; }
         #copy-toast i { color: #4ade80; font-size: 18px; }
 
-        /* --- STYLE ใหม่สำหรับ PROMO SLIDER (คูปองด้านบน) --- */
+        /* --- SLIDER STYLES --- */
         .promo-scroll-container {
             width: 100%;
             max-width: 420px;
@@ -67,11 +67,11 @@
             white-space: nowrap;
             padding: 10px 5px;
             margin-bottom: 10px;
-            scrollbar-width: none; /* ซ่อน Scrollbar (Firefox) */
-            -ms-overflow-style: none; /* ซ่อน Scrollbar (IE/Edge) */
-            scroll-snap-type: x mandatory; /* เลื่อนแล้วเด้งเข้าล็อค */
+            scrollbar-width: none; 
+            -ms-overflow-style: none;
+            scroll-snap-type: x mandatory;
         }
-        .promo-scroll-container::-webkit-scrollbar { display: none; } /* ซ่อน Scrollbar (Chrome/Safari) */
+        .promo-scroll-container::-webkit-scrollbar { display: none; }
 
         .promo-card {
             display: inline-block;
@@ -84,14 +84,13 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
             transition: transform 0.2s;
             overflow: hidden;
-            background-color: #FFC400; /* สีเหลืองพื้นหลัง */
-            scroll-snap-align: center; /* จัดกึ่งกลางเมื่อเลื่อน */
+            scroll-snap-align: center;
             vertical-align: top;
         }
         .promo-card:hover { transform: translateY(-3px); box-shadow: 0 8px 16px rgba(0,0,0,0.15); }
 
         .promo-content {
-            height: 70%;
+            height: 68%;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -102,7 +101,6 @@
             position: absolute;
             top: 10px;
             right: 10px;
-            background-color: #FF1744;
             color: white;
             font-size: 10px;
             font-weight: 800;
@@ -119,35 +117,37 @@
             transform: rotate(15deg);
         }
         
-        .promo-text-sm { font-size: 14px; font-weight: 600; color: #333; margin-top: 10px; }
-        .promo-amount { font-size: 48px; font-weight: 800; color: #333; line-height: 1; letter-spacing: -1px; }
-        .promo-unit { font-size: 24px; }
+        .promo-text-sm { font-size: 14px; font-weight: 600; margin-top: 5px; }
+        .promo-amount { font-size: 42px; font-weight: 800; line-height: 1; letter-spacing: -1px; }
+        .promo-unit { font-size: 20px; }
         
         .promo-footer {
-            height: 30%;
-            background-color: #00BFA5; /* สีเขียว Teal ตามแบบ */
+            height: 32%;
             display: flex;
             align-items: center;
             justify-content: space-between;
             padding: 0 15px;
-            color: white;
             font-weight: 600;
-            font-size: 14px;
+            font-size: 13px;
         }
-        .tap-hint { font-size: 11px; opacity: 0.9; font-weight: normal; }
+        .tap-hint { font-size: 10px; opacity: 0.8; font-weight: normal; }
 
-        /* สีพิเศษสำหรับบัตรใบอื่น */
-        .card-lineman { background: #FFC400; }
-        .card-lineman .promo-footer { background: #06C755; } /* สีเขียว LINE */
+        /* --- THEME SPECIFIC --- */
         
-        .card-grab { background: #fff; border: 2px solid #00B14F; }
-        .card-grab .promo-content { height: 68%; }
+        /* Theme: LINE MAN (เขียวล้วน) */
+        .card-lineman { background: #06C755; color: white; }
+        .card-lineman .promo-text-sm { color: #ecfdf5; }
+        .card-lineman .promo-amount { color: white; }
+        .card-lineman .promo-footer { background: #05b14c; color: white; }
+        .card-lineman .promo-badge { background-color: #FFC400; color: #333; }
+
+        /* Theme: Grab (ขาว ขอบเขียว) */
+        .card-grab { background: #fff; border: 2px solid #00B14F; color: #333; }
+        .card-grab .promo-content { height: 66%; } /* ปรับนิดหน่อยเพราะมีขอบ */
+        .card-grab .promo-text-sm { color: #555; }
         .card-grab .promo-amount { color: #00B14F; }
         .card-grab .promo-footer { background: #00B14F; color: white; }
-
-        .card-robinhood { background: #F3E5F5; }
-        .card-robinhood .promo-amount { color: #76308B; }
-        .card-robinhood .promo-footer { background: #76308B; }
+        .card-grab .promo-badge { background-color: #FF1744; }
 
     </style>
 </head>
@@ -177,38 +177,62 @@
     
     <div class="promo-scroll-container">
         
-        <div class="promo-card card-lineman" onclick="copyCode('AROI', 'LINE MAN')">
-            <div class="promo-badge">ONLY<br>YOU</div>
+        <div class="promo-card card-lineman" onclick="copyCode('LMNEW100', 'LINE MAN')">
+            <div class="promo-badge">NEW</div>
+            <div class="promo-content">
+                <div class="promo-text-sm">ลูกค้าใหม่ลด</div>
+                <div class="promo-amount">100<span class="promo-unit">.-</span></div>
+            </div>
+            <div class="promo-footer">
+                <span><i class="fa-brands fa-line"></i> LMNEW100</span>
+                <span class="tap-hint">แตะเพื่อคัดลอก</span>
+            </div>
+        </div>
+
+        <div class="promo-card card-grab" onclick="copyCode('GRAB40', 'GrabFood')">
+            <div class="promo-badge">คุ้ม!</div>
+            <div class="promo-content">
+                <div class="promo-text-sm">ลดสูงสุด</div>
+                <div class="promo-amount">40<span class="promo-unit">%</span></div>
+            </div>
+            <div class="promo-footer">
+                <span>GrabFood</span>
+                <span class="tap-hint">ใช้โค้ด GRAB40</span>
+            </div>
+        </div>
+
+        <div class="promo-card card-lineman" onclick="copyCode('AROI50', 'LINE MAN')">
+            <div class="promo-badge" style="background: #fff; color: #06C755;">HOT</div>
             <div class="promo-content">
                 <div class="promo-text-sm">ใส่โค้ดลดเพิ่ม</div>
                 <div class="promo-amount">50<span class="promo-unit">.-</span></div>
             </div>
             <div class="promo-footer">
-                <span><i class="fa-solid fa-tag"></i> AROI</span>
+                <span><i class="fa-brands fa-line"></i> AROI50</span>
                 <span class="tap-hint">แตะเพื่อคัดลอก</span>
             </div>
         </div>
 
-        <div class="promo-card card-grab" onclick="copyCode('GRAB50', 'GrabFood')">
-            <div class="promo-badge" style="background: #00B14F;">NEW</div>
+        <div class="promo-card card-grab" onclick="copyCode('SAVE80', 'GrabFood')">
+            <div class="promo-badge" style="background: #FF9800;">ลดจุก</div>
             <div class="promo-content">
-                <div class="promo-text-sm">ลูกค้าใหม่ลด</div>
-                <div class="promo-amount">40<span class="promo-unit">%</span></div>
+                <div class="promo-text-sm">ลดเพิ่มทันที</div>
+                <div class="promo-amount">80<span class="promo-unit">.-</span></div>
             </div>
             <div class="promo-footer">
-                <span><i class="fa-solid fa-tag"></i> GRAB50</span>
-                <span class="tap-hint">แตะเพื่อคัดลอก</span>
+                <span>GrabFood</span>
+                <span class="tap-hint">ใช้โค้ด SAVE80</span>
             </div>
         </div>
 
-        <div class="promo-card card-robinhood" onclick="copyCode('LOVE5', 'Robinhood')">
+        <div class="promo-card card-lineman" onclick="copyCode('FREESHIP', 'LINE MAN')">
             <div class="promo-content">
-                <div class="promo-text-sm" style="color:#76308B">ร้านใจดีลด</div>
-                <div class="promo-amount">5<span class="promo-unit">%</span></div>
+                <div class="promo-text-sm">โค้ดพิเศษ</div>
+                <div class="promo-amount" style="font-size: 36px;">ส่งฟรี<span class="promo-unit"></span></div>
             </div>
             <div class="promo-footer">
-                <span><i class="fa-solid fa-heart"></i> LOVE5</span>
-                <span class="tap-hint">ลดทั้งร้าน</span>
+                <span><i class="fa-brands fa-line"></i> FREESHIP</span>
+                <span class="tap-hint">3 กม. แรก</span>
             </div>
         </div>
 
@@ -314,7 +338,6 @@
             }
         }
 
-        // ฟังก์ชันใหม่: สำหรับกดที่ป้ายคูปองด้านบน (แค่ก็อปปี้ ไม่ไปหน้าอื่น)
         function copyCode(code, appName) {
             gtag('event', 'copy_coupon', {'coupon_code': code, 'app_name': appName});
             
