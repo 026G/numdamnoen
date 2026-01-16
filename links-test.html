@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>หนุ่มดำเนิน - เมนูสั่งซื้อ</title>
     <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8">
-    <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8">
-    
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-9P4HMHGDM2"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -14,190 +12,88 @@
       gtag('js', new Date());
       gtag('config', 'G-9P4HMHGDM2');
     </script>
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     
     <style>
-        body {
-            font-family: 'Kanit', sans-serif;
-            background-color: #f0fdf4;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 40px 20px;
-            color: #333;
-            min-height: 100vh;
-        }
-        .profile-area {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .profile-img {
-            width: 110px;
-            height: 110px;
-            border-radius: 50%;
-            background-color: #fff;
-            margin-bottom: 15px;
-            object-fit: cover;
-            border: 4px solid #fff;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        h1 { 
-            font-size: 22px; margin: 0 0 8px 0; font-weight: 600; color: #166534;
-        }
+        /* --- Styles เดิม --- */
+        body { font-family: 'Kanit', sans-serif; background-color: #f0fdf4; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; color: #333; min-height: 100vh; }
+        .profile-area { text-align: center; margin-bottom: 20px; }
+        .profile-img { width: 110px; height: 110px; border-radius: 50%; background-color: #fff; margin-bottom: 15px; object-fit: cover; border: 4px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1 { font-size: 22px; margin: 0 0 8px 0; font-weight: 600; color: #166534; }
         p { color: #666; margin: 0; font-size: 15px; }
-        
-        /* --- สถานะร้าน Minimal --- */
-        .status-text {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            font-size: 13px;
-            color: #555;
-            margin-top: 8px;
-        }
-        .status-dot {
-            width: 8px; height: 8px; border-radius: 50%; display: block;
-            transition: background-color 0.3s;
-        }
+        .status-text { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; color: #555; margin-top: 8px; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: block; transition: background-color 0.3s; }
         .dot-green { background-color: #22c55e; }
         .dot-red { background-color: #ef4444; }
-        
-        .links-container {
-            width: 100%;
-            max-width: 420px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-top: 20px;
-        }
-
-        .link-btn {
-            background-color: white;
-            border: 1px solid #e5e7eb;
-            padding: 12px 16px;
-            border-radius: 16px;
-            text-decoration: none;
-            color: #333;
-            display: flex;
-            align-items: center;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
-            transition: all 0.2s ease;
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
-        }
-        .link-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px rgba(22, 101, 52, 0.15);
-            border-color: #4ade80;
-        }
-
-        .btn-logo-wrapper {
-            width: 50px;
-            height: 50px;
-            margin-right: 15px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 12px;
-            overflow: hidden;
-            background-color: #f9fafb;
-        }
+        .links-container { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+        .link-btn { background-color: white; border: 1px solid #e5e7eb; padding: 12px 16px; border-radius: 16px; text-decoration: none; color: #333; display: flex; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,0.04); transition: all 0.2s ease; position: relative; overflow: hidden; cursor: pointer; }
+        .link-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(22, 101, 52, 0.15); border-color: #4ade80; }
+        .btn-logo-wrapper { width: 50px; height: 50px; margin-right: 15px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 12px; overflow: hidden; background-color: #f9fafb; }
         .btn-logo-wrapper img { width: 100%; height: 100%; object-fit: contain; }
-
         .btn-text { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
-        .btn-title {
-            font-weight: 600; font-size: 16px; display: flex; align-items: center; flex-wrap: wrap; gap: 5px; line-height: 1.2;
-        }
-        .btn-subtitle {
-            font-size: 12px; color: #666; margin-top: 4px; display: flex; align-items: center; gap: 5px;
-        }
-        
-        .promo-tag {
-            font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: normal; display: inline-flex; align-items: center; gap: 3px;
-        }
+        .btn-title { font-weight: 600; font-size: 16px; display: flex; align-items: center; flex-wrap: wrap; gap: 5px; line-height: 1.2; }
+        .btn-subtitle { font-size: 12px; color: #666; margin-top: 4px; display: flex; align-items: center; gap: 5px; }
+        .promo-tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: normal; display: inline-flex; align-items: center; gap: 3px; }
         .tag-green { background-color: #e8fce8; color: #00B900; border: 1px solid #66d966; }
         .tag-red { background-color: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
         .tag-purple { background-color: #f3e8ff; color: #9333ea; border: 1px solid #e9d5ff; }
-
         .btn-arrow { color: #ccc; font-size: 14px; margin-left: 10px; }
         .rating { color: #f59e0b; font-size: 13px; font-weight: normal; display: flex; align-items: center; gap: 3px; }
-        
-        .badge-corner {
-            position: absolute; top: 0; right: 0; font-size: 9px; padding: 3px 8px;
-            border-bottom-left-radius: 8px; color: white; font-weight: bold; z-index: 10;
-        }
+        .badge-corner { position: absolute; top: 0; right: 0; font-size: 9px; padding: 3px 8px; border-bottom-left-radius: 8px; color: white; font-weight: bold; z-index: 10; }
         .bg-green { background-color: #10b981; }
         .bg-orange { background-color: #f97316; }
-
-        /* --- Footer Social --- */
-        .footer-area {
-            margin-top: 40px;
-            width: 100%;
-            max-width: 420px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-            border-top: 1px dashed #ccc;
-            padding-top: 20px;
-        }
-        .social-icons {
-            display: flex; gap: 15px;
-        }
-        .social-btn {
-            width: 45px; height: 45px; border-radius: 50%; background: white;
-            display: flex; align-items: center; justify-content: center;
-            text-decoration: none; color: #333; font-size: 22px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-        }
+        .footer-area { margin-top: 40px; width: 100%; max-width: 420px; display: flex; flex-direction: column; align-items: center; gap: 15px; border-top: 1px dashed #ccc; padding-top: 20px; }
+        .social-icons { display: flex; gap: 15px; }
+        .social-btn { width: 45px; height: 45px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; text-decoration: none; color: #333; font-size: 22px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.2s; }
         .social-btn:hover { transform: scale(1.1); }
         .contact-label { font-size: 14px; color: #888; margin-bottom: 5px; }
+        .share-btn { position: absolute; top: 20px; right: 20px; width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); cursor: pointer; color: #166534; font-size: 18px; z-index: 100; transition: transform 0.2s; }
+        .bg-element { position: fixed; z-index: -1; opacity: 0.4; animation: float 6s ease-in-out infinite; pointer-events: none; }
+        @keyframes float { 0% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-15px) rotate(5deg); } 100% { transform: translateY(0px) rotate(0deg); } }
 
-        .share-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 40px;
-            height: 40px;
-            background: white;
-            border-radius: 50%;
+        /* --- ส่วนที่เพิ่มใหม่: COPY NOTIFICATION BAR (ป้ายวิ่งแจ้งเตือน) --- */
+        #copy-toast {
+            visibility: hidden;
+            min-width: 280px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 50px;
+            padding: 12px 20px;
+            position: fixed;
+            z-index: 999;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            cursor: pointer;
-            color: #166534;
-            font-size: 18px;
-            z-index: 100;
-            transition: transform 0.2s;
-        }
-        .share-btn:hover {
-            transform: scale(1.1);
-            background-color: #f0fdf4;
+            gap: 10px;
+            opacity: 0;
+            transition: opacity 0.3s, bottom 0.3s;
         }
 
-        /* 2. พื้นหลังใบไม้ลอย (ตกแต่ง) */
-        .bg-element {
-            position: fixed;
-            z-index: -1;
-            opacity: 0.4;
-            animation: float 6s ease-in-out infinite;
-            pointer-events: none;
+        #copy-toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 50px; /* เด้งขึ้นมาเล็กน้อย */
         }
-        @keyframes float {
-            0% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-15px) rotate(5deg); }
-            100% { transform: translateY(0px) rotate(0deg); }
+
+        #copy-toast i {
+            color: #4ade80; /* สีไอคอนถูก */
+            font-size: 18px;
         }
     </style>
 </head>
 <body>
+
+    <div id="copy-toast">
+        <i class="fa-solid fa-circle-check"></i> 
+        <span id="toast-msg">คัดลอกโค้ดเรียบร้อย!</span>
+    </div>
 
     <div class="share-btn" onclick="shareProfile()" title="แชร์หน้านี้">
         <i class="fa-solid fa-share-nodes"></i>
@@ -210,7 +106,6 @@
         <i class="fa-solid fa-circle-check" style="color: #1da1f2; font-size: 18px;" title="ร้านค้าทางการ"></i>
         </h1>
         <p>หอมมะพร้าวแท้ จากมะพร้าวน้ำหอมแท้ 100%</p>
-
         <div class="status-text">
             <span id="shop-status-dot" class="status-dot dot-green"></span> 
             <span id="shop-status-text">กำลังตรวจสอบเวลา...</span>
@@ -219,7 +114,7 @@
     
     <div class="links-container">
         
-        <a id="btn-lineman" href="https://wongn.ai/223eD4" class="link-btn" onclick="gtag('event', 'click_delivery', {'app_name': 'LINE MAN'});">
+        <div id="btn-lineman" class="link-btn" onclick="handleCopyAndRedirect('LINE MAN', 'AROI', 'https://wongn.ai/223eD4')">
             <div class="badge-corner bg-green">🔥 ค่าส่งถูกสุด</div>
             <div class="btn-logo-wrapper" style="background: #00B900;">
                 <img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN">
@@ -232,9 +127,9 @@
                 </span>
             </div>
             <i class="fa-solid fa-chevron-right btn-arrow"></i>
-        </a>
+        </div>
 
-        <a id="btn-grab" href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" class="link-btn" onclick="gtag('event', 'click_delivery', {'app_name': 'GrabFood'});">
+        <div id="btn-grab" class="link-btn" onclick="handleCopyAndRedirect('GrabFood', '', 'https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload')">
             <div class="badge-corner bg-orange">ส่งไวสุด</div>
             <div class="btn-logo-wrapper" style="background: white;">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood">
@@ -247,9 +142,9 @@
                 </span>
             </div>
             <i class="fa-solid fa-chevron-right btn-arrow"></i>
-        </a>
+        </div>
 
-        <a id="btn-robinhood" href="https://static.robinhood.in.th/app_link.html?URI=robinhoodth://merchantlanding/id/22252" class="link-btn" onclick="gtag('event', 'click_delivery', {'app_name': 'Robinhood'});">
+        <div id="btn-robinhood" class="link-btn" onclick="handleCopyAndRedirect('Robinhood', '', 'https://static.robinhood.in.th/app_link.html?URI=robinhoodth://merchantlanding/id/22252')">
             <div class="btn-logo-wrapper">
                  <img src="https://placehold.co/200x200/76308B/ffffff?text=Robin\nhood" alt="Robinhood">
             </div>
@@ -261,7 +156,7 @@
                 </span>
             </div>
             <i class="fa-solid fa-chevron-right btn-arrow"></i>
-        </a>
+        </div>
 
         <a id="btn-lineoa" href="https://lin.ee/svRu5ks" class="link-btn" style="border: 2px solid #06C755; background-color: #fcfdfc;" onclick="gtag('event', 'click_contact', {'app_name': 'LINE OA'});">
             <div class="btn-logo-wrapper" style="background: transparent;">
@@ -279,54 +174,35 @@
     <div class="footer-area">
         <div class="contact-label">ติดต่อสอบถามเพิ่มเติม</div>
         <div class="social-icons">
-            <a id="social-phone" href="tel:0622467746" class="social-btn" style="color: #00B900;" onclick="gtag('event', 'click_contact', {'type': 'phone'});">
-                <i class="fa-solid fa-phone"></i>
-            </a>
-            
-            <a id="social-facebook" href="https://facebook.com/NUMDAMNOEN" class="social-btn" style="color: #1877F2;" target="_blank" onclick="gtag('event', 'click_social', {'type': 'facebook'});">
-                <i class="fa-brands fa-facebook"></i>
-            </a>
-
-            <a id="social-tiktok" href="https://tiktok.com/@numdamnoen" class="social-btn" style="color: #000000;" target="_blank" onclick="gtag('event', 'click_social', {'type': 'tiktok'});">
-                <i class="fa-brands fa-tiktok"></i>
-            </a>
-
-            <a id="social-map" href="https://maps.app.goo.gl/vaAUR6ve7G5WwtjH8" class="social-btn" style="color: #000000;" target="_blank" onclick="gtag('event', 'click_social', {'type': 'googlemap'});">
-                <i class="fa fa-map-marker"></i>
-            </a>
+            <a id="social-phone" href="tel:0622467746" class="social-btn" style="color: #00B900;" onclick="gtag('event', 'click_contact', {'type': 'phone'});"><i class="fa-solid fa-phone"></i></a>
+            <a id="social-facebook" href="https://facebook.com/NUMDAMNOEN" class="social-btn" style="color: #1877F2;" target="_blank" onclick="gtag('event', 'click_social', {'type': 'facebook'});"><i class="fa-brands fa-facebook"></i></a>
+            <a id="social-tiktok" href="https://tiktok.com/@numdamnoen" class="social-btn" style="color: #000000;" target="_blank" onclick="gtag('event', 'click_social', {'type': 'tiktok'});"><i class="fa-brands fa-tiktok"></i></a>
+            <a id="social-map" href="https://maps.app.goo.gl/vaAUR6ve7G5WwtjH8" class="social-btn" style="color: #000000;" target="_blank" onclick="gtag('event', 'click_social', {'type': 'googlemap'});"><i class="fa fa-map-marker"></i></a>
         </div>
     </div>
 
     <script>
+        // 1. ฟังก์ชันเช็คเวลาเปิด-ปิด
         function checkShopStatus() {
             const now = new Date();
             const hour = now.getHours();
-            
-            // ตั้งเวลาเปิด-ปิด ตรงนี้ (06:00 - 22:00)
             const openHour = 6;
             const closeHour = 22;
-
             const statusDot = document.getElementById('shop-status-dot');
             const statusText = document.getElementById('shop-status-text');
 
             if (hour >= openHour && hour < closeHour) {
-                // ร้านเปิด
                 statusDot.className = 'status-dot dot-green';
                 statusText.innerHTML = 'เปิดอยู่ • 06:00 - 22:00 น.';
             } else {
-                // ร้านปิด
                 statusDot.className = 'status-dot dot-red';
                 statusText.innerHTML = 'ปิดแล้ว • เปิดพรุ่งนี้ 06:00 น.';
             }
         }
 
-        // ฟังก์ชันแชร์ (เพิ่มใหม่)
+        // 2. ฟังก์ชันแชร์
         function shareProfile() {
-            // ส่งค่าไป Analytics ว่ามีการกดปุ่มแชร์
-            gtag('event', 'click_share', {
-                'content_type': 'profile_card'
-            });
-
+            gtag('event', 'click_share', {'content_type': 'profile_card'});
             if (navigator.share) {
                 navigator.share({
                     title: 'หนุ่มดำเนิน - เมนูสั่งซื้อ',
@@ -334,15 +210,45 @@
                     url: window.location.href
                 }).catch(console.error);
             } else {
-                alert('URL ของร้านถูกคัดลอกแล้ว!');
                 navigator.clipboard.writeText(window.location.href);
+                showToast("คัดลอกลิงก์ร้านแล้ว!");
             }
         }
 
-        // รันฟังก์ชันทันทีเมื่อเปิดเว็บ
+        // 3. ฟังก์ชันไฮไลท์: ก็อปปี้โค้ด + แจ้งเตือน + ไปหน้าแอป
+        function handleCopyAndRedirect(appName, code, url) {
+            // ส่งค่าไป Analytics
+            gtag('event', 'click_delivery', {'app_name': appName});
+
+            // ถ้ามีโค้ด ให้ก็อปปี้
+            if (code) {
+                navigator.clipboard.writeText(code).then(() => {
+                    showToast("คัดลอกโค้ด '" + code + "' แล้ว!");
+                    // หน่วงเวลา 1.5 วินาที ให้คนเห็นป้ายแจ้งเตือนก่อน แล้วค่อยเปลี่ยนหน้า
+                    setTimeout(() => { window.location.href = url; }, 1500);
+                }).catch(err => {
+                    // ถ้าก็อปไม่ได้ ให้ไปตามปกติ
+                    window.location.href = url;
+                });
+            } else {
+                // ถ้าไม่มีโค้ด (เช่น Grab/Robinhood) ให้ไปเลย หรือขึ้นเตือนว่ากำลังไป
+                showToast("กำลังเปิด " + appName + "...");
+                setTimeout(() => { window.location.href = url; }, 800);
+            }
+        }
+
+        // 4. ฟังก์ชันแสดงป้ายแจ้งเตือน (Toast)
+        function showToast(message) {
+            var x = document.getElementById("copy-toast");
+            var msg = document.getElementById("toast-msg");
+            msg.innerText = message;
+            
+            x.className = "show"; // เพิ่ม class เพื่อแสดง
+            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000); // ซ่อนหลังจาก 3 วิ
+        }
+
         checkShopStatus();
     </script>
-
     <i class="fa-solid fa-leaf bg-element" style="color:#bbf7d0; font-size: 80px; top: 10%; left: -20px; animation-delay: 0s;"></i>
     <i class="fa-solid fa-leaf bg-element" style="color:#bbf7d0; font-size: 60px; bottom: 15%; right: -10px; animation-delay: 2s; transform: scaleX(-1);"></i>
 </body>
