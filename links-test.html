@@ -27,10 +27,68 @@
         .dot-green { background-color: #22c55e; }
         .dot-red { background-color: #ef4444; }
 
+        /* --- TOGGLE BUTTON STYLE (ปุ่มกดดูโค้ด) --- */
+        .coupon-trigger-btn {
+            background-color: #fff;
+            border: 2px dashed #00B900; /* ขอบเส้นประสีเขียว */
+            color: #00B900;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 6px rgba(0, 185, 0, 0.1);
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 320px;
+            justify-content: center;
+            animation: bounce 2s infinite; /* อนิเมชั่นเด้งดึ๋ง */
+        }
+        
+        .coupon-trigger-btn:hover {
+            background-color: #e8fce8;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 185, 0, 0.2);
+        }
+
+        .coupon-trigger-btn.active {
+            background-color: #00B900;
+            color: white;
+            border-style: solid;
+            animation: none; /* หยุดเด้งเมื่อกดแล้ว */
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-5px);}
+            60% {transform: translateY(-3px);}
+        }
+
+        /* --- PROMO SECTION WRAPPER (ส่วนที่จะซ่อน/แสดง) --- */
+        #promo-section-wrapper {
+            display: none; /* ซ่อนไว้ก่อน */
+            width: 100%;
+            max-width: 420px;
+            flex-direction: column;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        #promo-section-wrapper.show {
+            display: flex;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         /* --- TAB FILTER STYLES --- */
         .tab-container {
             width: 100%;
-            max-width: 420px;
             margin-bottom: 15px;
             position: sticky;
             top: 10px;
@@ -67,23 +125,19 @@
             white-space: nowrap;
         }
 
-        /* Active States */
         .tab-btn.active {
             box-shadow: 0 3px 10px rgba(0,0,0,0.2);
             color: white;
             transform: scale(1.02);
         }
 
-        /* สีเฉพาะแบรนด์เมื่อ Active */
         .tab-btn.active[data-target="grab"] { background: linear-gradient(45deg, #00B14F, #009e46); }
         .tab-btn.active[data-target="lineman"] { background: linear-gradient(45deg, #10C110, #009900); }
         .tab-btn.active[data-target="robinhood"] { background: linear-gradient(45deg, #76308B, #5a236b); }
 
-        /* Content Area Animation */
         .tab-content {
             display: none;
             width: 100%;
-            max-width: 420px;
             animation: fadeIn 0.4s ease;
         }
         
@@ -173,7 +227,7 @@
         .card-robin .promo-footer { background: #5a236b; color: white; }
 
         /* Link Buttons Styles */
-        .links-container { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+        .links-container { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
         .link-btn { background-color: white; border: 1px solid #e5e7eb; padding: 12px 16px; border-radius: 16px; text-decoration: none; color: #333; display: flex; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,0.04); transition: all 0.2s ease; position: relative; overflow: hidden; cursor: pointer; -webkit-tap-highlight-color: transparent; }
         .link-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(22, 101, 52, 0.15); border-color: #4ade80; }
         .btn-logo-wrapper { width: 50px; height: 50px; margin-right: 15px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 12px; overflow: hidden; background-color: #f9fafb; }
@@ -224,130 +278,133 @@
         </div>
     </div>
     
-    <div class="tab-container">
-        <div class="tab-nav">
-            <button class="tab-btn active" data-target="grab" onclick="openTab('grab')">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" width="16" alt=""> Grab
-            </button>
-            <button class="tab-btn" data-target="lineman" onclick="openTab('lineman')">
-                <img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" width="16" alt=""> LINEMAN
-            </button>
-            <button class="tab-btn" data-target="robinhood" onclick="openTab('robinhood')">
-                <i class="fa-solid fa-store" style="color: #76308B;"></i> Robinhood
-            </button>
+    <button class="coupon-trigger-btn" id="couponTriggerBtn" onclick="togglePromoSection()">
+        <i class="fa-solid fa-ticket"></i> เก็บโค้ดส่วนลด (Grab/Lineman)
+    </button>
+
+    <div id="promo-section-wrapper">
+        <div class="tab-container">
+            <div class="tab-nav">
+                <button class="tab-btn active" data-target="grab" onclick="openTab('grab')">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" width="16" alt=""> Grab
+                </button>
+                <button class="tab-btn" data-target="lineman" onclick="openTab('lineman')">
+                    <img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" width="16" alt=""> LINEMAN
+                </button>
+                <button class="tab-btn" data-target="robinhood" onclick="openTab('robinhood')">
+                    <i class="fa-solid fa-store" style="color: #76308B;"></i> Robinhood
+                </button>
+            </div>
+        </div>
+
+        <div id="grab" class="tab-content active">
+            <div class="promo-scroll-container">
+                <a href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" 
+                   class="promo-card card-flash" onclick="handleClickApp('GrabFood')">
+                    <div class="promo-badge"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood"></div>
+                    <div class="promo-content">
+                        <div class="promo-text-sm"><i class="fa-solid fa-bolt"></i> ลดแรง 15 นาที</div>
+                        <div class="promo-amount">50<span class="promo-unit">.-</span></div>
+                    </div>
+                    <div class="promo-footer"><span>ขั้นต่ำ 180.- กดเลย!</span></div>
+                </a>
+
+                <a href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" 
+                   class="promo-card card-cashback" onclick="handleClickApp('GrabFood')">
+                    <div class="promo-badge"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood"></div>
+                    <div class="promo-content">
+                        <div class="promo-text-sm">เงินคืน</div>
+                        <div class="promo-amount">200<span class="promo-unit">.-</span></div>
+                    </div>
+                    <div class="promo-footer"><span>ไม่มีขั้นต่ำ</span></div>
+                </a>
+
+                <a href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" 
+                   class="promo-card card-grab" onclick="handleClickApp('GrabFood')">
+                    <div class="promo-badge"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood"></div>
+                    <div class="promo-content">
+                        <div class="promo-text-sm">ลดสูงสุด</div>
+                        <div class="promo-amount">100<span class="promo-unit">.-</span></div>
+                    </div>
+                    <div class="promo-footer"><span>ขั้นต่ำ 320.-</span></div>
+                </a>
+
+                <a href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" 
+                   class="promo-card card-grab" onclick="handleClickApp('GrabFood')">
+                    <div class="promo-badge"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood"></div>
+                    <div class="promo-content">
+                        <div class="promo-text-sm">ลดเพิ่ม</div>
+                        <div class="promo-amount">80<span class="promo-unit">.-</span></div>
+                    </div>
+                    <div class="promo-footer"><span>ขั้นต่ำ 280.-</span></div>
+                </a>
+            </div>
+        </div>
+
+        <div id="lineman" class="tab-content">
+            <div class="promo-scroll-container">
+                <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="copyCode('LM69', 'LINE MAN')">
+                    <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN"></div>
+                    <div class="promo-content">
+                        <div class="promo-text-sm"><i class="fa-solid fa-clock"></i> โปรพิเศษเวลาทอง</div>
+                        <div class="promo-amount">50<span class="promo-unit">%</span></div>
+                    </div>
+                    <div class="promo-footer" style="font-size: 10px;"><span>Code: LM69 (แถม 690.-)</span></div>
+                </a>
+
+                <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="copyCode('SAVE100', 'LINE MAN')">
+                    <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN"></div>
+                    <div class="promo-content">
+                        <div class="promo-text-sm">ลูกค้าใหม่</div>
+                        <div class="promo-amount">100<span class="promo-unit">.-</span></div>
+                    </div>
+                    <div class="promo-footer"><span>Code: SAVE100</span></div>
+                </a>
+
+                <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="copyCode('AROI', 'LINE MAN')">
+                    <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN"></div>
+                    <div class="promo-content">
+                        <div class="promo-text-sm">ไม่มีขั้นต่ำ</div>
+                        <div class="promo-amount">100<span class="promo-unit">.-</span></div>
+                    </div>
+                    <div class="promo-footer"><span>Code: AROI</span></div>
+                </a>
+                
+                <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="handleClickApp('LINE MAN')">
+                    <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN"></div>
+                    <div class="promo-content">
+                        <div class="promo-text-sm">ลดสูงสุด</div>
+                        <div class="promo-amount">70<span class="promo-unit">.-</span></div>
+                    </div>
+                    <div class="promo-footer"><span>ขั้นต่ำ 300.-</span></div>
+                </a>
+            </div>
+        </div>
+
+        <div id="robinhood" class="tab-content">
+            <div class="promo-scroll-container">
+                <a href="https://static.robinhood.in.th/app_link.html?URI=robinhoodth://merchantlanding/id/22252" 
+                   class="promo-card card-robin" onclick="handleClickApp('Robinhood')">
+                    <div class="promo-badge"><img src="https://placehold.co/200x200/76308B/ffffff?text=RH" alt="Robinhood"></div>
+                    <div class="promo-content">
+                        <div class="promo-text-sm"><i class="fa-solid fa-heart"></i> ร้านใจดี</div>
+                        <div class="promo-amount">ลด 5<span class="promo-unit">%</span></div>
+                    </div>
+                    <div class="promo-footer"><span>กดสั่งเลย</span></div>
+                </a>
+                
+                <a href="https://static.robinhood.in.th/app_link.html?URI=robinhoodth://merchantlanding/id/22252" 
+                   class="promo-card card-robin" onclick="handleClickApp('Robinhood')">
+                    <div class="promo-badge"><img src="https://placehold.co/200x200/76308B/ffffff?text=RH" alt="Robinhood"></div>
+                    <div class="promo-content">
+                        <div class="promo-text-sm">ค่าส่งถูก</div>
+                        <div class="promo-amount" style="font-size: 22px;">เริ่มต้น 10.-</div>
+                    </div>
+                    <div class="promo-footer"><span>ระยะใกล้</span></div>
+                </a>
+            </div>
         </div>
     </div>
-
-    <div id="grab" class="tab-content active">
-        <div class="promo-scroll-container">
-            <a href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" 
-               class="promo-card card-flash" onclick="handleClickApp('GrabFood')">
-                <div class="promo-badge"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood"></div>
-                <div class="promo-content">
-                    <div class="promo-text-sm"><i class="fa-solid fa-bolt"></i> ลดแรง 15 นาที</div>
-                    <div class="promo-amount">50<span class="promo-unit">.-</span></div>
-                </div>
-                <div class="promo-footer"><span>ขั้นต่ำ 180.- กดเลย!</span></div>
-            </a>
-
-            <a href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" 
-               class="promo-card card-cashback" onclick="handleClickApp('GrabFood')">
-                <div class="promo-badge"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood"></div>
-                <div class="promo-content">
-                    <div class="promo-text-sm">เงินคืน</div>
-                    <div class="promo-amount">200<span class="promo-unit">.-</span></div>
-                </div>
-                <div class="promo-footer"><span>ไม่มีขั้นต่ำ</span></div>
-            </a>
-
-            <a href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" 
-               class="promo-card card-grab" onclick="handleClickApp('GrabFood')">
-                <div class="promo-badge"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood"></div>
-                <div class="promo-content">
-                    <div class="promo-text-sm">ลดสูงสุด</div>
-                    <div class="promo-amount">100<span class="promo-unit">.-</span></div>
-                </div>
-                <div class="promo-footer"><span>ขั้นต่ำ 320.-</span></div>
-            </a>
-
-            <a href="https://grab.onelink.me/2695613898?pid=inappsharing&c=3-C2BUR2CHSFBATN&is_retargeting=true&af_dp=grab%3A%2F%2Fopen%3FscreenType%3DGRABFOOD%26sourceID%3DA4pcqCZkS4%26merchantIDs%3D3-C2BUR2CHSFBATN&af_force_deeplink=true&af_web_dp=https%3A%2F%2Fwww.grab.com%2Fdownload" 
-               class="promo-card card-grab" onclick="handleClickApp('GrabFood')">
-                <div class="promo-badge"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" alt="GrabFood"></div>
-                <div class="promo-content">
-                    <div class="promo-text-sm">ลดเพิ่ม</div>
-                    <div class="promo-amount">80<span class="promo-unit">.-</span></div>
-                </div>
-                <div class="promo-footer"><span>ขั้นต่ำ 280.-</span></div>
-            </a>
-        </div>
-    </div>
-
-    <div id="lineman" class="tab-content">
-        <div class="promo-scroll-container">
-            
-            <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="copyCode('LM69', 'LINE MAN')">
-                <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN"></div>
-                <div class="promo-content">
-                    <div class="promo-text-sm"><i class="fa-solid fa-clock"></i> โปรพิเศษเวลาทอง</div>
-                    <div class="promo-amount">50<span class="promo-unit">%</span></div>
-                </div>
-                <div class="promo-footer" style="font-size: 10px;"><span>Code: LM69 (แถม 690.-)</span></div>
-            </a>
-
-            <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="copyCode('SAVE100', 'LINE MAN')">
-                <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN"></div>
-                <div class="promo-content">
-                    <div class="promo-text-sm">ลูกค้าใหม่</div>
-                    <div class="promo-amount">100<span class="promo-unit">.-</span></div>
-                </div>
-                <div class="promo-footer"><span>Code: SAVE100</span></div>
-            </a>
-
-            <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="copyCode('AROI', 'LINE MAN')">
-                <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN"></div>
-                <div class="promo-content">
-                    <div class="promo-text-sm">ไม่มีขั้นต่ำ</div>
-                    <div class="promo-amount">100<span class="promo-unit">.-</span></div>
-                </div>
-                <div class="promo-footer"><span>Code: AROI</span></div>
-            </a>
-            
-            <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="handleClickApp('LINE MAN')">
-                <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN"></div>
-                <div class="promo-content">
-                    <div class="promo-text-sm">ลดสูงสุด</div>
-                    <div class="promo-amount">70<span class="promo-unit">.-</span></div>
-                </div>
-                <div class="promo-footer"><span>ขั้นต่ำ 300.-</span></div>
-            </a>
-
-        </div>
-    </div>
-
-    <div id="robinhood" class="tab-content">
-        <div class="promo-scroll-container">
-            <a href="https://static.robinhood.in.th/app_link.html?URI=robinhoodth://merchantlanding/id/22252" 
-               class="promo-card card-robin" onclick="handleClickApp('Robinhood')">
-                <div class="promo-badge"><img src="https://placehold.co/200x200/76308B/ffffff?text=RH" alt="Robinhood"></div>
-                <div class="promo-content">
-                    <div class="promo-text-sm"><i class="fa-solid fa-heart"></i> ร้านใจดี</div>
-                    <div class="promo-amount">ลด 5<span class="promo-unit">%</span></div>
-                </div>
-                <div class="promo-footer"><span>กดสั่งเลย</span></div>
-            </a>
-            
-            <a href="https://static.robinhood.in.th/app_link.html?URI=robinhoodth://merchantlanding/id/22252" 
-               class="promo-card card-robin" onclick="handleClickApp('Robinhood')">
-                <div class="promo-badge"><img src="https://placehold.co/200x200/76308B/ffffff?text=RH" alt="Robinhood"></div>
-                <div class="promo-content">
-                    <div class="promo-text-sm">ค่าส่งถูก</div>
-                    <div class="promo-amount" style="font-size: 22px;">เริ่มต้น 10.-</div>
-                </div>
-                <div class="promo-footer"><span>ระยะใกล้</span></div>
-            </a>
-        </div>
-    </div>
-
     <div class="links-container">
         <a id="btn-lineman" href="https://wongn.ai/223eD4" class="link-btn" onclick="handleClickApp('LINE MAN')">
             <div class="badge-corner bg-green">🔥 ค่าส่งถูกสุด</div>
@@ -417,6 +474,27 @@
     </div>
 
     <script>
+        // ฟังก์ชันเปิด/ปิด ส่วนลด
+        function togglePromoSection() {
+            var wrapper = document.getElementById('promo-section-wrapper');
+            var btn = document.getElementById('couponTriggerBtn');
+            
+            if (wrapper.classList.contains('show')) {
+                wrapper.classList.remove('show');
+                setTimeout(() => { wrapper.style.display = 'none'; }, 400); // รอ animation จบ
+                btn.classList.remove('active');
+                btn.innerHTML = '<i class="fa-solid fa-ticket"></i> เก็บโค้ดส่วนลด (Grab/Lineman)';
+                stopAutoScroll(); // ปิดแล้วหยุด scroll ประหยัดทรัพยากร
+            } else {
+                wrapper.style.display = 'flex';
+                // Delay เล็กน้อยเพื่อให้ display flex ทำงานก่อน add class show เพื่อให้ transition ทำงาน
+                setTimeout(() => { wrapper.classList.add('show'); }, 10); 
+                btn.classList.add('active');
+                btn.innerHTML = '<i class="fa-solid fa-xmark"></i> ปิดหน้าต่างโค้ดส่วนลด';
+                startAutoScroll(); // เปิดแล้วค่อยเริ่ม scroll
+            }
+        }
+
         function openTab(appName) {
             var buttons = document.getElementsByClassName('tab-btn');
             for (var i = 0; i < buttons.length; i++) {
@@ -484,6 +562,10 @@
         function startAutoScroll() {
             clearInterval(scrollInterval);
             
+            // ตรวจสอบว่า wrapper เปิดอยู่ไหม ถ้าปิดอยู่ไม่ต้อง scroll
+            var wrapper = document.getElementById('promo-section-wrapper');
+            if (!wrapper || !wrapper.classList.contains('show')) return;
+
             scrollInterval = setInterval(() => {
                 const scrollContainer = getActiveContainer();
                 if (!scrollContainer) return;
@@ -503,8 +585,7 @@
             clearInterval(scrollInterval);
         }
 
-        startAutoScroll();
-
+        // หยุด scroll เมื่อเอาเมาส์ไปชี้หรือแตะ
         document.querySelectorAll('.promo-scroll-container').forEach(container => {
             container.addEventListener('touchstart', stopAutoScroll);
             container.addEventListener('touchend', startAutoScroll);
