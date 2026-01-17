@@ -360,58 +360,59 @@
         }
 
         function renderDashboard() {
-            // Filter Logic (Strict Date Matching)
-            let fProd = currentFilterMonth ? productions.filter(p => p.date.startsWith(currentFilterMonth)) : productions;
-            let fPurch = currentFilterMonth ? purchases.filter(p => p.date.startsWith(currentFilterMonth)) : purchases;
+    // Filter Logic (Strict Date Matching)
+    let fProd = currentFilterMonth ? productions.filter(p => p.date.startsWith(currentFilterMonth)) : productions;
+    let fPurch = currentFilterMonth ? purchases.filter(p => p.date.startsWith(currentFilterMonth)) : purchases;
 
-            let used=0, defect=0, goodVol=0, totalVol=0, buyQty=0, buyCost=0;
-            
-            fProd.forEach(p=>{ 
-                used += parseNum(p.used); 
-                defect += parseNum(p.defect); 
-                goodVol += (parseNum(p.a2_vol) + parseNum(p.a15_vol)); 
-                totalVol += (parseNum(p.a2_vol) + parseNum(p.a15_vol) + parseNum(p.a0_vol)); 
-            });
-            
-            fPurch.forEach(p=>{ 
-                buyQty += parseNum(p.qty); 
-                buyCost += (parseNum(p.qty) * parseNum(p.price)); 
-            });
+    let used = 0, defect = 0, goodVol = 0, totalVol = 0, buyQty = 0, buyCost = 0;
 
-            let allBuy = purchases.reduce((s,p) => s + parseNum(p.qty), 0);
-            let allUsed = productions.reduce((s,p) => s + parseNum(p.used), 0);
-            let allCost = purchases.reduce((s,p) => s + (parseNum(p.qty) * parseNum(p.price)), 0);
-            
-            document.getElementById('kpi-stock').innerText = (allBuy - allUsed).toLocaleString();
-            document.getElementById('kpi-stock-val').innerText = "ทุนเฉลี่ย: " + (allBuy>0 ? allCost/allBuy : 0).toFixed(2);
-            
-            let avgPrice = buyQty>0 ? buyCost/buyQty : (allBuy>0 ? allCost/allBuy : 0);
-            let effCost = (used-defect)>0 ? (used*avgPrice)/(used-defect) : avgPrice;
-            
-            document.getElementById('kpi-buy-cost').innerText = avgPrice.toFixed(2);
-            document.getElementById('kpi-eff-cost').innerText = effCost.toFixed(2);
-            document.getElementById('kpi-defect-rate').innerText = (used>0 ? (defect/used)*100 : 0).toFixed(1) + "%";
-            document.getElementById('kpi-total-waste').innerText = defect.toLocaleString();
-            
-            let costL = goodVol>0 ? (used*avgPrice)/(goodVol/1000) : 0;
-            document.getElementById('kpi-cost-liter').innerText = costL.toFixed(1);
-            document.getElementById('kpi-yield').innerText = (used>0 ? goodVol/used : 0).toFixed(0);
+    fProd.forEach(p => {
+        used += parseNum(p.used);
+        defect += parseNum(p.defect);
+        goodVol += (parseNum(p.a2_vol) + parseNum(p.a15_vol));
+        totalVol += (parseNum(p.a2_vol) + parseNum(p.a15_vol) + parseNum(p.a0_vol));
+    });
 
-            let sellPrice = document.getElementById('selling-price').value;
-            let rev = (goodVol/1000) * sellPrice;
-            let cogs = used * avgPrice;
-            
-            // --- FIX: เพิ่มการอัปเดตบรรทัดนี้ ---
-            document.getElementById('calc-revenue').innerText = rev.toLocaleString(undefined,{maximumFractionDigits:0}) + " ฿";
-            document.getElementById('calc-vol').innerText = "จากน้ำขาย " + (goodVol/1000).toLocaleString(undefined, {maximumFractionDigits:1}) + " ลิตร";
-            // ---------------------------------
-            
-            document.getElementById('calc-cost').innerText = cogs.toLocaleString(undefined,{maximumFractionDigits:0}) + " ฿";
-            document.getElementById('calc-profit').innerText = (rev-cogs).toLocaleString(undefined,{maximumFractionDigits:0}) + " ฿";
-            document.getElementById('calc-margin').innerText = "Margin: " + (rev>0 ? ((rev-cogs)/rev)*100 : 0).toFixed(1) + "%";
+    fPurch.forEach(p => {
+        buyQty += parseNum(p.qty);
+        buyCost += (parseNum(p.qty) * parseNum(p.price));
+    });
 
-            renderCharts(fProd, fPurch);
-        }
+    let allBuy = purchases.reduce((s, p) => s + parseNum(p.qty), 0);
+    let allUsed = productions.reduce((s, p) => s + parseNum(p.used), 0);
+    let allCost = purchases.reduce((s, p) => s + (parseNum(p.qty) * parseNum(p.price)), 0);
+
+    document.getElementById('kpi-stock').innerText = (allBuy - allUsed).toLocaleString();
+
+    // --- FIX: เปลี่ยนจากทุนเฉลี่ย เป็น ยอดใช้มะพร้าวของเดือน (used) ---
+    document.getElementById('kpi-stock-val').innerText = "ใช้ไป: " + used.toLocaleString() + " ลูก";
+    // -----------------------------------------------------------
+
+    let avgPrice = buyQty > 0 ? buyCost / buyQty : (allBuy > 0 ? allCost / allBuy : 0);
+    let effCost = (used - defect) > 0 ? (used * avgPrice) / (used - defect) : avgPrice;
+
+    document.getElementById('kpi-buy-cost').innerText = avgPrice.toFixed(2);
+    document.getElementById('kpi-eff-cost').innerText = effCost.toFixed(2);
+    document.getElementById('kpi-defect-rate').innerText = (used > 0 ? (defect / used) * 100 : 0).toFixed(1) + "%";
+    document.getElementById('kpi-total-waste').innerText = defect.toLocaleString();
+
+    let costL = goodVol > 0 ? (used * avgPrice) / (goodVol / 1000) : 0;
+    document.getElementById('kpi-cost-liter').innerText = costL.toFixed(1);
+    document.getElementById('kpi-yield').innerText = (used > 0 ? goodVol / used : 0).toFixed(0);
+
+    let sellPrice = document.getElementById('selling-price').value;
+    let rev = (goodVol / 1000) * sellPrice;
+    let cogs = used * avgPrice;
+
+    document.getElementById('calc-revenue').innerText = rev.toLocaleString(undefined, { maximumFractionDigits: 0 }) + " ฿";
+    document.getElementById('calc-vol').innerText = "จากน้ำขาย " + (goodVol / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 }) + " ลิตร";
+
+    document.getElementById('calc-cost').innerText = cogs.toLocaleString(undefined, { maximumFractionDigits: 0 }) + " ฿";
+    document.getElementById('calc-profit').innerText = (rev - cogs).toLocaleString(undefined, { maximumFractionDigits: 0 }) + " ฿";
+    document.getElementById('calc-margin').innerText = "Margin: " + (rev > 0 ? ((rev - cogs) / rev) * 100 : 0).toFixed(1) + "%";
+
+    renderCharts(fProd, fPurch);
+}
 
         function renderCharts(prod, purch) {
             const sortedP = [...prod].sort((a,b)=>new Date(a.date)-new Date(b.date));
