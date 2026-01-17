@@ -538,7 +538,7 @@
             const fS = currentMonthData.sales.filter(s => s.date>=start && s.date<=end);
             const fE = currentMonthData.expenses.filter(e => e.date>=start && e.date<=end);
 
-            // 1. Revenue
+            // 1. Revenue Aggregation
             let revInstore=0, revGrab=0, revLine=0, revRbh=0, revTotal=0;
             fS.forEach(s => {
                 revInstore+=(s.instore||0); revGrab+=(s.delivery_grab||0);
@@ -546,20 +546,39 @@
             });
             revTotal = revInstore + revGrab + revLine + revRbh;
 
-            // 2. Expenses Categorization
-            let grpCogs=0, grpStaff=0, grpControl=0, grpUncontrol=0, grpLoan=0;
-            let listCogs=[], listStaff=[], listControl=[], listUncontrol=[], listLoan=[];
+            // 2. Expenses Aggregation (Group by Category Code)
+            let aggCogs = {}, aggStaff = {}, aggControl = {}, aggUncontrol = {}, aggLoan = {};
 
             fE.forEach(e => {
                 const c = e.category;
-                const i = { cat: c, amt: e.amount, memo: e.memo, date: e.date };
+                const amt = e.amount;
                 
-                if(c.startsWith('02')) { grpCogs+=e.amount; listCogs.push(i); }
-                else if(c.startsWith('03')) { grpStaff+=e.amount; listStaff.push(i); }
-                else if(c.startsWith('0411-') && c!=='0411') { grpLoan+=e.amount; listLoan.push(i); } 
-                else if(['0504','0121','0702','0501','0502','0505'].some(p=>c.startsWith(p))) { grpUncontrol+=e.amount; listUncontrol.push(i); }
-                else { grpControl+=e.amount; listControl.push(i); } 
+                let targetMap;
+                if(c.startsWith('02')) targetMap = aggCogs;
+                else if(c.startsWith('03')) targetMap = aggStaff;
+                else if(c.startsWith('0411-') && c!=='0411') targetMap = aggLoan;
+                else if(['0504','0121','0702','0501','0502','0505'].some(p=>c.startsWith(p))) targetMap = aggUncontrol;
+                else targetMap = aggControl;
+
+                if(!targetMap[c]) targetMap[c] = { cat: c, amt: 0 };
+                targetMap[c].amt += amt;
             });
+
+            // Convert Maps to Arrays & Sum Totals
+            const toArray = (map) => Object.values(map).sort((a,b) => b.amt - a.amt);
+            const sumArray = (arr) => arr.reduce((sum, item) => sum + item.amt, 0);
+
+            const listCogs = toArray(aggCogs);
+            const listStaff = toArray(aggStaff);
+            const listControl = toArray(aggControl);
+            const listUncontrol = toArray(aggUncontrol);
+            const listLoan = toArray(aggLoan);
+
+            const grpCogs = sumArray(listCogs);
+            const grpStaff = sumArray(listStaff);
+            const grpControl = sumArray(listControl);
+            const grpUncontrol = sumArray(listUncontrol);
+            const grpLoan = sumArray(listLoan);
 
             // Update Summaries
             const setTxt = (id, val) => document.getElementById(id).innerText = val.toLocaleString();
@@ -605,13 +624,12 @@
                 if(i.amt === 0) return;
                 let name = catNames[i.cat] || i.cat;
                 if(elId==='grp-rev') name = i.cat; 
-                const sub = i.memo ? `<div class="text-[10px] text-slate-400">${i.memo}</div>` : '';
-                const date = i.date ? `<span class="mr-2 text-slate-400 font-mono">${i.date.slice(8)}:</span>` : '';
+                // Note: Memo and Date are removed because this is an aggregated view
                 const pct = totalRev > 0 ? ((i.amt/totalRev)*100).toFixed(1) + '%' : '0%';
                 
                 el.innerHTML += `
                     <div class="sub-row">
-                        <div>${date}${name} ${sub}</div>
+                        <div>${name}</div>
                         <div class="text-right">
                             <div class="font-bold text-slate-700">${i.amt.toLocaleString()}</div>
                             <div class="text-[10px] text-slate-400">${pct}</div>
