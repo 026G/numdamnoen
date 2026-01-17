@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DPM Mobile (Daily P&L)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Kanit', sans-serif; -webkit-tap-highlight-color: transparent; background-color: #f8fafc; }
+        
+        /* Mobile Optimizations */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: white; border-top: 1px solid #e2e8f0;
+            display: flex; justify-content: space-around;
+            padding: 10px 0; padding-bottom: max(10px, env(safe-area-inset-bottom));
+            z-index: 50; box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center;
+            font-size: 0.75rem; color: #94a3b8; transition: all 0.2s;
+        }
+        .nav-item.active { color: #3b82f6; transform: translateY(-2px); }
+        .nav-item i { font-size: 1.25rem; margin-bottom: 2px; }
+        
+        .page-content { padding-bottom: 90px; padding-top: 60px; min-height: 100vh; }
+        
+        .card { background: white; border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 12px; }
+        
+        /* Inputs */
+        .mobile-input {
+            width: 100%; padding: 12px 16px; border-radius: 12px;
+            border: 1px solid #e2e8f0; background: #f8fafc;
+            font-size: 1rem; outline: none; transition: all 0.2s;
+        }
+        .mobile-input:focus { border-color: #3b82f6; background: white; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+        
+        /* P&L List */
+        .pl-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
+        .pl-row:last-child { border-bottom: none; }
+        .pl-sub { font-size: 0.85rem; color: #64748b; margin-left: 8px; }
+        
+        /* Loading */
+        .spinner { border: 3px solid rgba(0,0,0,0.1); border-left-color: #3b82f6; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div id="login-screen" class="fixed inset-0 z-[100] bg-slate-900 flex flex-col justify-center px-6">
+        <div class="text-center mb-8">
+            <div class="w-20 h-20 bg-blue-600 rounded-2xl mx-auto flex items-center justify-center mb-4 shadow-lg shadow-blue-500/30">
+                <i class="fa-solid fa-chart-pie text-3xl text-white"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-white mb-2">DPM Mobile</h1>
+            <p class="text-slate-400">ระบบจัดการร้านอาหารบนมือถือ</p>
+        </div>
+        <form id="loginForm" class="space-y-4">
+            <input type="email" id="loginEmail" class="mobile-input bg-slate-800 border-slate-700 text-white placeholder-slate-500" placeholder="อีเมล" required>
+            <input type="password" id="loginPass" class="mobile-input bg-slate-800 border-slate-700 text-white placeholder-slate-500" placeholder="รหัสผ่าน" required>
+            <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-blue-600/30 active:scale-95 transition">เข้าสู่ระบบ</button>
+        </form>
+        <p id="loginError" class="text-red-400 text-center mt-4 hidden text-sm"></p>
+    </div>
+
+    <div id="main-app" class="hidden">
+        
+        <div class="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-md z-40 px-4 py-3 border-b border-slate-100 flex justify-between items-center shadow-sm h-[60px]">
+            <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+                    <i class="fa-solid fa-store text-xs"></i>
+                </div>
+                <span class="font-bold text-slate-800">Restaurant PRO</span>
+            </div>
+            <div class="flex items-center space-x-2 bg-slate-100 rounded-lg p-1">
+                <input type="month" id="globalMonth" class="bg-transparent text-xs font-bold text-slate-600 outline-none w-24 text-center" onchange="refreshData()">
+            </div>
+        </div>
+
+        <div id="page-home" class="page-content px-4">
+            <div class="flex justify-between items-end mb-4">
+                <h2 class="text-xl font-bold text-slate-800">ภาพรวมวันนี้</h2>
+                <span class="text-xs text-slate-500" id="todayDateDisplay">...</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="card bg-gradient-to-br from-blue-500 to-blue-600 text-white !border-0">
+                    <p class="text-xs opacity-80 mb-1">ยอดขายวันนี้</p>
+                    <h3 class="text-2xl font-bold" id="card-today-sales">0</h3>
+                </div>
+                <div class="card bg-white border border-slate-100">
+                    <p class="text-xs text-slate-400 mb-1">กำไร (ประมาณการ)</p>
+                    <h3 class="text-2xl font-bold text-green-600" id="card-today-profit">0</h3>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 class="font-bold text-slate-700 mb-3 flex items-center text-sm">
+                    <i class="fa-solid fa-chart-simple mr-2 text-blue-500"></i> ยอดขาย 7 วันล่าสุด
+                </h3>
+                <div class="h-40 w-full relative">
+                    <canvas id="miniChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card mt-4 bg-orange-50 border-orange-100">
+                <h3 class="font-bold text-orange-800 mb-2 text-sm">💡 Quick Actions</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="navTo('sales')" class="bg-white py-3 rounded-xl text-orange-600 text-sm font-bold shadow-sm border border-orange-100">
+                        + จดขาย
+                    </button>
+                    <button onclick="navTo('expenses')" class="bg-white py-3 rounded-xl text-red-600 text-sm font-bold shadow-sm border border-red-100">
+                        - จดจ่าย
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="page-sales" class="page-content px-4 hidden">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">✏️ จดรายรับ</h2>
+            <div class="card">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1 block">วันที่ขาย</label>
+                <input type="date" id="inputSaleDate" class="mobile-input mb-4 font-bold text-slate-700">
+                
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between mb-1"><label class="text-sm font-bold text-blue-600">🏠 หน้าร้าน</label></div>
+                        <input type="number" inputmode="decimal" id="valInstore" class="mobile-input text-right text-lg font-bold" placeholder="0">
+                    </div>
+                    <hr class="border-slate-100">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-sm font-bold text-green-600 mb-1 block">Grab</label>
+                            <input type="number" inputmode="decimal" id="valGrab" class="mobile-input text-right" placeholder="0">
+                        </div>
+                        <div>
+                            <label class="text-sm font-bold text-orange-500 mb-1 block">Lineman</label>
+                            <input type="number" inputmode="decimal" id="valLine" class="mobile-input text-right" placeholder="0">
+                        </div>
+                        <div>
+                            <label class="text-sm font-bold text-purple-600 mb-1 block">Robinhood</label>
+                            <input type="number" inputmode="decimal" id="valRbh" class="mobile-input text-right" placeholder="0">
+                        </div>
+                        <div>
+                            <label class="text-sm font-bold text-slate-500 mb-1 block">อื่นๆ</label>
+                            <input type="number" inputmode="decimal" id="valOther" class="mobile-input text-right" placeholder="0">
+                        </div>
+                    </div>
+                </div>
+                
+                <button onclick="saveSales()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg mt-6 shadow-lg shadow-blue-200 active:scale-95 transition flex justify-center items-center">
+                    <span id="btnSaveSaleText">บันทึกยอดขาย</span>
+                    <div id="spinnerSale" class="spinner ml-2 border-white border-l-transparent hidden w-5 h-5"></div>
+                </button>
+            </div>
+        </div>
+
+        <div id="page-expenses" class="page-content px-4 hidden">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">💸 จดรายจ่าย</h2>
+            <div class="card border-l-4 border-red-500">
+                <div class="mb-4">
+                    <label class="text-xs font-bold text-slate-400 uppercase mb-1 block">วันที่จ่าย</label>
+                    <input type="date" id="inputExpDate" class="mobile-input font-bold text-slate-700">
+                </div>
+
+                <div class="mb-4">
+                    <label class="text-xs font-bold text-slate-400 uppercase mb-1 block">หมวดหมู่</label>
+                    <div class="relative">
+                        <select id="inputExpCat" class="mobile-input appearance-none bg-white">
+                            <option value="" disabled selected>-- เลือกประเภท --</option>
+                            
+                            <optgroup label="🔥 วัตถุดิบ (COGS)">
+                                <option value="0201">0201 - วัตถุดิบอาหาร</option>
+                                <option value="0202">0202 - บรรจุภัณฑ์</option>
+                                <option value="0203">0203 - น้ำแข็ง</option>
+                            </optgroup>
+                          
+                           <optgroup label="👥 ค่าใช้จ่ายพนักงาน">
+                                <option value="0301">0301 - เงินเดือนพนักงาน</option>
+                           </optgroup>
+                            
+                            <optgroup label="🏢 ค่าใช้จ่ายดำเนินงาน (OPEX)">
+                                <option value="0401">0401 - ค่าไฟฟ้า</option>
+                                <option value="0402">0402 - ค่าน้ำประปา</option>
+                                <option value="0403">0403 - โทรศัพท์/เน็ต</option>
+                                <option value="0412">0412 - ค่าเดินทาง</option>
+                                <option value="0406">0406 - ซ่อมแซมบำรุงรักษา</option>
+                                <option value="0409">0409 - วัสดุสิ้นเปลือง</option>
+                                <option value="0411">0411 - ค่าใช้จ่ายอื่นๆ (เบ็ดเตล็ด)</option>
+                            </optgroup>
+                        
+                            <optgroup label="📣 การตลาด & GP">
+                                <option value="0408">0408 - ค่าโฆษณา (Ads)</option>
+                            </optgroup>
+                        
+                            <optgroup label="🔒 ค่าใช้จ่ายคงที่ (รายเดือน)">
+                                <option value="0501">0501 - ค่าเช่าร้าน</option>
+                                <option value="0505">0505 - ค่าเช่าอุปกรณ์</option>
+                            </optgroup>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-4 top-4 text-slate-400 pointer-events-none"></i>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="text-xs font-bold text-slate-400 uppercase mb-1 block">จำนวนเงิน (บาท)</label>
+                    <input type="number" inputmode="decimal" id="inputExpAmt" class="mobile-input text-2xl font-bold text-red-500" placeholder="0.00">
+                </div>
+
+                <div class="mb-4">
+                    <label class="text-xs font-bold text-slate-400 uppercase mb-1 block">บันทึกช่วยจำ</label>
+                    <input type="text" id="inputExpMemo" class="mobile-input" placeholder="เช่น ค่ารถไปแม็คโคร...">
+                </div>
+
+                <button onclick="saveExpense()" class="w-full bg-red-500 text-white py-4 rounded-xl font-bold text-lg mt-2 shadow-lg shadow-red-200 active:scale-95 transition flex justify-center items-center">
+                    <span id="btnSaveExpText">บันทึกจ่าย</span>
+                    <div id="spinnerExp" class="spinner ml-2 border-white border-l-transparent hidden w-5 h-5"></div>
+                </button>
+            </div>
+        </div>
+
+        <div id="page-report" class="page-content px-4 hidden">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">📑 งบกำไร-ขาดทุน</h2>
+            
+            <div class="flex space-x-2 mb-4 overflow-x-auto pb-2 hide-scrollbar">
+                <button onclick="filterReport('today')" class="px-4 py-2 rounded-full bg-slate-200 text-slate-600 text-xs font-bold whitespace-nowrap active:bg-blue-600 active:text-white transition">วันนี้</button>
+                <button onclick="filterReport('7days')" class="px-4 py-2 rounded-full bg-slate-200 text-slate-600 text-xs font-bold whitespace-nowrap active:bg-blue-600 active:text-white transition">7 วัน</button>
+                <button onclick="filterReport('month')" class="px-4 py-2 rounded-full bg-blue-600 text-white text-xs font-bold whitespace-nowrap shadow-md">เดือนนี้</button>
+            </div>
+
+            <div id="report-content" class="space-y-4">
+                <div class="card bg-slate-800 text-white">
+                    <div class="flex justify-between items-center mb-4 border-b border-slate-600 pb-2">
+                        <span class="text-slate-400 text-sm">กำไรสุทธิ (Net Profit)</span>
+                    </div>
+                    <div class="text-center">
+                        <h1 class="text-4xl font-bold text-green-400" id="pl-net">0</h1>
+                        <p class="text-xs text-slate-400 mt-1" id="pl-margin">Margin: 0%</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3 class="font-bold text-slate-800 border-b pb-2 mb-2">รายละเอียด</h3>
+                    
+                    <div class="pl-row">
+                        <div class="flex flex-col"><span class="font-bold text-slate-700">รายได้รวม (Sales)</span><span class="pl-sub text-xs">Gross Revenue</span></div>
+                        <span class="font-bold text-blue-600" id="pl-rev">0</span>
+                    </div>
+                    
+                    <div class="pl-row bg-red-50 -mx-4 px-4">
+                        <div class="flex flex-col"><span class="font-bold text-red-800">ต้นทุนขาย (COGS)</span><span class="pl-sub text-xs text-red-600">วัตถุดิบ/แพ็คเกจ</span></div>
+                        <div class="text-right">
+                            <div class="font-bold text-red-600" id="pl-cogs">0</div>
+                            <div class="text-xs text-red-400" id="pl-cogs-pct">0%</div>
+                        </div>
+                    </div>
+
+                    <div class="pl-row">
+                        <div class="flex flex-col"><span class="font-bold text-green-700">กำไรขั้นต้น</span><span class="pl-sub text-xs">Gross Profit</span></div>
+                        <span class="font-bold text-green-600" id="pl-gp">0</span>
+                    </div>
+
+                    <div class="pl-row">
+                        <div class="flex flex-col"><span class="font-bold text-orange-700">ค่าใช้จ่าย (OPEX)</span><span class="pl-sub text-xs">เงินเดือน/น้ำไฟ/เดินทาง</span></div>
+                        <div class="text-right">
+                            <div class="font-bold text-orange-600" id="pl-opex">0</div>
+                            <div class="text-xs text-orange-400" id="pl-opex-pct">0%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <button class="w-full flex justify-between items-center text-sm font-bold text-slate-500" onclick="document.getElementById('detail-list').classList.toggle('hidden')">
+                        <span>ดูรายการแยกย่อย</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                    <div id="detail-list" class="hidden mt-3 space-y-2 text-sm border-t pt-2">
+                        <p class="text-center text-slate-400 py-4">ไม่มีข้อมูล</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <nav class="bottom-nav">
+            <div class="nav-item active" onclick="navTo('home')" id="nav-home">
+                <i class="fa-solid fa-house"></i>
+                <span>หน้าแรก</span>
+            </div>
+            <div class="nav-item" onclick="navTo('sales')" id="nav-sales">
+                <i class="fa-solid fa-cash-register"></i>
+                <span>จดรับ</span>
+            </div>
+            <div class="nav-item" onclick="navTo('expenses')" id="nav-expenses">
+                <i class="fa-solid fa-wallet"></i>
+                <span>จดจ่าย</span>
+            </div>
+            <div class="nav-item" onclick="navTo('report')" id="nav-report">
+                <i class="fa-solid fa-file-invoice-dollar"></i>
+                <span>งบ P&L</span>
+            </div>
+        </nav>
+
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, setDoc, addDoc, doc, Timestamp, query, where } 
+        from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } 
+        from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+        // ==========================================
+        // ⚠️ PASTE YOUR FIREBASE CONFIG HERE ⚠️
+        // ==========================================
+                  const firebaseConfig = {
+    apiKey: "AIzaSyDRiTZXUbkdGaCHZVTkOOl1Iu0A-744tE0",
+    authDomain: "numdamnoen-6cbd5.firebaseapp.com",
+    projectId: "numdamnoen-6cbd5",
+    storageBucket: "numdamnoen-6cbd5.firebasestorage.app",
+    messagingSenderId: "823964498524",
+    appId: "1:823964498524:web:c79d742cf1a5a33c864499",
+    measurementId: "G-805RS7VZEM"
+  };
+
+        let db, auth;
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+        } catch(e) { console.error("Firebase Config Error"); }
+
+        // --- AUTH ---
+        onAuthStateChanged(auth, (user) => {
+            if(user) {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('main-app').classList.remove('hidden');
+                initApp();
+            } else {
+                document.getElementById('login-screen').classList.remove('hidden');
+            }
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const pass = document.getElementById('loginPass').value;
+            const err = document.getElementById('loginError');
+            
+            signInWithEmailAndPassword(auth, email, pass)
+                .catch(error => {
+                    err.innerText = "อีเมลหรือรหัสผ่านไม่ถูกต้อง";
+                    err.classList.remove('hidden');
+                });
+        });
+
+        // --- NAVIGATION ---
+        window.navTo = (pageId) => {
+            // Hide all pages
+            document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
+            // Show target
+            document.getElementById(`page-${pageId}`).classList.remove('hidden');
+            
+            // Update Nav Icons
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById(`nav-${pageId}`).classList.add('active');
+
+            // Specific Actions
+            if(pageId === 'home') refreshData();
+            if(pageId === 'report') filterReport('month');
+            
+            // Scroll to top
+            window.scrollTo(0,0);
+        }
+
+        // --- DATA & APP LOGIC ---
+        let currentMonthData = { sales: [], expenses: [] };
+        
+        function initApp() {
+            const today = new Date();
+            const y = today.getFullYear();
+            const m = String(today.getMonth() + 1).padStart(2, '0');
+            const d = String(today.getDate()).padStart(2, '0');
+            
+            document.getElementById('globalMonth').value = `${y}-${m}`;
+            document.getElementById('inputSaleDate').value = `${y}-${m}-${d}`;
+            document.getElementById('inputExpDate').value = `${y}-${m}-${d}`;
+            document.getElementById('todayDateDisplay').innerText = `${d}/${m}/${y}`;
+            
+            refreshData();
+        }
+
+        window.refreshData = async () => {
+            const monthVal = document.getElementById('globalMonth').value;
+            if(!monthVal) return;
+            
+            // Fetch Sales
+            currentMonthData.sales = [];
+            const qS = await getDocs(collection(db, "daily_sales"));
+            qS.forEach(doc => {
+                const d = doc.data();
+                if(d.date.startsWith(monthVal)) currentMonthData.sales.push(d);
+            });
+
+            // Fetch Expenses
+            currentMonthData.expenses = [];
+            const qE = await getDocs(collection(db, "expenses"));
+            qE.forEach(doc => {
+                const d = doc.data();
+                if(d.date.startsWith(monthVal)) currentMonthData.expenses.push(d);
+            });
+
+            renderDashboard();
+        }
+
+        function renderDashboard() {
+            const todayStr = document.getElementById('inputSaleDate').value; // Use Input date as "Today" context or new Date
+            const todayReal = new Date().toISOString().split('T')[0];
+            
+            // Find Today's Sales
+            const todayData = currentMonthData.sales.find(s => s.date === todayReal);
+            let todayTotal = 0;
+            if(todayData) {
+                todayTotal = (todayData.instore||0) + (todayData.delivery_grab||0) + (todayData.delivery_lineman||0) + (todayData.delivery_robinhood||0) + (todayData.delivery_other||0);
+            }
+            document.getElementById('card-today-sales').innerText = todayTotal.toLocaleString();
+
+            // Simple Profit Calc (This month)
+            let totalRev = 0;
+            currentMonthData.sales.forEach(s => {
+                totalRev += (s.instore||0) + (s.delivery_grab||0) + (s.delivery_lineman||0) + (s.delivery_robinhood||0) + (s.delivery_other||0);
+            });
+            let totalExp = 0;
+            currentMonthData.expenses.forEach(e => totalExp += e.amount);
+            
+            document.getElementById('card-today-profit').innerText = (totalRev - totalExp).toLocaleString();
+            
+            // Render Mini Chart
+            renderMiniChart();
+        }
+
+        // --- SAVE SALES ---
+        window.saveSales = async () => {
+            const btn = document.querySelector('#page-sales button');
+            const txt = document.getElementById('btnSaveSaleText');
+            const spin = document.getElementById('spinnerSale');
+            
+            btn.disabled = true; txt.innerText = "กำลังบันทึก..."; spin.classList.remove('hidden');
+
+            const dateVal = document.getElementById('inputSaleDate').value;
+            const data = {
+                date: dateVal,
+                instore: parseFloat(document.getElementById('valInstore').value || 0),
+                delivery_grab: parseFloat(document.getElementById('valGrab').value || 0),
+                delivery_lineman: parseFloat(document.getElementById('valLine').value || 0),
+                delivery_robinhood: parseFloat(document.getElementById('valRbh').value || 0),
+                delivery_other: parseFloat(document.getElementById('valOther').value || 0),
+                timestamp: Timestamp.now()
+            };
+
+            try {
+                await setDoc(doc(db, "daily_sales", dateVal), data, { merge: true });
+                alert("✅ บันทึกยอดขายเรียบร้อย");
+                // Clear inputs
+                ['valInstore','valGrab','valLine','valRbh','valOther'].forEach(id => document.getElementById(id).value = '');
+                refreshData();
+            } catch(e) { alert("Error: " + e.message); }
+            
+            btn.disabled = false; txt.innerText = "บันทึกยอดขาย"; spin.classList.add('hidden');
+        }
+
+        // --- SAVE EXPENSE ---
+        window.saveExpense = async () => {
+            const dateVal = document.getElementById('inputExpDate').value;
+            const cat = document.getElementById('inputExpCat').value;
+            const amt = parseFloat(document.getElementById('inputExpAmt').value);
+            const memo = document.getElementById('inputExpMemo').value;
+
+            if(!cat || !amt) { alert("กรุณาระบุหมวดหมู่และจำนวนเงิน"); return; }
+
+            const btn = document.querySelector('#page-expenses button');
+            const txt = document.getElementById('btnSaveExpText');
+            const spin = document.getElementById('spinnerExp');
+            
+            btn.disabled = true; txt.innerText = "กำลังบันทึก..."; spin.classList.remove('hidden');
+
+            try {
+                await addDoc(collection(db, "expenses"), {
+                    date: dateVal, category: cat, amount: amt, memo: memo, timestamp: Timestamp.now()
+                });
+                alert("✅ บันทึกรายจ่ายเรียบร้อย");
+                document.getElementById('inputExpAmt').value = '';
+                document.getElementById('inputExpMemo').value = '';
+                refreshData();
+            } catch(e) { alert("Error: " + e.message); }
+
+            btn.disabled = false; txt.innerText = "บันทึกจ่าย"; spin.classList.add('hidden');
+        }
+
+        // --- REPORT LOGIC ---
+        window.filterReport = (range) => {
+            const today = new Date();
+            let start = new Date();
+            let end = new Date(); // End of today
+
+            if(range === 'today') { /* Start is today */ }
+            else if(range === '7days') { start.setDate(today.getDate() - 6); }
+            else if(range === 'month') {
+                const monthVal = document.getElementById('globalMonth').value;
+                start = new Date(monthVal + '-01');
+                end = new Date(start.getFullYear(), start.getMonth() + 1, 0);
+            }
+
+            const startStr = start.toISOString().split('T')[0];
+            const endStr = end.toISOString().split('T')[0];
+
+            // Filter Data
+            const fSales = currentMonthData.sales.filter(s => s.date >= startStr && s.date <= endStr);
+            const fExp = currentMonthData.expenses.filter(e => e.date >= startStr && e.date <= endStr);
+
+            // Calc
+            let rev = 0;
+            fSales.forEach(s => rev += (s.instore||0) + (s.delivery_grab||0) + (s.delivery_lineman||0) + (s.delivery_robinhood||0) + (s.delivery_other||0));
+
+            let cogs = 0; // 02xx
+            let opex = 0; // 03xx, 04xx, 05xx
+            let breakdown = [];
+
+            fExp.forEach(e => {
+                if(e.category.startsWith('02')) cogs += e.amount;
+                else opex += e.amount;
+
+                // Push to breakdown list
+                breakdown.push(e);
+            });
+
+            const gp = rev - cogs;
+            const net = gp - opex;
+
+            // UI Update
+            document.getElementById('pl-rev').innerText = rev.toLocaleString();
+            document.getElementById('pl-cogs').innerText = cogs.toLocaleString();
+            document.getElementById('pl-cogs-pct').innerText = rev>0 ? ((cogs/rev)*100).toFixed(1)+'%' : '0%';
+            document.getElementById('pl-gp').innerText = gp.toLocaleString();
+            document.getElementById('pl-opex').innerText = opex.toLocaleString();
+            document.getElementById('pl-opex-pct').innerText = rev>0 ? ((opex/rev)*100).toFixed(1)+'%' : '0%';
+            document.getElementById('pl-net').innerText = net.toLocaleString();
+            document.getElementById('pl-margin').innerText = `Net Margin: ${rev>0 ? ((net/rev)*100).toFixed(1) : 0}%`;
+
+            // Render Detail List
+            const listEl = document.getElementById('detail-list');
+            listEl.innerHTML = '';
+            
+            // Group expenses by Category name
+            const catMap = {
+                '0412': 'ค่าเดินทาง', '0201': 'วัตถุดิบ', '0401': 'ค่าไฟ', '0301': 'เงินเดือน'
+                // ... map others as needed or show code
+            };
+
+            breakdown.sort((a,b) => b.amount - a.amount);
+            if(breakdown.length === 0) { listEl.innerHTML = '<p class="text-center text-slate-400 py-4">ไม่มีรายจ่ายในช่วงนี้</p>'; return; }
+
+            breakdown.forEach(b => {
+                const name = catMap[b.category] || b.category;
+                listEl.innerHTML += `
+                    <div class="flex justify-between py-2 border-b border-slate-50 last:border-0">
+                        <div>
+                            <div class="text-slate-700 font-bold text-xs">${b.date.slice(8)}: ${name}</div>
+                            <div class="text-[10px] text-slate-400">${b.memo || '-'}</div>
+                        </div>
+                        <div class="font-bold text-slate-600">${b.amount.toLocaleString()}</div>
+                    </div>
+                `;
+            });
+        }
+
+        // --- MINI CHART ---
+        let miniChartInstance = null;
+        function renderMiniChart() {
+            const ctx = document.getElementById('miniChart');
+            if(!ctx) return;
+            
+            // Get last 7 days sales
+            const labels = [];
+            const data = [];
+            const today = new Date();
+            for(let i=6; i>=0; i--) {
+                const d = new Date(); d.setDate(today.getDate() - i);
+                const dStr = d.toISOString().split('T')[0];
+                labels.push(d.getDate()); // Just day number
+                
+                const s = currentMonthData.sales.find(x => x.date === dStr);
+                let val = 0;
+                if(s) val = (s.instore||0) + (s.delivery_grab||0) + (s.delivery_lineman||0) + (s.delivery_robinhood||0) + (s.delivery_other||0);
+                data.push(val);
+            }
+
+            if(miniChartInstance) miniChartInstance.destroy();
+            miniChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Sales',
+                        data: data,
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false } },
+                        y: { grid: { display: false }, ticks: { display: false } }
+                    }
+                }
+            });
+        }
+
+    </script>
+</body>
+</html>
