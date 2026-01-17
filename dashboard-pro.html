@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurant PRO (V.50 Ultimate: Goal + WoW + Exact Acc)</title>
+    <title>Restaurant PRO (V.50 Ultimate: Goal + WoW + Detailed P&L)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script> 
@@ -18,11 +18,6 @@
         .report-table { width: 100%; border-collapse: collapse; }
         .report-table th { background-color: #f3f4f6; color: #374151; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; padding: 1rem 1.5rem; border-bottom: 2px solid #e5e7eb; }
         .report-table td { padding: 0.75rem 1.5rem; border-bottom: 1px solid #f3f4f6; color: #4b5563; font-size: 0.9rem; }
-        
-        /* Rows */
-        .row-header td { background-color: #e0e7ff; color: #3730a3; font-weight: bold; padding-top: 1rem; padding-bottom: 1rem; font-size: 1rem; }
-        .row-subtotal td { background-color: #fffbeb; font-weight: bold; color: #92400e; border-top: 2px solid #fcd34d; }
-        .row-total td { background-color: #1e3a8a; color: white; font-weight: bold; font-size: 1.1em; padding-top: 1rem; padding-bottom: 1rem; }
         
         /* UI Elements */
         .tab-btn.active { background-color: #4338ca; color: white; box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06); }
@@ -44,6 +39,10 @@
         .goal-progress-bar { height: 100%; transition: width 1s ease-in-out; background: linear-gradient(90deg, #3B82F6 0%, #2563EB 100%); display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; color: white; font-size: 0.75rem; font-weight: bold; }
         .goal-progress-bar.warning { background: linear-gradient(90deg, #F59E0B 0%, #D97706 100%); }
         .goal-progress-bar.success { background: linear-gradient(90deg, #10B981 0%, #059669 100%); }
+
+        /* P&L Detail Styles */
+        .icon-expand.rotate-90 { transform: rotate(90deg); }
+        .detail-row td { padding: 0 !important; border: none !important; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -306,17 +305,16 @@
                         </div>
                     </div>
 
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left report-table">
-                            <thead>
+                    <div class="overflow-x-auto rounded-lg border border-gray-200">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-indigo-50 text-indigo-900 font-semibold uppercase text-xs tracking-wider sticky top-0 z-10">
                                 <tr>
-                                    <th class="w-24">รหัส</th>
-                                    <th>รายการบัญชี</th>
-                                    <th class="text-right">จำนวนเงิน (บาท)</th>
-                                    <th class="text-right w-32">% ของยอดขาย</th>
+                                    <th class="p-4 w-12 text-center"></th> <th class="p-4">รายการบัญชี (Account)</th>
+                                    <th class="p-4 text-right">จำนวนเงิน (บาท)</th>
+                                    <th class="p-4 text-right w-32">% ยอดขาย</th>
                                 </tr>
                             </thead>
-                            <tbody id="reportBody">
+                            <tbody id="reportBody" class="text-sm text-gray-700 divide-y divide-gray-100">
                                 <tr><td colspan="4" class="text-center py-12 text-gray-400">กดค้นหาเพื่อดูรายงาน</td></tr>
                             </tbody>
                         </table>
@@ -430,6 +428,27 @@
 
     </div>
 
+    <template id="row-template">
+        <tr class="main-row hover:bg-gray-50 cursor-pointer transition-colors duration-150 border-b border-gray-100 group" onclick="toggleDetail(this)">
+            <td class="p-4 text-center text-gray-400 group-hover:text-indigo-600">
+                <svg class="w-4 h-4 transform transition-transform duration-200 icon-expand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </td>
+            <td class="p-4 font-medium account-name"></td>
+            <td class="p-4 text-right font-bold account-amount"></td>
+            <td class="p-4 text-right text-gray-500 account-percent"></td>
+        </tr>
+        <tr class="detail-row hidden bg-gray-50 shadow-inner">
+            <td colspan="4" class="p-0">
+                <div class="overflow-hidden transition-all duration-300">
+                    <table class="w-full">
+                        <tbody class="detail-container text-xs text-gray-500">
+                            </tbody>
+                    </table>
+                </div>
+            </td>
+        </tr>
+    </template>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getFirestore, collection, getDocs, setDoc, addDoc, deleteDoc, doc, Timestamp, query, where } 
@@ -439,8 +458,7 @@
 
         // ============================================================
         // ⚠️ Config Firebase (ใส่ของคุณตรงนี้)
-        // ============================================================
-          const firebaseConfig = {
+                  const firebaseConfig = {
     apiKey: "AIzaSyDRiTZXUbkdGaCHZVTkOOl1Iu0A-744tE0",
     authDomain: "numdamnoen-6cbd5.firebaseapp.com",
     projectId: "numdamnoen-6cbd5",
@@ -449,6 +467,10 @@
     appId: "1:823964498524:web:c79d742cf1a5a33c864499",
     measurementId: "G-805RS7VZEM"
   };
+        // ============================================================
+        const firebaseConfig = {
+            // ... paste your firebase config here ...
+        };
         // ============================================================
 
         let db, auth;
@@ -459,7 +481,7 @@
             db = getFirestore(app); 
             auth = getAuth(app);
             console.log("Firebase OK"); 
-        } catch (e) { alert("Config Error"); }
+        } catch (e) { console.warn("Config Error - Please check firebaseConfig"); }
 
         // ============================================================
         // 🔐 AUTH LOGIC
@@ -552,7 +574,7 @@
             '0501': 'ค่าเช่าร้าน', 
             '0502': 'ค่าทำบัญชี', 
             '0505': 'ค่าเช่าอุปกรณ์',
-            '0504': 'ค่า GP Delivery (รวม)', 
+            '0504': 'ค่าบริการ GP Delivery (รวม)', 
             '0504-G': 'GP Grab (รวม VAT)', 
             '0504-L': 'GP Lineman (รวม VAT)', 
             '0504-R': 'GP Robinhood (รวม VAT)',
@@ -660,6 +682,7 @@
         window.setRange = (type) => {
             const end = new Date(); let start = new Date();
             if(type === '7days') start.setDate(end.getDate() - 7);
+            else if (type === 'today') { /* start is already today */ }
             else if (type === 'thisMonth') start = new Date(end.getFullYear(), end.getMonth(), 1);
             document.getElementById('startDate').value = start.toISOString().split('T')[0];
             document.getElementById('endDate').value = end.toISOString().split('T')[0];
@@ -799,10 +822,8 @@
                 const goal = parseFloat(localStorage.getItem('monthly_goal')) || 0;
                 if(goal > 0) {
                     const today = new Date();
-                    // Fix: Get days in month correctly
                     const [y, m] = monthVal.split('-');
                     const daysInMonth = new Date(y, m, 0).getDate();
-                    // If viewing past month, remaining days = 0
                     let remainingDays = 0;
                     if(today.toISOString().startsWith(monthVal)) {
                         remainingDays = daysInMonth - today.getDate();
@@ -828,7 +849,6 @@
                     
                     if(achievedPct >= 100) { bar.classList.add('success'); document.getElementById('goalTextStatus').innerText = "🎉 ทะลุเป้าแล้ว!"; document.getElementById('reqDaily').innerText = "0"; }
                     else if (remainingDays > 0) {
-                        // Check pacing: Should be at (Today/TotalDays)%
                         const idealPct = (today.getDate() / daysInMonth) * 100;
                         if(achievedPct < idealPct - 10) { bar.classList.add('warning'); document.getElementById('goalTextStatus').innerText = "⚠️ ช้ากว่าแผน (Behind Pace)"; }
                     }
@@ -1056,83 +1076,180 @@
         }
 
         // ============================================
-        // 2. REPORT GENERATION
+        // 2. REPORT GENERATION (UPDATED FOR DRILL-DOWN)
         // ============================================
+        
+        // Function to toggle details (Global window scope)
+        window.toggleDetail = (row) => {
+            const icon = row.querySelector('.icon-expand');
+            const detailRow = row.nextElementSibling;
+            if (icon.classList.contains('rotate-90')) {
+                icon.classList.remove('rotate-90');
+            } else {
+                icon.classList.add('rotate-90');
+            }
+            detailRow.classList.toggle('hidden');
+        }
+
         window.generateReport = async () => {
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
             if(!startDate || !endDate) { alert("กรุณาเลือกช่วงเวลา"); return; }
             showLoading(true);
-            const tbody = document.getElementById('reportBody'); tbody.innerHTML = '';
+            
+            const tbody = document.getElementById('reportBody'); 
+            tbody.innerHTML = '';
             
             try {
-                let rData = { sales: { 'INSTORE':0, 'DEL_GRAB':0, 'DEL_LINE':0, 'DEL_OTH':0 }, deductions: {}, cogs: {}, opex: {} };
-                const qSales = query(collection(db, "daily_sales"), where("date", ">=", startDate), where("date", "<=", endDate));
-                const snapSales = await getDocs(qSales);
-                snapSales.forEach(doc => {
-                    const d = doc.data();
-                    rData.sales['INSTORE'] += (d.instore||0);
-                    rData.sales['DEL_GRAB'] += (d.delivery_grab||0);
-                    rData.sales['DEL_LINE'] += (d.delivery_lineman||0);
-                    rData.sales['DEL_OTH'] += (d.delivery_robinhood||0)+(d.delivery_other||0);
-                });
+                // Initialize Ledger Data Structure
+                let ledger = {}; // { 'code': { name: '...', amount: 0, details: [] } }
 
-                const qExp = query(collection(db, "expenses"), where("date", ">=", startDate), where("date", "<=", endDate));
-                const snapExp = await getDocs(qExp);
-                snapExp.forEach(doc => {
-                    const d = doc.data();
-                    if(d.category.startsWith('01')) rData.deductions[d.category] = (rData.deductions[d.category]||0)+d.amount;
-                    else if(d.category.startsWith('02')) rData.cogs[d.category] = (rData.cogs[d.category]||0)+d.amount;
-                    else rData.opex[d.category] = (rData.opex[d.category]||0)+d.amount;
-                });
-
-                const sum = (obj) => Object.values(obj).reduce((a,b)=>a+b,0);
-                const totalGrossSales = sum(rData.sales);
-                const totalDeductions = sum(rData.deductions);
-                const netSales = totalGrossSales - totalDeductions;
-                const totalCogs = sum(rData.cogs);
-                const grossProfit = netSales - totalCogs;
-                const totalOpex = sum(rData.opex);
-                const netProfit = grossProfit - totalOpex;
-
-                const addRow = (code, name, val, style='') => {
-                    const tr = document.createElement('tr'); 
-                    if(style=='header') tr.className = "row-header"; 
-                    if(style=='total') tr.className = "row-total";
-                    if(style=='subtotal') tr.className = "row-subtotal";
-                    
-                    let pct = '';
-                    if(style !== 'header' && netSales > 0) pct = ((val/netSales)*100).toFixed(1)+'%';
-                    if(style=='header') { val=''; pct=''; }
-                    
-                    tr.innerHTML = `<td>${code}</td><td>${name}</td><td class="text-right">${val?val.toLocaleString(undefined,{minimumFractionDigits:2}):val}</td><td class="text-right">${pct}</td>`;
-                    tbody.appendChild(tr);
+                const initAccount = (code, name) => {
+                    if(!ledger[code]) ledger[code] = { code, name, amount: 0, details: [] };
+                };
+                const addTx = (code, name, date, desc, val) => {
+                    if(val === 0) return;
+                    initAccount(code, name);
+                    ledger[code].amount += val;
+                    ledger[code].details.push({ date, desc, val });
                 };
 
-                addRow('', 'รายได้ (Gross Sales)', '', 'header');
-                Object.entries(rData.sales).forEach(([k,v]) => v>0 && addRow('', accountNames[k]||k, v));
-                addRow('', 'รวมรายได้ขาย', totalGrossSales, 'subtotal');
+                // Query Data
+                const qSales = query(collection(db, "daily_sales"), where("date", ">=", startDate), where("date", "<=", endDate));
+                const snapSales = await getDocs(qSales);
                 
-                if(totalDeductions > 0) {
-                    addRow('01', 'หัก: ลดหย่อนรายได้ (Deductions)', '', 'header');
-                    Object.entries(rData.deductions).forEach(([k,v]) => addRow(k, accountNames[k]||k, v));
-                    addRow('', 'รายได้สุทธิ (Net Sales)', netSales, 'total');
-                } else {
-                    addRow('', 'รายได้สุทธิ (Net Sales)', netSales, 'total');
+                const qExp = query(collection(db, "expenses"), where("date", ">=", startDate), where("date", "<=", endDate));
+                const snapExp = await getDocs(qExp);
+
+                // Process Sales (Revenue)
+                snapSales.forEach(doc => {
+                    const d = doc.data();
+                    if(d.instore > 0) addTx('4001', 'หน้าร้าน (Walk-in)', d.date, 'ยอดขายหน้าร้าน', d.instore);
+                    if(d.delivery_grab > 0) addTx('4002', 'Grab Food', d.date, 'ยอดขาย Grab', d.delivery_grab);
+                    if(d.delivery_lineman > 0) addTx('4003', 'Lineman', d.date, 'ยอดขาย Lineman', d.delivery_lineman);
+                    if((d.delivery_robinhood + (d.delivery_other||0)) > 0) addTx('4004', 'ช่องทางอื่นๆ', d.date, 'RBH/Other', d.delivery_robinhood + (d.delivery_other||0));
+                });
+
+                // Process Expenses & COGS
+                snapExp.forEach(doc => {
+                    const d = doc.data();
+                    addTx(d.category, accountNames[d.category] || d.category, d.date, d.memo || '-', d.amount);
+                });
+
+                // Group Data
+                const revenueList = Object.values(ledger).filter(i => i.code.startsWith('4'));
+                const deductionList = Object.values(ledger).filter(i => i.code.startsWith('01'));
+                const cogsList = Object.values(ledger).filter(i => i.code.startsWith('02'));
+                const opexList = Object.values(ledger).filter(i => !i.code.startsWith('4') && !i.code.startsWith('01') && !i.code.startsWith('02'));
+
+                // Calculate Totals
+                const sum = (list) => list.reduce((a, b) => a + b.amount, 0);
+                const totalRevenue = sum(revenueList);
+                const totalDeductions = sum(deductionList);
+                const netSales = totalRevenue - totalDeductions;
+                const totalCOGS = sum(cogsList);
+                const grossProfit = netSales - totalCOGS;
+                const totalOpex = sum(opexList);
+                const netProfit = grossProfit - totalOpex;
+
+                // --- RENDERING ---
+                
+                // 1. Revenue
+                renderSectionHeader(tbody, "รายได้ (Gross Revenue)", "text-indigo-700 bg-indigo-50");
+                revenueList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
+                renderTotalRow(tbody, "รวมรายได้ขาย", totalRevenue, 100, "text-indigo-700 bg-indigo-50 border-t-2 border-indigo-200");
+
+                // 2. Deductions
+                if(deductionList.length > 0) {
+                    renderSectionHeader(tbody, "หัก: รายการหักจากรายได้ (Deductions)", "text-pink-700 bg-pink-50 mt-4");
+                    deductionList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
+                    renderTotalRow(tbody, "รายได้สุทธิ (Net Sales)", netSales, (netSales/totalRevenue)*100, "bg-gray-100 font-bold border-y-2");
                 }
 
-                addRow('02', 'หัก: ต้นทุนขาย (COGS)', '', 'header');
-                Object.entries(rData.cogs).forEach(([k,v]) => addRow(k, accountNames[k]||k, v));
-                addRow('', 'กำไรขั้นต้น (Gross Profit)', grossProfit, 'subtotal');
+                // 3. COGS
+                renderSectionHeader(tbody, "ต้นทุนขาย (Cost of Goods Sold)", "text-red-700 bg-red-50 mt-4");
+                cogsList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
+                renderTotalRow(tbody, "รวมต้นทุนขาย", totalCOGS, (totalCOGS/totalRevenue)*100, "text-red-700 bg-red-50 border-t-2 border-red-200");
 
-                addRow('03-05-07', 'หัก: ค่าใช้จ่ายดำเนินงาน (OPEX)', '', 'header');
-                Object.entries(rData.opex).forEach(([k,v]) => addRow(k, accountNames[k]||k, v));
-                addRow('', 'รวมค่าใช้จ่าย', totalOpex, 'subtotal');
-                
-                addRow('', 'กำไรสุทธิ (Net Profit)', netProfit, 'total');
+                // 4. Gross Profit
+                renderSummaryRow(tbody, "กำไรขั้นต้น (Gross Profit)", grossProfit, (grossProfit/totalRevenue)*100, "bg-green-50 text-green-800 font-bold text-lg border-y-2 border-green-200");
+
+                // 5. OPEX
+                renderSectionHeader(tbody, "ค่าใช้จ่ายดำเนินงาน (Operating Expenses)", "text-orange-700 bg-orange-50 mt-4");
+                opexList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
+                renderTotalRow(tbody, "รวมค่าใช้จ่าย", totalOpex, (totalOpex/totalRevenue)*100, "text-orange-700 bg-orange-50 border-t-2 border-orange-200");
+
+                // 6. Net Profit
+                const netColor = netProfit >= 0 ? "bg-emerald-100 text-emerald-900" : "bg-red-100 text-red-900";
+                renderSummaryRow(tbody, "กำไรสุทธิ (Net Profit)", netProfit, (netProfit/totalRevenue)*100, `${netColor} font-extrabold text-xl border-y-4 border-double py-6`);
 
             } catch(e) { console.error(e); }
             showLoading(false);
+        }
+
+        // --- Helper Render Functions ---
+        function renderAccountRow(tbody, data, totalRev) {
+            const template = document.getElementById('row-template');
+            const clone = template.content.cloneNode(true);
+            
+            // Main Row
+            clone.querySelector('.account-name').innerHTML = `<span class="font-mono text-gray-400 mr-2">${data.code}</span> ${data.name}`;
+            clone.querySelector('.account-amount').innerText = data.amount.toLocaleString(undefined, {minimumFractionDigits: 2});
+            clone.querySelector('.account-percent').innerText = totalRev > 0 ? ((data.amount / totalRev) * 100).toFixed(1) + "%" : "0%";
+            
+            // Details
+            const detailContainer = clone.querySelector('.detail-container');
+            if (data.details && data.details.length > 0) {
+                // Sort by date desc
+                data.details.sort((a,b) => b.date.localeCompare(a.date));
+                data.details.forEach(dt => {
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-gray-100 last:border-0 hover:bg-gray-100";
+                    tr.innerHTML = `
+                        <td class="pl-16 py-2 w-32">${dt.date}</td>
+                        <td class="py-2">${dt.desc}</td>
+                        <td class="pr-4 py-2 text-right font-mono">${dt.val.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                        <td class="w-32"></td>
+                    `;
+                    detailContainer.appendChild(tr);
+                });
+            } else {
+                 const tr = document.createElement('tr');
+                 tr.innerHTML = `<td colspan="4" class="pl-16 py-2 italic text-gray-400">ไม่มีรายการย่อย</td>`;
+                 detailContainer.appendChild(tr);
+            }
+
+            tbody.appendChild(clone);
+        }
+
+        function renderSectionHeader(tbody, title, cssClass) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td colspan="4" class="p-3 font-bold ${cssClass}">${title}</td>`;
+            tbody.appendChild(tr);
+        }
+
+        function renderTotalRow(tbody, title, amount, percent, cssClass) {
+            const tr = document.createElement('tr');
+            tr.className = cssClass;
+            tr.innerHTML = `
+                <td></td>
+                <td class="p-3 font-bold text-right pr-8">${title}</td>
+                <td class="p-3 font-bold text-right border-t border-gray-300 border-dashed">${amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                <td class="p-3 text-right text-sm font-semibold">${percent.toFixed(1)}%</td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        function renderSummaryRow(tbody, title, amount, percent, cssClass) {
+            const tr = document.createElement('tr');
+            tr.className = cssClass;
+            tr.innerHTML = `
+                <td></td>
+                <td class="p-4 text-right pr-8">${title}</td>
+                <td class="p-4 text-right">${amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</td>
+                <td class="p-4 text-right text-sm">${percent.toFixed(1)}%</td>
+            `;
+            tbody.appendChild(tr);
         }
 
         // --- CHARTS & RENDERERS ---
