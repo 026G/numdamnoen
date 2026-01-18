@@ -41,20 +41,28 @@
         .grp-header {
             display: flex; justify-content: space-between; align-items: center;
             padding: 14px 16px; cursor: pointer; user-select: none;
-            /* Background color handled by inline classes now */
+            background-color: white; border-bottom: 1px solid #f1f5f9;
         }
+        .grp-header:active { background-color: #f8fafc; }
         .grp-content { 
             overflow: hidden; transition: max-height 0.3s ease-out; 
-            max-height: 0; background-color: #ffffff;
+            max-height: 0; background-color: #f8fafc;
         }
-        .grp-content.open { max-height: 2000px; border-top: 1px solid rgba(0,0,0,0.05); }
+        .grp-content.open { max-height: 3000px; border-bottom: 1px solid #e2e8f0; }
         
         .sub-row { 
             display: flex; justify-content: space-between; align-items: center;
             padding: 12px 16px; border-bottom: 1px solid #f1f5f9; 
-            font-size: 0.9rem; color: #475569; 
+            font-size: 0.9rem; color: #475569; background-color: white;
         }
         .sub-row:last-child { border-bottom: none; }
+
+        /* Nested Group Styles */
+        .nested-grp { margin: 8px 12px; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; background-color: white; }
+        .nested-header { padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; background-color: #f1f5f9; cursor: pointer; }
+        .nested-content { max-height: 0; overflow: hidden; transition: max-height 0.2s ease-out; background-color: #fff; }
+        .nested-content.open { max-height: 1000px; border-top: 1px solid #e2e8f0; }
+        .nested-item { padding: 8px 12px 8px 24px; border-bottom: 1px solid #f8fafc; font-size: 0.85rem; display: flex; justify-content: space-between; color: #64748b; }
 
         /* Loading */
         .spinner { border: 3px solid rgba(255,255,255,0.3); border-left-color: white; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
@@ -182,37 +190,48 @@
                         <select id="inputExpCat" class="mobile-input appearance-none bg-white pr-10">
                             <option value="" disabled selected>-- กรุณาเลือก --</option>
                             
-                            <optgroup label="📉 หักจากรายได้ (Revenue Deductions)">
-                                    <option value="0121">0121 - ภาษีมูลค่าเพิ่ม (VAT)</option>
-                                    <option value="0118">0118 - ส่วนลดการขาย (Discounts)</option>
-                                </optgroup>
-                                
-                                <optgroup label="💰 ต้นทุนขาย (COGS)">
-                                    <option value="0201">0201 - วัตถุดิบอาหาร</option>
-                                    <option value="0202">0202 - บรรจุภัณฑ์</option>
-                                    <option value="0203">0203 - ค่าน้ำแข็ง</option>
-                                </optgroup>
-                                
-                                <optgroup label="👥 ค่าใช้จ่ายพนักงาน">
-                                    <option value="0301">0301 - เงินเดือนพนักงาน</option>
-                                </optgroup>
+                            <optgroup label="🥩 ต้นทุนขาย (COGS)">
+                                <option value="0201">0201 - วัตถุดิบอาหาร</option>
+                                <option value="0202">0202 - บรรจุภัณฑ์</option>
+                                <option value="0203">0203 - น้ำแข็ง/แก๊ส</option>
+                            </optgroup>
+                            
+                            <optgroup label="👥 พนักงาน">
+                                <option value="0301">0301 - เงินเดือนพนักงาน</option>
+                            </optgroup>
 
-                                <optgroup label="💡 ค่าใช้จ่ายที่ควบคุมได้ (Controllable)">
-                                    <option value="0401">0401 - ค่าไฟฟ้า</option>
-                                    <option value="0402">0402 - ค่าน้ำประปา</option>
-                                    <option value="0403">0403 - ค่าโทรศัพท์/เน็ต</option>
-                                    <option value="0408">0408 - การตลาด/โฆษณา (Ads)</option>
-                                    <option value="0406">0406 - ซ่อมแซมบำรุงรักษา</option>
-                                    <option value="0409">0409 - วัสดุสิ้นเปลือง</option>
-                                    <option value="0411">0411 - ค่าใช้จ่ายอื่นๆ (เบ็ดเตล็ด)</option>
-                                </optgroup>
+                            <optgroup label="📢 ควบคุมได้ (รวมการตลาด)">
+                                <option value="0401">0401 - ค่าไฟฟ้า</option>
+                                <option value="0402">0402 - ค่าน้ำประปา</option>
+                                <option value="0412">0412 - ค่าเดินทาง</option>
+                                <option value="0409">0409 - วัสดุสิ้นเปลือง</option>
+                                <option value="0406">0406 - ซ่อมแซม</option>
+                                <option value="0403">0403 - โทรศัพท์/เน็ต</option>
+                                <option value="0408">0408 - ค่าโฆษณา (รวม)</option>
+                                <option value="0408-G">0408-G - Ads Grab (รวม VAT)</option>
+                                <option value="0408-L">0408-L - Ads Lineman</option>
+                                <option value="0408-G-MKT">0408-G-MKT - Grab ร่วมโปร/แคมเปญ</option>
+                                <option value="0118">0118 - ส่วนลด/โปรโมชั่น</option>
+                                <option value="0118-G">0118-G - ส่วนลดแคมเปญ Grab</option>
+                                <option value="0118-G-STORE">0118-G-STORE - ส่วนลดร้าน (Store)</option>
+                                <option value="0118-L">0118-L - ส่วนลด Lineman</option>
+                                <option value="0411">0411 - เบ็ดเตล็ด</option>
+                            </optgroup>
 
-                                <optgroup label="🔒 ค่าใช้จ่ายที่ควบคุมไม่ได้ (Fixed & Fees)">
-                                    <option value="0501">0501 - ค่าเช่าร้าน</option>
-                                    <option value="0502">0502 - ค่าทำบัญชี</option>
-                                    <option value="0504">0504 - ค่าบริการ GP Delivery (รวม VAT)</option>
-                                    <option value="0505">0505 - ค่าเช่าอุปกรณ์</option>
-                                </optgroup>
+                            <optgroup label="🔒 ควบคุมไม่ได้ (Fees/Tax)">
+                                <option value="0504">0504 - GP Delivery (รวม)</option>
+                                <option value="0121">0121 - ภาษีมูลค่าเพิ่ม (VAT)</option>
+                                <option value="0702">0702 - ภาษีหัก ณ ที่จ่าย</option>
+                                <option value="0501">0501 - ค่าเช่าร้าน</option>
+                                <option value="0502">0502 - ค่าทำบัญชี</option>
+                                <option value="0505">0505 - ค่าเช่าอุปกรณ์</option>
+                            </optgroup>
+
+                            <optgroup label="💳 สินเชื่อ (Loans)">
+                                <option value="0411-G">0411-G - สินเชื่อ Grab</option>
+                                <option value="0411-L-C">0411-L-C - สินเชื่อเงินสด Line</option>
+                                <option value="0411-L-I">0411-L-I - ผ่อนสินค้า Line</option>
+                            </optgroup>
                         </select>
                         <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
                     </div>
@@ -315,7 +334,7 @@
                             <i class="fa-solid fa-bullhorn text-amber-500 mr-3 text-lg"></i>
                             <div>
                                 <div class="text-sm font-bold text-amber-800">ควบคุมได้ (Controllable)</div>
-                                <div class="text-[10px] text-amber-400">น้ำไฟ/เดินทาง/การตลาด</div>
+                                <div class="text-[10px] text-amber-400">การตลาด/น้ำไฟ</div>
                             </div>
                         </div>
                         <div class="text-right flex flex-col justify-center">
@@ -387,15 +406,15 @@
         from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
         // ⚠️ PASTE CONFIG HERE ⚠️
-                          const firebaseConfig = {
-    apiKey: "AIzaSyDRiTZXUbkdGaCHZVTkOOl1Iu0A-744tE0",
-    authDomain: "numdamnoen-6cbd5.firebaseapp.com",
-    projectId: "numdamnoen-6cbd5",
-    storageBucket: "numdamnoen-6cbd5.firebasestorage.app",
-    messagingSenderId: "823964498524",
-    appId: "1:823964498524:web:c79d742cf1a5a33c864499",
-    measurementId: "G-805RS7VZEM"
-  };
+        const firebaseConfig = {
+            apiKey: "AIzaSyDRiTZXUbkdGaCHZVTkOOl1Iu0A-744tE0",
+            authDomain: "numdamnoen-6cbd5.firebaseapp.com",
+            projectId: "numdamnoen-6cbd5",
+            storageBucket: "numdamnoen-6cbd5.firebasestorage.app",
+            messagingSenderId: "823964498524",
+            appId: "1:823964498524:web:c79d742cf1a5a33c864499",
+            measurementId: "G-805RS7VZEM"
+        };
 
         let db, auth;
         try {
@@ -509,10 +528,16 @@
             alert('✅ บันทึกสำเร็จ'); refreshData();
         }
 
-        // --- P&L LOGIC (AGGREGATION & PERCENT) ---
+        // --- NESTED UI HELPERS ---
         window.toggleGrp = (id, headerEl) => {
             document.getElementById(id).classList.toggle('open');
             const icon = headerEl.querySelector('.fa-chevron-down');
+            if(icon) icon.classList.toggle('rotate-180');
+        }
+        
+        window.toggleNested = (id) => {
+            document.getElementById(id).classList.toggle('open');
+            const icon = document.getElementById('icon-'+id);
             if(icon) icon.classList.toggle('rotate-180');
         }
 
@@ -540,46 +565,80 @@
             });
             revTotal = revInstore + revGrab + revLine + revRbh;
 
-            // 2. Expenses Aggregation (Group by Category Code)
-            let aggCogs = {}, aggStaff = {}, aggControl = {}, aggUncontrol = {}, aggLoan = {};
+            // 2. Expenses & Grouping Logic
+            let aggCogs = {}, aggStaff = {}, aggUncontrol = {}, aggLoan = {}, aggGeneralControl = {};
+            
+            // Nested Groups Accumulators
+            let grabGroup = { type: 'group', id:'sub-grab', name: 'Grab Marketing (รวม)', amt: 0, items: [] };
+            let lineGroup = { type: 'group', id:'sub-line', name: 'Lineman Marketing (รวม)', amt: 0, items: [] };
 
             fE.forEach(e => {
                 const c = e.category;
                 const amt = e.amount;
                 
-                let targetMap;
-                if(c.startsWith('02')) targetMap = aggCogs;
-                else if(c.startsWith('03')) targetMap = aggStaff;
-                else if(c.startsWith('0411-') && c!=='0411') targetMap = aggLoan;
-                else if(['0504','0121','0702','0501','0502','0505'].some(p=>c.startsWith(p))) targetMap = aggUncontrol;
-                else targetMap = aggControl;
+                // Logic for Nested Groups (Grab & Line Marketing in Controllable)
+                const isGrabMkt = ['0408-G', '0408-G-MKT', '0118-G', '0118-G-STORE'].includes(c);
+                const isLineMkt = ['0408-L', '0118-L'].includes(c);
 
-                if(!targetMap[c]) targetMap[c] = { cat: c, amt: 0 };
-                targetMap[c].amt += amt;
+                if (c.startsWith('02')) { 
+                    if(!aggCogs[c]) aggCogs[c]={cat:c, amt:0}; aggCogs[c].amt+=amt; 
+                }
+                else if (c.startsWith('03')) { 
+                    if(!aggStaff[c]) aggStaff[c]={cat:c, amt:0}; aggStaff[c].amt+=amt; 
+                }
+                else if (c.startsWith('0411-') && c!=='0411') { 
+                    if(!aggLoan[c]) aggLoan[c]={cat:c, amt:0}; aggLoan[c].amt+=amt; 
+                }
+                else if (['0504','0121','0702','0501','0502','0505'].some(p=>c.startsWith(p))) { 
+                    if(!aggUncontrol[c]) aggUncontrol[c]={cat:c, amt:0}; aggUncontrol[c].amt+=amt; 
+                }
+                else {
+                    // Controllable Section
+                    if(isGrabMkt) {
+                        grabGroup.amt += amt;
+                        // For nested items, we also aggregate by code inside the group
+                        let existing = grabGroup.items.find(x => x.cat === c);
+                        if(existing) existing.amt += amt;
+                        else grabGroup.items.push({ cat: c, amt: amt });
+                    } else if (isLineMkt) {
+                        lineGroup.amt += amt;
+                        let existing = lineGroup.items.find(x => x.cat === c);
+                        if(existing) existing.amt += amt;
+                        else lineGroup.items.push({ cat: c, amt: amt });
+                    } else {
+                        if(!aggGeneralControl[c]) aggGeneralControl[c]={cat:c, amt:0}; aggGeneralControl[c].amt+=amt;
+                    }
+                }
             });
 
-            // Convert Maps to Arrays & Sum Totals
+            // Prepare Lists
             const toArray = (map) => Object.values(map).sort((a,b) => b.amt - a.amt);
             const sumArray = (arr) => arr.reduce((sum, item) => sum + item.amt, 0);
 
             const listCogs = toArray(aggCogs);
             const listStaff = toArray(aggStaff);
-            const listControl = toArray(aggControl);
             const listUncontrol = toArray(aggUncontrol);
             const listLoan = toArray(aggLoan);
+            
+            // Construct Controllable List (Groups + General)
+            let listControl = [];
+            if(grabGroup.amt > 0) listControl.push(grabGroup);
+            if(lineGroup.amt > 0) listControl.push(lineGroup);
+            listControl = listControl.concat(toArray(aggGeneralControl));
+            // Sort grouped list by amount descending
+            listControl.sort((a,b) => b.amt - a.amt);
 
             const grpCogs = sumArray(listCogs);
             const grpStaff = sumArray(listStaff);
-            const grpControl = sumArray(listControl);
             const grpUncontrol = sumArray(listUncontrol);
             const grpLoan = sumArray(listLoan);
+            const grpControl = (grabGroup.amt + lineGroup.amt + sumArray(toArray(aggGeneralControl)));
 
-            // Update Summaries (Header Values)
+            // Update Summaries
             const setTxt = (id, val) => document.getElementById(id).innerText = val.toLocaleString();
             const setPct = (id, val) => document.getElementById(id).innerText = revTotal>0 ? ((val/revTotal)*100).toFixed(1)+'%' : '0%';
 
             setTxt('summ-rev', revTotal);
-            
             setTxt('summ-cogs', grpCogs); setPct('pct-cogs', grpCogs);
             setTxt('summ-staff', grpStaff); setPct('pct-staff', grpStaff);
             setTxt('summ-control', grpControl); setPct('pct-control', grpControl);
@@ -591,7 +650,7 @@
             document.getElementById('pl-net').innerText = net.toLocaleString();
             document.getElementById('pl-margin').innerText = `Net Margin: ${revTotal>0?((net/revTotal)*100).toFixed(1):0}%`;
 
-            // Render Lists (Aggregation View)
+            // Render
             renderList('grp-rev', [
                 {cat:'หน้าร้าน', amt:revInstore}, {cat:'Grab', amt:revGrab},
                 {cat:'Lineman', amt:revLine}, {cat:'Rbh/อื่นๆ', amt:revRbh}
@@ -610,19 +669,65 @@
             '0401':'ค่าไฟ', '0402':'ค่าน้ำ', '0412':'ค่าเดินทาง', '0409':'วัสดุสิ้นเปลือง', '0406':'ซ่อมแซม', '0403':'โทรศัพท์/เน็ต', '0408':'ค่าโฆษณา', '0118':'ส่วนลด/โปร', '0411':'เบ็ดเตล็ด',
             '0504':'GP Delivery', '0121':'VAT', '0702':'WHT', '0501':'ค่าเช่า', '0502':'ทำบัญชี', '0505':'เช่าอุปกรณ์',
             '0411-G':'สินเชื่อ Grab', '0411-L-C':'สินเชื่อ Line Cash', '0411-L-I':'ผ่อนของ Line',
-            '0118-L':'ส่วนลด Lineman', '0408-G-MKT':'Grab ร่วมโปร/แคมเปญ', '0118-G-STORE':'ส่วนลดที่ร้านสนับสนุน (Store)','0118-G':'ส่วนลดแคมเปญ Grab (Campaign)','0408-L':'Ads Lineman',
-            '0504-L':'GP Lineman (รวม VAT)', '0504-G':'GP Grab (รวม VAT)', '0408-G':'Ads Grab (รวม VAT)'
+            '0118-L':'ส่วนลด Lineman', '0408-G-MKT':'Grab ร่วมโปร/แคมเปญ', '0118-G-STORE':'ส่วนลดร้าน (Store)','0118-G':'ส่วนลดแคมเปญ Grab','0408-L':'Ads Lineman',
+            '0504-L':'GP Lineman', '0504-G':'GP Grab', '0408-G':'Ads Grab (รวม VAT)'
         };
 
         function renderList(elId, list, totalRev) {
             const el = document.getElementById(elId);
             el.innerHTML = '';
+            
             list.forEach(i => {
                 if(i.amt === 0) return;
+                
+                // Handle Nested Group
+                if(i.type === 'group') {
+                    const pct = totalRev > 0 ? ((i.amt/totalRev)*100).toFixed(1) + '%' : '0%';
+                    let subItemsHtml = '';
+                    
+                    // Sort items in group
+                    i.items.sort((a,b) => b.amt - a.amt);
+                    
+                    i.items.forEach(sub => {
+                        const subName = catNames[sub.cat] || sub.cat;
+                        const subPct = totalRev > 0 ? ((sub.amt/totalRev)*100).toFixed(1) + '%' : '0%';
+                        subItemsHtml += `
+                            <div class="nested-item">
+                                <div>${subName}</div>
+                                <div class="text-right">
+                                    <div class="font-bold text-slate-600">${sub.amt.toLocaleString()}</div>
+                                    <div class="text-[10px] text-slate-400">${subPct}</div>
+                                </div>
+                            </div>`;
+                    });
+
+                    // Color Coding for Groups
+                    const grpColor = i.name.includes('Grab') ? 'text-green-600' : 'text-orange-500';
+                    const bgClass = i.name.includes('Grab') ? 'bg-green-50' : 'bg-orange-50';
+
+                    el.innerHTML += `
+                        <div class="nested-grp ${bgClass} border border-slate-100">
+                            <div class="nested-header" onclick="toggleNested('${i.id}')">
+                                <div class="font-bold ${grpColor} text-sm">${i.name}</div>
+                                <div class="flex items-center space-x-3">
+                                    <div class="text-right">
+                                        <div class="font-bold text-slate-700">${pct}</div>
+                                        <div class="text-[10px] text-slate-400">${i.amt.toLocaleString()}</div>
+                                    </div>
+                                    <i id="icon-${i.id}" class="fa-solid fa-chevron-down text-slate-300 text-xs transition-transform"></i>
+                                </div>
+                            </div>
+                            <div id="${i.id}" class="nested-content">
+                                ${subItemsHtml}
+                            </div>
+                        </div>
+                    `;
+                    return; // Skip normal rendering
+                }
+
+                // Normal Item Rendering
                 let name = catNames[i.cat] || i.cat;
                 if(elId==='grp-rev') name = i.cat; 
-                
-                // Calculate Percentage
                 const pct = totalRev > 0 ? ((i.amt/totalRev)*100).toFixed(1) + '%' : '0%';
                 
                 el.innerHTML += `
