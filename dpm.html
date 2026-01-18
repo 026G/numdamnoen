@@ -415,7 +415,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, setDoc, addDoc, doc, Timestamp } 
+        import { getFirestore, collection, getDocs, setDoc, addDoc, doc, Timestamp, query, where } 
         from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } 
         from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
@@ -483,11 +483,20 @@
             currentMonthData.sales = [];
             currentMonthData.expenses = [];
             
-            const qS = await getDocs(collection(db, "daily_sales"));
-            qS.forEach(doc => { if(doc.data().date.startsWith(m)) currentMonthData.sales.push(doc.data()); });
+            // OPTIMIZED QUERY
+            const startOfMonth = m + "-01";
+            const endOfMonth = m + "-31";
             
-            const qE = await getDocs(collection(db, "expenses"));
-            qE.forEach(doc => { if(doc.data().date.startsWith(m)) currentMonthData.expenses.push(doc.data()); });
+            try {
+                const qS = await getDocs(query(collection(db, "daily_sales"), where("date", ">=", startOfMonth), where("date", "<=", endOfMonth)));
+                qS.forEach(doc => currentMonthData.sales.push(doc.data()));
+                
+                const qE = await getDocs(query(collection(db, "expenses"), where("date", ">=", startOfMonth), where("date", "<=", endOfMonth)));
+                qE.forEach(doc => currentMonthData.expenses.push(doc.data()));
+            } catch (err) {
+                console.log("Query Error (Index required?):", err);
+                // Fallback for non-indexed (dev mode) if needed, but better to use index link in console
+            }
             
             renderDashboard();
         }
@@ -506,27 +515,10 @@
             const today = new Date().toISOString().split('T')[0];
             
             if(diff > 0) {
-                // Found extra money (Income) -> Record as delivery_other
-                // We need to fetch existing today doc to merge
-                const todayRef = doc(db, "daily_sales", today);
-                // Simple merge add is tricky with Firestore setDoc merge if field exists.
-                // We'll just read current, add diff, write back.
-                // Or easier: just add a new expense with negative value? No, better add to sales.
-                // For simplicity in this app structure: we assume we can add to 'delivery_other' of today.
-                // Let's rely on standard logic: get existing sales for today or create new.
-                
-                // Let's create a "Manual Adjustment" entry.
-                // Since user wants "Single Pocket", let's put it in `delivery_other` (Others Income).
-                // We need to pull today's current data first to append.
-                // Actually, `setDoc` with merge works, but we need to know the *current value* to add to it.
-                // Simpler: Just save it as a new Expense with Negative value? (Expense -500 = Income +500)
-                // This is widely used in simple accounting. Let's do that. Category '0411' (Misc).
-                // Wait, Expense -500 might confuse charts.
-                
-                // Best way: Update today's sales.
+                // Found extra money (Income) -> Update today's delivery_other
                 let currentSales = currentMonthData.sales.find(s => s.date === today);
                 let currentOther = currentSales ? (currentSales.delivery_other || 0) : 0;
-                await setDoc(todayRef, { date: today, delivery_other: currentOther + diff }, { merge: true });
+                await setDoc(doc(db, "daily_sales", today), { date: today, delivery_other: currentOther + diff, timestamp: Timestamp.now() }, { merge: true });
                 alert(`✅ ปรับยอดเพิ่ม +${diff.toLocaleString()} บาท เรียบร้อย`);
             } else {
                 // Money missing (Expense) -> Record as Expense
