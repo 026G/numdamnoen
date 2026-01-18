@@ -193,31 +193,32 @@
                             <optgroup label="🥩 ต้นทุนขาย (COGS)">
                                 <option value="0201">0201 - วัตถุดิบอาหาร</option>
                                 <option value="0202">0202 - บรรจุภัณฑ์</option>
-                                <option value="0203">0203 - น้ำแข็ง</option>
+                                <option value="0203">0203 - น้ำแข็ง/แก๊ส</option>
                             </optgroup>
                             
                             <optgroup label="👥 พนักงาน">
-                                <option value="0301">0301 - เงินเดือนพนักงาน/ค่าแรง</option>
+                                <option value="0301">0301 - เงินเดือนพนักงาน</option>
                             </optgroup>
 
-                            <optgroup label="💡 ค่าใช้จ่ายที่ควบคุมได้ (Controllable)">
+                            <optgroup label="📢 ควบคุมได้ (ทั่วไป)">
                                 <option value="0401">0401 - ค่าไฟฟ้า</option>
                                 <option value="0402">0402 - ค่าน้ำประปา</option>
                                 <option value="0412">0412 - ค่าเดินทาง</option>
-                                <option value="0409">0409 - วัสดุสิ้นเปลือง (น้ำยา/ทิชชู่)</option>
-                                <option value="0406">0406 - ซ่อมแซม/บำรุงรักษา</option>
-                                <option value="0403">0403 - ค่าโทรศัพท์/อินเทอร์เน็ต</option>
-                                <option value="0408">0408 - ค่าโฆษณา/การตลาด (ทั่วไป)</option>
-                                <option value="0118">0118 - ส่วนลด/โปรโมชั่น (ทั่วไป)</option>
+                                <option value="0409">0409 - วัสดุสิ้นเปลือง</option>
+                                <option value="0406">0406 - ซ่อมแซม</option>
+                                <option value="0403">0403 - โทรศัพท์/เน็ต</option>
+                                <option value="0408">0408 - ค่าโฆษณา (รวม)</option>
+                                <option value="0118">0118 - ส่วนลด/โปรโมชั่น</option>
                                 <option value="0411">0411 - เบ็ดเตล็ด</option>
                             </optgroup>
 
-                            <optgroup label="🔒 ค่าใช้จ่ายที่ควบคุมไม่ได้ (Fixed & Fees)">
+                            <optgroup label="🔒 ควบคุมไม่ได้ (Fixed)">
+                                <option value="0504">0504 - GP Delivery (รวม)</option>
+                                <option value="0121">0121 - ภาษีมูลค่าเพิ่ม (VAT)</option>
+                                <option value="0702">0702 - ภาษีหัก ณ ที่จ่าย</option>
                                 <option value="0501">0501 - ค่าเช่าร้าน</option>
                                 <option value="0502">0502 - ค่าทำบัญชี</option>
-                                <option value="0504">0504 - ค่าบริการ GP (ทั่วไป)</option>
                                 <option value="0505">0505 - ค่าเช่าอุปกรณ์</option>
-                                <option value="0702">0702 - ภาษีหัก ณ ที่จ่าย</option>
                             </optgroup>
                         </select>
                         <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
@@ -277,8 +278,7 @@
                             <i class="fa-solid fa-chevron-down text-indigo-300 text-xs mt-1 transition-transform"></i>
                         </div>
                     </div>
-                    <div id="grp-rev" class="grp-content">
-                        </div>
+                    <div id="grp-rev" class="grp-content"></div>
                 </div>
 
                 <div class="card !p-0 overflow-hidden shadow-sm bg-rose-50 border-l-4 border-rose-500">
@@ -315,6 +315,23 @@
                     <div id="grp-staff" class="grp-content"></div>
                 </div>
 
+                <div class="card !p-0 overflow-hidden shadow-sm bg-amber-50 border-l-4 border-amber-500">
+                    <div class="grp-header" onclick="toggleGrp('grp-control', this)">
+                        <div class="flex items-center">
+                            <i class="fa-solid fa-bullhorn text-amber-500 mr-3 text-lg"></i>
+                            <div>
+                                <div class="text-sm font-bold text-amber-800">ควบคุมได้ (Controllable)</div>
+                                <div class="text-[10px] text-amber-400">การตลาด/น้ำไฟ</div>
+                            </div>
+                        </div>
+                        <div class="text-right flex flex-col justify-center">
+                            <div class="text-amber-600 font-bold text-lg" id="pct-control">0%</div>
+                            <div class="text-xs text-amber-400 font-medium" id="summ-control">0</div>
+                        </div>
+                    </div>
+                    <div id="grp-control" class="grp-content"></div>
+                </div>
+
                 <div class="card bg-cyan-50 border-l-4 border-cyan-500 !py-3 !px-4 shadow-sm">
                     <div class="flex justify-between items-center">
                         <div>
@@ -327,26 +344,12 @@
                         </div>
                     </div>
                 </div>
-                
-                <div class="card bg-cyan-50 border-l-4 border-cyan-500 !py-3 !px-4 mb-4 shadow-sm">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <div class="text-xs font-bold text-cyan-800 uppercase tracking-wide">กำไรหลังหักคุมได้ (PAC)</div>
-                            <div class="text-[10px] text-cyan-600">คำนวณจาก Net Sales</div>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-xl font-bold text-cyan-700" id="pl-pac">0</div>
-                            <div class="text-xs font-bold text-cyan-500" id="pl-pac-pct">0%</div>
-                        </div>
-                    </div>
-                </div>
-                
                 <div class="card !p-0 overflow-hidden shadow-sm bg-slate-50 border-l-4 border-slate-500">
                     <div class="grp-header" onclick="toggleGrp('grp-uncontrol', this)">
                         <div class="flex items-center">
                             <i class="fa-solid fa-lock text-slate-500 mr-3 text-lg"></i>
                             <div>
-                                <div class="text-sm font-bold text-slate-800">ควบคุมไม่ได้ (Fees/Tax)</div>
+                                <div class="text-sm font-bold text-slate-600">ควบคุมไม่ได้ (Fees/Tax)</div>
                                 <div class="text-[10px] text-slate-400">GP/VAT/ค่าเช่า</div>
                             </div>
                         </div>
