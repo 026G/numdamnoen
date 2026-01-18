@@ -41,20 +41,18 @@
         .grp-header {
             display: flex; justify-content: space-between; align-items: center;
             padding: 14px 16px; cursor: pointer; user-select: none;
-            background-color: white;
-            border-bottom: 1px solid #f1f5f9;
+            /* Background color handled by inline classes now */
         }
-        .grp-header:active { background-color: #f8fafc; }
         .grp-content { 
             overflow: hidden; transition: max-height 0.3s ease-out; 
-            max-height: 0; background-color: #f8fafc;
+            max-height: 0; background-color: #ffffff;
         }
-        .grp-content.open { max-height: 2000px; border-bottom: 1px solid #e2e8f0; }
+        .grp-content.open { max-height: 2000px; border-top: 1px solid rgba(0,0,0,0.05); }
         
         .sub-row { 
-            display: flex; justify-content: space-between; align-items: flex-start;
-            padding: 10px 16px; border-bottom: 1px solid #e2e8f0; 
-            font-size: 0.85rem; color: #64748b; 
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 16px; border-bottom: 1px solid #f1f5f9; 
+            font-size: 0.9rem; color: #475569; 
         }
         .sub-row:last-child { border-bottom: none; }
 
@@ -184,37 +182,42 @@
                         <select id="inputExpCat" class="mobile-input appearance-none bg-white pr-10">
                             <option value="" disabled selected>-- กรุณาเลือก --</option>
                             
-                            <optgroup label="📉 หักจากรายได้ (Revenue Deductions)">
-                                    <option value="0121">0121 - ภาษีมูลค่าเพิ่ม (VAT)</option>
-                                    <option value="0118">0118 - ส่วนลดการขาย (Discounts)</option>
-                                </optgroup>
-                                
-                                <optgroup label="💰 ต้นทุนขาย (COGS)">
-                                    <option value="0201">0201 - วัตถุดิบอาหาร</option>
-                                    <option value="0202">0202 - บรรจุภัณฑ์</option>
-                                    <option value="0203">0203 - ค่าน้ำแข็ง</option>
-                                </optgroup>
-                                
-                                <optgroup label="👥 ค่าใช้จ่ายพนักงาน">
-                                    <option value="0301">0301 - เงินเดือนพนักงาน</option>
-                                </optgroup>
+                            <optgroup label="🥩 ต้นทุนขาย (COGS)">
+                                <option value="0201">0201 - วัตถุดิบอาหาร</option>
+                                <option value="0202">0202 - บรรจุภัณฑ์</option>
+                                <option value="0203">0203 - น้ำแข็ง/แก๊ส</option>
+                            </optgroup>
+                            
+                            <optgroup label="👥 พนักงาน">
+                                <option value="0301">0301 - เงินเดือนพนักงาน</option>
+                            </optgroup>
 
-                                <optgroup label="💡 ค่าใช้จ่ายที่ควบคุมได้ (Controllable)">
-                                    <option value="0401">0401 - ค่าไฟฟ้า</option>
-                                    <option value="0402">0402 - ค่าน้ำประปา</option>
-                                    <option value="0403">0403 - ค่าโทรศัพท์/เน็ต</option>
-                                    <option value="0408">0408 - การตลาด/โฆษณา (Ads)</option>
-                                    <option value="0406">0406 - ซ่อมแซมบำรุงรักษา</option>
-                                    <option value="0409">0409 - วัสดุสิ้นเปลือง</option>
-                                    <option value="0411">0411 - ค่าใช้จ่ายอื่นๆ (เบ็ดเตล็ด)</option>
-                                </optgroup>
+                            <optgroup label="📢 ควบคุมได้ (รวมการตลาด)">
+                                <option value="0401">0401 - ค่าไฟฟ้า</option>
+                                <option value="0402">0402 - ค่าน้ำประปา</option>
+                                <option value="0412">0412 - ค่าเดินทาง</option>
+                                <option value="0409">0409 - วัสดุสิ้นเปลือง</option>
+                                <option value="0406">0406 - ซ่อมแซม</option>
+                                <option value="0403">0403 - โทรศัพท์/เน็ต</option>
+                                <option value="0408">0408 - ค่าโฆษณา (รวม)</option>
+                                <option value="0118">0118 - ส่วนลด/โปรโมชั่น</option>
+                                <option value="0411">0411 - เบ็ดเตล็ด</option>
+                            </optgroup>
 
-                                <optgroup label="🔒 ค่าใช้จ่ายที่ควบคุมไม่ได้ (Fixed & Fees)">
-                                    <option value="0501">0501 - ค่าเช่าร้าน</option>
-                                    <option value="0502">0502 - ค่าทำบัญชี</option>
-                                    <option value="0504">0504 - ค่าบริการ GP Delivery (รวม VAT)</option>
-                                    <option value="0505">0505 - ค่าเช่าอุปกรณ์</option>
-                                </optgroup>
+                            <optgroup label="🔒 ควบคุมไม่ได้ (Fees/Tax)">
+                                <option value="0504">0504 - GP Delivery (รวม)</option>
+                                <option value="0121">0121 - ภาษีมูลค่าเพิ่ม (VAT)</option>
+                                <option value="0702">0702 - ภาษีหัก ณ ที่จ่าย</option>
+                                <option value="0501">0501 - ค่าเช่าร้าน</option>
+                                <option value="0502">0502 - ค่าทำบัญชี</option>
+                                <option value="0505">0505 - ค่าเช่าอุปกรณ์</option>
+                            </optgroup>
+
+                            <optgroup label="💳 สินเชื่อ (Loans)">
+                                <option value="0411-G">0411-G - สินเชื่อ Grab</option>
+                                <option value="0411-L-C">0411-L-C - สินเชื่อเงินสด Line</option>
+                                <option value="0411-L-I">0411-L-I - ผ่อนสินค้า Line</option>
+                            </optgroup>
                         </select>
                         <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
                     </div>
@@ -247,6 +250,7 @@
             </div>
 
             <div id="report-content" class="space-y-4 pb-10">
+                
                 <div class="card bg-slate-800 text-white !border-0 shadow-xl shadow-slate-300/50">
                     <div class="flex justify-between items-center mb-4 border-b border-slate-600 pb-3">
                         <span class="text-slate-300 text-sm font-medium">กำไรสุทธิ (Net Profit)</span>
@@ -258,104 +262,104 @@
                     </div>
                 </div>
 
-                <div class="card !p-0 overflow-hidden border-0 shadow-sm">
+                <div class="card !p-0 overflow-hidden shadow-sm bg-indigo-50 border-l-4 border-indigo-500">
                     <div class="grp-header" onclick="toggleGrp('grp-rev', this)">
                         <div class="flex items-center">
-                            <i class="fa-solid fa-circle-plus text-blue-500 mr-3 text-lg"></i>
+                            <i class="fa-solid fa-circle-plus text-indigo-500 mr-3 text-lg"></i>
                             <div>
-                                <div class="text-sm font-bold text-slate-800">รายได้รวม (Sales)</div>
-                                <div class="text-[10px] text-slate-400">Gross Revenue</div>
+                                <div class="text-sm font-bold text-indigo-900">รายได้รวม (Sales)</div>
+                                <div class="text-[10px] text-indigo-400">Gross Revenue</div>
                             </div>
                         </div>
                         <div class="text-right">
-                            <div class="text-blue-600 font-bold text-lg" id="summ-rev">0</div>
-                            <i class="fa-solid fa-chevron-down text-slate-300 text-xs mt-1 transition-transform"></i>
+                            <div class="text-indigo-700 font-bold text-lg" id="summ-rev">0</div>
+                            <i class="fa-solid fa-chevron-down text-indigo-300 text-xs mt-1 transition-transform"></i>
                         </div>
                     </div>
                     <div id="grp-rev" class="grp-content">
                         </div>
                 </div>
 
-                <div class="card !p-0 overflow-hidden border-0 shadow-sm">
+                <div class="card !p-0 overflow-hidden shadow-sm bg-rose-50 border-l-4 border-rose-500">
                     <div class="grp-header" onclick="toggleGrp('grp-cogs', this)">
                         <div class="flex items-center">
-                            <i class="fa-solid fa-drumstick-bite text-red-500 mr-3 text-lg"></i>
+                            <i class="fa-solid fa-drumstick-bite text-rose-500 mr-3 text-lg"></i>
                             <div>
-                                <div class="text-sm font-bold text-red-700">ต้นทุนขาย (COGS)</div>
-                                <div class="text-[10px] text-slate-400">วัตถุดิบ/แพ็คเกจ</div>
+                                <div class="text-sm font-bold text-rose-800">ต้นทุนขาย (COGS)</div>
+                                <div class="text-[10px] text-rose-400">วัตถุดิบ/แพ็คเกจ</div>
                             </div>
                         </div>
                         <div class="text-right flex flex-col justify-center">
-                            <div class="text-red-500 font-bold text-lg" id="pct-cogs">0%</div>
-                            <div class="text-xs text-slate-500 font-medium" id="summ-cogs">0</div>
+                            <div class="text-rose-600 font-bold text-lg" id="pct-cogs">0%</div>
+                            <div class="text-xs text-rose-400 font-medium" id="summ-cogs">0</div>
                         </div>
                     </div>
                     <div id="grp-cogs" class="grp-content"></div>
                 </div>
 
-                <div class="card !p-0 overflow-hidden border-0 shadow-sm">
+                <div class="card !p-0 overflow-hidden shadow-sm bg-sky-50 border-l-4 border-sky-500">
                     <div class="grp-header" onclick="toggleGrp('grp-staff', this)">
                         <div class="flex items-center">
-                            <i class="fa-solid fa-users text-slate-500 mr-3 text-lg"></i>
+                            <i class="fa-solid fa-users text-sky-500 mr-3 text-lg"></i>
                             <div>
-                                <div class="text-sm font-bold text-slate-700">ค่าใช้จ่ายพนักงาน</div>
-                                <div class="text-[10px] text-slate-400">เงินเดือน/ค่าแรง</div>
+                                <div class="text-sm font-bold text-sky-800">ค่าใช้จ่ายพนักงาน</div>
+                                <div class="text-[10px] text-sky-400">เงินเดือน/ค่าแรง</div>
                             </div>
                         </div>
                         <div class="text-right flex flex-col justify-center">
-                            <div class="text-slate-700 font-bold text-lg" id="pct-staff">0%</div>
-                            <div class="text-xs text-slate-500 font-medium" id="summ-staff">0</div>
+                            <div class="text-sky-600 font-bold text-lg" id="pct-staff">0%</div>
+                            <div class="text-xs text-sky-400 font-medium" id="summ-staff">0</div>
                         </div>
                     </div>
                     <div id="grp-staff" class="grp-content"></div>
                 </div>
 
-                <div class="card !p-0 overflow-hidden border-0 shadow-sm">
+                <div class="card !p-0 overflow-hidden shadow-sm bg-amber-50 border-l-4 border-amber-500">
                     <div class="grp-header" onclick="toggleGrp('grp-control', this)">
                         <div class="flex items-center">
-                            <i class="fa-solid fa-bullhorn text-orange-500 mr-3 text-lg"></i>
+                            <i class="fa-solid fa-bullhorn text-amber-500 mr-3 text-lg"></i>
                             <div>
-                                <div class="text-sm font-bold text-orange-600">ควบคุมได้ (Controllable)</div>
-                                <div class="text-[10px] text-slate-400">น้ำไฟ/เดินทาง/การตลาด</div>
+                                <div class="text-sm font-bold text-amber-800">ควบคุมได้ (Controllable)</div>
+                                <div class="text-[10px] text-amber-400">น้ำไฟ/เดินทาง/การตลาด</div>
                             </div>
                         </div>
                         <div class="text-right flex flex-col justify-center">
-                            <div class="text-orange-500 font-bold text-lg" id="pct-control">0%</div>
-                            <div class="text-xs text-slate-500 font-medium" id="summ-control">0</div>
+                            <div class="text-amber-600 font-bold text-lg" id="pct-control">0%</div>
+                            <div class="text-xs text-amber-400 font-medium" id="summ-control">0</div>
                         </div>
                     </div>
                     <div id="grp-control" class="grp-content"></div>
                 </div>
 
-                <div class="card !p-0 overflow-hidden border-0 shadow-sm">
+                <div class="card !p-0 overflow-hidden shadow-sm bg-slate-50 border-l-4 border-slate-500">
                     <div class="grp-header" onclick="toggleGrp('grp-uncontrol', this)">
                         <div class="flex items-center">
                             <i class="fa-solid fa-lock text-slate-500 mr-3 text-lg"></i>
                             <div>
-                                <div class="text-sm font-bold text-slate-600">ควบคุมไม่ได้ (Fees/Tax)</div>
+                                <div class="text-sm font-bold text-slate-800">ควบคุมไม่ได้ (Fees/Tax)</div>
                                 <div class="text-[10px] text-slate-400">GP/VAT/ค่าเช่า</div>
                             </div>
                         </div>
                         <div class="text-right flex flex-col justify-center">
-                            <div class="text-slate-700 font-bold text-lg" id="pct-uncontrol">0%</div>
-                            <div class="text-xs text-slate-500 font-medium" id="summ-uncontrol">0</div>
+                            <div class="text-slate-600 font-bold text-lg" id="pct-uncontrol">0%</div>
+                            <div class="text-xs text-slate-400 font-medium" id="summ-uncontrol">0</div>
                         </div>
                     </div>
                     <div id="grp-uncontrol" class="grp-content"></div>
                 </div>
 
-                <div class="card !p-0 overflow-hidden border-0 shadow-sm">
+                <div class="card !p-0 overflow-hidden shadow-sm bg-purple-50 border-l-4 border-purple-500">
                     <div class="grp-header" onclick="toggleGrp('grp-loan', this)">
                         <div class="flex items-center">
                             <i class="fa-solid fa-credit-card text-purple-500 mr-3 text-lg"></i>
                             <div>
-                                <div class="text-sm font-bold text-purple-600">สินเชื่อ (Loans)</div>
-                                <div class="text-[10px] text-slate-400">ผ่อนชำระหนี้สิน</div>
+                                <div class="text-sm font-bold text-purple-800">สินเชื่อ (Loans)</div>
+                                <div class="text-[10px] text-purple-400">ผ่อนชำระหนี้สิน</div>
                             </div>
                         </div>
                         <div class="text-right flex flex-col justify-center">
-                            <div class="text-purple-500 font-bold text-lg" id="pct-loan">0%</div>
-                            <div class="text-xs text-slate-500 font-medium" id="summ-loan">0</div>
+                            <div class="text-purple-600 font-bold text-lg" id="pct-loan">0%</div>
+                            <div class="text-xs text-purple-400 font-medium" id="summ-loan">0</div>
                         </div>
                     </div>
                     <div id="grp-loan" class="grp-content"></div>
@@ -388,7 +392,7 @@
         from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
         // ⚠️ PASTE CONFIG HERE ⚠️
-                  const firebaseConfig = {
+                          const firebaseConfig = {
     apiKey: "AIzaSyDRiTZXUbkdGaCHZVTkOOl1Iu0A-744tE0",
     authDomain: "numdamnoen-6cbd5.firebaseapp.com",
     projectId: "numdamnoen-6cbd5",
@@ -510,7 +514,7 @@
             alert('✅ บันทึกสำเร็จ'); refreshData();
         }
 
-        // --- P&L LOGIC ---
+        // --- P&L LOGIC (AGGREGATION & PERCENT) ---
         window.toggleGrp = (id, headerEl) => {
             document.getElementById(id).classList.toggle('open');
             const icon = headerEl.querySelector('.fa-chevron-down');
@@ -533,7 +537,7 @@
             const fS = currentMonthData.sales.filter(s => s.date>=start && s.date<=end);
             const fE = currentMonthData.expenses.filter(e => e.date>=start && e.date<=end);
 
-            // 1. Revenue Aggregation
+            // 1. Revenue
             let revInstore=0, revGrab=0, revLine=0, revRbh=0, revTotal=0;
             fS.forEach(s => {
                 revInstore+=(s.instore||0); revGrab+=(s.delivery_grab||0);
@@ -575,11 +579,12 @@
             const grpUncontrol = sumArray(listUncontrol);
             const grpLoan = sumArray(listLoan);
 
-            // Update Summaries
+            // Update Summaries (Header Values)
             const setTxt = (id, val) => document.getElementById(id).innerText = val.toLocaleString();
             const setPct = (id, val) => document.getElementById(id).innerText = revTotal>0 ? ((val/revTotal)*100).toFixed(1)+'%' : '0%';
 
             setTxt('summ-rev', revTotal);
+            
             setTxt('summ-cogs', grpCogs); setPct('pct-cogs', grpCogs);
             setTxt('summ-staff', grpStaff); setPct('pct-staff', grpStaff);
             setTxt('summ-control', grpControl); setPct('pct-control', grpControl);
@@ -591,7 +596,7 @@
             document.getElementById('pl-net').innerText = net.toLocaleString();
             document.getElementById('pl-margin').innerText = `Net Margin: ${revTotal>0?((net/revTotal)*100).toFixed(1):0}%`;
 
-            // Render Lists with Percentages
+            // Render Lists (Aggregation View)
             renderList('grp-rev', [
                 {cat:'หน้าร้าน', amt:revInstore}, {cat:'Grab', amt:revGrab},
                 {cat:'Lineman', amt:revLine}, {cat:'Rbh/อื่นๆ', amt:revRbh}
@@ -605,11 +610,11 @@
         }
 
         const catNames = {
-            '0201':'วัตถุดิบ', '0202':'บรรจุภัณฑ์', '0203':'น้ำแข็ง',
+            '0201':'วัตถุดิบ', '0202':'บรรจุภัณฑ์', '0203':'น้ำแข็ง/แก๊ส',
             '0301':'เงินเดือน', 
             '0401':'ค่าไฟ', '0402':'ค่าน้ำ', '0412':'ค่าเดินทาง', '0409':'วัสดุสิ้นเปลือง', '0406':'ซ่อมแซม', '0403':'โทรศัพท์/เน็ต', '0408':'ค่าโฆษณา', '0118':'ส่วนลด/โปร', '0411':'เบ็ดเตล็ด',
             '0504':'GP Delivery', '0121':'VAT', '0702':'WHT', '0501':'ค่าเช่า', '0502':'ทำบัญชี', '0505':'เช่าอุปกรณ์',
-            '0411-G':'สินเชื่อ Grab', '0411-L-C':'สินเชื่อ Lineman Cash', '0411-L-I':'ผ่อนของ Lineman',
+            '0411-G':'สินเชื่อ Grab', '0411-L-C':'สินเชื่อ Line Cash', '0411-L-I':'ผ่อนของ Line',
             '0118-L':'ส่วนลด Lineman', '0408-G-MKT':'Grab ร่วมโปร/แคมเปญ', '0118-G-STORE':'ส่วนลดที่ร้านสนับสนุน (Store)','0118-G':'ส่วนลดแคมเปญ Grab (Campaign)','0408-L':'Ads Lineman',
             '0504-L':'GP Lineman (รวม VAT)', '0504-G':'GP Grab (รวม VAT)', '0408-G':'Ads Grab (รวม VAT)'
         };
