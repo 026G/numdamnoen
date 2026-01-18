@@ -211,18 +211,32 @@
                     <div class="relative">
                         <select id="inputExpCat" class="mobile-input appearance-none bg-white pr-10">
                             <option value="" disabled selected>-- กรุณาเลือก --</option>
-                            <optgroup label="ทั่วไป">
-                                <option value="0201">วัตถุดิบ (ตลาด/ของสด)</option>
-                                <option value="0202">บรรจุภัณฑ์ (กล่อง/แก้ว)</option>
-                                <option value="0203">น้ำแข็ง/แก๊ส</option>
-                                <option value="0301">ค่าแรง/เงินเดือน</option>
-                                <option value="0401">ค่าน้ำ/ค่าไฟ</option>
-                                <option value="0412">ค่าเดินทาง/น้ำมัน</option>
-                                <option value="0411">เบ็ดเตล็ด/อื่นๆ</option>
+                            <optgroup label="🥩 ต้นทุนขาย (COGS)">
+                                <option value="0201">0201 - วัตถุดิบอาหาร</option>
+                                <option value="0202">0202 - บรรจุภัณฑ์</option>
+                                <option value="0203">0203 - น้ำแข็ง/แก๊ส</option>
                             </optgroup>
-                            <optgroup label="ค่าเช่า/คงที่">
-                                <option value="0501">ค่าเช่าร้าน</option>
-                                <option value="0502">ค่าทำบัญชี</option>
+                            
+                            <optgroup label="👥 พนักงาน">
+                                <option value="0301">0301 - เงินเดือนพนักงาน</option>
+                            </optgroup>
+
+                            <optgroup label="📢 ควบคุมได้ (ทั่วไป)">
+                                <option value="0401">0401 - ค่าไฟฟ้า</option>
+                                <option value="0402">0402 - ค่าน้ำประปา</option>
+                                <option value="0412">0412 - ค่าเดินทาง</option>
+                                <option value="0409">0409 - วัสดุสิ้นเปลือง</option>
+                                <option value="0406">0406 - ซ่อมแซม</option>
+                                <option value="0403">0403 - โทรศัพท์/เน็ต</option>
+                                <option value="0408">0408 - ค่าโฆษณา (รวม)</option>
+                                <option value="0118">0118 - ส่วนลด/โปรโมชั่น</option>
+                                <option value="0411">0411 - เบ็ดเตล็ด</option>
+                            </optgroup>
+
+                            <optgroup label="🔒 ควบคุมไม่ได้ (Fixed)">
+                                <option value="0501">0501 - ค่าเช่าร้าน</option>
+                                <option value="0502">0502 - ค่าทำบัญชี</option>
+                                <option value="0505">0505 - ค่าเช่าอุปกรณ์</option>
                             </optgroup>
                         </select>
                         <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
