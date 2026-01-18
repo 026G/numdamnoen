@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DPM Mobile (Cashflow & P&L)</title>
+    <title>DPM Mobile (Cashflow)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -37,37 +37,15 @@
         }
         .mobile-input:focus { border-color: #3b82f6; background: white; box-shadow: 0 0 0 4px rgba(59,130,246,0.1); }
         
-        /* Report Accordion */
-        .grp-header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 14px 16px; cursor: pointer; user-select: none;
-            background-color: white; border-bottom: 1px solid #f1f5f9;
-        }
-        .grp-header:active { background-color: #f8fafc; }
-        .grp-content { 
-            overflow: hidden; transition: max-height 0.3s ease-out; 
-            max-height: 0; background-color: #f8fafc;
-        }
-        .grp-content.open { max-height: 3000px; border-bottom: 1px solid #e2e8f0; }
-        
-        .sub-row { 
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 16px; border-bottom: 1px solid #f1f5f9; 
-            font-size: 0.9rem; color: #475569; background-color: white;
-        }
-        .sub-row:last-child { border-bottom: none; }
-
-        /* Nested Group Styles */
-        .nested-grp { margin: 8px 12px; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; background-color: white; }
-        .nested-header { padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; background-color: #f1f5f9; cursor: pointer; }
-        .nested-content { max-height: 0; overflow: hidden; transition: max-height 0.2s ease-out; background-color: #fff; }
-        .nested-content.open { max-height: 1000px; border-top: 1px solid #e2e8f0; }
-        .nested-item { padding: 8px 12px 8px 24px; border-bottom: 1px solid #f8fafc; font-size: 0.85rem; display: flex; justify-content: space-between; color: #64748b; }
-
-        /* Transaction List (Dashboard) */
+        /* Transaction List */
         .tx-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
         .tx-row:last-child { border-bottom: none; }
         .tx-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1rem; margin-right: 12px; }
+
+        /* Modal */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(2px); }
+        .modal-box { background: white; border-radius: 20px; padding: 24px; width: 100%; max-width: 320px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); animation: popIn 0.2s ease-out; }
+        @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
         /* Loading */
         .spinner { border: 3px solid rgba(255,255,255,0.3); border-left-color: white; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
@@ -79,10 +57,10 @@
     <div id="login-screen" class="fixed inset-0 z-[100] bg-slate-900 flex flex-col justify-center px-6">
         <div class="text-center mb-10">
             <div class="w-20 h-20 bg-blue-600 rounded-2xl mx-auto flex items-center justify-center mb-6 shadow-xl shadow-blue-500/20">
-                <i class="fa-solid fa-chart-pie text-3xl text-white"></i>
+                <i class="fa-solid fa-wallet text-3xl text-white"></i>
             </div>
-            <h1 class="text-3xl font-bold text-white mb-2">DPM Mobile</h1>
-            <p class="text-slate-400">ระบบจัดการร้านอาหาร</p>
+            <h1 class="text-3xl font-bold text-white mb-2">My Cashflow</h1>
+            <p class="text-slate-400">ระบบบัญชีกระเป๋าเดียว</p>
         </div>
         <form id="loginForm" class="space-y-4">
             <input type="email" id="loginEmail" class="mobile-input bg-slate-800 border-slate-700 text-white placeholder-slate-500" placeholder="อีเมล" required>
@@ -92,24 +70,48 @@
         <p id="loginError" class="text-red-400 text-center mt-4 hidden text-sm"></p>
     </div>
 
+    <div id="adjust-modal" class="hidden modal-overlay">
+        <div class="modal-box">
+            <div class="text-center mb-4">
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 text-blue-600">
+                    <i class="fa-solid fa-scale-balanced text-xl"></i>
+                </div>
+                <h3 class="text-lg font-bold text-slate-800">ปรับยอดเงินให้ตรง</h3>
+                <p class="text-sm text-slate-500">ใส่ยอดเงินจริงที่มีอยู่ตอนนี้ (สด+ธนาคาร)</p>
+            </div>
+            <input type="number" inputmode="decimal" id="adjust-amount" class="mobile-input text-center text-2xl font-bold mb-4 border-blue-500 text-blue-600" placeholder="0.00">
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="closeAdjustModal()" class="py-3 rounded-xl font-bold text-slate-500 bg-slate-100 active:bg-slate-200">ยกเลิก</button>
+                <button onclick="confirmAdjust()" class="py-3 rounded-xl font-bold text-white bg-blue-600 shadow-lg active:scale-95">บันทึก</button>
+            </div>
+        </div>
+    </div>
+
     <div id="main-app" class="hidden">
         
         <div class="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm z-40 px-4 h-[60px] border-b border-slate-100 flex justify-between items-center shadow-sm">
             <div class="flex items-center space-x-2">
                 <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-sm">
-                    <i class="fa-solid fa-store text-xs"></i>
+                    <i class="fa-solid fa-wallet text-xs"></i>
                 </div>
-                <span class="font-bold text-slate-800 text-lg">Restaurant PRO</span>
+                <span class="font-bold text-slate-800 text-lg">My Pocket</span>
             </div>
             <input type="month" id="globalMonth" class="bg-slate-100 text-xs font-bold text-slate-600 rounded-lg px-2 py-1 outline-none" onchange="refreshData()">
         </div>
 
         <div id="page-home" class="page-content px-4">
-            <div class="card bg-gradient-to-br from-blue-600 to-indigo-700 text-white !border-0 shadow-lg shadow-blue-500/30 mb-4">
-                <p class="text-blue-100 text-xs mb-1">เงินคงเหลือสุทธิ (เดือนนี้)</p>
+            <div class="card bg-gradient-to-br from-blue-600 to-indigo-700 text-white !border-0 shadow-lg shadow-blue-500/30 mb-4 relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-4 opacity-20"><i class="fa-solid fa-coins text-6xl"></i></div>
+                
+                <div class="flex justify-between items-start mb-1">
+                    <p class="text-blue-100 text-xs">เงินคงเหลือสุทธิ (ในระบบ)</p>
+                    <button onclick="openAdjustModal()" class="bg-white/20 hover:bg-white/30 px-2 py-1 rounded text-[10px] backdrop-blur-sm transition flex items-center">
+                        <i class="fa-solid fa-pen mr-1"></i> ปรับยอด
+                    </button>
+                </div>
                 <h1 class="text-4xl font-bold mb-4 tracking-tight" id="dash-net">0</h1>
                 
-                <div class="flex border-t border-white/20 pt-4">
+                <div class="flex border-t border-white/20 pt-4 relative z-10">
                     <div class="w-1/2 border-r border-white/20 pr-4">
                         <p class="text-blue-200 text-[10px]">รายรับรวม (In)</p>
                         <p class="text-lg font-bold text-emerald-300" id="dash-in">0</p>
@@ -145,8 +147,8 @@
                 <input type="date" id="inputSaleDate" class="mobile-input mb-6 font-bold text-slate-700">
                 
                 <div class="space-y-4">
-                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                        <label class="text-sm font-bold text-blue-800 block mb-2">🏠 หน้าร้าน (Walk-in)</label>
+                    <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+                        <label class="text-sm font-bold text-emerald-800 block mb-2">🏠 หน้าร้าน (Walk-in)</label>
                         <input type="number" inputmode="decimal" id="valInstore" class="mobile-input text-right text-xl font-bold bg-white" placeholder="0">
                     </div>
                     
@@ -170,8 +172,8 @@
                     </div>
                 </div>
                 
-                <button onclick="saveSales()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg mt-8 shadow-lg shadow-blue-200 active:scale-95 transition flex justify-center items-center">
-                    <span id="btnSaveSaleText">บันทึก</span>
+                <button onclick="saveSales()" class="w-full bg-emerald-500 text-white py-4 rounded-xl font-bold text-lg mt-8 shadow-lg shadow-emerald-200 active:scale-95 transition flex justify-center items-center">
+                    <span id="btnSaveSaleText">บันทึกรับ</span>
                     <div id="spinnerSale" class="spinner ml-2 hidden"></div>
                 </button>
             </div>
@@ -462,15 +464,16 @@
             window.scrollTo(0,0);
         }
 
+        // --- GLOBAL DATA VARS ---
         let currentMonthData = { sales: [], expenses: [] };
-        
+        let systemBalance = 0; // For adjust logic
+
         function initApp() {
             const d = new Date();
             const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
             document.getElementById('globalMonth').value = ym;
             document.getElementById('inputSaleDate').value = d.toISOString().split('T')[0];
             document.getElementById('inputExpDate').value = d.toISOString().split('T')[0];
-            document.getElementById('todayDateDisplay').innerText = d.toLocaleDateString('th-TH');
             refreshData();
         }
 
@@ -489,8 +492,60 @@
             renderDashboard();
         }
 
+        // --- DASHBOARD: CASHFLOW & ADJUSTMENT ---
+        window.openAdjustModal = () => { document.getElementById('adjust-modal').classList.remove('hidden'); }
+        window.closeAdjustModal = () => { document.getElementById('adjust-modal').classList.add('hidden'); document.getElementById('adjust-amount').value = ''; }
+        
+        window.confirmAdjust = async () => {
+            const actual = parseFloat(document.getElementById('adjust-amount').value);
+            if(isNaN(actual)) { alert('กรุณาใส่ตัวเลข'); return; }
+            
+            const diff = actual - systemBalance;
+            if(diff === 0) { alert('ยอดตรงกันแล้ว ไม่ต้องปรับ'); closeAdjustModal(); return; }
+            
+            const today = new Date().toISOString().split('T')[0];
+            
+            if(diff > 0) {
+                // Found extra money (Income) -> Record as delivery_other
+                // We need to fetch existing today doc to merge
+                const todayRef = doc(db, "daily_sales", today);
+                // Simple merge add is tricky with Firestore setDoc merge if field exists.
+                // We'll just read current, add diff, write back.
+                // Or easier: just add a new expense with negative value? No, better add to sales.
+                // For simplicity in this app structure: we assume we can add to 'delivery_other' of today.
+                // Let's rely on standard logic: get existing sales for today or create new.
+                
+                // Let's create a "Manual Adjustment" entry.
+                // Since user wants "Single Pocket", let's put it in `delivery_other` (Others Income).
+                // We need to pull today's current data first to append.
+                // Actually, `setDoc` with merge works, but we need to know the *current value* to add to it.
+                // Simpler: Just save it as a new Expense with Negative value? (Expense -500 = Income +500)
+                // This is widely used in simple accounting. Let's do that. Category '0411' (Misc).
+                // Wait, Expense -500 might confuse charts.
+                
+                // Best way: Update today's sales.
+                let currentSales = currentMonthData.sales.find(s => s.date === today);
+                let currentOther = currentSales ? (currentSales.delivery_other || 0) : 0;
+                await setDoc(todayRef, { date: today, delivery_other: currentOther + diff }, { merge: true });
+                alert(`✅ ปรับยอดเพิ่ม +${diff.toLocaleString()} บาท เรียบร้อย`);
+            } else {
+                // Money missing (Expense) -> Record as Expense
+                await addDoc(collection(db, "expenses"), {
+                    date: today,
+                    category: '0411', // Misc
+                    amount: Math.abs(diff),
+                    memo: 'ปรับยอดเงิน (System Adjustment)',
+                    timestamp: Timestamp.now()
+                });
+                alert(`✅ ปรับยอดลด ${diff.toLocaleString()} บาท เรียบร้อย`);
+            }
+            
+            closeAdjustModal();
+            refreshData();
+        }
+
         function renderDashboard() {
-            // 1. Calculate Totals for Cashflow Dashboard
+            // 1. Calculate Cashflow
             let totalIn = 0;
             let totalOut = 0;
             let transactions = [];
@@ -507,7 +562,7 @@
                 });
             });
 
-            // Process Sales (Explode channels)
+            // Process Sales
             currentMonthData.sales.forEach(s => {
                 const addTx = (name, val) => {
                     if(val > 0) {
@@ -522,15 +577,14 @@
                 addTx('อื่นๆ', s.delivery_other);
             });
 
-            // Update Cards
+            systemBalance = totalIn - totalOut; // Global var for adjust
+
             document.getElementById('dash-in').innerText = totalIn.toLocaleString();
             document.getElementById('dash-out').innerText = totalOut.toLocaleString();
-            document.getElementById('dash-net').innerText = (totalIn - totalOut).toLocaleString();
+            document.getElementById('dash-net').innerText = systemBalance.toLocaleString();
 
-            // 2. Render Transaction Feed
-            // Sort by Date Descending
-            transactions.sort((a,b) => new Date(b.date) - new Date(a.date));
-            
+            // 2. Render Feed
+            transactions.sort((a,b) => new Date(b.date) - new Date(a.date)); // Newest first
             const feedEl = document.getElementById('tx-feed');
             feedEl.innerHTML = '';
             
@@ -539,7 +593,6 @@
             } else {
                 let lastDate = '';
                 transactions.forEach(tx => {
-                    // Date Header
                     const d = new Date(tx.date);
                     const dateStr = `${d.getDate()} / ${d.getMonth()+1}`;
                     if(dateStr !== lastDate) {
@@ -570,7 +623,7 @@
                 });
             }
 
-            // 3. Render Chart (Daily In vs Out)
+            // 3. Render Chart
             renderChart(transactions);
         }
 
@@ -578,7 +631,6 @@
             const ctx = document.getElementById('cashflowChart');
             if(!ctx) return;
 
-            // Group by Date (Last 7 Days)
             const days = {};
             const today = new Date();
             for(let i=6; i>=0; i--) {
@@ -613,10 +665,7 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
-                    scales: { 
-                        x: { grid: { display: false } },
-                        y: { display: false }
-                    }
+                    scales: { x: { grid: { display: false } }, y: { display: false } }
                 }
             });
         }
