@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DPM Mobile (Daily P&L)</title>
+    <title>DPM Mobile (Cashflow & P&L)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -64,6 +64,11 @@
         .nested-content.open { max-height: 1000px; border-top: 1px solid #e2e8f0; }
         .nested-item { padding: 8px 12px 8px 24px; border-bottom: 1px solid #f8fafc; font-size: 0.85rem; display: flex; justify-content: space-between; color: #64748b; }
 
+        /* Transaction List (Dashboard) */
+        .tx-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
+        .tx-row:last-child { border-bottom: none; }
+        .tx-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1rem; margin-right: 12px; }
+
         /* Loading */
         .spinner { border: 3px solid rgba(255,255,255,0.3); border-left-color: white; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -100,40 +105,36 @@
         </div>
 
         <div id="page-home" class="page-content px-4">
-            <div class="flex justify-between items-end mb-4">
-                <h2 class="text-xl font-bold text-slate-800">ภาพรวมวันนี้</h2>
-                <span class="text-xs bg-slate-100 px-2 py-1 rounded text-slate-500" id="todayDateDisplay">...</span>
+            <div class="card bg-gradient-to-br from-blue-600 to-indigo-700 text-white !border-0 shadow-lg shadow-blue-500/30 mb-4">
+                <p class="text-blue-100 text-xs mb-1">เงินคงเหลือสุทธิ (เดือนนี้)</p>
+                <h1 class="text-4xl font-bold mb-4 tracking-tight" id="dash-net">0</h1>
+                
+                <div class="flex border-t border-white/20 pt-4">
+                    <div class="w-1/2 border-r border-white/20 pr-4">
+                        <p class="text-blue-200 text-[10px]">รายรับรวม (In)</p>
+                        <p class="text-lg font-bold text-emerald-300" id="dash-in">0</p>
+                    </div>
+                    <div class="w-1/2 pl-4">
+                        <p class="text-blue-200 text-[10px]">รายจ่ายรวม (Out)</p>
+                        <p class="text-lg font-bold text-rose-300" id="dash-out">0</p>
+                    </div>
+                </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-3 mb-4">
-                <div class="card bg-blue-600 text-white !border-0 shadow-blue-200">
-                    <p class="text-xs text-blue-100 mb-1">ยอดขาย (Gross)</p>
-                    <h3 class="text-2xl font-bold" id="card-today-sales">0</h3>
-                </div>
-                <div class="card bg-white">
-                    <p class="text-xs text-slate-400 mb-1">Net Profit (Est.)</p>
-                    <h3 class="text-2xl font-bold text-green-600" id="card-today-profit">0</h3>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3 class="font-bold text-slate-700 mb-4 text-sm flex items-center">
-                    <i class="fa-solid fa-arrow-trend-up mr-2 text-blue-500"></i> ยอดขาย 7 วันล่าสุด
+            <div class="card mb-4">
+                <h3 class="font-bold text-slate-700 mb-3 text-sm flex items-center">
+                    <i class="fa-solid fa-chart-simple mr-2 text-blue-500"></i> สรุป 7 วันล่าสุด (รับ vs จ่าย)
                 </h3>
                 <div class="h-40 w-full relative">
-                    <canvas id="miniChart"></canvas>
+                    <canvas id="cashflowChart"></canvas>
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-3 mt-2">
-                <button onclick="navTo('sales')" class="bg-white p-4 rounded-xl border border-blue-100 shadow-sm flex flex-col items-center justify-center space-y-2 active:bg-blue-50 transition">
-                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600"><i class="fa-solid fa-plus"></i></div>
-                    <span class="text-sm font-bold text-slate-600">จดรายรับ</span>
-                </button>
-                <button onclick="navTo('expenses')" class="bg-white p-4 rounded-xl border border-red-100 shadow-sm flex flex-col items-center justify-center space-y-2 active:bg-red-50 transition">
-                    <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center text-red-600"><i class="fa-solid fa-minus"></i></div>
-                    <span class="text-sm font-bold text-slate-600">จดรายจ่าย</span>
-                </button>
+            <div class="mb-2 flex justify-between items-end">
+                <h3 class="font-bold text-slate-700 text-sm">รายการเคลื่อนไหว (ล่าสุด)</h3>
+            </div>
+            <div class="card !py-2" id="tx-feed">
+                <div class="text-center py-8 text-slate-400 text-sm">กำลังโหลด...</div>
             </div>
         </div>
 
@@ -200,7 +201,7 @@
                                 <option value="0301">0301 - เงินเดือนพนักงาน</option>
                             </optgroup>
 
-                            <optgroup label="📢 ควบคุมได้ (ทั่วไป)">
+                            <optgroup label="📢 ควบคุมได้ (รวมการตลาด)">
                                 <option value="0401">0401 - ค่าไฟฟ้า</option>
                                 <option value="0402">0402 - ค่าน้ำประปา</option>
                                 <option value="0412">0412 - ค่าเดินทาง</option>
@@ -208,17 +209,29 @@
                                 <option value="0406">0406 - ซ่อมแซม</option>
                                 <option value="0403">0403 - โทรศัพท์/เน็ต</option>
                                 <option value="0408">0408 - ค่าโฆษณา (รวม)</option>
+                                <option value="0408-G">0408-G - Ads Grab (รวม VAT)</option>
+                                <option value="0408-L">0408-L - Ads Lineman</option>
+                                <option value="0408-G-MKT">0408-G-MKT - Grab ร่วมโปร/แคมเปญ</option>
                                 <option value="0118">0118 - ส่วนลด/โปรโมชั่น</option>
+                                <option value="0118-G">0118-G - ส่วนลดแคมเปญ Grab</option>
+                                <option value="0118-G-STORE">0118-G-STORE - ส่วนลดร้าน (Store)</option>
+                                <option value="0118-L">0118-L - ส่วนลด Lineman</option>
                                 <option value="0411">0411 - เบ็ดเตล็ด</option>
                             </optgroup>
 
-                            <optgroup label="🔒 ควบคุมไม่ได้ (Fixed)">
+                            <optgroup label="🔒 ควบคุมไม่ได้ (Fees/Tax)">
                                 <option value="0504">0504 - GP Delivery (รวม)</option>
                                 <option value="0121">0121 - ภาษีมูลค่าเพิ่ม (VAT)</option>
                                 <option value="0702">0702 - ภาษีหัก ณ ที่จ่าย</option>
                                 <option value="0501">0501 - ค่าเช่าร้าน</option>
                                 <option value="0502">0502 - ค่าทำบัญชี</option>
                                 <option value="0505">0505 - ค่าเช่าอุปกรณ์</option>
+                            </optgroup>
+
+                            <optgroup label="💳 สินเชื่อ (Loans)">
+                                <option value="0411-G">0411-G - สินเชื่อ Grab</option>
+                                <option value="0411-L-C">0411-L-C - สินเชื่อเงินสด Line</option>
+                                <option value="0411-L-I">0411-L-I - ผ่อนสินค้า Line</option>
                             </optgroup>
                         </select>
                         <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
@@ -344,6 +357,7 @@
                         </div>
                     </div>
                 </div>
+
                 <div class="card !p-0 overflow-hidden shadow-sm bg-slate-50 border-l-4 border-slate-500">
                     <div class="grp-header" onclick="toggleGrp('grp-uncontrol', this)">
                         <div class="flex items-center">
@@ -405,7 +419,7 @@
         from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
         // ⚠️ PASTE CONFIG HERE ⚠️
-        const firebaseConfig = {
+                const firebaseConfig = {
     apiKey: "AIzaSyDRiTZXUbkdGaCHZVTkOOl1Iu0A-744tE0",
     authDomain: "numdamnoen-6cbd5.firebaseapp.com",
     projectId: "numdamnoen-6cbd5",
@@ -476,16 +490,135 @@
         }
 
         function renderDashboard() {
-            const today = new Date().toISOString().split('T')[0];
-            const ts = currentMonthData.sales.find(s => s.date === today);
-            const val = ts ? (ts.instore||0)+(ts.delivery_grab||0)+(ts.delivery_lineman||0)+(ts.delivery_robinhood||0)+(ts.delivery_other||0) : 0;
-            document.getElementById('card-today-sales').innerText = val.toLocaleString();
+            // 1. Calculate Totals for Cashflow Dashboard
+            let totalIn = 0;
+            let totalOut = 0;
+            let transactions = [];
 
-            let rev=0, exp=0;
-            currentMonthData.sales.forEach(s => rev += (s.instore||0)+(s.delivery_grab||0)+(s.delivery_lineman||0)+(s.delivery_robinhood||0)+(s.delivery_other||0));
-            currentMonthData.expenses.forEach(e => exp += e.amount);
-            document.getElementById('card-today-profit').innerText = (rev-exp).toLocaleString();
-            renderMiniChart();
+            // Process Expenses
+            currentMonthData.expenses.forEach(e => {
+                totalOut += e.amount;
+                transactions.push({
+                    type: 'exp',
+                    date: e.date,
+                    name: catNames[e.category] || e.category,
+                    memo: e.memo,
+                    amt: -e.amount
+                });
+            });
+
+            // Process Sales (Explode channels)
+            currentMonthData.sales.forEach(s => {
+                const addTx = (name, val) => {
+                    if(val > 0) {
+                        totalIn += val;
+                        transactions.push({ type: 'inc', date: s.date, name: name, amt: val });
+                    }
+                };
+                addTx('หน้าร้าน', s.instore);
+                addTx('Grab', s.delivery_grab);
+                addTx('Lineman', s.delivery_lineman);
+                addTx('Robinhood', s.delivery_robinhood);
+                addTx('อื่นๆ', s.delivery_other);
+            });
+
+            // Update Cards
+            document.getElementById('dash-in').innerText = totalIn.toLocaleString();
+            document.getElementById('dash-out').innerText = totalOut.toLocaleString();
+            document.getElementById('dash-net').innerText = (totalIn - totalOut).toLocaleString();
+
+            // 2. Render Transaction Feed
+            // Sort by Date Descending
+            transactions.sort((a,b) => new Date(b.date) - new Date(a.date));
+            
+            const feedEl = document.getElementById('tx-feed');
+            feedEl.innerHTML = '';
+            
+            if(transactions.length === 0) {
+                feedEl.innerHTML = '<div class="text-center py-8 text-slate-400 text-sm">- ไม่มีรายการ -</div>';
+            } else {
+                let lastDate = '';
+                transactions.forEach(tx => {
+                    // Date Header
+                    const d = new Date(tx.date);
+                    const dateStr = `${d.getDate()} / ${d.getMonth()+1}`;
+                    if(dateStr !== lastDate) {
+                        feedEl.innerHTML += `<div class="px-4 py-2 bg-slate-50 text-xs font-bold text-slate-500 mt-2 sticky top-0 border-b border-slate-100">${dateStr}</div>`;
+                        lastDate = dateStr;
+                    }
+
+                    const isInc = tx.type === 'inc';
+                    const colorClass = isInc ? 'text-emerald-600' : 'text-red-500';
+                    const bgClass = isInc ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-500';
+                    const iconClass = isInc ? 'fa-arrow-down' : 'fa-arrow-up';
+                    const sign = isInc ? '+' : '';
+
+                    feedEl.innerHTML += `
+                        <div class="tx-row px-4 bg-white">
+                            <div class="flex items-center">
+                                <div class="tx-icon ${bgClass}">
+                                    <i class="fa-solid ${iconClass} text-sm"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-bold text-slate-700">${tx.name}</div>
+                                    ${tx.memo ? `<div class="text-[10px] text-slate-400">${tx.memo}</div>` : ''}
+                                </div>
+                            </div>
+                            <div class="font-bold ${colorClass}">${sign}${tx.amt.toLocaleString()}</div>
+                        </div>
+                    `;
+                });
+            }
+
+            // 3. Render Chart (Daily In vs Out)
+            renderChart(transactions);
+        }
+
+        function renderChart(txs) {
+            const ctx = document.getElementById('cashflowChart');
+            if(!ctx) return;
+
+            // Group by Date (Last 7 Days)
+            const days = {};
+            const today = new Date();
+            for(let i=6; i>=0; i--) {
+                const d = new Date(); d.setDate(today.getDate()-i);
+                const ds = d.toISOString().split('T')[0];
+                const dayLabel = `${d.getDate()}/${d.getMonth()+1}`;
+                days[ds] = { label: dayLabel, in: 0, out: 0 };
+            }
+
+            txs.forEach(t => {
+                if(days[t.date]) {
+                    if(t.type === 'inc') days[t.date].in += t.amt;
+                    else days[t.date].out += Math.abs(t.amt);
+                }
+            });
+
+            const labels = Object.values(days).map(d => d.label);
+            const dataIn = Object.values(days).map(d => d.in);
+            const dataOut = Object.values(days).map(d => d.out);
+
+            if(window.cfChart) window.cfChart.destroy();
+            window.cfChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'รับ', data: dataIn, backgroundColor: '#10b981', borderRadius: 4 },
+                        { label: 'จ่าย', data: dataOut, backgroundColor: '#ef4444', borderRadius: 4 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { 
+                        x: { grid: { display: false } },
+                        y: { display: false }
+                    }
+                }
+            });
         }
 
         window.saveSales = async () => {
@@ -720,7 +853,7 @@
                                 <div class="flex items-center space-x-3">
                                     <div class="text-right">
                                         <div class="font-bold text-slate-700 text-sm">${pct}</div>
-                                        <div class="text-[10px] text-slate-400 font-medium">${i.amt.toLocaleString()}</div>
+                                        <div class="text-[10px] text-slate-400">${i.amt.toLocaleString()}</div>
                                     </div>
                                     <i id="icon-${i.id}" class="fa-solid fa-chevron-down text-slate-300 text-xs transition-transform"></i>
                                 </div>
@@ -749,26 +882,6 @@
                 `;
             });
             if(el.innerHTML==='') el.innerHTML='<div class="text-center text-xs text-slate-300 py-4 font-light">- ไม่มีรายการ -</div>';
-        }
-
-        function renderMiniChart() {
-            const ctx = document.getElementById('miniChart');
-            if(!ctx) return;
-            const labels=[], data=[];
-            const today = new Date();
-            for(let i=6; i>=0; i--) {
-                const d = new Date(); d.setDate(today.getDate()-i);
-                const ds = d.toISOString().split('T')[0];
-                labels.push(d.getDate());
-                const s = currentMonthData.sales.find(x=>x.date===ds);
-                data.push(s ? (s.instore||0)+(s.delivery_grab||0)+(s.delivery_lineman||0)+(s.delivery_robinhood||0)+(s.delivery_other||0) : 0);
-            }
-            if(window.miniChart) window.miniChart.destroy();
-            window.miniChart = new Chart(ctx, {
-                type: 'line',
-                data: { labels, datasets: [{ data, borderColor:'#3b82f6', backgroundColor:'rgba(59,130,246,0.1)', fill:true, tension:0.4 }] },
-                options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{x:{grid:{display:false}}, y:{display:false}} }
-            });
         }
     </script>
 </body>
