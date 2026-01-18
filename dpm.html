@@ -193,44 +193,31 @@
                             <optgroup label="🥩 ต้นทุนขาย (COGS)">
                                 <option value="0201">0201 - วัตถุดิบอาหาร</option>
                                 <option value="0202">0202 - บรรจุภัณฑ์</option>
-                                <option value="0203">0203 - น้ำแข็ง/แก๊ส</option>
+                                <option value="0203">0203 - น้ำแข็ง</option>
                             </optgroup>
                             
                             <optgroup label="👥 พนักงาน">
-                                <option value="0301">0301 - เงินเดือนพนักงาน</option>
+                                <option value="0301">0301 - เงินเดือนพนักงาน/ค่าแรง</option>
                             </optgroup>
 
-                            <optgroup label="📢 ควบคุมได้ (รวมการตลาด)">
+                            <optgroup label="💡 ค่าใช้จ่ายที่ควบคุมได้ (Controllable)">
                                 <option value="0401">0401 - ค่าไฟฟ้า</option>
                                 <option value="0402">0402 - ค่าน้ำประปา</option>
                                 <option value="0412">0412 - ค่าเดินทาง</option>
-                                <option value="0409">0409 - วัสดุสิ้นเปลือง</option>
-                                <option value="0406">0406 - ซ่อมแซม</option>
-                                <option value="0403">0403 - โทรศัพท์/เน็ต</option>
-                                <option value="0408">0408 - ค่าโฆษณา (รวม)</option>
-                                <option value="0408-G">0408-G - Ads Grab (รวม VAT)</option>
-                                <option value="0408-L">0408-L - Ads Lineman</option>
-                                <option value="0408-G-MKT">0408-G-MKT - Grab ร่วมโปร/แคมเปญ</option>
-                                <option value="0118">0118 - ส่วนลด/โปรโมชั่น</option>
-                                <option value="0118-G">0118-G - ส่วนลดแคมเปญ Grab</option>
-                                <option value="0118-G-STORE">0118-G-STORE - ส่วนลดร้าน (Store)</option>
-                                <option value="0118-L">0118-L - ส่วนลด Lineman</option>
+                                <option value="0409">0409 - วัสดุสิ้นเปลือง (น้ำยา/ทิชชู่)</option>
+                                <option value="0406">0406 - ซ่อมแซม/บำรุงรักษา</option>
+                                <option value="0403">0403 - ค่าโทรศัพท์/อินเทอร์เน็ต</option>
+                                <option value="0408">0408 - ค่าโฆษณา/การตลาด (ทั่วไป)</option>
+                                <option value="0118">0118 - ส่วนลด/โปรโมชั่น (ทั่วไป)</option>
                                 <option value="0411">0411 - เบ็ดเตล็ด</option>
                             </optgroup>
 
-                            <optgroup label="🔒 ควบคุมไม่ได้ (Fees/Tax)">
-                                <option value="0504">0504 - GP Delivery (รวม)</option>
-                                <option value="0121">0121 - ภาษีมูลค่าเพิ่ม (VAT)</option>
-                                <option value="0702">0702 - ภาษีหัก ณ ที่จ่าย</option>
+                            <optgroup label="🔒 ค่าใช้จ่ายที่ควบคุมไม่ได้ (Fixed & Fees)">
                                 <option value="0501">0501 - ค่าเช่าร้าน</option>
                                 <option value="0502">0502 - ค่าทำบัญชี</option>
+                                <option value="0504">0504 - ค่าบริการ GP (ทั่วไป)</option>
                                 <option value="0505">0505 - ค่าเช่าอุปกรณ์</option>
-                            </optgroup>
-
-                            <optgroup label="💳 สินเชื่อ (Loans)">
-                                <option value="0411-G">0411-G - สินเชื่อ Grab</option>
-                                <option value="0411-L-C">0411-L-C - สินเชื่อเงินสด Line</option>
-                                <option value="0411-L-I">0411-L-I - ผ่อนสินค้า Line</option>
+                                <option value="0702">0702 - ภาษีหัก ณ ที่จ่าย</option>
                             </optgroup>
                         </select>
                         <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
@@ -407,14 +394,14 @@
 
         // ⚠️ PASTE CONFIG HERE ⚠️
         const firebaseConfig = {
-            apiKey: "AIzaSyDRiTZXUbkdGaCHZVTkOOl1Iu0A-744tE0",
-            authDomain: "numdamnoen-6cbd5.firebaseapp.com",
-            projectId: "numdamnoen-6cbd5",
-            storageBucket: "numdamnoen-6cbd5.firebasestorage.app",
-            messagingSenderId: "823964498524",
-            appId: "1:823964498524:web:c79d742cf1a5a33c864499",
-            measurementId: "G-805RS7VZEM"
-        };
+    apiKey: "AIzaSyDRiTZXUbkdGaCHZVTkOOl1Iu0A-744tE0",
+    authDomain: "numdamnoen-6cbd5.firebaseapp.com",
+    projectId: "numdamnoen-6cbd5",
+    storageBucket: "numdamnoen-6cbd5.firebasestorage.app",
+    messagingSenderId: "823964498524",
+    appId: "1:823964498524:web:c79d742cf1a5a33c864499",
+    measurementId: "G-805RS7VZEM"
+  };
 
         let db, auth;
         try {
@@ -711,7 +698,7 @@
                                 <div class="font-bold ${grpColor} text-sm">${i.name}</div>
                                 <div class="flex items-center space-x-3">
                                     <div class="text-right">
-                                        <div class="font-bold text-slate-700">${pct}</div>
+                                        <div class="font-bold text-slate-700 text-sm">${pct}</div>
                                         <div class="text-[10px] text-slate-400">${i.amt.toLocaleString()}</div>
                                     </div>
                                     <i id="icon-${i.id}" class="fa-solid fa-chevron-down text-slate-300 text-xs transition-transform"></i>
