@@ -3,15 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DPM Mobile (Cashflow)</title>
+    <title>DPM Mobile (Complete)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         body { font-family: 'Kanit', sans-serif; -webkit-tap-highlight-color: transparent; background-color: #f8fafc; color: #1e293b; }
         
-        /* Mobile Nav */
+        /* Navigation */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; right: 0;
             background: white; border-top: 1px solid #e2e8f0;
@@ -29,7 +31,7 @@
         .page-content { padding-bottom: 100px; padding-top: 70px; min-height: 100vh; }
         .card { background: white; border-radius: 16px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 12px; border: 1px solid #f1f5f9; }
         
-        /* Inputs */
+        /* Inputs & Forms */
         .mobile-input {
             width: 100%; padding: 14px 16px; border-radius: 12px;
             border: 1px solid #e2e8f0; background: #f8fafc;
@@ -37,17 +39,37 @@
         }
         .mobile-input:focus { border-color: #3b82f6; background: white; box-shadow: 0 0 0 4px rgba(59,130,246,0.1); }
         
+        /* File Upload */
+        .file-upload-btn {
+            border: 2px dashed #e2e8f0; border-radius: 12px; padding: 20px;
+            text-align: center; cursor: pointer; transition: all 0.2s;
+            background: #f8fafc; display: block; width: 100%;
+        }
+        .file-upload-btn:active { background: #e2e8f0; border-color: #cbd5e1; }
+        
         /* Transaction List */
         .tx-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
         .tx-row:last-child { border-bottom: none; }
         .tx-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1rem; margin-right: 12px; }
+
+        /* Report Styles (Nested) */
+        .grp-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; cursor: pointer; user-select: none; border-bottom: 1px solid #f1f5f9; }
+        .grp-content { overflow: hidden; transition: max-height 0.3s ease-out; max-height: 0; background-color: #ffffff; }
+        .grp-content.open { max-height: 3000px; border-bottom: 1px solid #e2e8f0; }
+        .sub-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; color: #475569; }
+        
+        .nested-grp { margin: 8px 12px; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; background-color: white; }
+        .nested-header { padding: 10px 12px; display: flex; justify-content: space-between; align-items: center; background-color: #f1f5f9; cursor: pointer; }
+        .nested-content { max-height: 0; overflow: hidden; transition: max-height 0.2s ease-out; background-color: #fff; }
+        .nested-content.open { max-height: 1000px; border-top: 1px solid #e2e8f0; }
+        .nested-item { padding: 8px 12px 8px 24px; border-bottom: 1px solid #f8fafc; font-size: 0.85rem; display: flex; justify-content: space-between; color: #64748b; }
 
         /* Modal */
         .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(2px); }
         .modal-box { background: white; border-radius: 20px; padding: 24px; width: 100%; max-width: 320px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); animation: popIn 0.2s ease-out; }
         @keyframes popIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        /* Loading */
+        /* Loading Spinner */
         .spinner { border: 3px solid rgba(255,255,255,0.3); border-left-color: white; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
@@ -60,7 +82,7 @@
                 <i class="fa-solid fa-wallet text-3xl text-white"></i>
             </div>
             <h1 class="text-3xl font-bold text-white mb-2">My Cashflow</h1>
-            <p class="text-slate-400">ระบบบัญชีกระเป๋าเดียว</p>
+            <p class="text-slate-400">ระบบจัดการร้านอาหารครบวงจร</p>
         </div>
         <form id="loginForm" class="space-y-4">
             <input type="email" id="loginEmail" class="mobile-input bg-slate-800 border-slate-700 text-white placeholder-slate-500" placeholder="อีเมล" required>
@@ -77,7 +99,7 @@
                     <i class="fa-solid fa-scale-balanced text-xl"></i>
                 </div>
                 <h3 class="text-lg font-bold text-slate-800">ปรับยอดเงินให้ตรง</h3>
-                <p class="text-sm text-slate-500">ใส่ยอดเงินจริงที่มีอยู่ตอนนี้ (สด+ธนาคาร)</p>
+                <p class="text-sm text-slate-500">ใส่ยอดเงินจริงที่มีอยู่ (สด+ธนาคาร)</p>
             </div>
             <input type="number" inputmode="decimal" id="adjust-amount" class="mobile-input text-center text-2xl font-bold mb-4 border-blue-500 text-blue-600" placeholder="0.00">
             <div class="grid grid-cols-2 gap-3">
@@ -92,9 +114,9 @@
         <div class="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm z-40 px-4 h-[60px] border-b border-slate-100 flex justify-between items-center shadow-sm">
             <div class="flex items-center space-x-2">
                 <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-sm">
-                    <i class="fa-solid fa-wallet text-xs"></i>
+                    <i class="fa-solid fa-store text-xs"></i>
                 </div>
-                <span class="font-bold text-slate-800 text-lg">My Pocket</span>
+                <span class="font-bold text-slate-800 text-lg">Restaurant PRO</span>
             </div>
             <input type="month" id="globalMonth" class="bg-slate-100 text-xs font-bold text-slate-600 rounded-lg px-2 py-1 outline-none" onchange="refreshData()">
         </div>
@@ -141,39 +163,36 @@
         </div>
 
         <div id="page-sales" class="page-content px-4 hidden">
-            <h2 class="text-2xl font-bold text-slate-800 mb-6">✏️ จดรายรับ (Gross)</h2>
+            <h2 class="text-2xl font-bold text-slate-800 mb-6">✏️ จดรายรับ / Import</h2>
+            
+            <div class="card mb-6 border-b-4 border-blue-500">
+                <h3 class="font-bold text-slate-700 mb-4 text-sm"><i class="fa-solid fa-file-csv mr-2 text-blue-500"></i>นำเข้าไฟล์ (Grab/Line)</h3>
+                <div class="grid grid-cols-2 gap-3">
+                    <label class="file-upload-btn">
+                        <i class="fa-solid fa-motorcycle text-green-500 text-2xl mb-2"></i>
+                        <div class="text-xs font-bold text-slate-600">Grab</div>
+                        <input type="file" id="fileGrab" class="hidden" accept=".csv" onchange="importGrab(this)">
+                    </label>
+                    <label class="file-upload-btn">
+                        <i class="fa-solid fa-moped text-orange-500 text-2xl mb-2"></i>
+                        <div class="text-xs font-bold text-slate-600">Lineman</div>
+                        <input type="file" id="fileLine" class="hidden" accept=".csv" onchange="importLineman(this)">
+                    </label>
+                </div>
+            </div>
+
             <div class="card">
+                <h3 class="font-bold text-slate-700 mb-4 text-sm"><i class="fa-solid fa-pen-to-square mr-2 text-slate-400"></i>จดมือ (หน้าร้าน)</h3>
                 <label class="text-xs font-bold text-slate-400 uppercase mb-2 block">วันที่ขาย</label>
-                <input type="date" id="inputSaleDate" class="mobile-input mb-6 font-bold text-slate-700">
+                <input type="date" id="inputSaleDate" class="mobile-input mb-4 font-bold text-slate-700">
                 
-                <div class="space-y-4">
-                    <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
-                        <label class="text-sm font-bold text-emerald-800 block mb-2">🏠 หน้าร้าน (Walk-in)</label>
-                        <input type="number" inputmode="decimal" id="valInstore" class="mobile-input text-right text-xl font-bold bg-white" placeholder="0">
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="text-xs font-bold text-green-600 mb-1 block">Grab</label>
-                            <input type="number" inputmode="decimal" id="valGrab" class="mobile-input text-right" placeholder="0">
-                        </div>
-                        <div>
-                            <label class="text-xs font-bold text-orange-500 mb-1 block">Lineman</label>
-                            <input type="number" inputmode="decimal" id="valLine" class="mobile-input text-right" placeholder="0">
-                        </div>
-                        <div>
-                            <label class="text-xs font-bold text-purple-600 mb-1 block">Robinhood</label>
-                            <input type="number" inputmode="decimal" id="valRbh" class="mobile-input text-right" placeholder="0">
-                        </div>
-                        <div>
-                            <label class="text-xs font-bold text-slate-500 mb-1 block">อื่นๆ</label>
-                            <input type="number" inputmode="decimal" id="valOther" class="mobile-input text-right" placeholder="0">
-                        </div>
-                    </div>
+                <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100 mb-4">
+                    <label class="text-sm font-bold text-emerald-800 block mb-2">🏠 หน้าร้าน (Walk-in)</label>
+                    <input type="number" inputmode="decimal" id="valInstore" class="mobile-input text-right text-xl font-bold bg-white" placeholder="0">
                 </div>
                 
-                <button onclick="saveSales()" class="w-full bg-emerald-500 text-white py-4 rounded-xl font-bold text-lg mt-8 shadow-lg shadow-emerald-200 active:scale-95 transition flex justify-center items-center">
-                    <span id="btnSaveSaleText">บันทึกรับ</span>
+                <button onclick="saveSales()" class="w-full bg-emerald-500 text-white py-4 rounded-xl font-bold text-lg shadow-lg shadow-emerald-200 active:scale-95 transition flex justify-center items-center">
+                    <span id="btnSaveSaleText">บันทึกหน้าร้าน</span>
                     <div id="spinnerSale" class="spinner ml-2 hidden"></div>
                 </button>
             </div>
@@ -192,48 +211,18 @@
                     <div class="relative">
                         <select id="inputExpCat" class="mobile-input appearance-none bg-white pr-10">
                             <option value="" disabled selected>-- กรุณาเลือก --</option>
-                            
-                            <optgroup label="🥩 ต้นทุนขาย (COGS)">
-                                <option value="0201">0201 - วัตถุดิบอาหาร</option>
-                                <option value="0202">0202 - บรรจุภัณฑ์</option>
-                                <option value="0203">0203 - น้ำแข็ง/แก๊ส</option>
+                            <optgroup label="ทั่วไป">
+                                <option value="0201">วัตถุดิบ (ตลาด/ของสด)</option>
+                                <option value="0202">บรรจุภัณฑ์ (กล่อง/แก้ว)</option>
+                                <option value="0203">น้ำแข็ง/แก๊ส</option>
+                                <option value="0301">ค่าแรง/เงินเดือน</option>
+                                <option value="0401">ค่าน้ำ/ค่าไฟ</option>
+                                <option value="0412">ค่าเดินทาง/น้ำมัน</option>
+                                <option value="0411">เบ็ดเตล็ด/อื่นๆ</option>
                             </optgroup>
-                            
-                            <optgroup label="👥 พนักงาน">
-                                <option value="0301">0301 - เงินเดือนพนักงาน</option>
-                            </optgroup>
-
-                            <optgroup label="📢 ควบคุมได้ (รวมการตลาด)">
-                                <option value="0401">0401 - ค่าไฟฟ้า</option>
-                                <option value="0402">0402 - ค่าน้ำประปา</option>
-                                <option value="0412">0412 - ค่าเดินทาง</option>
-                                <option value="0409">0409 - วัสดุสิ้นเปลือง</option>
-                                <option value="0406">0406 - ซ่อมแซม</option>
-                                <option value="0403">0403 - โทรศัพท์/เน็ต</option>
-                                <option value="0408">0408 - ค่าโฆษณา (รวม)</option>
-                                <option value="0408-G">0408-G - Ads Grab (รวม VAT)</option>
-                                <option value="0408-L">0408-L - Ads Lineman</option>
-                                <option value="0408-G-MKT">0408-G-MKT - Grab ร่วมโปร/แคมเปญ</option>
-                                <option value="0118">0118 - ส่วนลด/โปรโมชั่น</option>
-                                <option value="0118-G">0118-G - ส่วนลดแคมเปญ Grab</option>
-                                <option value="0118-G-STORE">0118-G-STORE - ส่วนลดร้าน (Store)</option>
-                                <option value="0118-L">0118-L - ส่วนลด Lineman</option>
-                                <option value="0411">0411 - เบ็ดเตล็ด</option>
-                            </optgroup>
-
-                            <optgroup label="🔒 ควบคุมไม่ได้ (Fees/Tax)">
-                                <option value="0504">0504 - GP Delivery (รวม)</option>
-                                <option value="0121">0121 - ภาษีมูลค่าเพิ่ม (VAT)</option>
-                                <option value="0702">0702 - ภาษีหัก ณ ที่จ่าย</option>
-                                <option value="0501">0501 - ค่าเช่าร้าน</option>
-                                <option value="0502">0502 - ค่าทำบัญชี</option>
-                                <option value="0505">0505 - ค่าเช่าอุปกรณ์</option>
-                            </optgroup>
-
-                            <optgroup label="💳 สินเชื่อ (Loans)">
-                                <option value="0411-G">0411-G - สินเชื่อ Grab</option>
-                                <option value="0411-L-C">0411-L-C - สินเชื่อเงินสด Line</option>
-                                <option value="0411-L-I">0411-L-I - ผ่อนสินค้า Line</option>
+                            <optgroup label="ค่าเช่า/คงที่">
+                                <option value="0501">ค่าเช่าร้าน</option>
+                                <option value="0502">ค่าทำบัญชี</option>
                             </optgroup>
                         </select>
                         <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
@@ -267,7 +256,6 @@
             </div>
 
             <div id="report-content" class="space-y-4 pb-10">
-                
                 <div class="card bg-slate-800 text-white !border-0 shadow-xl shadow-slate-300/50">
                     <div class="flex justify-between items-center mb-4 border-b border-slate-600 pb-3">
                         <span class="text-slate-300 text-sm font-medium">กำไรสุทธิ (Net Profit)</span>
@@ -420,7 +408,7 @@
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } 
         from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
-        // ⚠️ PASTE CONFIG HERE ⚠️
+        // ⚠️ PASTE YOUR CONFIG HERE ⚠️
                 const firebaseConfig = {
     apiKey: "AIzaSyDRiTZXUbkdGaCHZVTkOOl1Iu0A-744tE0",
     authDomain: "numdamnoen-6cbd5.firebaseapp.com",
@@ -466,7 +454,7 @@
 
         // --- GLOBAL DATA VARS ---
         let currentMonthData = { sales: [], expenses: [] };
-        let systemBalance = 0; // For adjust logic
+        let systemBalance = 0; 
 
         function initApp() {
             const d = new Date();
@@ -483,7 +471,6 @@
             currentMonthData.sales = [];
             currentMonthData.expenses = [];
             
-            // OPTIMIZED QUERY
             const startOfMonth = m + "-01";
             const endOfMonth = m + "-31";
             
@@ -494,11 +481,97 @@
                 const qE = await getDocs(query(collection(db, "expenses"), where("date", ">=", startOfMonth), where("date", "<=", endOfMonth)));
                 qE.forEach(doc => currentMonthData.expenses.push(doc.data()));
             } catch (err) {
-                console.log("Query Error (Index required?):", err);
-                // Fallback for non-indexed (dev mode) if needed, but better to use index link in console
+                console.log("Query Error:", err);
             }
-            
             renderDashboard();
+        }
+
+        // --- IMPORT LOGIC (GRAB/LINEMAN) ---
+        window.importGrab = (input) => {
+            const file = input.files[0];
+            if(!file) return;
+            Papa.parse(file, {
+                header: true, skipEmptyLines: true,
+                complete: async (results) => {
+                    let mapData = {}; // date -> {sale, fee, ads, discount}
+                    
+                    results.data.forEach(row => {
+                        const dateRaw = row['Updated On'] || row['วันที่สร้าง'];
+                        if(!dateRaw) return;
+                        // Parse Date format '18 Jan 2026' -> '2026-01-18'
+                        const d = new Date(dateRaw);
+                        const date = d.toISOString().split('T')[0];
+                        
+                        const amt = parseFloat(row['ยอด']||0);
+                        const gp = parseFloat(row['ค่าธรรมเนียม Grab']||0);
+                        const ads = parseFloat(row['ค่าธรรมเนียมการตลาด']||0);
+                        const disc = parseFloat(row['ส่วนลด (ออกโดยร้าน)']||0);
+                        
+                        // Check if it's an Order (Type = GrabFood)
+                        const isOrder = row['ประเภท'] === 'GrabFood' || row['ประเภท'] === 'Market';
+                        
+                        if(!mapData[date]) mapData[date] = { sales:0, gp:0, ads:0, disc:0 };
+                        
+                        if(isOrder) mapData[date].sales += amt;
+                        if(gp < 0) mapData[date].gp += Math.abs(gp); // GP usually negative in CSV
+                        if(ads < 0) mapData[date].ads += Math.abs(ads);
+                        if(disc < 0) mapData[date].disc += Math.abs(disc);
+                    });
+
+                    // Save to Firestore
+                    for(const [date, val] of Object.entries(mapData)) {
+                        // 1. Sales
+                        if(val.sales > 0) {
+                            await setDoc(doc(db, "daily_sales", date), { date: date, delivery_grab: val.sales }, { merge: true });
+                        }
+                        // 2. Expenses (GP)
+                        if(val.gp > 0) await addDoc(collection(db, "expenses"), { date, category:'0504-G', amount:val.gp, memo:'GP Grab Auto', timestamp: Timestamp.now() });
+                        // 3. Expenses (Ads)
+                        if(val.ads > 0) await addDoc(collection(db, "expenses"), { date, category:'0408-G', amount:val.ads, memo:'Ads Grab Auto', timestamp: Timestamp.now() });
+                        // 4. Expenses (Discount)
+                        if(val.disc > 0) await addDoc(collection(db, "expenses"), { date, category:'0118-G', amount:val.disc, memo:'Discount Grab Auto', timestamp: Timestamp.now() });
+                    }
+                    alert('✅ Import Grab สำเร็จ'); refreshData();
+                }
+            });
+        }
+
+        window.importLineman = (input) => {
+            const file = input.files[0];
+            if(!file) return;
+            Papa.parse(file, {
+                header: true, skipEmptyLines: true,
+                complete: async (results) => {
+                    let mapData = {};
+                    
+                    results.data.forEach(row => {
+                        const dateRaw = row['capture_time']; // '2026-01-17 02:38:xx'
+                        if(!dateRaw) return;
+                        const date = dateRaw.split(' ')[0];
+                        
+                        const cash = parseFloat(row['cash_amount']||0);
+                        const epay = parseFloat(row['e_payment_amount']||0);
+                        const fee = parseFloat(row['fee']||0); // GP (negative)
+                        const other = parseFloat(row['other_cost']||0); // Ads (negative)
+                        
+                        if(row['detail'] === 'Delivery Order') {
+                            const gross = cash + epay;
+                            if(!mapData[date]) mapData[date] = { sales:0, gp:0, ads:0 };
+                            
+                            mapData[date].sales += gross;
+                            if(fee < 0) mapData[date].gp += Math.abs(fee);
+                            if(other < 0) mapData[date].ads += Math.abs(other);
+                        }
+                    });
+
+                    for(const [date, val] of Object.entries(mapData)) {
+                        if(val.sales > 0) await setDoc(doc(db, "daily_sales", date), { date: date, delivery_lineman: val.sales }, { merge: true });
+                        if(val.gp > 0) await addDoc(collection(db, "expenses"), { date, category:'0504-L', amount:val.gp, memo:'GP Lineman Auto', timestamp: Timestamp.now() });
+                        if(val.ads > 0) await addDoc(collection(db, "expenses"), { date, category:'0408-L', amount:val.ads, memo:'Ads Lineman Auto', timestamp: Timestamp.now() });
+                    }
+                    alert('✅ Import Lineman สำเร็จ'); refreshData();
+                }
+            });
         }
 
         // --- DASHBOARD: CASHFLOW & ADJUSTMENT ---
@@ -515,13 +588,13 @@
             const today = new Date().toISOString().split('T')[0];
             
             if(diff > 0) {
-                // Found extra money (Income) -> Update today's delivery_other
+                // Found extra money (Income)
                 let currentSales = currentMonthData.sales.find(s => s.date === today);
                 let currentOther = currentSales ? (currentSales.delivery_other || 0) : 0;
                 await setDoc(doc(db, "daily_sales", today), { date: today, delivery_other: currentOther + diff, timestamp: Timestamp.now() }, { merge: true });
                 alert(`✅ ปรับยอดเพิ่ม +${diff.toLocaleString()} บาท เรียบร้อย`);
             } else {
-                // Money missing (Expense) -> Record as Expense
+                // Money missing (Expense)
                 await addDoc(collection(db, "expenses"), {
                     date: today,
                     category: '0411', // Misc
@@ -537,7 +610,6 @@
         }
 
         function renderDashboard() {
-            // 1. Calculate Cashflow
             let totalIn = 0;
             let totalOut = 0;
             let transactions = [];
@@ -569,14 +641,14 @@
                 addTx('อื่นๆ', s.delivery_other);
             });
 
-            systemBalance = totalIn - totalOut; // Global var for adjust
+            systemBalance = totalIn - totalOut; 
 
             document.getElementById('dash-in').innerText = totalIn.toLocaleString();
             document.getElementById('dash-out').innerText = totalOut.toLocaleString();
             document.getElementById('dash-net').innerText = systemBalance.toLocaleString();
 
-            // 2. Render Feed
-            transactions.sort((a,b) => new Date(b.date) - new Date(a.date)); // Newest first
+            // Render Feed
+            transactions.sort((a,b) => new Date(b.date) - new Date(a.date)); 
             const feedEl = document.getElementById('tx-feed');
             feedEl.innerHTML = '';
             
@@ -614,8 +686,6 @@
                     `;
                 });
             }
-
-            // 3. Render Chart
             renderChart(transactions);
         }
 
@@ -654,8 +724,7 @@
                     ]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
+                    responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: { x: { grid: { display: false } }, y: { display: false } }
                 }
@@ -670,14 +739,10 @@
             const data = {
                 date: d,
                 instore: parseFloat(document.getElementById('valInstore').value||0),
-                delivery_grab: parseFloat(document.getElementById('valGrab').value||0),
-                delivery_lineman: parseFloat(document.getElementById('valLine').value||0),
-                delivery_robinhood: parseFloat(document.getElementById('valRbh').value||0),
-                delivery_other: parseFloat(document.getElementById('valOther').value||0),
                 timestamp: Timestamp.now()
             };
             await setDoc(doc(db, "daily_sales", d), data, {merge:true});
-            ['valInstore','valGrab','valLine','valRbh','valOther'].forEach(id=>document.getElementById(id).value='');
+            document.getElementById('valInstore').value='';
             btn.disabled=false; spin.classList.add('hidden');
             alert('✅ บันทึกสำเร็จ'); refreshData();
         }
@@ -740,7 +805,7 @@
 
             // 2. Expenses & Grouping Logic
             let aggCogs = {}, aggStaff = {}, aggUncontrol = {}, aggLoan = {}, aggGeneralControl = {};
-            let totalDiscount = 0; // For Net Sales Calc
+            let totalDiscount = 0; 
             
             // Nested Groups Accumulators
             let grabGroup = { type: 'group', id:'sub-grab', name: 'Grab Marketing (รวม)', amt: 0, items: [] };
@@ -750,10 +815,8 @@
                 const c = e.category;
                 const amt = e.amount;
                 
-                // Calculate Discounts for Net Sales
                 if(c.startsWith('0118')) totalDiscount += amt;
 
-                // Logic for Nested Groups
                 const isGrabMkt = ['0408-G', '0408-G-MKT', '0118-G', '0118-G-STORE'].includes(c);
                 const isLineMkt = ['0408-L', '0118-L'].includes(c);
 
@@ -770,17 +833,14 @@
                     if(!aggUncontrol[c]) aggUncontrol[c]={cat:c, amt:0}; aggUncontrol[c].amt+=amt; 
                 }
                 else {
-                    // Controllable Section
                     if(isGrabMkt) {
                         grabGroup.amt += amt;
                         let existing = grabGroup.items.find(x => x.cat === c);
-                        if(existing) existing.amt += amt;
-                        else grabGroup.items.push({ cat: c, amt: amt });
+                        if(existing) existing.amt += amt; else grabGroup.items.push({ cat: c, amt: amt });
                     } else if (isLineMkt) {
                         lineGroup.amt += amt;
                         let existing = lineGroup.items.find(x => x.cat === c);
-                        if(existing) existing.amt += amt;
-                        else lineGroup.items.push({ cat: c, amt: amt });
+                        if(existing) existing.amt += amt; else lineGroup.items.push({ cat: c, amt: amt });
                     } else {
                         if(!aggGeneralControl[c]) aggGeneralControl[c]={cat:c, amt:0}; aggGeneralControl[c].amt+=amt;
                     }
@@ -796,7 +856,6 @@
             const listUncontrol = toArray(aggUncontrol);
             const listLoan = toArray(aggLoan);
             
-            // Construct Controllable List (Groups + General)
             let listControl = [];
             if(grabGroup.amt > 0) listControl.push(grabGroup);
             if(lineGroup.amt > 0) listControl.push(lineGroup);
@@ -816,7 +875,6 @@
             
             document.getElementById('pl-pac').innerText = pac.toLocaleString();
             document.getElementById('pl-pac-pct').innerText = pacPct;
-            // -----------------------
 
             // Update Summaries
             const setTxt = (id, val) => document.getElementById(id).innerText = val.toLocaleString();
@@ -834,12 +892,7 @@
             document.getElementById('pl-net').innerText = net.toLocaleString();
             document.getElementById('pl-margin').innerText = `Net Margin: ${revTotal>0?((net/revTotal)*100).toFixed(1):0}%`;
 
-            // Render
-            renderList('grp-rev', [
-                {cat:'หน้าร้าน', amt:revInstore}, {cat:'Grab', amt:revGrab},
-                {cat:'Lineman', amt:revLine}, {cat:'Rbh/อื่นๆ', amt:revRbh}
-            ], revTotal);
-            
+            renderList('grp-rev', [{cat:'หน้าร้าน', amt:revInstore}, {cat:'Grab', amt:revGrab}, {cat:'Lineman', amt:revLine}, {cat:'Rbh/อื่นๆ', amt:revRbh}], revTotal);
             renderList('grp-cogs', listCogs, revTotal);
             renderList('grp-staff', listStaff, revTotal);
             renderList('grp-control', listControl, revTotal);
@@ -864,13 +917,10 @@
             list.forEach(i => {
                 if(i.amt === 0) return;
                 
-                // Handle Nested Group
                 if(i.type === 'group') {
                     const pct = totalRev > 0 ? ((i.amt/totalRev)*100).toFixed(1) + '%' : '0%';
                     let subItemsHtml = '';
-                    
                     i.items.sort((a,b) => b.amt - a.amt);
-                    
                     i.items.forEach(sub => {
                         const subName = catNames[sub.cat] || sub.cat;
                         const subPct = totalRev > 0 ? ((sub.amt/totalRev)*100).toFixed(1) + '%' : '0%';
@@ -883,10 +933,8 @@
                                 </div>
                             </div>`;
                     });
-
                     const grpColor = i.name.includes('Grab') ? 'text-green-600' : 'text-orange-500';
                     const bgClass = i.name.includes('Grab') ? 'bg-green-50' : 'bg-orange-50';
-
                     el.innerHTML += `
                         <div class="nested-grp ${bgClass} border border-slate-100">
                             <div class="nested-header" onclick="toggleNested('${i.id}')">
@@ -899,19 +947,14 @@
                                     <i id="icon-${i.id}" class="fa-solid fa-chevron-down text-slate-300 text-xs transition-transform"></i>
                                 </div>
                             </div>
-                            <div id="${i.id}" class="nested-content">
-                                ${subItemsHtml}
-                            </div>
-                        </div>
-                    `;
+                            <div id="${i.id}" class="nested-content">${subItemsHtml}</div>
+                        </div>`;
                     return;
                 }
 
-                // Normal Item Rendering
                 let name = catNames[i.cat] || i.cat;
                 if(elId==='grp-rev') name = i.cat; 
                 const pct = totalRev > 0 ? ((i.amt/totalRev)*100).toFixed(1) + '%' : '0%';
-                
                 el.innerHTML += `
                     <div class="sub-row">
                         <div class="text-slate-600 font-medium">${name}</div>
@@ -919,8 +962,7 @@
                             <div class="font-bold text-slate-700 text-base">${pct}</div>
                             <div class="text-[10px] text-slate-400 font-medium">${i.amt.toLocaleString()}</div>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             });
             if(el.innerHTML==='') el.innerHTML='<div class="text-center text-xs text-slate-300 py-4 font-light">- ไม่มีรายการ -</div>';
         }
