@@ -182,42 +182,37 @@
                         <select id="inputExpCat" class="mobile-input appearance-none bg-white pr-10">
                             <option value="" disabled selected>-- กรุณาเลือก --</option>
                             
-                            <optgroup label="🥩 ต้นทุนขาย (COGS)">
-                                <option value="0201">0201 - วัตถุดิบอาหาร</option>
-                                <option value="0202">0202 - บรรจุภัณฑ์</option>
-                                <option value="0203">0203 - น้ำแข็ง/แก๊ส</option>
-                            </optgroup>
-                            
-                            <optgroup label="👥 พนักงาน">
-                                <option value="0301">0301 - เงินเดือนพนักงาน</option>
-                            </optgroup>
+                            <optgroup label="📉 หักจากรายได้ (Revenue Deductions)">
+                                    <option value="0121">0121 - ภาษีมูลค่าเพิ่ม (VAT)</option>
+                                    <option value="0118">0118 - ส่วนลดการขาย (Discounts)</option>
+                                </optgroup>
+                                
+                                <optgroup label="💰 ต้นทุนขาย (COGS)">
+                                    <option value="0201">0201 - วัตถุดิบอาหาร</option>
+                                    <option value="0202">0202 - บรรจุภัณฑ์</option>
+                                    <option value="0203">0203 - ค่าน้ำแข็ง</option>
+                                </optgroup>
+                                
+                                <optgroup label="👥 ค่าใช้จ่ายพนักงาน">
+                                    <option value="0301">0301 - เงินเดือนพนักงาน</option>
+                                </optgroup>
 
-                            <optgroup label="📢 ควบคุมได้ (รวมการตลาด)">
-                                <option value="0401">0401 - ค่าไฟฟ้า</option>
-                                <option value="0402">0402 - ค่าน้ำประปา</option>
-                                <option value="0412">0412 - ค่าเดินทาง</option>
-                                <option value="0409">0409 - วัสดุสิ้นเปลือง</option>
-                                <option value="0406">0406 - ซ่อมแซม</option>
-                                <option value="0403">0403 - โทรศัพท์/เน็ต</option>
-                                <option value="0408">0408 - ค่าโฆษณา (รวม)</option>
-                                <option value="0118">0118 - ส่วนลด/โปรโมชั่น</option>
-                                <option value="0411">0411 - เบ็ดเตล็ด</option>
-                            </optgroup>
+                                <optgroup label="💡 ค่าใช้จ่ายที่ควบคุมได้ (Controllable)">
+                                    <option value="0401">0401 - ค่าไฟฟ้า</option>
+                                    <option value="0402">0402 - ค่าน้ำประปา</option>
+                                    <option value="0403">0403 - ค่าโทรศัพท์/เน็ต</option>
+                                    <option value="0408">0408 - การตลาด/โฆษณา (Ads)</option>
+                                    <option value="0406">0406 - ซ่อมแซมบำรุงรักษา</option>
+                                    <option value="0409">0409 - วัสดุสิ้นเปลือง</option>
+                                    <option value="0411">0411 - ค่าใช้จ่ายอื่นๆ (เบ็ดเตล็ด)</option>
+                                </optgroup>
 
-                            <optgroup label="🔒 ควบคุมไม่ได้ (Fees/Tax)">
-                                <option value="0504">0504 - GP Delivery (รวม)</option>
-                                <option value="0121">0121 - ภาษีมูลค่าเพิ่ม (VAT)</option>
-                                <option value="0702">0702 - ภาษีหัก ณ ที่จ่าย</option>
-                                <option value="0501">0501 - ค่าเช่าร้าน</option>
-                                <option value="0502">0502 - ค่าทำบัญชี</option>
-                                <option value="0505">0505 - ค่าเช่าอุปกรณ์</option>
-                            </optgroup>
-
-                            <optgroup label="💳 สินเชื่อ (Loans)">
-                                <option value="0411-G">0411-G - สินเชื่อ Grab</option>
-                                <option value="0411-L-C">0411-L-C - สินเชื่อเงินสด Line</option>
-                                <option value="0411-L-I">0411-L-I - ผ่อนสินค้า Line</option>
-                            </optgroup>
+                                <optgroup label="🔒 ค่าใช้จ่ายที่ควบคุมไม่ได้ (Fixed & Fees)">
+                                    <option value="0501">0501 - ค่าเช่าร้าน</option>
+                                    <option value="0502">0502 - ค่าทำบัญชี</option>
+                                    <option value="0504">0504 - ค่าบริการ GP Delivery (รวม VAT)</option>
+                                    <option value="0505">0505 - ค่าเช่าอุปกรณ์</option>
+                                </optgroup>
                         </select>
                         <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
                     </div>
