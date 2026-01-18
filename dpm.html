@@ -315,21 +315,17 @@
                     <div id="grp-staff" class="grp-content"></div>
                 </div>
 
-                <div class="card !p-0 overflow-hidden shadow-sm bg-amber-50 border-l-4 border-amber-500">
-                    <div class="grp-header" onclick="toggleGrp('grp-control', this)">
-                        <div class="flex items-center">
-                            <i class="fa-solid fa-bullhorn text-amber-500 mr-3 text-lg"></i>
-                            <div>
-                                <div class="text-sm font-bold text-amber-800">ควบคุมได้ (Controllable)</div>
-                                <div class="text-[10px] text-amber-400">การตลาด/น้ำไฟ</div>
-                            </div>
+                <div class="card bg-cyan-50 border-l-4 border-cyan-500 !py-3 !px-4 shadow-sm">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <div class="text-xs font-bold text-cyan-800 uppercase tracking-wide">กำไรหลังหักคุมได้ (PAC)</div>
+                            <div class="text-[10px] text-cyan-600">คำนวณจาก Net Sales</div>
                         </div>
-                        <div class="text-right flex flex-col justify-center">
-                            <div class="text-amber-600 font-bold text-lg" id="pct-control">0%</div>
-                            <div class="text-xs text-amber-400 font-medium" id="summ-control">0</div>
+                        <div class="text-right">
+                            <div class="text-lg font-bold text-cyan-700" id="pl-pac-pct">0%</div>
+                            <div class="text-xs text-cyan-600 font-medium" id="pl-pac">0</div>
                         </div>
                     </div>
-                    <div id="grp-control" class="grp-content"></div>
                 </div>
                 
                 <div class="card bg-cyan-50 border-l-4 border-cyan-500 !py-3 !px-4 mb-4 shadow-sm">
@@ -567,6 +563,7 @@
 
             // 2. Expenses & Grouping Logic
             let aggCogs = {}, aggStaff = {}, aggUncontrol = {}, aggLoan = {}, aggGeneralControl = {};
+            let totalDiscount = 0; // For Net Sales Calc
             
             // Nested Groups Accumulators
             let grabGroup = { type: 'group', id:'sub-grab', name: 'Grab Marketing (รวม)', amt: 0, items: [] };
@@ -576,7 +573,10 @@
                 const c = e.category;
                 const amt = e.amount;
                 
-                // Logic for Nested Groups (Grab & Line Marketing in Controllable)
+                // Calculate Discounts for Net Sales
+                if(c.startsWith('0118')) totalDiscount += amt;
+
+                // Logic for Nested Groups
                 const isGrabMkt = ['0408-G', '0408-G-MKT', '0118-G', '0118-G-STORE'].includes(c);
                 const isLineMkt = ['0408-L', '0118-L'].includes(c);
 
@@ -596,7 +596,6 @@
                     // Controllable Section
                     if(isGrabMkt) {
                         grabGroup.amt += amt;
-                        // For nested items, we also aggregate by code inside the group
                         let existing = grabGroup.items.find(x => x.cat === c);
                         if(existing) existing.amt += amt;
                         else grabGroup.items.push({ cat: c, amt: amt });
@@ -625,7 +624,6 @@
             if(grabGroup.amt > 0) listControl.push(grabGroup);
             if(lineGroup.amt > 0) listControl.push(lineGroup);
             listControl = listControl.concat(toArray(aggGeneralControl));
-            // Sort grouped list by amount descending
             listControl.sort((a,b) => b.amt - a.amt);
 
             const grpCogs = sumArray(listCogs);
@@ -633,6 +631,15 @@
             const grpUncontrol = sumArray(listUncontrol);
             const grpLoan = sumArray(listLoan);
             const grpControl = (grabGroup.amt + lineGroup.amt + sumArray(toArray(aggGeneralControl)));
+
+            // --- PAC CALCULATION ---
+            const netSales = revTotal - totalDiscount;
+            const pac = revTotal - grpCogs - grpStaff - grpControl;
+            const pacPct = netSales > 0 ? ((pac / netSales) * 100).toFixed(1) + '%' : '0%';
+            
+            document.getElementById('pl-pac').innerText = pac.toLocaleString();
+            document.getElementById('pl-pac-pct').innerText = pacPct;
+            // -----------------------
 
             // Update Summaries
             const setTxt = (id, val) => document.getElementById(id).innerText = val.toLocaleString();
@@ -685,7 +692,6 @@
                     const pct = totalRev > 0 ? ((i.amt/totalRev)*100).toFixed(1) + '%' : '0%';
                     let subItemsHtml = '';
                     
-                    // Sort items in group
                     i.items.sort((a,b) => b.amt - a.amt);
                     
                     i.items.forEach(sub => {
@@ -695,13 +701,12 @@
                             <div class="nested-item">
                                 <div>${subName}</div>
                                 <div class="text-right">
-                                    <div class="font-bold text-slate-600">${sub.amt.toLocaleString()}</div>
-                                    <div class="text-[10px] text-slate-400">${subPct}</div>
+                                    <div class="font-bold text-slate-700 text-sm">${subPct}</div>
+                                    <div class="text-[10px] text-slate-400 font-medium">${sub.amt.toLocaleString()}</div>
                                 </div>
                             </div>`;
                     });
 
-                    // Color Coding for Groups
                     const grpColor = i.name.includes('Grab') ? 'text-green-600' : 'text-orange-500';
                     const bgClass = i.name.includes('Grab') ? 'bg-green-50' : 'bg-orange-50';
 
@@ -712,7 +717,7 @@
                                 <div class="flex items-center space-x-3">
                                     <div class="text-right">
                                         <div class="font-bold text-slate-700 text-sm">${pct}</div>
-                                        <div class="text-[10px] text-slate-400">${i.amt.toLocaleString()}</div>
+                                        <div class="text-[10px] text-slate-400 font-medium">${i.amt.toLocaleString()}</div>
                                     </div>
                                     <i id="icon-${i.id}" class="fa-solid fa-chevron-down text-slate-300 text-xs transition-transform"></i>
                                 </div>
@@ -722,7 +727,7 @@
                             </div>
                         </div>
                     `;
-                    return; // Skip normal rendering
+                    return;
                 }
 
                 // Normal Item Rendering
