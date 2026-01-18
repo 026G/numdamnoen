@@ -621,20 +621,21 @@
                 if(i.amt === 0) return;
                 let name = catNames[i.cat] || i.cat;
                 if(elId==='grp-rev') name = i.cat; 
-                // Note: Memo and Date are removed because this is an aggregated view
+                
+                // Calculate Percentage
                 const pct = totalRev > 0 ? ((i.amt/totalRev)*100).toFixed(1) + '%' : '0%';
                 
                 el.innerHTML += `
                     <div class="sub-row">
-                        <div>${name}</div>
-                        <div class="text-right">
-                            <div class="font-bold text-slate-700">${i.amt.toLocaleString()}</div>
-                            <div class="text-[10px] text-slate-400">${pct}</div>
+                        <div class="text-slate-600 font-medium">${name}</div>
+                        <div class="text-right flex flex-col justify-center">
+                            <div class="font-bold text-slate-700 text-base">${pct}</div>
+                            <div class="text-[10px] text-slate-400 font-medium">${i.amt.toLocaleString()}</div>
                         </div>
                     </div>
                 `;
             });
-            if(el.innerHTML==='') el.innerHTML='<div class="text-center text-xs text-slate-300 py-2">- ไม่มีรายการ -</div>';
+            if(el.innerHTML==='') el.innerHTML='<div class="text-center text-xs text-slate-300 py-4 font-light">- ไม่มีรายการ -</div>';
         }
 
         function renderMiniChart() {
