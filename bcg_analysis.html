@@ -3,300 +3,361 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BCG Menu Analysis (Excel & CSV)</title>
+    <title>Menu Engineering Pro (BCG + Profit)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0"></script> <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script> <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
     <style>
-        body { font-family: 'Kanit', sans-serif; background-color: #f8fafc; color: #334155; }
+        body { font-family: 'Kanit', sans-serif; background-color: #f1f5f9; color: #334155; }
         .card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
-        .badge { padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; text-transform: uppercase; }
+        
+        /* Quadrant Badges */
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; white-space: nowrap; }
         .badge-star { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
-        .badge-cow { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
-        .badge-question { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+        .badge-horse { background: #dcfce7; color: #166534; border: 1px solid #86efac; } /* Plow Horse (Cash Cow) */
+        .badge-puzzle { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; } /* Puzzle (Question) */
         .badge-dog { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+
+        /* Sliders */
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #3b82f6; cursor: pointer; margin-top: -6px; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #e2e8f0; border-radius: 2px; }
+        
+        /* Input Table */
+        .sim-input { width: 80px; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: right; font-size: 0.85rem; transition: all 0.2s; }
+        .sim-input:focus { border-color: #3b82f6; outline: none; background: #eff6ff; }
+        .pareto-row { background-color: #f0fdf4 !important; } /* Highlight Pareto items */
     </style>
 </head>
-<body class="p-4 md:p-8 min-h-screen">
+<body class="p-4 md:p-6 min-h-screen">
 
-    <div class="max-w-6xl mx-auto">
-        <div class="flex flex-col md:flex-row justify-between items-center mb-6 bg-white p-5 rounded-2xl shadow-sm border border-slate-200 gap-4">
+    <div class="max-w-7xl mx-auto" id="capture-area">
+        
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
             <div>
-                <h1 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    <i class="fa-solid fa-chart-line text-blue-600"></i> วิเคราะห์เมนู (Excel / CSV)
+                <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-utensils text-blue-600"></i> Menu Engineering Pro
                 </h1>
-                <p class="text-xs text-slate-500 mt-1">รองรับไฟล์ .xlsx (Excel) และ .csv (ทุกภาษา)</p>
+                <p class="text-xs text-slate-500 mt-1">วิเคราะห์ความนิยม vs กำไร (Profitability Matrix)</p>
             </div>
             
-            <label class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-xl cursor-pointer transition shadow-md flex items-center font-bold text-sm">
-                <i class="fa-solid fa-folder-open mr-2"></i> เลือกไฟล์ Excel หรือ CSV
-                <input type="file" id="fileInput" class="hidden" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
-            </label>
+            <div class="flex gap-2">
+                <button onclick="exportImage()" class="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-xl shadow-sm text-sm font-bold hover:bg-slate-50 transition flex items-center">
+                    <i class="fa-solid fa-camera mr-2"></i> Save Image
+                </button>
+                <label class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl shadow-lg cursor-pointer transition text-sm font-bold flex items-center">
+                    <i class="fa-solid fa-file-import mr-2"></i> Import File
+                    <input type="file" id="fileInput" class="hidden" accept=".csv, .xlsx, .xls">
+                </label>
+            </div>
         </div>
 
-        <div id="dashboard" class="hidden space-y-4">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div class="card p-3 text-center">
-                    <p class="text-[10px] text-slate-400 font-bold">เมนูทั้งหมด</p>
-                    <h3 class="text-xl font-bold text-slate-700 mt-1" id="total-items">0</h3>
+        <div id="empty-state" class="card py-20 text-center border-dashed border-2 border-slate-300 bg-slate-50">
+            <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-blue-400 text-3xl shadow-sm">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+            </div>
+            <h2 class="text-lg font-bold text-slate-600">เริ่มการวิเคราะห์</h2>
+            <p class="text-slate-400 text-sm mb-4">อัปโหลดไฟล์รายงานยอดขาย (Excel/CSV)</p>
+            <p class="text-[10px] text-slate-400 bg-white inline-block px-3 py-1 rounded-full border">รองรับ: ชื่อเมนู, จำนวนขาย, ยอดขายรวม</p>
+        </div>
+
+        <div id="dashboard" class="hidden space-y-6">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                <div class="card lg:col-span-1 space-y-4">
+                    <div class="border-b pb-2 mb-2">
+                        <h3 class="font-bold text-slate-700 text-sm mb-2"><i class="fa-solid fa-filter mr-1"></i> ตัวกรอง & ปรับแต่ง</h3>
+                        <select id="categoryFilter" class="w-full p-2 border rounded-lg text-sm bg-slate-50 mb-2" onchange="applyFilters()">
+                            <option value="all">🍔 ทุกหมวดหมู่</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <div class="flex justify-between text-xs font-bold text-slate-600 mb-1">
+                            <span>เส้นแบ่งความนิยม (แกน X)</span>
+                            <span id="lbl-x-threshold" class="text-blue-600">Auto</span>
+                        </div>
+                        <input type="range" id="sliderX" min="0" max="200" value="100" oninput="updateThresholds()">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs font-bold text-slate-600 mb-1">
+                            <span>เส้นแบ่งกำไร (แกน Y)</span>
+                            <span id="lbl-y-threshold" class="text-blue-600">Auto</span>
+                        </div>
+                        <input type="range" id="sliderY" min="0" max="200" value="100" oninput="updateThresholds()">
+                    </div>
+
+                    <div class="bg-yellow-50 p-3 rounded-lg border border-yellow-100 text-xs text-yellow-800">
+                        <i class="fa-solid fa-lightbulb mr-1"></i> <b>Tip:</b> ลองแก้ "ต้นทุน" หรือ "ราคา" ในตารางด้านล่าง เพื่อจำลองกำไร (What-if)
+                    </div>
                 </div>
-                <div class="card p-3 text-center">
-                    <p class="text-[10px] text-slate-400 font-bold">ยอดขายรวม</p>
-                    <h3 class="text-xl font-bold text-emerald-600 mt-1" id="total-revenue">0</h3>
-                </div>
-                <div class="card p-3 text-center bg-blue-50 border-blue-100">
-                    <p class="text-[10px] text-blue-400 font-bold">เส้นแบ่งยอดขาย (Y)</p>
-                    <h3 class="text-lg font-bold text-blue-600 mt-1" id="avg-sales">0</h3>
-                </div>
-                <div class="card p-3 text-center bg-indigo-50 border-indigo-100">
-                    <p class="text-[10px] text-indigo-400 font-bold">เส้นแบ่งจำนวน (X)</p>
-                    <h3 class="text-lg font-bold text-indigo-600 mt-1" id="avg-qty">0</h3>
+
+                <div class="card lg:col-span-3 relative" style="height: 450px;">
+                    <div class="absolute top-4 right-4 z-10 flex gap-2">
+                        <span class="bg-white/90 px-2 py-1 rounded border text-[10px] font-bold text-slate-500 shadow-sm">
+                            <i class="fa-solid fa-medal text-yellow-500"></i> Pareto 80/20 (สีเขียวในตาราง)
+                        </span>
+                    </div>
+                    <canvas id="matrixChart"></canvas>
+                    <div class="absolute top-6 right-16 text-[10px] font-bold text-yellow-700 bg-yellow-100/90 px-2 py-1 rounded border border-yellow-300 pointer-events-none">⭐ STAR (กำไรดี+ขายดี)</div>
+                    <div class="absolute bottom-16 right-16 text-[10px] font-bold text-green-700 bg-green-100/90 px-2 py-1 rounded border border-green-300 pointer-events-none">🐮 PLOW HORSE (ขายดี)</div>
+                    <div class="absolute top-6 left-16 text-[10px] font-bold text-blue-700 bg-blue-100/90 px-2 py-1 rounded border border-blue-300 pointer-events-none">❓ PUZZLE (กำไรสูง)</div>
+                    <div class="absolute bottom-16 left-16 text-[10px] font-bold text-slate-500 bg-slate-100/90 px-2 py-1 rounded border border-slate-300 pointer-events-none">🐕 DOG (แย่)</div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div class="card lg:col-span-2 relative h-[500px] flex flex-col">
-                    <div class="flex justify-between items-center mb-2">
-                        <h3 class="font-bold text-slate-700 text-sm">BCG Matrix Chart</h3>
-                        <div class="text-[10px] text-slate-400"><i class="fa-solid fa-circle-info"></i> วงกลมใหญ่ = ยอดเงินสูง</div>
-                    </div>
-                    <div class="relative w-full h-full flex-1">
-                        <canvas id="matrixChart"></canvas>
-                        <div class="absolute top-4 right-4 text-[10px] font-bold text-yellow-700 bg-yellow-100/80 px-2 py-1 rounded border border-yellow-200 pointer-events-none">⭐ STARS (ปังมาก)</div>
-                        <div class="absolute bottom-4 right-4 text-[10px] font-bold text-green-700 bg-green-100/80 px-2 py-1 rounded border border-green-200 pointer-events-none">🐮 COWS (ขายดี)</div>
-                        <div class="absolute top-4 left-4 text-[10px] font-bold text-blue-700 bg-blue-100/80 px-2 py-1 rounded border border-blue-200 pointer-events-none">❓ QUEST (กำไรดี)</div>
-                        <div class="absolute bottom-4 left-4 text-[10px] font-bold text-slate-500 bg-slate-100/80 px-2 py-1 rounded border border-slate-200 pointer-events-none">🐕 DOGS (ปรับปรุง)</div>
-                    </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="card p-4 text-center">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase">เมนูทั้งหมด</p>
+                    <h3 class="text-2xl font-bold text-slate-700" id="stat-total-items">0</h3>
                 </div>
-
-                <div class="space-y-2 h-[500px] overflow-y-auto pr-1">
-                    <div class="card bg-yellow-50 border-yellow-200 p-3">
-                        <h4 class="font-bold text-yellow-800 text-xs flex justify-between items-center">
-                            <span>⭐ Stars (ดาวรุ่ง)</span>
-                            <span id="c-star" class="bg-white px-1.5 py-0.5 rounded text-[10px] shadow-sm">0</span>
-                        </h4>
-                        <p class="text-[10px] text-yellow-600 mb-2 mt-0.5">ขายดีและยอดเงินสูง รักษาคุณภาพไว้</p>
-                        <ul id="l-star" class="text-[10px] text-yellow-900 list-disc pl-4 space-y-1"></ul>
-                    </div>
-                    <div class="card bg-green-50 border-green-200 p-3">
-                        <h4 class="font-bold text-green-800 text-xs flex justify-between items-center">
-                            <span>🐮 Cash Cows (วัวนม)</span>
-                            <span id="c-cow" class="bg-white px-1.5 py-0.5 rounded text-[10px] shadow-sm">0</span>
-                        </h4>
-                        <p class="text-[10px] text-green-600 mb-2 mt-0.5">เน้นปริมาณ ยอดเงินต่อบิลต่ำ</p>
-                        <ul id="l-cow" class="text-[10px] text-green-900 list-disc pl-4 space-y-1"></ul>
-                    </div>
-                    <div class="card bg-blue-50 border-blue-200 p-3">
-                        <h4 class="font-bold text-blue-800 text-xs flex justify-between items-center">
-                            <span>❓ Question (ลุ้น)</span>
-                            <span id="c-quest" class="bg-white px-1.5 py-0.5 rounded text-[10px] shadow-sm">0</span>
-                        </h4>
-                        <p class="text-[10px] text-blue-600 mb-2 mt-0.5">ยอดเงินสูงแต่ขายน้อย ลองจัดโปรฯ</p>
-                        <ul id="l-quest" class="text-[10px] text-blue-900 list-disc pl-4 space-y-1"></ul>
-                    </div>
-                    <div class="card bg-slate-100 border-slate-200 p-3">
-                        <h4 class="font-bold text-slate-700 text-xs flex justify-between items-center">
-                            <span>🐕 Dogs (ตัวถ่วง)</span>
-                            <span id="c-dog" class="bg-white px-1.5 py-0.5 rounded text-[10px] shadow-sm">0</span>
-                        </h4>
-                        <p class="text-[10px] text-slate-500 mb-2 mt-0.5">ขายน้อย ยอดเงินน้อย พิจารณาตัดออก</p>
-                        <ul id="l-dog" class="text-[10px] text-slate-700 list-disc pl-4 space-y-1"></ul>
-                    </div>
+                <div class="card p-4 text-center">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase">ยอดขายรวม</p>
+                    <h3 class="text-2xl font-bold text-blue-600" id="stat-total-sales">0</h3>
+                </div>
+                <div class="card p-4 text-center bg-emerald-50 border-emerald-100">
+                    <p class="text-[10px] text-emerald-600 font-bold uppercase">กำไรรวม (Estimate)</p>
+                    <h3 class="text-2xl font-bold text-emerald-700" id="stat-total-profit">0</h3>
+                </div>
+                <div class="card p-4 text-center bg-indigo-50 border-indigo-100">
+                    <p class="text-[10px] text-indigo-600 font-bold uppercase">Pareto Score</p>
+                    <h3 class="text-2xl font-bold text-indigo-700" id="stat-pareto">0%</h3>
+                    <p class="text-[9px] text-indigo-400">ของเมนูทำรายได้ 80%</p>
                 </div>
             </div>
 
             <div class="card !p-0 overflow-hidden">
-                <div class="bg-slate-50 px-4 py-3 border-b border-slate-200 text-xs font-bold text-slate-600 flex justify-between items-center">
-                    <span>📋 รายละเอียดรายเมนู</span>
-                    <span class="text-[10px] font-normal text-slate-400">*เรียงตามยอดขายสูงสุด</span>
+                <div class="bg-slate-50 px-6 py-3 border-b border-slate-200 flex justify-between items-center">
+                    <h3 class="font-bold text-slate-700 text-sm"><i class="fa-solid fa-table-list mr-2"></i>ตารางจำลองสถานการณ์ (Simulator)</h3>
+                    <button onclick="resetSimulation()" class="text-xs text-red-500 hover:text-red-700 font-bold"><i class="fa-solid fa-rotate-left"></i> รีเซ็ตค่า</button>
                 </div>
-                <div class="overflow-x-auto max-h-[400px]">
-                    <table class="w-full text-xs text-left text-slate-600">
-                        <thead class="bg-white text-slate-500 sticky top-0 shadow-sm z-10">
+                <div class="overflow-x-auto max-h-[600px]">
+                    <table class="w-full text-sm text-left text-slate-600">
+                        <thead class="bg-white text-slate-500 sticky top-0 shadow-sm z-10 text-xs uppercase">
                             <tr>
-                                <th class="px-4 py-2 bg-slate-50">ชื่อเมนู</th>
-                                <th class="px-4 py-2 text-right bg-slate-50">จำนวน (Qty)</th>
-                                <th class="px-4 py-2 text-right bg-slate-50">ยอดขาย (Sales)</th>
-                                <th class="px-4 py-2 text-center bg-slate-50">กลุ่ม</th>
+                                <th class="px-4 py-3">ชื่อเมนู</th>
+                                <th class="px-4 py-3 text-center">กลุ่ม</th>
+                                <th class="px-4 py-3 text-right">จำนวนขาย</th>
+                                <th class="px-4 py-3 text-right bg-blue-50/50">ราคาขาย</th>
+                                <th class="px-4 py-3 text-right bg-red-50/50">ต้นทุน (บาท)</th>
+                                <th class="px-4 py-3 text-right bg-emerald-50/50">กำไรรวม</th>
+                                <th class="px-4 py-3 text-center">% ต้นทุน</th>
                             </tr>
                         </thead>
-                        <tbody id="table-body" class="divide-y divide-slate-100 bg-white"></tbody>
+                        <tbody id="table-body" class="divide-y divide-slate-100"></tbody>
                     </table>
                 </div>
             </div>
-        </div>
 
-        <div id="empty-state" class="text-center py-24">
-            <div class="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6 text-blue-500 text-3xl shadow-sm border border-blue-100">
-                <i class="fa-regular fa-file-excel"></i>
-            </div>
-            <h2 class="text-lg font-bold text-slate-700 mb-1">พร้อมวิเคราะห์!</h2>
-            <p class="text-slate-400 text-sm">อัปโหลดไฟล์ Excel (.xlsx) หรือ CSV ของคุณได้เลย</p>
         </div>
     </div>
 
     <script>
+        // --- GLOBAL VARIABLES ---
+        let rawData = []; // Original Data
+        let processedData = []; // Data with Profit/Cost
+        let categories = new Set();
         let myChart = null;
+        
+        // Thresholds (Percentages 0-200 of Average)
+        let thresholdX = 100; 
+        let thresholdY = 100;
 
+        // --- FILE HANDLING ---
         document.getElementById('fileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
-            const fileName = file.name.toLowerCase();
-
-            // 🟢 CASE 1: EXCEL FILE (.xlsx, .xls)
-            if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
-                const reader = new FileReader();
+            const reader = new FileReader();
+            
+            // Handle Excel vs CSV
+            if(file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
                 reader.readAsArrayBuffer(file);
-                reader.onload = function(e) {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, {type: 'array'});
-                    
-                    // Read first sheet
-                    const firstSheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[firstSheetName];
-                    
-                    // Convert to JSON
-                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
-                    processData(jsonData);
+                reader.onload = (e) => {
+                    const workbook = XLSX.read(e.target.result, {type:'array'});
+                    const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                    parseData(jsonData);
                 };
-            } 
-            // 🟠 CASE 2: CSV FILE (.csv) - with Thai Fix
-            else {
-                const reader = new FileReader();
-                // Try reading as TIS-620 first (common for Thai POS)
-                reader.readAsText(file, 'TIS-620');
-                reader.onload = function(event) {
-                    let csvData = event.target.result;
-                    // Fallback to UTF-8 if it looks broken or English-only
-                    if (!csvData.includes('ชื่อเมนู') && !csvData.includes('menuName') && !csvData.includes(',')) {
-                        const readerUtf8 = new FileReader();
-                        readerUtf8.readAsText(file, 'UTF-8');
-                        readerUtf8.onload = (evt) => parseCSV(evt.target.result);
-                    } else {
-                        parseCSV(csvData);
+            } else {
+                reader.readAsText(file, 'TIS-620'); // Try Thai Encoding first
+                reader.onload = (e) => {
+                    let text = e.target.result;
+                    if(!text.includes(',')) { // If TIS-620 fails
+                        const r2 = new FileReader();
+                        r2.readAsText(file, 'UTF-8');
+                        r2.onload = (evt) => Papa.parse(evt.target.result, { header:true, skipEmptyLines:true, complete:(r)=>parseData(r.data) });
+                        return;
                     }
+                    Papa.parse(text, { header:true, skipEmptyLines:true, complete:(r)=>parseData(r.data) });
                 };
             }
         });
 
-        function parseCSV(csvString) {
-            Papa.parse(csvString, {
-                header: true,
-                skipEmptyLines: true,
-                complete: (results) => processData(results.data)
-            });
-        }
+        function parseData(data) {
+            rawData = [];
+            categories.clear();
 
-        function processData(data) {
-            let items = [];
-            let totalQty = 0, totalSales = 0;
-
-            // 1. Data Mapping & Cleaning
-            data.forEach(row => {
+            data.forEach((row, index) => {
                 const keys = Object.keys(row);
-                // Smart column detection (Thai/English)
-                const nameKey = keys.find(k => /name|เมนู|สินค้า|รายการ/i.test(k));
-                const qtyKey = keys.find(k => /amount|qty|จำนวน|ปริมาณ/i.test(k));
-                const salesKey = keys.find(k => /sales|total|ยอดขาย|มูลค่า/i.test(k));
+                // Smart Column Detection
+                const name = row[keys.find(k => /name|เมนู|สินค้า/i.test(k))];
+                const qty = parseFloat(String(row[keys.find(k => /qty|จำนวน|amount/i.test(k))] || '0').replace(/,/g,''));
+                const sales = parseFloat(String(row[keys.find(k => /sales|total|ยอดขาย/i.test(k))] || '0').replace(/,/g,''));
 
-                if(nameKey && qtyKey && salesKey) {
-                    const name = row[nameKey];
-                    // Clean numbers (remove commas, handle strings)
-                    const qty = parseFloat(String(row[qtyKey]).replace(/,/g, '')) || 0;
-                    const sales = parseFloat(String(row[salesKey]).replace(/,/g, '')) || 0;
+                if(name && qty > 0) {
+                    // Detect Category from first word (Simple logic for Thai Menu)
+                    const firstWord = name.split(' ')[0].replace(/[0-9\[\]\(\)]/g, ''); 
+                    const category = firstWord.length > 2 ? firstWord : 'ทั่วไป';
+                    categories.add(category);
 
-                    if (name && (qty > 0 || sales > 0)) {
-                        items.push({ name, qty, sales });
-                        totalQty += qty;
-                        totalSales += sales;
-                    }
+                    // Initial Profit Calculation (Assume 30% Cost)
+                    const price = sales / qty;
+                    const estimatedCost = price * 0.35; // Default 35% Cost
+
+                    rawData.push({
+                        id: index,
+                        name: name,
+                        category: category,
+                        qty: qty,
+                        originalPrice: price,
+                        originalCost: estimatedCost,
+                        // Simulation values (mutable)
+                        simPrice: price,
+                        simCost: estimatedCost
+                    });
                 }
             });
 
-            if (items.length === 0) {
-                alert('ไม่พบข้อมูล! \nกรุณาตรวจสอบไฟล์ว่ามีหัวข้อ: ชื่อเมนู, จำนวน, ยอดขาย หรือไม่');
-                return;
-            }
+            if(rawData.length === 0) { alert('ไม่พบข้อมูลที่ถูกต้อง'); return; }
 
-            // 2. Calculations
-            const avgQty = totalQty / items.length;
-            const avgSales = totalSales / items.length;
-            let groups = { star:[], cow:[], quest:[], dog:[] };
+            // Populate Filter
+            const filterSelect = document.getElementById('categoryFilter');
+            filterSelect.innerHTML = '<option value="all">🍔 ทุกหมวดหมู่</option>';
+            [...categories].sort().forEach(c => {
+                filterSelect.innerHTML += `<option value="${c}">${c}</option>`;
+            });
 
-            // 3. Classification
-            items.forEach(item => {
-                if (item.qty >= avgQty && item.sales >= avgSales) { item.c='star'; item.l='STAR'; groups.star.push(item); }
-                else if (item.qty >= avgQty && item.sales < avgSales) { item.c='cow'; item.l='COW'; groups.cow.push(item); }
-                else if (item.qty < avgQty && item.sales >= avgSales) { item.c='question'; item.l='QUEST'; groups.quest.push(item); }
-                else { item.c='dog'; item.l='DOG'; groups.dog.push(item); }
+            document.getElementById('empty-state').classList.add('hidden');
+            document.getElementById('dashboard').classList.remove('hidden');
+            
+            applyFilters();
+        }
+
+        // --- CORE LOGIC ---
+        function applyFilters() {
+            const cat = document.getElementById('categoryFilter').value;
+            
+            // Filter Data
+            let filtered = rawData.filter(i => cat === 'all' || i.category.startsWith(cat));
+            
+            // Calculate Derived Values (Profit, Total)
+            processedData = filtered.map(i => {
+                const totalRevenue = i.qty * i.simPrice;
+                const totalCost = i.qty * i.simCost;
+                const totalProfit = totalRevenue - totalCost;
+                const gpPercent = totalRevenue > 0 ? ((totalRevenue - totalCost)/totalRevenue)*100 : 0;
+                
+                return {
+                    ...i,
+                    totalRevenue,
+                    totalProfit,
+                    gpPercent
+                };
+            });
+
+            calculateMatrix();
+        }
+
+        function calculateMatrix() {
+            if(processedData.length === 0) return;
+
+            // 1. Averages
+            const totalQty = processedData.reduce((sum, i) => sum + i.qty, 0);
+            const totalProfit = processedData.reduce((sum, i) => sum + i.totalProfit, 0);
+            const totalSales = processedData.reduce((sum, i) => sum + i.totalRevenue, 0);
+            
+            const avgQty = totalQty / processedData.length;
+            const avgProfit = totalProfit / processedData.length;
+
+            // 2. Thresholds (User Adjusted)
+            const cutoffX = avgQty * (thresholdX / 100);
+            const cutoffY = avgProfit * (thresholdY / 100);
+
+            // 3. Classify & Pareto
+            processedData.sort((a,b) => b.totalProfit - a.totalProfit); // Sort for Pareto
+            let runningProfit = 0;
+            const eightyPercentProfit = totalProfit * 0.8;
+
+            processedData.forEach(item => {
+                // Classify
+                if (item.qty >= cutoffX && item.totalProfit >= cutoffY) { item.class = 'star'; item.label = 'STAR'; }
+                else if (item.qty >= cutoffX && item.totalProfit < cutoffY) { item.class = 'horse'; item.label = 'PLOW HORSE'; } // Cash Cow
+                else if (item.qty < cutoffX && item.totalProfit >= cutoffY) { item.class = 'puzzle'; item.label = 'PUZZLE'; } // Question
+                else { item.class = 'dog'; item.label = 'DOG'; }
+
+                // Pareto Check
+                runningProfit += item.totalProfit;
+                item.isPareto = runningProfit <= eightyPercentProfit || (runningProfit - item.totalProfit) < eightyPercentProfit;
             });
 
             // 4. Update UI
-            document.getElementById('dashboard').classList.remove('hidden');
-            document.getElementById('empty-state').classList.add('hidden');
+            document.getElementById('lbl-x-threshold').innerText = Math.round(cutoffX) + " ชิ้น";
+            document.getElementById('lbl-y-threshold').innerText = Math.round(cutoffY).toLocaleString() + " บ.";
             
-            document.getElementById('total-items').innerText = items.length;
-            document.getElementById('total-revenue').innerText = totalSales.toLocaleString();
-            document.getElementById('avg-qty').innerText = avgQty.toFixed(0);
-            document.getElementById('avg-sales').innerText = avgSales.toLocaleString(undefined, {maximumFractionDigits:0});
+            document.getElementById('stat-total-items').innerText = processedData.length;
+            document.getElementById('stat-total-sales').innerText = totalSales.toLocaleString();
+            document.getElementById('stat-total-profit').innerText = totalProfit.toLocaleString();
+            
+            const paretoCount = processedData.filter(i => i.isPareto).length;
+            const paretoPct = ((paretoCount / processedData.length) * 100).toFixed(1);
+            document.getElementById('stat-pareto').innerText = paretoPct + "%";
 
-            // Update Lists (Top 5)
-            const updList = (id, list, cid) => {
-                list.sort((a,b) => b.sales - a.sales);
-                document.getElementById(cid).innerText = list.length;
-                document.getElementById(id).innerHTML = list.slice(0, 5)
-                    .map(i => `<li class="truncate text-slate-700" title="${i.name}">${i.name}</li>`).join('') 
-                    + (list.length > 5 ? `<li class="text-slate-400 italic text-[9px]">+ อีก ${list.length-5} รายการ</li>` : '')
-                    + (list.length === 0 ? '<li class="text-slate-300 italic">- ไม่มี -</li>' : '');
-            };
-            updList('l-star', groups.star, 'c-star');
-            updList('l-cow', groups.cow, 'c-cow');
-            updList('l-quest', groups.quest, 'c-quest');
-            updList('l-dog', groups.dog, 'c-dog');
-
-            renderTable(items);
-            renderChart(items, avgQty, avgSales);
+            updateChart(cutoffX, cutoffY);
+            updateTable();
         }
 
-        function renderTable(items) {
-            const tbody = document.getElementById('table-body');
-            tbody.innerHTML = '';
-            items.sort((a,b) => b.sales - a.sales); // Sort by Sales Desc
+        // --- SIMULATION ---
+        window.updateSim = (id, field, value) => {
+            const item = rawData.find(i => i.id === id);
+            if(item) {
+                item[field] = parseFloat(value) || 0;
+                applyFilters(); // Recalculate everything
+            }
+        };
 
-            items.forEach(i => {
-                let badgeClass = '';
-                if(i.c === 'star') badgeClass = 'badge-star';
-                else if(i.c === 'cow') badgeClass = 'badge-cow';
-                else if(i.c === 'question') badgeClass = 'badge-question';
-                else badgeClass = 'badge-dog';
-
-                tbody.innerHTML += `
-                    <tr class="hover:bg-slate-50 border-b border-slate-50 last:border-0 transition-colors">
-                        <td class="px-4 py-3 font-medium truncate max-w-[140px]" title="${i.name}">${i.name}</td>
-                        <td class="px-4 py-3 text-right text-slate-500">${i.qty.toLocaleString()}</td>
-                        <td class="px-4 py-3 text-right font-bold text-slate-700">${i.sales.toLocaleString()}</td>
-                        <td class="px-4 py-3 text-center"><span class="badge ${badgeClass}">${i.l}</span></td>
-                    </tr>`;
+        window.resetSimulation = () => {
+            rawData.forEach(i => {
+                i.simPrice = i.originalPrice;
+                i.simCost = i.originalCost;
             });
-        }
+            applyFilters();
+        };
 
-        function renderChart(items, avgQty, avgSales) {
+        window.updateThresholds = () => {
+            thresholdX = parseInt(document.getElementById('sliderX').value);
+            thresholdY = parseInt(document.getElementById('sliderY').value);
+            calculateMatrix();
+        };
+
+        // --- CHART ---
+        function updateChart(cutoffX, cutoffY) {
             const ctx = document.getElementById('matrixChart').getContext('2d');
-            if(myChart) myChart.destroy();
-
-            const dataPoints = items.map(i => ({
+            
+            // Prepare Data
+            const dataPoints = processedData.map(i => ({
                 x: i.qty,
-                y: i.sales,
-                r: Math.min(Math.max(i.sales / avgSales * 6, 4), 25), // Bubble size logic
+                y: i.totalProfit,
+                r: Math.min(Math.max(i.totalRevenue / 1000, 5), 30), // Bubble size based on Sales Volume
                 raw: i
             }));
+
+            if(myChart) myChart.destroy();
 
             myChart = new Chart(ctx, {
                 type: 'bubble',
@@ -304,20 +365,14 @@
                     datasets: [{
                         label: 'Menu',
                         data: dataPoints,
-                        backgroundColor: ctx => {
-                            const c = ctx.raw?.raw?.c;
+                        backgroundColor: (ctx) => {
+                            const c = ctx.raw?.raw?.class;
                             if(c==='star') return 'rgba(234, 179, 8, 0.8)';
-                            if(c==='cow') return 'rgba(34, 197, 94, 0.8)';
-                            if(c==='question') return 'rgba(59, 130, 246, 0.8)';
+                            if(c==='horse') return 'rgba(34, 197, 94, 0.8)';
+                            if(c==='puzzle') return 'rgba(59, 130, 246, 0.8)';
                             return 'rgba(148, 163, 184, 0.8)';
                         },
-                        borderColor: ctx => {
-                            const c = ctx.raw?.raw?.c;
-                            if(c==='star') return '#ca8a04';
-                            if(c==='cow') return '#15803d';
-                            if(c==='question') return '#1d4ed8';
-                            return '#64748b';
-                        },
+                        borderColor: 'rgba(0,0,0,0.1)',
                         borderWidth: 1
                     }]
                 },
@@ -328,56 +383,74 @@
                         legend: { display: false },
                         tooltip: {
                             callbacks: {
-                                label: ctx => {
-                                    const i = ctx.raw.raw;
-                                    return `${i.name} (ขาย ${i.qty} | ฿${i.sales.toLocaleString()})`;
+                                label: (c) => {
+                                    const i = c.raw.raw;
+                                    return `${i.name} | Qty:${i.qty} | Profit:${Math.round(i.totalProfit).toLocaleString()}`;
                                 }
                             },
-                            backgroundColor: 'rgba(30, 41, 59, 0.9)',
-                            padding: 10,
-                            titleFont: { size: 13 },
-                            bodyFont: { size: 12 }
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            padding: 12,
+                            titleFont: { size: 14 }
+                        },
+                        annotation: {
+                            annotations: {
+                                lineX: { type: 'line', xMin: cutoffX, xMax: cutoffX, borderColor: '#ef4444', borderWidth: 2, borderDash: [5,5], label: { display:true, content:'Avg Qty', position:'end', color:'red', font:{size:10} } },
+                                lineY: { type: 'line', yMin: cutoffY, yMax: cutoffY, borderColor: '#ef4444', borderWidth: 2, borderDash: [5,5], label: { display:true, content:'Avg Profit', position:'end', color:'red', font:{size:10} } }
+                            }
                         }
                     },
                     scales: {
-                        x: { 
-                            title: { display: true, text: 'ความนิยม (จำนวนขาย)', color: '#94a3b8', font:{size:10} }, 
-                            grid: { color: '#f1f5f9' },
-                            beginAtZero: true
-                        },
-                        y: { 
-                            title: { display: true, text: 'ยอดขายรวม (บาท)', color: '#94a3b8', font:{size:10} }, 
-                            grid: { color: '#f1f5f9' },
-                            beginAtZero: true
-                        }
+                        x: { title: { display:true, text:'ความนิยม (Qty)', color:'#94a3b8' }, grid: {color:'#f8fafc'} },
+                        y: { title: { display:true, text:'กำไร (Total Profit)', color:'#94a3b8' }, grid: {color:'#f8fafc'} }
                     }
-                },
-                plugins: [{
-                    id: 'quadrantLines',
-                    beforeDraw: (chart) => {
-                        const {ctx, chartArea: {top, bottom, left, right}, scales: {x, y}} = chart;
-                        const xVal = x.getPixelForValue(avgQty);
-                        const yVal = y.getPixelForValue(avgSales);
+                }
+            });
+        }
 
-                        ctx.save();
-                        ctx.beginPath();
-                        ctx.strokeStyle = '#ef4444';
-                        ctx.lineWidth = 1.5;
-                        ctx.setLineDash([4, 4]);
+        // --- TABLE ---
+        function updateTable() {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
 
-                        // Draw only if within visible area
-                        if(xVal >= left && xVal <= right) {
-                            ctx.moveTo(xVal, top);
-                            ctx.lineTo(xVal, bottom);
-                        }
-                        if(yVal >= top && yVal <= bottom) {
-                            ctx.moveTo(left, yVal);
-                            ctx.lineTo(right, yVal);
-                        }
-                        ctx.stroke();
-                        ctx.restore();
-                    }
-                }]
+            processedData.forEach(i => {
+                let badgeClass = '';
+                if(i.class === 'star') badgeClass = 'badge-star';
+                else if(i.class === 'horse') badgeClass = 'badge-horse';
+                else if(i.class === 'puzzle') badgeClass = 'badge-puzzle';
+                else badgeClass = 'badge-dog';
+
+                const paretoClass = i.isPareto ? 'pareto-row' : '';
+                const paretoIcon = i.isPareto ? '<i class="fa-solid fa-medal text-yellow-500 ml-1 text-[10px]" title="Top 80% Revenue"></i>' : '';
+
+                const tr = document.createElement('tr');
+                tr.className = `hover:bg-slate-50 border-b border-slate-50 transition ${paretoClass}`;
+                tr.innerHTML = `
+                    <td class="px-4 py-3 font-medium text-slate-700 max-w-[200px] truncate" title="${i.name}">
+                        ${i.name} ${paretoIcon}
+                    </td>
+                    <td class="px-4 py-3 text-center"><span class="badge ${badgeClass}">${i.label}</span></td>
+                    <td class="px-4 py-3 text-right text-slate-500">${i.qty.toLocaleString()}</td>
+                    <td class="px-4 py-3 text-right">
+                        <input type="number" class="sim-input" value="${i.simPrice.toFixed(2)}" onchange="updateSim(${i.id}, 'simPrice', this.value)">
+                    </td>
+                    <td class="px-4 py-3 text-right">
+                        <input type="number" class="sim-input text-red-600 border-red-200 focus:bg-red-50" value="${i.simCost.toFixed(2)}" onchange="updateSim(${i.id}, 'simCost', this.value)">
+                    </td>
+                    <td class="px-4 py-3 text-right font-bold text-emerald-600">${Math.round(i.totalProfit).toLocaleString()}</td>
+                    <td class="px-4 py-3 text-center text-xs text-slate-400">${( (i.simCost/i.simPrice)*100 ).toFixed(0)}%</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- EXPORT ---
+        function exportImage() {
+            window.scrollTo(0,0);
+            html2canvas(document.getElementById('capture-area')).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'Menu_Analysis.png';
+                link.href = canvas.toDataURL();
+                link.click();
             });
         }
     </script>
