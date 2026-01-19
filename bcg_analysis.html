@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BCG Menu Analysis</title>
+    <title>BCG Menu Analysis (No Database)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -11,105 +11,109 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        body { font-family: 'Kanit', sans-serif; background-color: #f1f5f9; color: #334155; }
+        body { font-family: 'Kanit', sans-serif; background-color: #f8fafc; color: #334155; }
         .card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
-        .btn-upload { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 12px 24px; border-radius: 12px; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(37,99,235,0.2); display: inline-flex; align-items: center; font-weight: 500; }
-        .btn-upload:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(37,99,235,0.3); }
-        .btn-upload:active { transform: scale(0.98); }
         
-        /* Quadrant Badges */
-        .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; }
-        .badge-star { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; } /* Yellow */
-        .badge-cow { background: #dcfce7; color: #166534; border: 1px solid #86efac; } /* Green */
-        .badge-question { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; } /* Blue */
-        .badge-dog { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; } /* Gray */
+        /* Quadrant Labels */
+        .q-label {
+            position: absolute; font-weight: bold; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; 
+            pointer-events: none; opacity: 0.8; border: 1px solid;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8 min-h-screen">
 
     <div class="max-w-7xl mx-auto">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        
+        <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
             <div>
-                <h1 class="text-3xl font-bold text-slate-800 flex items-center gap-2">
-                    <i class="fa-solid fa-chart-pie text-blue-600"></i> วิเคราะห์เมนู (Menu Matrix)
+                <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-bubble text-blue-600"></i> วิเคราะห์เมนู (BCG Matrix)
                 </h1>
-                <p class="text-slate-500 mt-1">ค้นหาเมนูทำเงิน (Stars) และเมนูยอดนิยม (Cash Cows) ของร้านคุณ</p>
+                <p class="text-sm text-slate-500 mt-1">อัปโหลดไฟล์ CSV เพื่อหาเมนูทำเงิน (ประมวลผลในเครื่อง ไม่เก็บข้อมูล)</p>
             </div>
             
-            <label class="btn-upload">
-                <i class="fa-solid fa-cloud-arrow-up mr-2"></i> อัปโหลดไฟล์ CSV
+            <label class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl cursor-pointer transition shadow-lg shadow-blue-200 flex items-center font-bold">
+                <i class="fa-solid fa-file-csv mr-2"></i> เลือกไฟล์ CSV
                 <input type="file" id="csvFile" class="hidden" accept=".csv">
             </label>
         </div>
 
-        <div id="dashboard" class="hidden">
+        <div id="dashboard" class="hidden space-y-6">
             
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div class="card bg-white">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="card bg-white text-center">
                     <p class="text-xs text-slate-400 font-bold uppercase">จำนวนเมนู</p>
                     <h3 class="text-3xl font-bold text-slate-700 mt-1" id="total-items">0</h3>
                 </div>
-                <div class="card bg-white">
+                <div class="card bg-white text-center">
                     <p class="text-xs text-slate-400 font-bold uppercase">ยอดขายรวม</p>
                     <h3 class="text-3xl font-bold text-emerald-600 mt-1" id="total-revenue">0</h3>
                 </div>
-                <div class="card bg-blue-50 border-blue-200">
-                    <p class="text-xs text-blue-400 font-bold uppercase">ยอดขายเฉลี่ย (เส้นแกน Y)</p>
-                    <h3 class="text-2xl font-bold text-blue-700 mt-1" id="avg-sales">0</h3>
-                    <p class="text-[10px] text-blue-400 mt-1">เมนูที่อยู่เหนือเส้นนี้ = "ทำเงินดี"</p>
+                <div class="card bg-blue-50 border-blue-200 text-center">
+                    <p class="text-xs text-blue-400 font-bold uppercase">ยอดขายเฉลี่ย (เส้นกลาง)</p>
+                    <h3 class="text-xl font-bold text-blue-700 mt-1" id="avg-sales">0</h3>
                 </div>
-                <div class="card bg-indigo-50 border-indigo-200">
-                    <p class="text-xs text-indigo-400 font-bold uppercase">จำนวนขายเฉลี่ย (เส้นแกน X)</p>
-                    <h3 class="text-2xl font-bold text-indigo-700 mt-1" id="avg-qty">0</h3>
-                    <p class="text-[10px] text-indigo-400 mt-1">เมนูที่อยู่ขวาของเส้นนี้ = "ยอดนิยม"</p>
+                <div class="card bg-indigo-50 border-indigo-200 text-center">
+                    <p class="text-xs text-indigo-400 font-bold uppercase">จำนวนขายเฉลี่ย (เส้นกลาง)</p>
+                    <h3 class="text-xl font-bold text-indigo-700 mt-1" id="avg-qty">0</h3>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                <div class="card lg:col-span-2 relative" style="height: 500px;">
-                    <h3 class="font-bold text-slate-700 mb-4">📍 แผนภาพเมนู (Menu Positioning)</h3>
-                    <canvas id="matrixChart"></canvas>
-                    
-                    <div class="absolute top-16 right-8 text-yellow-600 font-bold text-sm bg-yellow-50 px-2 py-1 rounded border border-yellow-200 opacity-80 pointer-events-none">⭐ STARS (ขายดี+รวย)</div>
-                    <div class="absolute bottom-16 right-8 text-green-600 font-bold text-sm bg-green-50 px-2 py-1 rounded border border-green-200 opacity-80 pointer-events-none">🐮 COWS (ขายดี+รวยน้อย)</div>
-                    <div class="absolute top-16 left-16 text-blue-600 font-bold text-sm bg-blue-50 px-2 py-1 rounded border border-blue-200 opacity-80 pointer-events-none">❓ QUESTION (ขายน้อย+รวย)</div>
-                    <div class="absolute bottom-16 left-16 text-slate-500 font-bold text-sm bg-slate-50 px-2 py-1 rounded border border-slate-200 opacity-80 pointer-events-none">🐕 DOGS (ขายน้อย+รวยน้อย)</div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="card lg:col-span-2 relative h-[500px] flex flex-col">
+                    <h3 class="font-bold text-slate-700 mb-2">แผนภาพเมนู (Menu Positioning)</h3>
+                    <div class="flex-1 relative w-full h-full">
+                        <canvas id="matrixChart"></canvas>
+                        <div class="q-label top-4 right-4 bg-yellow-50 text-yellow-700 border-yellow-200">⭐ STARS</div>
+                        <div class="q-label bottom-4 right-4 bg-green-50 text-green-700 border-green-200">🐮 COWS</div>
+                        <div class="q-label top-4 left-4 bg-blue-50 text-blue-700 border-blue-200">❓ QUESTION</div>
+                        <div class="q-label bottom-4 left-4 bg-slate-100 text-slate-600 border-slate-300">🐕 DOGS</div>
+                    </div>
                 </div>
 
-                <div class="space-y-4">
-                    <div class="card bg-yellow-50 border-yellow-200">
-                        <h4 class="font-bold text-yellow-800 flex items-center"><i class="fa-solid fa-star mr-2"></i> Stars (ดาวรุ่ง)</h4>
-                        <p class="text-sm text-yellow-700 mt-1">เมนูทำเงินหลัก! <b>รักษาคุณภาพห้ามตก</b> และพยายามดันให้ลูกค้าสั่งคู่กับเมนูอื่น</p>
-                        <div id="list-star" class="mt-2 text-xs text-yellow-900 font-medium truncate">...</div>
+                <div class="space-y-3 h-[500px] overflow-y-auto pr-1">
+                    <div class="card bg-yellow-50 border-yellow-200 p-4">
+                        <h4 class="font-bold text-yellow-800 text-sm flex justify-between">
+                            <span>⭐ Stars (ดาวรุ่ง)</span><span id="count-star" class="bg-white px-2 rounded text-xs py-0.5">0</span>
+                        </h4>
+                        <p class="text-xs text-yellow-700 mt-1 mb-2">ขายดี+กำไรเยอะ รักษาคุณภาพห้ามตก</p>
+                        <ul id="list-star" class="text-xs text-yellow-900 list-disc pl-4 space-y-1"></ul>
                     </div>
-                    <div class="card bg-green-50 border-green-200">
-                        <h4 class="font-bold text-green-800 flex items-center"><i class="fa-solid fa-cow mr-2"></i> Cash Cows (วัวนม)</h4>
-                        <p class="text-sm text-green-700 mt-1">ขายดีแต่กำไรน้อย (หรือราคาถูก) <b>พิจารณาขึ้นราคาเล็กน้อย</b> หรือลดต้นทุนวัตถุดิบลง</p>
-                        <div id="list-cow" class="mt-2 text-xs text-green-900 font-medium truncate">...</div>
+                    <div class="card bg-green-50 border-green-200 p-4">
+                        <h4 class="font-bold text-green-800 text-sm flex justify-between">
+                            <span>🐮 Cash Cows (วัวนม)</span><span id="count-cow" class="bg-white px-2 rounded text-xs py-0.5">0</span>
+                        </h4>
+                        <p class="text-xs text-green-700 mt-1 mb-2">ขายดี+กำไรน้อย พิจารณาขึ้นราคา/ลดต้นทุน</p>
+                        <ul id="list-cow" class="text-xs text-green-900 list-disc pl-4 space-y-1"></ul>
                     </div>
-                    <div class="card bg-blue-50 border-blue-200">
-                        <h4 class="font-bold text-blue-800 flex items-center"><i class="fa-solid fa-question mr-2"></i> Question Marks</h4>
-                        <p class="text-sm text-blue-700 mt-1">กำไรดีแต่คนไม่ค่อยสั่ง <b>ต้องจัดโปรโมชั่น</b> หรือทำเมนูแนะนำหน้าร้านให้คนเห็น</p>
-                        <div id="list-question" class="mt-2 text-xs text-blue-900 font-medium truncate">...</div>
+                    <div class="card bg-blue-50 border-blue-200 p-4">
+                        <h4 class="font-bold text-blue-800 text-sm flex justify-between">
+                            <span>❓ Question Marks</span><span id="count-question" class="bg-white px-2 rounded text-xs py-0.5">0</span>
+                        </h4>
+                        <p class="text-xs text-blue-700 mt-1 mb-2">กำไรดีแต่ขายน้อย ต้องจัดโปรโมชั่น</p>
+                        <ul id="list-question" class="text-xs text-blue-900 list-disc pl-4 space-y-1"></ul>
                     </div>
-                    <div class="card bg-slate-50 border-slate-200">
-                        <h4 class="font-bold text-slate-700 flex items-center"><i class="fa-solid fa-dog mr-2"></i> Dogs (ตัวถ่วง)</h4>
-                        <p class="text-sm text-slate-600 mt-1">ขายน้อยและยอดเงินน้อย <b>พิจารณาตัดออกจากเมนู</b> หรือปรับปรุงสูตรใหม่</p>
-                        <div id="list-dog" class="mt-2 text-xs text-slate-500 font-medium truncate">...</div>
+                    <div class="card bg-slate-100 border-slate-200 p-4">
+                        <h4 class="font-bold text-slate-700 text-sm flex justify-between">
+                            <span>🐕 Dogs (ตัวถ่วง)</span><span id="count-dog" class="bg-white px-2 rounded text-xs py-0.5">0</span>
+                        </h4>
+                        <p class="text-xs text-slate-600 mt-1 mb-2">ขายน้อย+กำไรน้อย พิจารณาตัดออก</p>
+                        <ul id="list-dog" class="text-xs text-slate-800 list-disc pl-4 space-y-1"></ul>
                     </div>
                 </div>
             </div>
 
             <div class="card overflow-hidden !p-0">
-                <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 font-bold text-slate-700">📋 รายละเอียดรายเมนู</div>
+                <div class="bg-slate-50 px-6 py-3 border-b border-slate-200 font-bold text-slate-700 text-sm">📋 รายละเอียดทั้งหมด</div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-left text-slate-600">
                         <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
                             <tr>
                                 <th class="px-6 py-3">ชื่อเมนู</th>
-                                <th class="px-6 py-3 text-right">จำนวนขาย (Qty)</th>
-                                <th class="px-6 py-3 text-right">ยอดขายรวม (Sales)</th>
-                                <th class="px-6 py-3 text-center">กลุ่ม (Class)</th>
+                                <th class="px-6 py-3 text-right">จำนวน (Qty)</th>
+                                <th class="px-6 py-3 text-right">ยอดขาย (Sales)</th>
+                                <th class="px-6 py-3 text-center">กลุ่ม</th>
                             </tr>
                         </thead>
                         <tbody id="table-body" class="divide-y divide-slate-100">
@@ -120,11 +124,11 @@
         </div>
 
         <div id="empty-state" class="text-center py-20">
-            <div class="w-24 h-24 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6 text-blue-500 text-4xl">
-                <i class="fa-solid fa-file-csv"></i>
+            <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400 text-3xl">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
             </div>
-            <h2 class="text-xl font-bold text-slate-700 mb-2">ยังไม่มีข้อมูล</h2>
-            <p class="text-slate-400 max-w-md mx-auto">อัปโหลดไฟล์ CSV รายงานยอดขายสินค้า (ที่มีคอลัมน์ menuName, amount, sales) เพื่อเริ่มวิเคราะห์</p>
+            <h2 class="text-lg font-bold text-slate-600">ยังไม่มีข้อมูล</h2>
+            <p class="text-slate-400 text-sm">อัปโหลดไฟล์ .csv เพื่อเริ่มวิเคราะห์</p>
         </div>
 
     </div>
@@ -136,63 +140,71 @@
             const file = e.target.files[0];
             if (!file) return;
 
+            // Use PapaParse to read CSV directly in browser
             Papa.parse(file, {
                 header: true,
                 skipEmptyLines: true,
                 complete: function(results) {
                     processData(results.data);
+                },
+                error: function(err) {
+                    alert("อ่านไฟล์ CSV ไม่สำเร็จ: " + err.message);
                 }
             });
         });
 
         function processData(data) {
-            // 1. Map Data & Clean numbers
             let items = [];
             let totalQty = 0;
             let totalSales = 0;
 
+            // 1. Map Data (Auto-detect columns)
             data.forEach(row => {
-                // Auto-detect keys from user's CSV (menuItems.csv format)
-                const name = row['menuName'] || row['ชื่อเมนู'] || row['สินค้า'];
-                // Clean "," from numbers (e.g. "1,200" -> 1200)
-                const qtyStr = row['amount'] || row['จำนวน'] || '0';
-                const salesStr = row['sales'] || row['ยอดขาย'] || '0';
-                
-                const qty = parseFloat(qtyStr.toString().replace(/,/g, ''));
-                const sales = parseFloat(salesStr.toString().replace(/,/g, ''));
+                // Try to find columns regardless of exact name match (case insensitive)
+                const keys = Object.keys(row);
+                const nameKey = keys.find(k => /name|เมนู|สินค้า/i.test(k));
+                const qtyKey = keys.find(k => /amount|qty|จำนวน/i.test(k));
+                const salesKey = keys.find(k => /sales|total|ยอดขาย/i.test(k));
 
-                if (name && qty > 0) {
-                    items.push({ name, qty, sales });
-                    totalQty += qty;
-                    totalSales += sales;
+                if(nameKey && qtyKey && salesKey) {
+                    const name = row[nameKey];
+                    // Clean numbers (remove commas)
+                    const qty = parseFloat(String(row[qtyKey]).replace(/,/g, '')) || 0;
+                    const sales = parseFloat(String(row[salesKey]).replace(/,/g, '')) || 0;
+
+                    if (name && (qty > 0 || sales > 0)) {
+                        items.push({ name, qty, sales });
+                        totalQty += qty;
+                        totalSales += sales;
+                    }
                 }
             });
 
             if (items.length === 0) {
-                alert('ไม่พบข้อมูล! กรุณาเช็คไฟล์ CSV ว่ามีหัวข้อ menuName, amount, sales หรือไม่');
+                alert('ไม่พบข้อมูล! โปรดตรวจสอบว่าไฟล์ CSV มีหัวข้อ menuName, amount, sales หรือไม่');
                 return;
             }
 
-            // 2. Calculate Averages (The Divider Lines)
+            // 2. Calculate Averages (Crosshair Lines)
             const avgQty = totalQty / items.length;
             const avgSales = totalSales / items.length;
 
-            // 3. Classify Each Item
+            // 3. Classify Items
             let groups = { star:[], cow:[], question:[], dog:[] };
 
             items.forEach(item => {
                 if (item.qty >= avgQty && item.sales >= avgSales) {
                     item.class = 'star'; item.label = '⭐ STAR';
-                    groups.star.push(item.name);
+                    groups.star.push(item);
                 } else if (item.qty >= avgQty && item.sales < avgSales) {
                     item.class = 'cow'; item.label = '🐮 COW';
-                    groups.cow.push(item.name);
+                    groups.cow.push(item);
                 } else if (item.qty < avgQty && item.sales >= avgSales) {
                     item.class = 'question'; item.label = '❓ QUESTION';
-                    groups.question.push(item.name);
+                    groups.question.push(item);
                 } else {
                     item.class = 'dog'; item.label = '🐕 DOG';
-                    groups.dog.push(item.name);
+                    groups.dog.push(item);
                 }
             });
 
@@ -205,11 +217,23 @@
             document.getElementById('avg-qty').innerText = avgQty.toFixed(0);
             document.getElementById('avg-sales').innerText = avgSales.toLocaleString(undefined, {maximumFractionDigits:0});
 
-            // Update Lists Preview
-            document.getElementById('list-star').innerText = groups.star.slice(0,5).join(', ') + (groups.star.length>5 ? '...' : '');
-            document.getElementById('list-cow').innerText = groups.cow.slice(0,5).join(', ') + (groups.cow.length>5 ? '...' : '');
-            document.getElementById('list-question').innerText = groups.question.slice(0,5).join(', ') + (groups.question.length>5 ? '...' : '');
-            document.getElementById('list-dog').innerText = groups.dog.slice(0,5).join(', ') + (groups.dog.length>5 ? '...' : '');
+            // Update Side Lists (Top 5 sorted by sales)
+            const updateList = (id, list, countId) => {
+                list.sort((a,b) => b.sales - a.sales);
+                document.getElementById(countId).innerText = list.length;
+                const el = document.getElementById(id);
+                el.innerHTML = '';
+                list.slice(0, 5).forEach(i => {
+                    el.innerHTML += `<li class="truncate" title="${i.name}">${i.name}</li>`;
+                });
+                if(list.length > 5) el.innerHTML += `<li class="text-slate-400 italic">+ อีก ${list.length-5} รายการ</li>`;
+                if(list.length === 0) el.innerHTML = `<li class="text-slate-300">- ไม่มี -</li>`;
+            };
+
+            updateList('list-star', groups.star, 'count-star');
+            updateList('list-cow', groups.cow, 'count-cow');
+            updateList('list-question', groups.question, 'count-question');
+            updateList('list-dog', groups.dog, 'count-dog');
 
             renderTable(items);
             renderChart(items, avgQty, avgSales);
@@ -218,24 +242,24 @@
         function renderTable(items) {
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
-            
-            // Sort by Sales Descending
             items.sort((a,b) => b.sales - a.sales);
 
             items.forEach(item => {
-                let badgeClass = '';
-                if(item.class === 'star') badgeClass = 'badge-star';
-                else if(item.class === 'cow') badgeClass = 'badge-cow';
-                else if(item.class === 'question') badgeClass = 'badge-question';
-                else badgeClass = 'badge-dog';
+                let badgeStyle = '';
+                if(item.class === 'star') badgeStyle = 'background:#fef9c3; color:#854d0e; border:1px solid #fde047;';
+                else if(item.class === 'cow') badgeStyle = 'background:#dcfce7; color:#166534; border:1px solid #86efac;';
+                else if(item.class === 'question') badgeStyle = 'background:#dbeafe; color:#1e40af; border:1px solid #93c5fd;';
+                else badgeStyle = 'background:#f1f5f9; color:#475569; border:1px solid #cbd5e1;';
 
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-slate-50 transition';
                 tr.innerHTML = `
-                    <td class="px-6 py-4 font-medium text-slate-800">${item.name}</td>
-                    <td class="px-6 py-4 text-right">${item.qty.toLocaleString()}</td>
-                    <td class="px-6 py-4 text-right font-bold text-emerald-600">${item.sales.toLocaleString()}</td>
-                    <td class="px-6 py-4 text-center"><span class="badge ${badgeClass}">${item.label}</span></td>
+                    <td class="px-6 py-3 font-medium text-slate-700">${item.name}</td>
+                    <td class="px-6 py-3 text-right text-slate-500">${item.qty.toLocaleString()}</td>
+                    <td class="px-6 py-3 text-right font-bold text-slate-700">${item.sales.toLocaleString()}</td>
+                    <td class="px-6 py-3 text-center">
+                        <span style="${badgeStyle}" class="px-2 py-1 rounded text-xs font-bold uppercase text-[10px]">${item.label}</span>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -244,12 +268,11 @@
         function renderChart(items, avgQty, avgSales) {
             const ctx = document.getElementById('matrixChart').getContext('2d');
             
-            // Map items to Chart Data
             const dataPoints = items.map(i => ({
                 x: i.qty,
                 y: i.sales,
-                r: Math.min(Math.max(i.sales / avgSales * 8, 5), 25), // Bubble size
-                raw: i // Keep full object for tooltip
+                r: Math.min(Math.max(i.sales / avgSales * 6, 4), 25), // Dynamic Bubble Size
+                raw: i
             }));
 
             if (myChart) myChart.destroy();
@@ -261,19 +284,17 @@
                         label: 'Menu Items',
                         data: dataPoints,
                         backgroundColor: (ctx) => {
-                            const i = ctx.raw?.raw;
-                            if(!i) return '#ccc';
-                            if(i.class === 'star') return 'rgba(234, 179, 8, 0.7)'; // Yellow
-                            if(i.class === 'cow') return 'rgba(34, 197, 94, 0.7)'; // Green
-                            if(i.class === 'question') return 'rgba(59, 130, 246, 0.7)'; // Blue
+                            const c = ctx.raw?.raw?.class;
+                            if(c === 'star') return 'rgba(234, 179, 8, 0.7)'; // Yellow
+                            if(c === 'cow') return 'rgba(34, 197, 94, 0.7)'; // Green
+                            if(c === 'question') return 'rgba(59, 130, 246, 0.7)'; // Blue
                             return 'rgba(148, 163, 184, 0.7)'; // Gray
                         },
                         borderColor: (ctx) => {
-                            const i = ctx.raw?.raw;
-                            if(!i) return '#ccc';
-                            if(i.class === 'star') return '#ca8a04';
-                            if(i.class === 'cow') return '#15803d';
-                            if(i.class === 'question') return '#1d4ed8';
+                            const c = ctx.raw?.raw?.class;
+                            if(c === 'star') return '#ca8a04';
+                            if(c === 'cow') return '#15803d';
+                            if(c === 'question') return '#1d4ed8';
                             return '#64748b';
                         },
                         borderWidth: 1
@@ -288,34 +309,22 @@
                             callbacks: {
                                 label: function(context) {
                                     const i = context.raw.raw;
-                                    return `${i.name}: ขาย ${i.qty} ชิ้น, ยอด ${i.sales.toLocaleString()} บ.`;
+                                    return `${i.name}: ${i.qty} ชิ้น, ฿${i.sales.toLocaleString()}`;
                                 }
                             },
-                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                            titleColor: '#1e293b',
-                            bodyColor: '#475569',
-                            borderColor: '#e2e8f0',
-                            borderWidth: 1,
-                            padding: 10,
-                            displayColors: true
-                        },
-                        annotation: {
-                            // We use custom grid lines instead of plugin for simplicity
+                            padding: 12,
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleFont: { size: 13 },
+                            bodyFont: { size: 12 }
                         }
                     },
                     scales: {
                         x: {
-                            title: { display: true, text: 'ความนิยม (จำนวนขาย)' },
-                            grid: {
-                                color: (ctx) => (ctx.tick.value == 0) ? '#cbd5e1' : '#f1f5f9', // Light grid
-                            },
-                            // Add red line for average
-                            afterDraw: (chart) => {
-                                // ... (Handled by plugin below)
-                            }
+                            title: { display: true, text: 'ความนิยม (Qty)', color: '#94a3b8' },
+                            grid: { color: '#f1f5f9' }
                         },
                         y: {
-                            title: { display: true, text: 'ยอดขายรวม (บาท)' },
+                            title: { display: true, text: 'ยอดขาย (Sales)', color: '#94a3b8' },
                             grid: { color: '#f1f5f9' }
                         }
                     }
@@ -324,25 +333,19 @@
                     id: 'quadrantLines',
                     beforeDraw: (chart) => {
                         const {ctx, chartArea: {top, bottom, left, right}, scales: {x, y}} = chart;
-                        const xAvg = x.getPixelForValue(avgQty);
-                        const yAvg = y.getPixelForValue(avgSales);
+                        const xVal = x.getPixelForValue(avgQty);
+                        const yVal = y.getPixelForValue(avgSales);
 
                         ctx.save();
                         ctx.beginPath();
-                        ctx.lineWidth = 2;
-                        ctx.strokeStyle = '#ef4444'; // Red divider lines
-                        ctx.setLineDash([6, 6]);
+                        ctx.strokeStyle = '#ef4444'; 
+                        ctx.lineWidth = 1;
+                        ctx.setLineDash([5, 5]);
 
-                        // Vertical Line (Avg Qty)
-                        if(xAvg >= left && xAvg <= right) {
-                            ctx.moveTo(xAvg, top);
-                            ctx.lineTo(xAvg, bottom);
-                        }
-                        // Horizontal Line (Avg Sales)
-                        if(yAvg >= top && yAvg <= bottom) {
-                            ctx.moveTo(left, yAvg);
-                            ctx.lineTo(right, yAvg);
-                        }
+                        // Draw lines if within chart area
+                        if(xVal >= left && xVal <= right) { ctx.moveTo(xVal, top); ctx.lineTo(xVal, bottom); }
+                        if(yVal >= top && yVal <= bottom) { ctx.moveTo(left, yVal); ctx.lineTo(right, yVal); }
+                        
                         ctx.stroke();
                         ctx.restore();
                     }
