@@ -3,35 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menu Engineering Pro (BCG + Profit)</title>
+    <title>Menu Engineering V.2 (GP Edition)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0"></script> <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.1.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script> <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        body { font-family: 'Kanit', sans-serif; background-color: #f1f5f9; color: #334155; }
+        body { font-family: 'Kanit', sans-serif; background-color: #f8fafc; color: #1e293b; }
         .card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
         
-        /* Quadrant Badges */
+        /* Badges */
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; white-space: nowrap; }
         .badge-star { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
-        .badge-horse { background: #dcfce7; color: #166534; border: 1px solid #86efac; } /* Plow Horse (Cash Cow) */
-        .badge-puzzle { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; } /* Puzzle (Question) */
+        .badge-cow { background: #dcfce7; color: #166534; border: 1px solid #86efac; } 
+        .badge-puzzle { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
         .badge-dog { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
 
-        /* Sliders */
-        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
-        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #3b82f6; cursor: pointer; margin-top: -6px; }
-        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #e2e8f0; border-radius: 2px; }
-        
-        /* Input Table */
-        .sim-input { width: 80px; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: right; font-size: 0.85rem; transition: all 0.2s; }
+        /* Inputs */
+        .sim-input { width: 100%; padding: 4px; border: 1px solid #cbd5e1; border-radius: 4px; text-align: right; font-size: 0.85rem; transition: all 0.2s; background: #fff; }
         .sim-input:focus { border-color: #3b82f6; outline: none; background: #eff6ff; }
-        .pareto-row { background-color: #f0fdf4 !important; } /* Highlight Pareto items */
+        
+        .gp-input { width: 60px; text-align: center; border: 2px solid #ef4444; color: #ef4444; font-weight: bold; border-radius: 8px; padding: 4px; }
+        .vat-input { width: 60px; text-align: center; border: 2px solid #64748b; color: #64748b; font-weight: bold; border-radius: 8px; padding: 4px; }
     </style>
 </head>
 <body class="p-4 md:p-6 min-h-screen">
@@ -41,14 +41,14 @@
         <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                    <i class="fa-solid fa-utensils text-blue-600"></i> Menu Engineering Pro
+                    <i class="fa-solid fa-utensils text-blue-600"></i> Menu Matrix (GP Edition)
                 </h1>
-                <p class="text-xs text-slate-500 mt-1">วิเคราะห์ความนิยม vs กำไร (Profitability Matrix)</p>
+                <p class="text-xs text-slate-500 mt-1">วิเคราะห์กำไรสุทธิ หลังหัก GP และ ต้นทุนอาหาร</p>
             </div>
             
             <div class="flex gap-2">
                 <button onclick="exportImage()" class="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-xl shadow-sm text-sm font-bold hover:bg-slate-50 transition flex items-center">
-                    <i class="fa-solid fa-camera mr-2"></i> Save Image
+                    <i class="fa-solid fa-camera mr-2"></i> Save
                 </button>
                 <label class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-xl shadow-lg cursor-pointer transition text-sm font-bold flex items-center">
                     <i class="fa-solid fa-file-import mr-2"></i> Import File
@@ -57,97 +57,109 @@
             </div>
         </div>
 
+        <div id="settings-bar" class="hidden bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-wrap gap-6 items-center">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-500"><i class="fa-solid fa-percent"></i></div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 block uppercase">ค่า GP (%)</label>
+                    <input type="number" id="gpPercent" class="gp-input" value="30" onchange="recalculateAll()">
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500"><i class="fa-solid fa-shop"></i></div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-500 block uppercase">VAT (%)</label>
+                    <input type="number" id="vatPercent" class="vat-input" value="7" onchange="recalculateAll()">
+                </div>
+            </div>
+            <div class="h-8 w-px bg-slate-200"></div>
+            <div class="flex items-center gap-2 flex-1">
+                <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-500"><i class="fa-solid fa-bowl-food"></i></div>
+                <div class="w-full">
+                    <label class="text-[10px] font-bold text-slate-500 block uppercase">สมมติ Food Cost เริ่มต้น (%)</label>
+                    <input type="range" id="defaultCostPercent" min="10" max="80" value="35" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" onchange="recalculateAll()">
+                    <div class="text-right text-[10px] text-orange-500 font-bold" id="lbl-cost-pct">35%</div>
+                </div>
+            </div>
+        </div>
+
         <div id="empty-state" class="card py-20 text-center border-dashed border-2 border-slate-300 bg-slate-50">
             <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 text-blue-400 text-3xl shadow-sm">
                 <i class="fa-solid fa-cloud-arrow-up"></i>
             </div>
-            <h2 class="text-lg font-bold text-slate-600">เริ่มการวิเคราะห์</h2>
-            <p class="text-slate-400 text-sm mb-4">อัปโหลดไฟล์รายงานยอดขาย (Excel/CSV)</p>
-            <p class="text-[10px] text-slate-400 bg-white inline-block px-3 py-1 rounded-full border">รองรับ: ชื่อเมนู, จำนวนขาย, ยอดขายรวม</p>
+            <h2 class="text-lg font-bold text-slate-600">อัปโหลดไฟล์ยอดขาย</h2>
+            <p class="text-slate-400 text-sm mb-4">รองรับไฟล์ Excel (.xlsx) และ CSV จาก POS</p>
         </div>
 
         <div id="dashboard" class="hidden space-y-6">
             
-            <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                <div class="card lg:col-span-1 space-y-4">
-                    <div class="border-b pb-2 mb-2">
-                        <h3 class="font-bold text-slate-700 text-sm mb-2"><i class="fa-solid fa-filter mr-1"></i> ตัวกรอง & ปรับแต่ง</h3>
-                        <select id="categoryFilter" class="w-full p-2 border rounded-lg text-sm bg-slate-50 mb-2" onchange="applyFilters()">
-                            <option value="all">🍔 ทุกหมวดหมู่</option>
-                        </select>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="card lg:col-span-2 relative" style="height: 450px;">
+                    <h3 class="font-bold text-slate-700 text-sm mb-2"><i class="fa-solid fa-chart-scatter mr-2 text-blue-500"></i>Profitability Matrix (แกน Y = กำไรสุทธิ)</h3>
+                    <div class="relative w-full h-full pb-8">
+                        <canvas id="matrixChart"></canvas>
+                        <div class="absolute top-12 right-12 text-[10px] font-bold text-yellow-700 bg-yellow-100/90 px-2 py-1 rounded border border-yellow-300 pointer-events-none shadow-sm">⭐ STAR<br>(กำไรดี+ขายดี)</div>
+                        <div class="absolute bottom-12 right-12 text-[10px] font-bold text-green-700 bg-green-100/90 px-2 py-1 rounded border border-green-300 pointer-events-none shadow-sm">🐮 COW<br>(เน้นปริมาณ)</div>
+                        <div class="absolute top-12 left-12 text-[10px] font-bold text-blue-700 bg-blue-100/90 px-2 py-1 rounded border border-blue-300 pointer-events-none shadow-sm">❓ PUZZLE<br>(กำไรสูง/ดันขาย)</div>
+                        <div class="absolute bottom-12 left-12 text-[10px] font-bold text-slate-500 bg-slate-100/90 px-2 py-1 rounded border border-slate-300 pointer-events-none shadow-sm">🐕 DOG<br>(ปรับปรุง)</div>
                     </div>
-                    
-                    <div>
-                        <div class="flex justify-between text-xs font-bold text-slate-600 mb-1">
-                            <span>เส้นแบ่งความนิยม (แกน X)</span>
-                            <span id="lbl-x-threshold" class="text-blue-600">Auto</span>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="card bg-slate-800 text-white p-5 text-center">
+                        <p class="text-xs text-slate-400 uppercase font-bold">กำไรสุทธิ (Net Profit)</p>
+                        <h2 class="text-3xl font-bold text-emerald-400 mt-1" id="stat-net-profit">0</h2>
+                        <p class="text-[10px] text-slate-500 mt-2">หลังหัก GP และ Food Cost แล้ว</p>
+                    </div>
+
+                    <div class="card p-4">
+                        <h4 class="font-bold text-slate-700 text-xs mb-3 uppercase">สรุปประสิทธิภาพเมนู</h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="flex items-center"><div class="w-2 h-2 rounded-full bg-yellow-400 mr-2"></div>Star</span>
+                                <span class="font-bold text-slate-700" id="cnt-star">0</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="flex items-center"><div class="w-2 h-2 rounded-full bg-green-500 mr-2"></div>Cow</span>
+                                <span class="font-bold text-slate-700" id="cnt-cow">0</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="flex items-center"><div class="w-2 h-2 rounded-full bg-blue-500 mr-2"></div>Puzzle</span>
+                                <span class="font-bold text-slate-700" id="cnt-puzzle">0</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="flex items-center"><div class="w-2 h-2 rounded-full bg-slate-400 mr-2"></div>Dog</span>
+                                <span class="font-bold text-slate-700" id="cnt-dog">0</span>
+                            </div>
                         </div>
-                        <input type="range" id="sliderX" min="0" max="200" value="100" oninput="updateThresholds()">
                     </div>
 
-                    <div>
-                        <div class="flex justify-between text-xs font-bold text-slate-600 mb-1">
-                            <span>เส้นแบ่งกำไร (แกน Y)</span>
-                            <span id="lbl-y-threshold" class="text-blue-600">Auto</span>
-                        </div>
-                        <input type="range" id="sliderY" min="0" max="200" value="100" oninput="updateThresholds()">
+                    <div class="card bg-indigo-50 border-indigo-100 p-4">
+                        <h4 class="font-bold text-indigo-800 text-xs mb-2">🏆 Pareto 80/20 Rule</h4>
+                        <p class="text-[10px] text-indigo-600 mb-2">เมนูที่ทำกำไร 80% แรกให้ร้าน มีกี่ตัว?</p>
+                        <h3 class="text-xl font-bold text-indigo-700" id="pareto-count">0 เมนู</h3>
+                        <p class="text-[9px] text-indigo-400">(จากทั้งหมด <span id="total-sku">0</span> เมนู)</p>
                     </div>
-
-                    <div class="bg-yellow-50 p-3 rounded-lg border border-yellow-100 text-xs text-yellow-800">
-                        <i class="fa-solid fa-lightbulb mr-1"></i> <b>Tip:</b> ลองแก้ "ต้นทุน" หรือ "ราคา" ในตารางด้านล่าง เพื่อจำลองกำไร (What-if)
-                    </div>
-                </div>
-
-                <div class="card lg:col-span-3 relative" style="height: 450px;">
-                    <div class="absolute top-4 right-4 z-10 flex gap-2">
-                        <span class="bg-white/90 px-2 py-1 rounded border text-[10px] font-bold text-slate-500 shadow-sm">
-                            <i class="fa-solid fa-medal text-yellow-500"></i> Pareto 80/20 (สีเขียวในตาราง)
-                        </span>
-                    </div>
-                    <canvas id="matrixChart"></canvas>
-                    <div class="absolute top-6 right-16 text-[10px] font-bold text-yellow-700 bg-yellow-100/90 px-2 py-1 rounded border border-yellow-300 pointer-events-none">⭐ STAR (กำไรดี+ขายดี)</div>
-                    <div class="absolute bottom-16 right-16 text-[10px] font-bold text-green-700 bg-green-100/90 px-2 py-1 rounded border border-green-300 pointer-events-none">🐮 PLOW HORSE (ขายดี)</div>
-                    <div class="absolute top-6 left-16 text-[10px] font-bold text-blue-700 bg-blue-100/90 px-2 py-1 rounded border border-blue-300 pointer-events-none">❓ PUZZLE (กำไรสูง)</div>
-                    <div class="absolute bottom-16 left-16 text-[10px] font-bold text-slate-500 bg-slate-100/90 px-2 py-1 rounded border border-slate-300 pointer-events-none">🐕 DOG (แย่)</div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="card p-4 text-center">
-                    <p class="text-[10px] text-slate-400 font-bold uppercase">เมนูทั้งหมด</p>
-                    <h3 class="text-2xl font-bold text-slate-700" id="stat-total-items">0</h3>
-                </div>
-                <div class="card p-4 text-center">
-                    <p class="text-[10px] text-slate-400 font-bold uppercase">ยอดขายรวม</p>
-                    <h3 class="text-2xl font-bold text-blue-600" id="stat-total-sales">0</h3>
-                </div>
-                <div class="card p-4 text-center bg-emerald-50 border-emerald-100">
-                    <p class="text-[10px] text-emerald-600 font-bold uppercase">กำไรรวม (Estimate)</p>
-                    <h3 class="text-2xl font-bold text-emerald-700" id="stat-total-profit">0</h3>
-                </div>
-                <div class="card p-4 text-center bg-indigo-50 border-indigo-100">
-                    <p class="text-[10px] text-indigo-600 font-bold uppercase">Pareto Score</p>
-                    <h3 class="text-2xl font-bold text-indigo-700" id="stat-pareto">0%</h3>
-                    <p class="text-[9px] text-indigo-400">ของเมนูทำรายได้ 80%</p>
                 </div>
             </div>
 
             <div class="card !p-0 overflow-hidden">
                 <div class="bg-slate-50 px-6 py-3 border-b border-slate-200 flex justify-between items-center">
-                    <h3 class="font-bold text-slate-700 text-sm"><i class="fa-solid fa-table-list mr-2"></i>ตารางจำลองสถานการณ์ (Simulator)</h3>
-                    <button onclick="resetSimulation()" class="text-xs text-red-500 hover:text-red-700 font-bold"><i class="fa-solid fa-rotate-left"></i> รีเซ็ตค่า</button>
+                    <h3 class="font-bold text-slate-700 text-sm">ตารางวิเคราะห์ต้นทุน & กำไร (Editable)</h3>
+                    <div class="text-[10px] text-slate-400"><i class="fa-solid fa-pen"></i> แก้ไขช่องสีขาวได้</div>
                 </div>
                 <div class="overflow-x-auto max-h-[600px]">
                     <table class="w-full text-sm text-left text-slate-600">
-                        <thead class="bg-white text-slate-500 sticky top-0 shadow-sm z-10 text-xs uppercase">
+                        <thead class="bg-white text-slate-500 sticky top-0 shadow-sm z-10 text-[10px] uppercase font-bold tracking-wider">
                             <tr>
                                 <th class="px-4 py-3">ชื่อเมนู</th>
-                                <th class="px-4 py-3 text-center">กลุ่ม</th>
-                                <th class="px-4 py-3 text-right">จำนวนขาย</th>
-                                <th class="px-4 py-3 text-right bg-blue-50/50">ราคาขาย</th>
-                                <th class="px-4 py-3 text-right bg-red-50/50">ต้นทุน (บาท)</th>
-                                <th class="px-4 py-3 text-right bg-emerald-50/50">กำไรรวม</th>
-                                <th class="px-4 py-3 text-center">% ต้นทุน</th>
+                                <th class="px-2 py-3 text-center">กลุ่ม</th>
+                                <th class="px-2 py-3 text-right">ขาย (Qty)</th>
+                                <th class="px-2 py-3 text-right bg-blue-50">ราคาขาย</th>
+                                <th class="px-2 py-3 text-right bg-red-50 text-red-600">หัก GP</th>
+                                <th class="px-2 py-3 text-right bg-orange-50 border-l border-orange-100">ต้นทุน (บาท)</th>
+                                <th class="px-2 py-3 text-right bg-emerald-50 text-emerald-700 border-l border-emerald-100">กำไร/จาน</th>
+                                <th class="px-4 py-3 text-right bg-emerald-100 text-emerald-800 font-extrabold">กำไรสุทธิ</th>
                             </tr>
                         </thead>
                         <tbody id="table-body" class="divide-y divide-slate-100"></tbody>
@@ -159,287 +171,235 @@
     </div>
 
     <script>
-        // --- GLOBAL VARIABLES ---
-        let rawData = []; // Original Data
-        let processedData = []; // Data with Profit/Cost
-        let categories = new Set();
+        // --- GLOBAL STATE ---
+        let rawData = [];
         let myChart = null;
-        
-        // Thresholds (Percentages 0-200 of Average)
-        let thresholdX = 100; 
-        let thresholdY = 100;
+        let thresholdX = 100; // % of Avg Qty
+        let thresholdY = 100; // % of Avg Profit
 
-        // --- FILE HANDLING ---
+        // --- FILE IMPORT ---
         document.getElementById('fileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
-            const reader = new FileReader();
-            
-            // Handle Excel vs CSV
             if(file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+                const reader = new FileReader();
                 reader.readAsArrayBuffer(file);
                 reader.onload = (e) => {
-                    const workbook = XLSX.read(e.target.result, {type:'array'});
-                    const jsonData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-                    parseData(jsonData);
+                    const wb = XLSX.read(e.target.result, {type:'array'});
+                    const json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+                    parseData(json);
                 };
             } else {
-                reader.readAsText(file, 'TIS-620'); // Try Thai Encoding first
+                const reader = new FileReader();
+                reader.readAsText(file, 'TIS-620'); // Try Thai Encoding
                 reader.onload = (e) => {
-                    let text = e.target.result;
-                    if(!text.includes(',')) { // If TIS-620 fails
+                    let txt = e.target.result;
+                    if(!txt.includes(',')) { // Fallback UTF-8
                         const r2 = new FileReader();
                         r2.readAsText(file, 'UTF-8');
-                        r2.onload = (evt) => Papa.parse(evt.target.result, { header:true, skipEmptyLines:true, complete:(r)=>parseData(r.data) });
+                        r2.onload = (evt) => Papa.parse(evt.target.result, {header:true, skipEmptyLines:true, complete:(r)=>parseData(r.data)});
                         return;
                     }
-                    Papa.parse(text, { header:true, skipEmptyLines:true, complete:(r)=>parseData(r.data) });
+                    Papa.parse(txt, {header:true, skipEmptyLines:true, complete:(r)=>parseData(r.data)});
                 };
             }
         });
 
         function parseData(data) {
             rawData = [];
-            categories.clear();
-
-            data.forEach((row, index) => {
+            data.forEach((row, idx) => {
                 const keys = Object.keys(row);
-                // Smart Column Detection
                 const name = row[keys.find(k => /name|เมนู|สินค้า/i.test(k))];
                 const qty = parseFloat(String(row[keys.find(k => /qty|จำนวน|amount/i.test(k))] || '0').replace(/,/g,''));
                 const sales = parseFloat(String(row[keys.find(k => /sales|total|ยอดขาย/i.test(k))] || '0').replace(/,/g,''));
 
                 if(name && qty > 0) {
-                    // Detect Category from first word (Simple logic for Thai Menu)
-                    const firstWord = name.split(' ')[0].replace(/[0-9\[\]\(\)]/g, ''); 
-                    const category = firstWord.length > 2 ? firstWord : 'ทั่วไป';
-                    categories.add(category);
-
-                    // Initial Profit Calculation (Assume 30% Cost)
                     const price = sales / qty;
-                    const estimatedCost = price * 0.35; // Default 35% Cost
-
                     rawData.push({
-                        id: index,
+                        id: idx,
                         name: name,
-                        category: category,
                         qty: qty,
-                        originalPrice: price,
-                        originalCost: estimatedCost,
-                        // Simulation values (mutable)
-                        simPrice: price,
-                        simCost: estimatedCost
+                        sales: sales,
+                        price: price,
+                        // Default Cost (User can edit later)
+                        costPerUnit: 0 // Will be set by recalculateAll
                     });
                 }
             });
 
             if(rawData.length === 0) { alert('ไม่พบข้อมูลที่ถูกต้อง'); return; }
-
-            // Populate Filter
-            const filterSelect = document.getElementById('categoryFilter');
-            filterSelect.innerHTML = '<option value="all">🍔 ทุกหมวดหมู่</option>';
-            [...categories].sort().forEach(c => {
-                filterSelect.innerHTML += `<option value="${c}">${c}</option>`;
-            });
-
+            
             document.getElementById('empty-state').classList.add('hidden');
             document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('settings-bar').classList.remove('hidden');
             
-            applyFilters();
+            recalculateAll(true); // First run: set default costs
         }
 
-        // --- CORE LOGIC ---
-        function applyFilters() {
-            const cat = document.getElementById('categoryFilter').value;
+        // --- CALCULATION CORE ---
+        function recalculateAll(isInit = false) {
+            const gpPct = parseFloat(document.getElementById('gpPercent').value) || 0;
+            const vatPct = parseFloat(document.getElementById('vatPercent').value) || 0;
+            const defCostPct = parseFloat(document.getElementById('defaultCostPercent').value) || 35;
             
-            // Filter Data
-            let filtered = rawData.filter(i => cat === 'all' || i.category.startsWith(cat));
-            
-            // Calculate Derived Values (Profit, Total)
-            processedData = filtered.map(i => {
-                const totalRevenue = i.qty * i.simPrice;
-                const totalCost = i.qty * i.simCost;
-                const totalProfit = totalRevenue - totalCost;
-                const gpPercent = totalRevenue > 0 ? ((totalRevenue - totalCost)/totalRevenue)*100 : 0;
+            document.getElementById('lbl-cost-pct').innerText = defCostPct + "%";
+
+            // Process Data
+            let processed = rawData.map(item => {
+                // 1. Initial Cost Setup (Only if 0 or Reset)
+                if(isInit || item.costPerUnit === 0) {
+                    item.costPerUnit = item.price * (defCostPct / 100);
+                }
+
+                // 2. Revenue after GP & VAT
+                // Net Price = Price - (Price * GP%) - (Price * VAT / (100+VAT)) -> Simple VAT extraction if included
+                // Usually GP is calculated on Gross Sales including VAT.
+                // Let's keep it simple: Deduct GP from Price.
                 
-                return {
-                    ...i,
-                    totalRevenue,
-                    totalProfit,
-                    gpPercent
-                };
+                const gpAmount = item.price * (gpPct / 100);
+                // VAT: If price includes VAT, remove it to find base revenue? 
+                // Let's assume Price is Gross. Net Received = Price - GP.
+                // If user wants to deduct VAT from the remaining, we can add logic.
+                // For now, let's treat "Net Received" as Price - GP.
+                
+                const netReceived = item.price - gpAmount;
+                const profitPerUnit = netReceived - item.costPerUnit;
+                const totalProfit = profitPerUnit * item.qty;
+
+                return { ...item, gpAmount, netReceived, profitPerUnit, totalProfit };
             });
 
-            calculateMatrix();
+            updateDashboard(processed);
         }
 
-        function calculateMatrix() {
-            if(processedData.length === 0) return;
+        function updateDashboard(data) {
+            // 1. Stats
+            const totalProfit = data.reduce((sum, i) => sum + i.totalProfit, 0);
+            document.getElementById('stat-net-profit').innerText = Math.round(totalProfit).toLocaleString();
+            document.getElementById('total-sku').innerText = data.length;
 
-            // 1. Averages
-            const totalQty = processedData.reduce((sum, i) => sum + i.qty, 0);
-            const totalProfit = processedData.reduce((sum, i) => sum + i.totalProfit, 0);
-            const totalSales = processedData.reduce((sum, i) => sum + i.totalRevenue, 0);
+            // 2. Averages & Quadrants
+            const avgQty = data.reduce((s, i) => s + i.qty, 0) / data.length;
+            const avgProfit = totalProfit / data.length;
+
+            let counts = { star:0, cow:0, puzzle:0, dog:0 };
             
-            const avgQty = totalQty / processedData.length;
-            const avgProfit = totalProfit / processedData.length;
-
-            // 2. Thresholds (User Adjusted)
-            const cutoffX = avgQty * (thresholdX / 100);
-            const cutoffY = avgProfit * (thresholdY / 100);
-
-            // 3. Classify & Pareto
-            processedData.sort((a,b) => b.totalProfit - a.totalProfit); // Sort for Pareto
-            let runningProfit = 0;
-            const eightyPercentProfit = totalProfit * 0.8;
-
-            processedData.forEach(item => {
-                // Classify
-                if (item.qty >= cutoffX && item.totalProfit >= cutoffY) { item.class = 'star'; item.label = 'STAR'; }
-                else if (item.qty >= cutoffX && item.totalProfit < cutoffY) { item.class = 'horse'; item.label = 'PLOW HORSE'; } // Cash Cow
-                else if (item.qty < cutoffX && item.totalProfit >= cutoffY) { item.class = 'puzzle'; item.label = 'PUZZLE'; } // Question
-                else { item.class = 'dog'; item.label = 'DOG'; }
-
-                // Pareto Check
-                runningProfit += item.totalProfit;
-                item.isPareto = runningProfit <= eightyPercentProfit || (runningProfit - item.totalProfit) < eightyPercentProfit;
+            data.forEach(i => {
+                if(i.qty >= avgQty && i.totalProfit >= avgProfit) { i.class='star'; counts.star++; }
+                else if(i.qty >= avgQty && i.totalProfit < avgProfit) { i.class='cow'; counts.cow++; }
+                else if(i.qty < avgQty && i.totalProfit >= avgProfit) { i.class='puzzle'; counts.puzzle++; }
+                else { i.class='dog'; counts.dog++; }
             });
 
-            // 4. Update UI
-            document.getElementById('lbl-x-threshold').innerText = Math.round(cutoffX) + " ชิ้น";
-            document.getElementById('lbl-y-threshold').innerText = Math.round(cutoffY).toLocaleString() + " บ.";
-            
-            document.getElementById('stat-total-items').innerText = processedData.length;
-            document.getElementById('stat-total-sales').innerText = totalSales.toLocaleString();
-            document.getElementById('stat-total-profit').innerText = totalProfit.toLocaleString();
-            
-            const paretoCount = processedData.filter(i => i.isPareto).length;
-            const paretoPct = ((paretoCount / processedData.length) * 100).toFixed(1);
-            document.getElementById('stat-pareto').innerText = paretoPct + "%";
+            document.getElementById('cnt-star').innerText = counts.star;
+            document.getElementById('cnt-cow').innerText = counts.cow;
+            document.getElementById('cnt-puzzle').innerText = counts.puzzle;
+            document.getElementById('cnt-dog').innerText = counts.dog;
 
-            updateChart(cutoffX, cutoffY);
-            updateTable();
+            // 3. Pareto (Sort by Profit Desc)
+            data.sort((a,b) => b.totalProfit - a.totalProfit);
+            let running = 0;
+            let paretoCount = 0;
+            const target = totalProfit * 0.8;
+            for(let i of data) {
+                running += i.totalProfit;
+                if(running <= target) paretoCount++;
+                else break;
+            }
+            document.getElementById('pareto-count').innerText = (paretoCount + 1) + " เมนู";
+
+            renderTable(data);
+            renderChart(data, avgQty, avgProfit);
         }
 
-        // --- SIMULATION ---
-        window.updateSim = (id, field, value) => {
+        // --- UPDATE SIMULATION ---
+        window.updateCost = (id, val) => {
             const item = rawData.find(i => i.id === id);
             if(item) {
-                item[field] = parseFloat(value) || 0;
-                applyFilters(); // Recalculate everything
+                item.costPerUnit = parseFloat(val);
+                recalculateAll(false); // Recalc without resetting defaults
             }
         };
 
-        window.resetSimulation = () => {
-            rawData.forEach(i => {
-                i.simPrice = i.originalPrice;
-                i.simCost = i.originalCost;
+        // --- RENDER TABLE ---
+        function renderTable(data) {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+
+            data.forEach(i => {
+                let badge = '';
+                if(i.class==='star') badge='<span class="badge badge-star">STAR</span>';
+                else if(i.class==='cow') badge='<span class="badge badge-cow">COW</span>';
+                else if(i.class==='puzzle') badge='<span class="badge badge-puzzle">PUZZLE</span>';
+                else badge='<span class="badge badge-dog">DOG</span>';
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-50 group">
+                        <td class="px-4 py-2 font-medium text-slate-700 truncate max-w-[150px]" title="${i.name}">${i.name}</td>
+                        <td class="px-2 py-2 text-center">${badge}</td>
+                        <td class="px-2 py-2 text-right text-slate-500">${i.qty.toLocaleString()}</td>
+                        <td class="px-2 py-2 text-right bg-blue-50/30">${i.price.toFixed(0)}</td>
+                        <td class="px-2 py-2 text-right text-red-400 text-xs">-${i.gpAmount.toFixed(0)}</td>
+                        <td class="px-2 py-2 text-right p-0">
+                            <input type="number" class="sim-input text-orange-600 font-bold bg-orange-50/20 focus:bg-white" 
+                                   value="${i.costPerUnit.toFixed(1)}" 
+                                   onchange="updateCost(${i.id}, this.value)">
+                        </td>
+                        <td class="px-2 py-2 text-right font-bold ${i.profitPerUnit>0?'text-emerald-600':'text-red-600'}">${i.profitPerUnit.toFixed(0)}</td>
+                        <td class="px-4 py-2 text-right font-black ${i.totalProfit>0?'text-emerald-700':'text-red-700'} bg-emerald-50/30">${Math.round(i.totalProfit).toLocaleString()}</td>
+                    </tr>
+                `;
             });
-            applyFilters();
-        };
+        }
 
-        window.updateThresholds = () => {
-            thresholdX = parseInt(document.getElementById('sliderX').value);
-            thresholdY = parseInt(document.getElementById('sliderY').value);
-            calculateMatrix();
-        };
-
-        // --- CHART ---
-        function updateChart(cutoffX, cutoffY) {
+        // --- RENDER CHART ---
+        function renderChart(items, avgQty, avgProfit) {
             const ctx = document.getElementById('matrixChart').getContext('2d');
-            
-            // Prepare Data
-            const dataPoints = processedData.map(i => ({
-                x: i.qty,
-                y: i.totalProfit,
-                r: Math.min(Math.max(i.totalRevenue / 1000, 5), 30), // Bubble size based on Sales Volume
-                raw: i
-            }));
-
             if(myChart) myChart.destroy();
+
+            const points = items.map(i => ({
+                x: i.qty, y: i.totalProfit, r: Math.min(Math.max(i.qty/2, 4), 25), raw: i
+            }));
 
             myChart = new Chart(ctx, {
                 type: 'bubble',
                 data: {
                     datasets: [{
                         label: 'Menu',
-                        data: dataPoints,
-                        backgroundColor: (ctx) => {
-                            const c = ctx.raw?.raw?.class;
-                            if(c==='star') return 'rgba(234, 179, 8, 0.8)';
-                            if(c==='horse') return 'rgba(34, 197, 94, 0.8)';
-                            if(c==='puzzle') return 'rgba(59, 130, 246, 0.8)';
-                            return 'rgba(148, 163, 184, 0.8)';
+                        data: points,
+                        backgroundColor: c => {
+                            const t = c.raw?.raw?.class;
+                            if(t==='star') return 'rgba(234, 179, 8, 0.7)';
+                            if(t==='cow') return 'rgba(34, 197, 94, 0.7)';
+                            if(t==='puzzle') return 'rgba(59, 130, 246, 0.7)';
+                            return 'rgba(148, 163, 184, 0.7)';
                         },
-                        borderColor: 'rgba(0,0,0,0.1)',
-                        borderWidth: 1
+                        borderColor: 'rgba(0,0,0,0.1)', borderWidth: 1
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
+                    responsive: true, maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: false },
+                        legend: false,
                         tooltip: {
                             callbacks: {
-                                label: (c) => {
-                                    const i = c.raw.raw;
-                                    return `${i.name} | Qty:${i.qty} | Profit:${Math.round(i.totalProfit).toLocaleString()}`;
-                                }
+                                label: c => `${c.raw.raw.name} (Qty:${c.raw.x} | Profit:${Math.round(c.raw.y)})`
                             },
-                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                            padding: 12,
-                            titleFont: { size: 14 }
+                            padding: 10, titleFont: {size:13}
                         },
                         annotation: {
                             annotations: {
-                                lineX: { type: 'line', xMin: cutoffX, xMax: cutoffX, borderColor: '#ef4444', borderWidth: 2, borderDash: [5,5], label: { display:true, content:'Avg Qty', position:'end', color:'red', font:{size:10} } },
-                                lineY: { type: 'line', yMin: cutoffY, yMax: cutoffY, borderColor: '#ef4444', borderWidth: 2, borderDash: [5,5], label: { display:true, content:'Avg Profit', position:'end', color:'red', font:{size:10} } }
+                                lineX: { type:'line', xMin:avgQty, xMax:avgQty, borderColor:'red', borderWidth:2, borderDash:[5,5], label:{display:true, content:'Avg Qty', color:'red', position:'end', yAdjust:-10} },
+                                lineY: { type:'line', yMin:avgProfit, yMax:avgProfit, borderColor:'red', borderWidth:2, borderDash:[5,5], label:{display:true, content:'Avg Profit', color:'red', position:'end'} }
                             }
                         }
                     },
                     scales: {
-                        x: { title: { display:true, text:'ความนิยม (Qty)', color:'#94a3b8' }, grid: {color:'#f8fafc'} },
-                        y: { title: { display:true, text:'กำไร (Total Profit)', color:'#94a3b8' }, grid: {color:'#f8fafc'} }
+                        x: { title:{display:true, text:'ความนิยม (จำนวนขาย)'}, grid:{color:'#f1f5f9'} },
+                        y: { title:{display:true, text:'กำไรสุทธิ (หลังหัก GP)'}, grid:{color:'#f1f5f9'} }
                     }
                 }
-            });
-        }
-
-        // --- TABLE ---
-        function updateTable() {
-            const tbody = document.getElementById('table-body');
-            tbody.innerHTML = '';
-
-            processedData.forEach(i => {
-                let badgeClass = '';
-                if(i.class === 'star') badgeClass = 'badge-star';
-                else if(i.class === 'horse') badgeClass = 'badge-horse';
-                else if(i.class === 'puzzle') badgeClass = 'badge-puzzle';
-                else badgeClass = 'badge-dog';
-
-                const paretoClass = i.isPareto ? 'pareto-row' : '';
-                const paretoIcon = i.isPareto ? '<i class="fa-solid fa-medal text-yellow-500 ml-1 text-[10px]" title="Top 80% Revenue"></i>' : '';
-
-                const tr = document.createElement('tr');
-                tr.className = `hover:bg-slate-50 border-b border-slate-50 transition ${paretoClass}`;
-                tr.innerHTML = `
-                    <td class="px-4 py-3 font-medium text-slate-700 max-w-[200px] truncate" title="${i.name}">
-                        ${i.name} ${paretoIcon}
-                    </td>
-                    <td class="px-4 py-3 text-center"><span class="badge ${badgeClass}">${i.label}</span></td>
-                    <td class="px-4 py-3 text-right text-slate-500">${i.qty.toLocaleString()}</td>
-                    <td class="px-4 py-3 text-right">
-                        <input type="number" class="sim-input" value="${i.simPrice.toFixed(2)}" onchange="updateSim(${i.id}, 'simPrice', this.value)">
-                    </td>
-                    <td class="px-4 py-3 text-right">
-                        <input type="number" class="sim-input text-red-600 border-red-200 focus:bg-red-50" value="${i.simCost.toFixed(2)}" onchange="updateSim(${i.id}, 'simCost', this.value)">
-                    </td>
-                    <td class="px-4 py-3 text-right font-bold text-emerald-600">${Math.round(i.totalProfit).toLocaleString()}</td>
-                    <td class="px-4 py-3 text-center text-xs text-slate-400">${( (i.simCost/i.simPrice)*100 ).toFixed(0)}%</td>
-                `;
-                tbody.appendChild(tr);
             });
         }
 
@@ -448,7 +408,7 @@
             window.scrollTo(0,0);
             html2canvas(document.getElementById('capture-area')).then(canvas => {
                 const link = document.createElement('a');
-                link.download = 'Menu_Analysis.png';
+                link.download = 'Menu_Profit_Analysis.png';
                 link.href = canvas.toDataURL();
                 link.click();
             });
