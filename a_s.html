@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Restaurant PRO (Full Advance)</title>
+    <title>Restaurant PRO V2 (Full Costing)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -12,341 +12,253 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        body { font-family: 'Sarabun', sans-serif; background-color: #f1f5f9; color: #334155; padding-bottom: 80px; }
+        body { font-family: 'Sarabun', sans-serif; background-color: #f1f5f9; color: #334155; padding-bottom: 90px; }
         
-        /* Layout */
+        /* Components */
         .page { display: none; animation: fade 0.3s; }
         .page.active { display: block; }
         @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 
-        /* UI Components */
         .card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 12px; border: 1px solid #e2e8f0; }
-        .section-title { font-size: 1rem; font-weight: bold; color: #1e293b; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .btn-primary { background: #2563eb; color: white; padding: 10px; border-radius: 8px; font-weight: bold; width: 100%; box-shadow: 0 2px 5px rgba(37,99,235,0.2); }
         
-        .inp-group { margin-bottom: 12px; }
-        .inp-label { display: block; font-size: 0.75rem; color: #64748b; margin-bottom: 4px; }
-        .inp { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem; background: #fff; }
-        .inp:focus { outline: none; border-color: #3b82f6; ring: 2px; }
-        .inp[readonly] { background: #f8fafc; color: #94a3b8; }
+        .inp { width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem; background: #fff; }
+        .inp:focus { border-color: #3b82f6; outline: none; ring: 2px; }
+
+        /* Search List */
+        .search-results { max-height: 150px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; margin-top: 4px; display: none; }
+        .search-item { padding: 8px; border-bottom: 1px solid #f1f5f9; cursor: pointer; font-size: 0.85rem; }
+        .search-item:hover { background: #f8fafc; }
 
         /* Tab Bar */
         .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #e2e8f0; display: flex; z-index: 50; padding-bottom: env(safe-area-inset-bottom); }
-        .tab-btn { flex: 1; padding: 10px 0; text-align: center; color: #94a3b8; font-size: 0.65rem; transition: 0.2s; }
+        .tab-btn { flex: 1; padding: 10px 0; text-align: center; color: #94a3b8; font-size: 0.65rem; }
         .tab-btn i { font-size: 1.25rem; margin-bottom: 2px; display: block; }
         .tab-btn.active { color: #2563eb; font-weight: bold; background: #eff6ff; }
 
-        /* Tables (P&L Style) */
-        .pl-table { width: 100%; font-size: 0.85rem; border-collapse: collapse; }
-        .pl-table td { padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
-        .pl-head { font-weight: bold; background: #f8fafc; color: #475569; }
-        .pl-sub { padding-left: 16px !important; color: #64748b; font-size: 0.8rem; }
-        .pl-total { font-weight: bold; border-top: 2px solid #e2e8f0; border-bottom: 2px solid #e2e8f0; background: #feffff; }
-        .pl-pac { background: #eff6ff; color: #1e40af; font-weight: bold; border: 1px dashed #bfdbfe; }
-        
-        /* Badges */
-        .badge { padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; }
-        .badge-green { background: #dcfce7; color: #166534; }
-        .badge-red { background: #fee2e2; color: #991b1b; }
+        /* Tags */
+        .tag { padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; }
+        .tag-raw { background: #dbeafe; color: #1e40af; }
+        .tag-semi { background: #fef3c7; color: #92400e; }
+        .tag-yield { background: #fee2e2; color: #991b1b; }
     </style>
 </head>
 <body>
 
     <div id="login-screen" class="fixed inset-0 z-[100] bg-slate-900 flex flex-col justify-center px-8">
         <div class="text-center mb-8">
-            <div class="w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl mx-auto flex items-center justify-center mb-6 shadow-2xl">
-                <i class="fa-solid fa-chart-line text-3xl text-white"></i>
+            <div class="w-20 h-20 bg-blue-600 rounded-2xl mx-auto flex items-center justify-center mb-6 shadow-2xl">
+                <i class="fa-solid fa-utensils text-3xl text-white"></i>
             </div>
-            <h1 class="text-2xl font-bold text-white mb-1">Restaurant PRO</h1>
-            <p class="text-blue-200 text-sm">Full Advance Edition (DB: pro_)</p>
+            <h1 class="text-2xl font-bold text-white">Restaurant PRO V2</h1>
+            <p class="text-blue-200 text-sm">Full Costing (Yield & Semi-Product)</p>
         </div>
         <form id="loginForm" class="space-y-4">
             <input type="email" id="loginEmail" class="inp bg-slate-800 border-slate-700 text-white placeholder-slate-500" placeholder="Email" required>
             <input type="password" id="loginPass" class="inp bg-slate-800 border-slate-700 text-white placeholder-slate-500" placeholder="Password" required>
-            <button type="submit" class="w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 shadow-lg">เข้าสู่ระบบ</button>
+            <button type="submit" class="btn-primary">เข้าสู่ระบบ</button>
         </form>
     </div>
 
     <div id="main-app" class="hidden">
         
         <div class="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm z-40 px-4 h-[50px] border-b border-slate-200 flex justify-between items-center shadow-sm">
-            <span class="font-bold text-slate-800"><i class="fa-solid fa-utensils text-blue-600 mr-2"></i>Advance System</span>
-            <span class="text-[10px] bg-slate-100 px-2 py-1 rounded text-slate-500">Database: pro_</span>
+            <span class="font-bold text-slate-800"><i class="fa-solid fa-kitchen-set text-blue-600 mr-2"></i>Kitchen Master</span>
+            <button onclick="refreshAll()" class="text-slate-400 hover:text-blue-600"><i class="fa-solid fa-sync"></i></button>
         </div>
+        <div style="height: 60px;"></div>
 
-        <div style="height: 60px;"></div> <div id="page-setup" class="page active px-4">
-            <h2 class="text-xl font-bold text-slate-800 mb-4">⚙️ ตั้งค่าร้าน (Master Config)</h2>
+        <div id="page-ing" class="page active px-4">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-slate-800">🥦 วัตถุดิบ (Raw Material)</h2>
+                <button onclick="openModal('ing')" class="bg-blue-600 text-white w-8 h-8 rounded-full shadow"><i class="fa-solid fa-plus"></i></button>
+            </div>
             
-            <div class="card">
-                <div class="section-title"><i class="fa-solid fa-store text-blue-500"></i>ข้อมูลทั่วไป</div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="inp-group">
-                        <label class="inp-label">VAT (%)</label>
-                        <input type="number" id="cfgVat" class="inp text-center" value="7">
-                    </div>
-                    <div class="inp-group">
-                        <label class="inp-label">GP Delivery (%)</label>
-                        <input type="number" id="cfgGp" class="inp text-center" value="32.1">
-                    </div>
-                    <div class="inp-group">
-                        <label class="inp-label">Human Error (%)</label>
-                        <input type="number" id="cfgError" class="inp text-center" value="5">
-                        <small class="text-[10px] text-slate-400">เผื่อของเสีย/ทำผิด</small>
-                    </div>
-                </div>
+            <div class="flex gap-2 mb-4 overflow-x-auto pb-2">
+                <button onclick="filterIng('all')" class="tag px-3 py-1 bg-slate-700 text-white">ทั้งหมด</button>
+                <button onclick="filterIng('เนื้อสัตว์')" class="tag px-3 py-1 bg-red-100 text-red-700">🥩 เนื้อสัตว์</button>
+                <button onclick="filterIng('ผัก')" class="tag px-3 py-1 bg-green-100 text-green-700">🥬 ผัก</button>
+                <button onclick="filterIng('เครื่องปรุง')" class="tag px-3 py-1 bg-yellow-100 text-yellow-700">🧂 ปรุงรส</button>
+                <button onclick="filterIng('บรรจุภัณฑ์')" class="tag px-3 py-1 bg-blue-100 text-blue-700">📦 กล่อง/แก้ว</button>
             </div>
 
-            <div class="card border-l-4 border-orange-400">
-                <div class="section-title"><i class="fa-solid fa-building text-orange-500"></i>ค่าคงที่ & ค่าเสื่อม</div>
-                <div class="inp-group">
-                    <label class="inp-label">ค่าเช่าร้าน (ต่อเดือน)</label>
-                    <input type="number" id="cfgRent" class="inp" placeholder="0.00">
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="inp-group">
-                        <label class="inp-label">เงินลงทุนร้าน (บาท)</label>
-                        <input type="number" id="cfgInvest" class="inp" placeholder="เช่น 1,000,000">
-                    </div>
-                    <div class="inp-group">
-                        <label class="inp-label">สัญญาเช่า (เดือน)</label>
-                        <input type="number" id="cfgMonth" class="inp" placeholder="เช่น 36">
-                    </div>
-                </div>
-                <div class="bg-orange-50 p-2 rounded text-xs text-orange-700 flex justify-between">
-                    <span>= ค่าเสื่อม/เดือน:</span>
-                    <span id="calcDepre" class="font-bold">0.00</span>
-                </div>
-            </div>
-
-            <div class="card border-l-4 border-blue-400">
-                <div class="section-title"><i class="fa-solid fa-users text-blue-500"></i>ฐานเงินเดือน (Labor)</div>
-                <div class="inp-group">
-                    <label class="inp-label">เงินเดือนรวมพนักงานประจำ</label>
-                    <input type="number" id="cfgSalary" class="inp" placeholder="0.00">
-                </div>
-                <div class="bg-blue-50 p-2 rounded text-xs text-blue-700 flex justify-between mb-2">
-                    <span>+ กันโบนัส (เดือนละ):</span>
-                    <span id="calcBonus" class="font-bold">0.00</span>
-                </div>
-                <small class="text-[10px] text-slate-400">*ระบบจะคำนวณโบนัสสะสมให้อัตโนมัติ (เงินเดือน / 12)</small>
-            </div>
-
-            <button onclick="saveConfig()" class="w-full py-3 bg-slate-800 text-white font-bold rounded-lg shadow-lg">บันทึกการตั้งค่า</button>
+            <div id="ing-list" class="space-y-2"></div>
         </div>
 
-        <div id="page-cost" class="page px-4">
-            <h2 class="text-xl font-bold text-slate-800 mb-4">🥦 ต้นทุน & สูตร (Costing)</h2>
-            
-            <div class="flex gap-2 mb-4">
-                <button onclick="toggleCostMode('ing')" id="btn-mode-ing" class="flex-1 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold shadow">วัตถุดิบ (Yield)</button>
-                <button onclick="toggleCostMode('rec')" id="btn-mode-rec" class="flex-1 py-2 bg-white text-slate-600 border border-slate-200 rounded-lg text-xs font-bold">สูตรอาหาร</button>
-            </div>
-
-            <div id="view-ing">
-                <div class="card bg-blue-50 border-blue-200">
-                    <h3 class="font-bold text-sm text-blue-800 mb-2">เพิ่มวัตถุดิบใหม่</h3>
-                    <div class="grid grid-cols-2 gap-2 mb-2">
-                        <input type="text" id="ingName" class="inp h-8 text-xs" placeholder="ชื่อ (เช่น หมูบด)">
-                        <input type="text" id="ingUnit" class="inp h-8 text-xs" placeholder="หน่วยใช้ (เช่น กรัม)">
-                    </div>
-                    <div class="grid grid-cols-3 gap-2 mb-2">
-                        <input type="number" id="ingPrice" class="inp h-8 text-xs" placeholder="ราคาซื้อ">
-                        <input type="number" id="ingQty" class="inp h-8 text-xs" placeholder="ปริมาณซื้อ">
-                        <input type="number" id="ingYield" class="inp h-8 text-xs text-red-500 font-bold" placeholder="Yield %" value="100">
-                    </div>
-                    <div class="flex justify-between items-center mt-2">
-                        <span class="text-xs text-slate-500">ต้นทุนจริง: <b id="realCostPreview" class="text-red-600">-</b></span>
-                        <button onclick="addIngredient()" class="px-4 py-1 bg-blue-600 text-white text-xs rounded shadow">บันทึก</button>
-                    </div>
+        <div id="page-semi" class="page px-4">
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800">🥣 Semi-Product</h2>
+                    <p class="text-xs text-slate-500">ซอส, หมูหมัก, น้ำซุป (ทำทีละหม้อ)</p>
                 </div>
-                <div id="ing-list" class="space-y-2 pb-20"></div>
+                <button onclick="openModal('semi')" class="bg-orange-500 text-white w-8 h-8 rounded-full shadow"><i class="fa-solid fa-plus"></i></button>
             </div>
-
-            <div id="view-rec" class="hidden">
-                <div class="card border-l-4 border-emerald-500">
-                    <h3 class="font-bold text-sm text-emerald-800 mb-2">สร้างสูตรเมนู</h3>
-                    <input type="text" id="recName" class="inp mb-2" placeholder="ชื่อเมนู (เช่น ข้าวกะเพรา)">
-                    <div class="grid grid-cols-2 gap-2 mb-2">
-                        <input type="number" id="recPrice" class="inp" placeholder="ราคาขาย">
-                        <div class="text-right text-xs pt-2 text-slate-500">ต้นทุน: <b id="recCostTotal" class="text-red-500 text-lg">0.00</b></div>
-                    </div>
-                    
-                    <div class="bg-slate-50 p-2 rounded mb-2 border border-slate-200">
-                        <div class="flex gap-1 mb-2">
-                            <select id="recIngSel" class="inp text-xs flex-1"></select>
-                            <input type="number" id="recIngQty" class="inp text-xs w-16" placeholder="ใช้">
-                            <button onclick="pushIngToRec()" class="bg-emerald-500 text-white w-8 rounded"><i class="fa-solid fa-plus"></i></button>
-                        </div>
-                        <div id="rec-ing-list" class="space-y-1 text-xs text-slate-600 max-h-32 overflow-y-auto"></div>
-                    </div>
-                    <button onclick="saveRecipe()" class="w-full py-2 bg-emerald-600 text-white text-xs font-bold rounded">บันทึกสูตร</button>
-                </div>
-                <div id="recipe-list" class="space-y-2 pb-20"></div>
-            </div>
+            <div id="semi-list" class="space-y-3"></div>
         </div>
 
-        <div id="page-daily" class="page px-4">
-            <h2 class="text-xl font-bold text-slate-800 mb-4">📅 บันทึกประจำวัน</h2>
-            
-            <div class="card mb-4 bg-white sticky top-[50px] z-20 shadow-md">
-                <div class="flex justify-between items-center">
-                    <input type="date" id="logDate" class="inp w-auto font-bold text-slate-700 bg-slate-50">
-                    <div class="text-right">
-                        <p class="text-[10px] text-slate-400">เป้ายอดขาย (Target)</p>
-                        <input type="number" id="logTarget" class="inp h-8 w-24 text-right text-blue-600 font-bold" placeholder="0">
-                    </div>
-                </div>
+        <div id="page-menu" class="page px-4">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-slate-800">🍽️ เมนูขาย (Recipe)</h2>
+                <button onclick="openModal('menu')" class="bg-emerald-500 text-white w-8 h-8 rounded-full shadow"><i class="fa-solid fa-plus"></i></button>
             </div>
-
-            <div class="card border-l-4 border-blue-500">
-                <div class="section-title"><i class="fa-solid fa-cash-register text-blue-500"></i>ยอดขาย (Sales)</div>
-                <div class="grid grid-cols-2 gap-3 mb-3">
-                    <div class="inp-group">
-                        <label class="inp-label">หน้าร้าน (Cash)</label>
-                        <input type="number" id="saleCash" class="inp text-right text-lg font-bold" placeholder="0">
-                    </div>
-                    <div class="inp-group">
-                        <label class="inp-label">Delivery (Gross)</label>
-                        <input type="number" id="saleDeli" class="inp text-right text-lg font-bold text-green-600" placeholder="0">
-                    </div>
-                </div>
-                
-                <div class="bg-slate-50 p-3 rounded-lg mb-3 text-xs space-y-2 border border-slate-200">
-                    <div class="flex justify-between">
-                        <span>ส่วนลด (Discount)</span>
-                        <input type="number" id="saleDisc" class="w-20 text-right border-b border-slate-300 bg-transparent text-red-500" placeholder="0">
-                    </div>
-                    <div class="flex justify-between">
-                        <span>เงินสดขาด/เกิน</span>
-                        <input type="number" id="saleDiff" class="w-20 text-right border-b border-slate-300 bg-transparent" placeholder="0">
-                    </div>
-                    <div class="flex justify-between font-bold pt-2 border-t border-slate-200">
-                        <span>หัก GP (Auto)</span>
-                        <span id="dispGp" class="text-red-500">0.00</span>
-                    </div>
-                </div>
-                <button onclick="saveDailySales()" class="w-full py-2 bg-blue-600 text-white rounded text-sm font-bold">บันทึกยอดขาย</button>
-            </div>
-
-            <div class="card border-l-4 border-orange-500">
-                <div class="section-title"><i class="fa-solid fa-wallet text-orange-500"></i>จ่ายรายวัน (Petty Cash)</div>
-                <div class="grid grid-cols-3 gap-2 mb-2">
-                    <select id="expCat" class="inp col-span-2 text-sm">
-                        <option value="raw">🥦 ซื้อของสด (ตลาด)</option>
-                        <option value="ice">🧊 น้ำแข็ง/แก๊ส</option>
-                        <option value="supply">🧻 วัสดุสิ้นเปลือง</option>
-                        <option value="mkt">📢 การตลาด (Ads)</option>
-                        <option value="repair">🔧 ค่าซ่อมแซม</option>
-                        <option value="travel">🚗 ค่าเดินทาง</option>
-                        <option value="ot">👷 ค่าแรง Part-time/OT</option>
-                    </select>
-                    <input type="number" id="expAmt" class="inp text-right font-bold text-red-500" placeholder="฿">
-                </div>
-                <input type="text" id="expMemo" class="inp mb-3 text-xs" placeholder="รายละเอียด (เช่น ค่าวิน, ซื้อผัก)">
-                <button onclick="saveDailyExp()" class="w-full py-2 bg-orange-500 text-white rounded text-sm font-bold">บันทึกรายจ่าย</button>
-                
-                <div id="today-exp-list" class="mt-3 pt-3 border-t border-slate-100 space-y-2 text-xs"></div>
-            </div>
-        </div>
-
-        <div id="page-report" class="page px-4">
-            <h2 class="text-xl font-bold text-slate-800 mb-4">📊 งบกำไรขาดทุน (Advance)</h2>
-            <div class="flex gap-2 mb-4">
-                <button onclick="genReport('today')" class="px-4 py-1 bg-white border rounded-full text-xs shadow-sm">วันนี้</button>
-                <button onclick="genReport('month')" class="px-4 py-1 bg-blue-600 text-white rounded-full text-xs shadow-sm">เดือนนี้</button>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3 mb-4">
-                <div class="card !p-3 text-center border-l-4 border-green-500 bg-green-50">
-                    <p class="text-[10px] text-green-700 font-bold uppercase">Net Sales</p>
-                    <h3 class="text-lg font-bold text-green-800" id="rpt-netsale">0</h3>
-                </div>
-                <div class="card !p-3 text-center border-l-4 border-blue-500 bg-blue-50">
-                    <p class="text-[10px] text-blue-700 font-bold uppercase">PAC (คุมได้)</p>
-                    <h3 class="text-lg font-bold text-blue-800" id="rpt-pac">0</h3>
-                </div>
-            </div>
-
-            <div class="card !p-0 overflow-hidden mb-20">
-                <div class="bg-slate-800 text-white p-3 text-sm font-bold flex justify-between">
-                    <span>งบกำไรขาดทุน</span>
-                    <span id="rpt-period" class="text-xs font-normal opacity-70">...</span>
-                </div>
-                <table class="pl-table">
-                    <tbody>
-                        <tr>
-                            <td class="pl-4 font-bold">1. ยอดขายรวม (Gross Sales)</td>
-                            <td class="text-right pr-4 font-bold" id="pl-gross-sale">0</td>
-                        </tr>
-                        <tr><td class="pl-sub">- หัก GP Delivery</td><td class="text-right pr-4 text-red-400" id="pl-gp">0</td></tr>
-                        <tr><td class="pl-sub">- หัก ส่วนลด/Entertain</td><td class="text-right pr-4 text-red-400" id="pl-disc">0</td></tr>
-                        <tr><td class="pl-sub">- หัก VAT (7%)</td><td class="text-right pr-4 text-red-400" id="pl-vat">0</td></tr>
-                        
-                        <tr class="pl-total">
-                            <td class="pl-4 text-blue-600">2. ยอดขายสุทธิ (Net Sales)</td>
-                            <td class="text-right pr-4 text-blue-600" id="pl-net-sale">0</td>
-                        </tr>
-
-                        <tr>
-                            <td class="pl-4 font-bold pt-2">3. ต้นทุนขาย (COGS)</td>
-                            <td class="text-right pr-4 font-bold pt-2 text-red-600" id="pl-cogs">0</td>
-                        </tr>
-                        <tr><td class="pl-sub">- วัตถุดิบ/ตลาด (Actual)</td><td class="text-right pr-4 text-xs" id="pl-raw">0</td></tr>
-                        <tr><td class="pl-sub">- เผื่อความผิดพลาด (<span id="txt-error">5</span>%)</td><td class="text-right pr-4 text-xs" id="pl-error">0</td></tr>
-
-                        <tr class="pl-total bg-emerald-50">
-                            <td class="pl-4 text-emerald-700">4. กำไรขั้นต้น (Gross Profit)</td>
-                            <td class="text-right pr-4 text-emerald-700" id="pl-gp-val">0</td>
-                        </tr>
-
-                        <tr>
-                            <td class="pl-4 font-bold pt-2">5. ค่าใช้จ่าย (Controllable)</td>
-                            <td class="text-right pr-4 font-bold pt-2 text-orange-600" id="pl-control">0</td>
-                        </tr>
-                        <tr><td class="pl-sub">- ค่าแรง (Labor+OT+Bonus)</td><td class="text-right pr-4 text-xs" id="pl-labor">0</td></tr>
-                        <tr><td class="pl-sub">- สาธารณูปโภค (น้ำ/ไฟ/แก๊ส)</td><td class="text-right pr-4 text-xs" id="pl-util">0</td></tr>
-                        <tr><td class="pl-sub">- สิ้นเปลือง/การตลาด/อื่นๆ</td><td class="text-right pr-4 text-xs" id="pl-other">0</td></tr>
-
-                        <tr class="pl-pac">
-                            <td class="pl-4 py-3">6. PAC (Profit After Controllable)</td>
-                            <td class="text-right pr-4 py-3 text-lg" id="pl-pac-val">0</td>
-                        </tr>
-
-                        <tr>
-                            <td class="pl-4 font-bold pt-2 text-slate-400">7. ค่าคงที่ (Fixed Cost)</td>
-                            <td class="text-right pr-4 font-bold pt-2 text-slate-400" id="pl-fixed">0</td>
-                        </tr>
-                        <tr><td class="pl-sub">- ค่าเช่า</td><td class="text-right pr-4 text-xs text-slate-400" id="pl-rent">0</td></tr>
-                        <tr><td class="pl-sub">- ค่าเสื่อมราคา (Depreciation)</td><td class="text-right pr-4 text-xs text-slate-400" id="pl-depre">0</td></tr>
-
-                        <tr class="bg-slate-800 text-white">
-                            <td class="pl-4 py-4 text-lg">8. กำไรสุทธิ (Net Profit)</td>
-                            <td class="text-right pr-4 py-4 text-2xl font-bold text-emerald-400" id="pl-final">0</td>
-                        </tr>
-                        <tr class="bg-slate-800 text-slate-400">
-                            <td class="pl-4 pb-4 text-xs text-right" colspan="2">Net Margin: <span id="pl-margin">0%</span></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            <div id="menu-list" class="space-y-3"></div>
         </div>
 
         <div class="tab-bar">
-            <button class="tab-btn active" onclick="goPage('setup')"><i class="fa-solid fa-sliders"></i>ตั้งค่า</button>
-            <button class="tab-btn" onclick="goPage('cost')"><i class="fa-solid fa-calculator"></i>ต้นทุน</button>
-            <button class="tab-btn" onclick="goPage('daily')"><i class="fa-solid fa-pen-to-square"></i>จดรายวัน</button>
-            <button class="tab-btn" onclick="goPage('report')"><i class="fa-solid fa-chart-pie"></i>P&L</button>
+            <button class="tab-btn active" onclick="goPage('ing')"><i class="fa-solid fa-carrot"></i>วัตถุดิบ</button>
+            <button class="tab-btn" onclick="goPage('semi')"><i class="fa-solid fa-bowl-food"></i>Semi</button>
+            <button class="tab-btn" onclick="goPage('menu')"><i class="fa-solid fa-book-open"></i>เมนู</button>
         </div>
 
     </div>
 
+    <div id="uni-modal" class="fixed inset-0 bg-black/60 hidden z-[60] flex items-end sm:items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 shadow-2xl max-h-[90vh] overflow-y-auto">
+            
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h3 class="text-lg font-bold text-slate-800" id="modal-title">...</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-red-500"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+
+            <div id="form-ing" class="hidden space-y-3">
+                <input type="hidden" id="ingId">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs text-slate-500">ชื่อวัตถุดิบ</label>
+                        <input type="text" id="iName" class="inp" placeholder="เช่น หมูบด">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-500">หมวดหมู่</label>
+                        <select id="iCat" class="inp">
+                            <option value="เนื้อสัตว์">🥩 เนื้อสัตว์</option>
+                            <option value="ผัก">🥬 ผัก/ผลไม้</option>
+                            <option value="ของแห้ง">🍝 ของแห้ง</option>
+                            <option value="เครื่องปรุง">🧂 เครื่องปรุง</option>
+                            <option value="บรรจุภัณฑ์">📦 บรรจุภัณฑ์</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card bg-slate-50 border-slate-200">
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="text-xs text-slate-500">ราคาซื้อ (บาท)</label>
+                            <input type="number" id="iPrice" class="inp font-bold" placeholder="150">
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-500">หน่วยซื้อ</label>
+                            <input type="text" id="iUnitBuy" class="inp" placeholder="กก.">
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-500">ปริมาณซื้อ</label>
+                            <input type="number" id="iQtyBuy" class="inp" placeholder="1">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mt-2">
+                        <div>
+                            <label class="text-xs text-slate-500">หน่วยใช้ (Recipe)</label>
+                            <input type="text" id="iUnitUse" class="inp text-blue-600 font-bold" placeholder="กรัม">
+                        </div>
+                        <div>
+                            <label class="text-xs text-slate-500">แปลงหน่วย</label>
+                            <input type="number" id="iConv" class="inp" placeholder="1000">
+                            <small class="text-[9px] text-slate-400">1 กก. = 1000 กรัม</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="card bg-red-50 border-red-200">
+                    <label class="text-xs font-bold text-red-700 flex justify-between">
+                        <span>Yield % (เหลือใช้จริง)</span>
+                        <span class="text-[10px] font-normal">เนื้อสัตว์/ผัก มักไม่ถึง 100%</span>
+                    </label>
+                    <input type="number" id="iYield" class="inp mt-1 text-center font-bold text-red-600 text-lg border-red-200" value="100">
+                </div>
+                <button onclick="saveIng()" class="btn-primary">บันทึกวัตถุดิบ</button>
+            </div>
+
+            <div id="form-recipe" class="hidden space-y-3">
+                <input type="hidden" id="rId"> <input type="hidden" id="rType"> <input type="text" id="rName" class="inp mb-2 font-bold text-lg" placeholder="ชื่อเมนู/สูตร">
+                
+                <div id="box-price" class="grid grid-cols-2 gap-3 mb-2 hidden">
+                    <div>
+                        <label class="text-xs text-slate-500">หมวดหมู่</label>
+                        <select id="rCat" class="inp">
+                            <option value="อาหาร">🍛 อาหาร</option>
+                            <option value="เครื่องดื่ม">🥤 เครื่องดื่ม</option>
+                            <option value="ของหวาน">🍧 ของหวาน</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-500">ราคาขาย (บาท)</label>
+                        <input type="number" id="rPrice" class="inp font-bold text-green-600">
+                    </div>
+                </div>
+
+                <div id="box-yield" class="grid grid-cols-2 gap-3 mb-2 hidden">
+                    <div>
+                        <label class="text-xs text-slate-500">ได้ปริมาณรวม (Batch)</label>
+                        <input type="number" id="rBatchQty" class="inp font-bold">
+                    </div>
+                    <div>
+                        <label class="text-xs text-slate-500">หน่วยนับ</label>
+                        <input type="text" id="rBatchUnit" class="inp" placeholder="ลิตร/กรัม">
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                    <label class="text-xs font-bold text-slate-600 mb-1 block">เพิ่มวัตถุดิบ / Semi</label>
+                    <div class="relative">
+                        <input type="text" id="searchBox" class="inp pl-8" placeholder="พิมพ์ค้นหา..." onkeyup="searchMaterial(this.value)">
+                        <i class="fa-solid fa-search absolute left-3 top-3 text-slate-400 text-xs"></i>
+                        <div id="searchResults" class="search-results bg-white absolute w-full z-10 shadow-lg"></div>
+                    </div>
+                    
+                    <div class="flex gap-2 mt-2 items-end">
+                        <div class="flex-1">
+                            <input type="text" id="selName" class="inp bg-slate-100 text-xs" readonly placeholder="เลือกรายการ...">
+                            <input type="hidden" id="selId">
+                            <input type="hidden" id="selCost">
+                            <input type="hidden" id="selType">
+                        </div>
+                        <div class="w-20">
+                            <input type="number" id="selQty" class="inp text-center text-sm" placeholder="ใช้">
+                        </div>
+                        <div class="w-12 text-xs flex items-center text-slate-500" id="selUnit">หน่วย</div>
+                        <button onclick="addItemToTable()" class="bg-blue-600 text-white w-8 h-8 rounded rounded-lg shadow"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                </div>
+
+                <div class="overflow-y-auto max-h-40 border rounded-lg">
+                    <table class="w-full text-xs text-left">
+                        <thead class="bg-slate-100 sticky top-0">
+                            <tr><th class="p-2">รายการ</th><th class="p-2 text-right">ปริมาณ</th><th class="p-2 text-right">ต้นทุน</th><th class="p-2"></th></tr>
+                        </thead>
+                        <tbody id="recipe-table-body" class="divide-y divide-slate-50"></tbody>
+                    </table>
+                </div>
+
+                <div class="flex justify-between items-center pt-2 border-t font-bold text-slate-700">
+                    <span>ต้นทุนรวม (Total Cost)</span>
+                    <span id="txt-total-cost" class="text-red-500 text-lg">0.00</span>
+                </div>
+                <div id="box-cost-per-unit" class="flex justify-between items-center text-xs text-slate-500 hidden">
+                    <span>ตกต้นทุนต่อหน่วย:</span>
+                    <span id="txt-unit-cost" class="font-bold">0.00</span>
+                </div>
+
+                <button onclick="saveRecipeData()" class="btn-primary bg-emerald-600 mt-2">บันทึกสูตร</button>
+            </div>
+
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, setDoc, addDoc, doc, Timestamp, query, where, orderBy } 
+        import { getFirestore, collection, getDocs, setDoc, addDoc, doc, deleteDoc, Timestamp, query, where, orderBy, getDoc } 
         from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } 
         from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
-        // ⚠️ Config Firebase (ใช้ของเดิมได้เลย)
+        // ⚠️ Config
         const firebaseConfig = {
     apiKey: "AIzaSyDRiTZXUbkdGaCHZVTkOOl1Iu0A-744tE0",
     authDomain: "numdamnoen-6cbd5.firebaseapp.com",
@@ -358,14 +270,11 @@
   };
 
         let db, auth;
-        // Prefix ใหม่ ไม่ปนของเก่าแน่นอน
-        const TB = { 
-            CFG: 'pro_config', 
-            ING: 'pro_ingredients', 
-            REC: 'pro_recipes', 
-            LOG: 'pro_daily_logs' 
-        };
-        let config = {};
+        const TB = { ING: 'pro_ingredients', SEMI: 'pro_semis', MENU: 'pro_recipes' };
+        
+        // Cache Data for Search
+        let allMaterials = []; // Stores both Ing and Semi for searching
+        let currentRecipeItems = [];
 
         try {
             const app = initializeApp(firebaseConfig);
@@ -373,12 +282,11 @@
             auth = getAuth(app);
         } catch(e) { console.error(e); }
 
-        // --- Auth ---
         onAuthStateChanged(auth, u => {
             if(u) {
                 document.getElementById('login-screen').classList.add('hidden');
                 document.getElementById('main-app').classList.remove('hidden');
-                loadConfig();
+                refreshAll();
             } else {
                 document.getElementById('login-screen').classList.remove('hidden');
             }
@@ -386,295 +294,325 @@
 
         document.getElementById('loginForm').addEventListener('submit', e => {
             e.preventDefault();
-            signInWithEmailAndPassword(auth, document.getElementById('loginEmail').value, document.getElementById('loginPass').value)
-            .catch(err => Swal.fire('Error', 'Login Failed', 'error'));
+            signInWithEmailAndPassword(auth, document.getElementById('loginEmail').value, document.getElementById('loginPass').value);
         });
 
-        // --- Navigation ---
         window.goPage = (id) => {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
             document.getElementById('page-'+id).classList.add('active');
-            // Highlight Tab Logic (simplified for brevity)
-            if(id==='daily') { loadDailyLogs(); }
-            if(id==='report') { genReport('month'); }
-        };
-
-        // --- 1. CONFIG & CALCULATION ---
-        window.saveConfig = async () => {
-            const data = {
-                vat: parseFloat(document.getElementById('cfgVat').value)||0,
-                gp: parseFloat(document.getElementById('cfgGp').value)||0,
-                error: parseFloat(document.getElementById('cfgError').value)||0,
-                rent: parseFloat(document.getElementById('cfgRent').value)||0,
-                invest: parseFloat(document.getElementById('cfgInvest').value)||0,
-                month: parseFloat(document.getElementById('cfgMonth').value)||1,
-                salary: parseFloat(document.getElementById('cfgSalary').value)||0
-            };
-            await setDoc(doc(db, TB.CFG, 'master'), data, {merge:true});
-            Swal.fire('Saved', 'บันทึกตั้งค่าแล้ว', 'success');
-            loadConfig();
-        };
-
-        async function loadConfig() {
-            const snap = await getDocs(collection(db, TB.CFG));
-            snap.forEach(d => { if(d.id==='master') config = d.data(); });
-            
-            // Populate Inputs
-            if(config.vat) document.getElementById('cfgVat').value = config.vat;
-            if(config.gp) document.getElementById('cfgGp').value = config.gp;
-            if(config.rent) document.getElementById('cfgRent').value = config.rent;
-            if(config.salary) document.getElementById('cfgSalary').value = config.salary;
-            
-            // Calculate Derived Fields
-            const depre = config.invest && config.month ? (config.invest / config.month) : 0;
-            const bonus = config.salary ? (config.salary / 12) : 0;
-            
-            document.getElementById('calcDepre').innerText = depre.toLocaleString(undefined,{maximumFractionDigits:0});
-            document.getElementById('calcBonus').innerText = bonus.toLocaleString(undefined,{maximumFractionDigits:0});
-            document.getElementById('txt-error').innerText = config.error || 5;
+            // Highlight button logic...
         }
 
-        // --- 2. COSTING (ING & RECIPE) ---
-        window.toggleCostMode = (m) => {
-            document.getElementById('view-ing').style.display = m==='ing'?'block':'none';
-            document.getElementById('view-rec').style.display = m==='rec'?'block':'none';
-            document.getElementById('btn-mode-ing').className = m==='ing' ? 'flex-1 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold shadow' : 'flex-1 py-2 bg-white text-slate-600 border border-slate-200 rounded-lg text-xs font-bold';
-            document.getElementById('btn-mode-rec').className = m==='rec' ? 'flex-1 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold shadow' : 'flex-1 py-2 bg-white text-slate-600 border border-slate-200 rounded-lg text-xs font-bold';
-            if(m==='ing') loadIngredients();
-            if(m==='rec') loadRecipes();
+        window.refreshAll = async () => {
+            await Promise.all([loadIng(), loadSemi(), loadMenu()]);
+            updateMaterialCache();
         }
 
-        // Add Ingredient
-        window.addIngredient = async () => {
-            const name = document.getElementById('ingName').value;
-            const price = parseFloat(document.getElementById('ingPrice').value);
-            const qty = parseFloat(document.getElementById('ingQty').value);
-            const yieldPct = parseFloat(document.getElementById('ingYield').value);
-            const unit = document.getElementById('ingUnit').value;
+        async function updateMaterialCache() {
+            allMaterials = [];
+            // Load Ing
+            const ingSnap = await getDocs(collection(db, TB.ING));
+            ingSnap.forEach(d => {
+                const data = d.data();
+                allMaterials.push({ id: d.id, type: 'raw', name: data.name, cost: data.costPerUseUnit, unit: data.useUnit });
+            });
+            // Load Semi
+            const semiSnap = await getDocs(collection(db, TB.SEM));
+            semiSnap.forEach(d => {
+                const data = d.data();
+                allMaterials.push({ id: d.id, type: 'semi', name: data.name, cost: data.costPerUnit, unit: data.unit });
+            });
+        }
 
-            if(!name || !price || !qty) return;
+        // ================= 1. INGREDIENT =================
+        window.saveIng = async () => {
+            const id = document.getElementById('ingId').value;
+            const name = document.getElementById('iName').value;
+            const cat = document.getElementById('iCat').value;
+            const price = parseFloat(document.getElementById('iPrice').value);
+            const qtyBuy = parseFloat(document.getElementById('iQtyBuy').value);
+            const yieldPct = parseFloat(document.getElementById('iYield').value);
+            const conv = parseFloat(document.getElementById('iConv').value);
+            const useUnit = document.getElementById('iUnitUse').value;
+            const buyUnit = document.getElementById('iUnitBuy').value;
 
-            // Calculate True Cost per Unit (After Yield)
-            // ex: Price 100, Qty 1000g, Yield 80%
-            // Real Cost per g = 100 / (1000 * 0.8) = 0.125
-            const realQty = qty * (yieldPct/100);
-            const costPerUnit = price / realQty;
+            if(!name || !price) return Swal.fire('ข้อมูลไม่ครบ');
 
-            await addDoc(collection(db, TB.ING), { name, price, qty, yieldPct, unit, costPerUnit });
-            document.getElementById('ingName').value=''; 
-            loadIngredients();
-        };
+            // Calculation Logic (Advance)
+            // Example: Buy Pork 150 THB, 1 kg. Yield 80%. Convert 1 kg = 1000 g.
+            // Real Qty used = 1000 * 0.8 = 800 g.
+            // Real Cost per g = 150 / 800 = 0.1875
+            
+            const totalUseUnits = qtyBuy * conv; // e.g. 1 * 1000 = 1000 g
+            const realUseUnits = totalUseUnits * (yieldPct/100); // 800 g
+            const costPerUseUnit = price / realUseUnits; // 150 / 800
 
-        async function loadIngredients() {
-            const q = query(collection(db, TB.ING), orderBy('name'));
+            const data = { name, cat, price, qtyBuy, buyUnit, yieldPct, conv, useUnit, costPerUseUnit, updatedAt: Timestamp.now() };
+
+            if(id) await setDoc(doc(db, TB.ING, id), data, {merge:true});
+            else await addDoc(collection(db, TB.ING), data);
+
+            closeModal(); refreshAll();
+        }
+
+        async function loadIng() {
+            const q = query(collection(db, TB.ING), orderBy('cat'));
             const snap = await getDocs(q);
             let html = '';
-            let opts = '';
             snap.forEach(d => {
                 const i = d.data();
-                html += `<div class="flex justify-between items-center p-2 bg-white border-b border-slate-100 text-xs">
-                    <span>${i.name} (Yield ${i.yieldPct}%)</span>
-                    <span class="font-bold text-red-500">${i.costPerUnit.toFixed(4)} /${i.unit}</span>
-                </div>`;
-                opts += `<option value="${d.id}" data-cost="${i.costPerUnit}" data-unit="${i.unit}">${i.name}</option>`;
-            });
-            document.getElementById('ing-list').innerHTML = html;
-            document.getElementById('recIngSel').innerHTML = opts;
-        }
-
-        // Recipes Logic
-        let tempRecIngs = [];
-        window.pushIngToRec = () => {
-            const sel = document.getElementById('recIngSel');
-            const id = sel.value;
-            const name = sel.options[sel.selectedIndex].text;
-            const uCost = parseFloat(sel.options[sel.selectedIndex].dataset.cost);
-            const unit = sel.options[sel.selectedIndex].dataset.unit;
-            const qty = parseFloat(document.getElementById('recIngQty').value);
-            
-            if(!qty) return;
-            const total = uCost * qty;
-            tempRecIngs.push({id, name, qty, total, unit});
-            
-            let html = '';
-            let sum = 0;
-            tempRecIngs.forEach(i => {
-                sum += i.total;
-                html += `<div class="flex justify-between"><span>${i.name} (${i.qty})</span><span>${i.total.toFixed(2)}</span></div>`;
-            });
-            document.getElementById('rec-ing-list').innerHTML = html;
-            document.getElementById('recCostTotal').innerText = sum.toFixed(2);
-        }
-
-        window.saveRecipe = async () => {
-            const name = document.getElementById('recName').value;
-            const price = parseFloat(document.getElementById('recPrice').value);
-            const cost = parseFloat(document.getElementById('recCostTotal').innerText);
-            if(!name) return;
-            await addDoc(collection(db, TB.REC), { name, price, cost, ingredients: tempRecIngs });
-            Swal.fire('Saved', 'บันทึกสูตรแล้ว', 'success');
-            tempRecIngs = []; document.getElementById('rec-ing-list').innerHTML='';
-            loadRecipes();
-        }
-
-        async function loadRecipes() {
-            const snap = await getDocs(collection(db, TB.REC));
-            let html = '';
-            snap.forEach(d => {
-                const r = d.data();
-                const gp = ((r.price - r.cost)/r.price)*100;
-                html += `<div class="bg-white p-3 mb-2 rounded border border-slate-100 shadow-sm">
-                    <div class="flex justify-between font-bold text-sm text-slate-700"><span>${r.name}</span><span>${r.price} บ.</span></div>
-                    <div class="flex justify-between text-xs text-slate-500 mt-1">
-                        <span>Cost: <b class="text-red-500">${r.cost.toFixed(2)}</b> (${((r.cost/r.price)*100).toFixed(0)}%)</span>
-                        <span>Profit: <b class="text-emerald-500">${(r.price-r.cost).toFixed(2)}</b></span>
+                let icon = '📦';
+                if(i.cat==='เนื้อสัตว์') icon='🥩';
+                if(i.cat==='ผัก') icon='🥬';
+                
+                html += `
+                <div class="bg-white p-3 rounded-lg border border-slate-100 shadow-sm flex justify-between items-center cursor-pointer hover:bg-slate-50" onclick="editIng('${d.id}')">
+                    <div class="flex items-center gap-3">
+                        <div class="text-xl">${icon}</div>
+                        <div>
+                            <div class="font-bold text-slate-700 text-sm">${i.name}</div>
+                            <div class="text-[10px] text-slate-400">ซื้อ ${i.price}/${i.qtyBuy}${i.buyUnit} (Yield ${i.yieldPct}%)</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm font-bold text-red-500">${i.costPerUseUnit.toFixed(4)}</div>
+                        <div class="text-[9px] text-slate-400">บาท/${i.useUnit}</div>
                     </div>
                 </div>`;
             });
-            document.getElementById('recipe-list').innerHTML = html;
+            document.getElementById('ing-list').innerHTML = html;
         }
 
-        // --- 3. DAILY LOG ---
-        async function loadDailyLogs() {
-            document.getElementById('logDate').value = new Date().toISOString().split('T')[0];
-            const q = query(collection(db, TB.LOG), where('date', '==', document.getElementById('logDate').value), orderBy('created'));
-            const snap = await getDocs(q);
+        window.editIng = async (id) => {
+            const snap = await getDoc(doc(db, TB.ING, id));
+            const d = snap.data();
+            document.getElementById('ingId').value = id;
+            document.getElementById('iName').value = d.name;
+            document.getElementById('iCat').value = d.cat;
+            document.getElementById('iPrice').value = d.price;
+            document.getElementById('iQtyBuy').value = d.qtyBuy;
+            document.getElementById('iYield').value = d.yieldPct;
+            document.getElementById('iConv').value = d.conv;
+            document.getElementById('iUnitUse').value = d.useUnit;
+            document.getElementById('iUnitBuy').value = d.buyUnit;
+            openModal('ing', true);
+        }
+
+        window.filterIng = (cat) => {
+            // Implementation for client-side filtering of #ing-list div
+            // For brevity, reloading all but ideally just toggle display
+            // This is placeholder logic
+            loadIng(); 
+        }
+
+        // ================= 2. RECIPE BUILDER (Semi & Menu) =================
+        window.openModal = (type, isEdit=false) => {
+            document.getElementById('uni-modal').classList.remove('hidden');
+            if(!isEdit) {
+                // Reset Forms
+                document.getElementById('ingId').value = '';
+                document.getElementById('rId').value = '';
+                currentRecipeItems = [];
+                renderRecipeTable();
+            }
+
+            if(type === 'ing') {
+                document.getElementById('modal-title').innerText = isEdit ? 'แก้ไขวัตถุดิบ' : 'เพิ่มวัตถุดิบ';
+                document.getElementById('form-ing').classList.remove('hidden');
+                document.getElementById('form-recipe').classList.add('hidden');
+            } else {
+                // Recipe Form (Semi or Menu)
+                document.getElementById('form-ing').classList.add('hidden');
+                document.getElementById('form-recipe').classList.remove('hidden');
+                document.getElementById('rType').value = type;
+                
+                if(type === 'menu') {
+                    document.getElementById('modal-title').innerText = isEdit ? 'แก้ไขเมนู' : 'สร้างเมนูใหม่';
+                    document.getElementById('box-price').classList.remove('hidden');
+                    document.getElementById('box-yield').classList.add('hidden');
+                    document.getElementById('box-cost-per-unit').classList.add('hidden');
+                } else { // Semi
+                    document.getElementById('modal-title').innerText = isEdit ? 'แก้ไขสูตร Semi' : 'สร้างสูตร Semi';
+                    document.getElementById('box-price').classList.add('hidden');
+                    document.getElementById('box-yield').classList.remove('hidden');
+                    document.getElementById('box-cost-per-unit').classList.remove('hidden');
+                }
+            }
+        }
+
+        window.closeModal = () => document.getElementById('uni-modal').classList.add('hidden');
+
+        // Search Logic
+        window.searchMaterial = (txt) => {
+            if(txt.length < 1) { document.getElementById('searchResults').style.display='none'; return; }
+            const res = allMaterials.filter(m => m.name.includes(txt));
+            let html = '';
+            res.forEach(m => {
+                const badge = m.type==='raw' ? '<span class="tag tag-raw">Raw</span>' : '<span class="tag tag-semi">Semi</span>';
+                html += `<div class="search-item" onclick="selectMaterial('${m.id}', '${m.name}', ${m.cost}, '${m.type}', '${m.unit}')">
+                    ${badge} ${m.name} (${m.unit})
+                </div>`;
+            });
+            const div = document.getElementById('searchResults');
+            div.innerHTML = html;
+            div.style.display = 'block';
+        }
+
+        window.selectMaterial = (id, name, cost, type, unit) => {
+            document.getElementById('selName').value = name;
+            document.getElementById('selId').value = id;
+            document.getElementById('selCost').value = cost;
+            document.getElementById('selType').value = type;
+            document.getElementById('selUnit').innerText = unit;
+            document.getElementById('searchResults').style.display='none';
+            document.getElementById('searchBox').value='';
+        }
+
+        window.addItemToTable = () => {
+            const id = document.getElementById('selId').value;
+            const name = document.getElementById('selName').value;
+            const cost = parseFloat(document.getElementById('selCost').value);
+            const qty = parseFloat(document.getElementById('selQty').value);
+            const unit = document.getElementById('selUnit').innerText;
+            const type = document.getElementById('selType').value;
+
+            if(!id || !qty) return;
+
+            const total = cost * qty;
+            currentRecipeItems.push({ id, name, qty, costPerUnit: cost, total, unit, type });
+            renderRecipeTable();
+            
+            // Clear input
+            document.getElementById('selName').value='';
+            document.getElementById('selQty').value='';
+        }
+
+        function renderRecipeTable() {
+            let html = '';
+            let sum = 0;
+            currentRecipeItems.forEach((i, idx) => {
+                sum += i.total;
+                html += `<tr>
+                    <td class="p-2">${i.name}</td>
+                    <td class="p-2 text-right">${i.qty} ${i.unit}</td>
+                    <td class="p-2 text-right">${i.total.toFixed(2)}</td>
+                    <td class="p-2 text-center text-red-500 cursor-pointer" onclick="delRecItem(${idx})"><i class="fa-solid fa-trash"></i></td>
+                </tr>`;
+            });
+            document.getElementById('recipe-table-body').innerHTML = html;
+            document.getElementById('txt-total-cost').innerText = sum.toFixed(2);
+            
+            // Calculate Semi Cost per Unit
+            const rType = document.getElementById('rType').value;
+            if(rType === 'semi') {
+                const batchQty = parseFloat(document.getElementById('rBatchQty').value) || 1;
+                document.getElementById('txt-unit-cost').innerText = (sum / batchQty).toFixed(2);
+            }
+        }
+
+        window.delRecItem = (idx) => { currentRecipeItems.splice(idx, 1); renderRecipeTable(); }
+
+        window.saveRecipeData = async () => {
+            const type = document.getElementById('rType').value;
+            const id = document.getElementById('rId').value;
+            const name = document.getElementById('rName').value;
+            const totalCost = parseFloat(document.getElementById('txt-total-cost').innerText);
+            
+            let data = { name, items: currentRecipeItems, totalCost, updatedAt: Timestamp.now() };
+
+            if(type === 'menu') {
+                data.price = parseFloat(document.getElementById('rPrice').value);
+                data.cat = document.getElementById('rCat').value;
+                if(!data.price) return Swal.fire('ใส่ราคาขายด้วย');
+                
+                const col = TB.MENU;
+                if(id) await setDoc(doc(db, col, id), data, {merge:true});
+                else await addDoc(collection(db, col), data);
+
+            } else { // Semi
+                data.batchQty = parseFloat(document.getElementById('rBatchQty').value);
+                data.unit = document.getElementById('rBatchUnit').value;
+                if(!data.batchQty) return Swal.fire('ใส่ปริมาณที่ได้ด้วย');
+                
+                // Calculate Unit Cost for this Semi
+                data.costPerUnit = totalCost / data.batchQty;
+                
+                const col = TB.SEMI; // Note: Ensure TB.SEMI is defined as 'pro_semis'
+                if(id) await setDoc(doc(db, 'pro_semis', id), data, {merge:true});
+                else await addDoc(collection(db, 'pro_semis'), data);
+            }
+
+            closeModal(); refreshAll();
+        }
+
+        // --- Loaders ---
+        async function loadSemi() {
+            const snap = await getDocs(collection(db, 'pro_semis'));
             let html = '';
             snap.forEach(d => {
-                const l = d.data();
-                if(l.type === 'expense') {
-                    html += `<div class="flex justify-between border-b border-slate-100 py-1"><span>${l.memo}</span><span class="text-red-500">-${l.amount}</span></div>`;
-                }
+                const s = d.data();
+                html += `<div class="card p-3 flex justify-between items-center cursor-pointer hover:bg-orange-50" onclick="editRecipe('${d.id}', 'semi')">
+                    <div>
+                        <div class="font-bold text-slate-700">${s.name}</div>
+                        <div class="text-[10px] text-slate-400">Batch: ${s.batchQty} ${s.unit}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-bold text-orange-600">${s.costPerUnit.toFixed(2)}</div>
+                        <div class="text-[9px] text-slate-400">บาท/${s.unit}</div>
+                    </div>
+                </div>`;
             });
-            document.getElementById('today-exp-list').innerHTML = html;
+            document.getElementById('semi-list').innerHTML = html;
         }
 
-        window.saveDailySales = async () => {
-            const date = document.getElementById('logDate').value;
-            const target = parseFloat(document.getElementById('logTarget').value)||0;
-            const cash = parseFloat(document.getElementById('saleCash').value)||0;
-            const deli = parseFloat(document.getElementById('saleDeli').value)||0; // Gross
-            const disc = parseFloat(document.getElementById('saleDisc').value)||0;
-            
-            // Calculate GP Amount
-            const gpRate = config.gp || 0; 
-            const gpAmt = deli * (gpRate/100);
-            document.getElementById('dispGp').innerText = gpAmt.toFixed(2);
-
-            // Save
-            await setDoc(doc(db, TB.LOG, date+'_sales'), {
-                date, type: 'sales', target, cash, deli, disc, gpAmt, 
-                created: Timestamp.now()
-            });
-            Swal.fire('Saved', 'บันทึกยอดขายแล้ว', 'success');
-        }
-
-        window.saveDailyExp = async () => {
-            const date = document.getElementById('logDate').value;
-            const cat = document.getElementById('expCat').value;
-            const amt = parseFloat(document.getElementById('expAmt').value);
-            const memo = document.getElementById('expMemo').value;
-            if(!amt) return;
-
-            await addDoc(collection(db, TB.LOG), {
-                date, type: 'expense', cat, amount: amt, memo, created: Timestamp.now()
-            });
-            document.getElementById('expAmt').value='';
-            loadDailyLogs();
-        }
-
-        // --- 4. ADVANCE REPORT ---
-        window.genReport = async (mode) => {
-            const today = new Date();
-            let start, end;
-            if(mode === 'today') {
-                start = end = today.toISOString().split('T')[0];
-            } else {
-                start = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-01`;
-                end = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-31`;
-            }
-            document.getElementById('rpt-period').innerText = `${start} ถึง ${end}`;
-
-            // Fetch Logs
-            const q = query(collection(db, TB.LOG), where('date', '>=', start), where('date', '<=', end));
-            const snap = await getDocs(q);
-
-            let grossSales = 0, gpTotal = 0, discTotal = 0;
-            let expRaw = 0, expIce = 0, expLabor = 0, expUtil = 0, expOther = 0;
-
+        async function loadMenu() {
+            const snap = await getDocs(collection(db, TB.MENU));
+            let html = '';
             snap.forEach(d => {
-                const l = d.data();
-                if(l.type === 'sales') {
-                    grossSales += (l.cash + l.deli);
-                    gpTotal += l.gpAmt;
-                    discTotal += l.disc;
-                } else if(l.type === 'expense') {
-                    if(l.cat==='raw') expRaw += l.amount;
-                    else if(l.cat==='ice') expIce += l.amount; // Ice & Gas = Variable COGS
-                    else if(l.cat==='ot') expLabor += l.amount; // Part time
-                    else if(l.cat==='repair' || l.cat==='supply' || l.cat==='mkt' || l.cat==='travel') expOther += l.amount;
-                    // Utility usually monthly, but if logged daily add to Util
-                }
+                const m = d.data();
+                const costPct = (m.totalCost / m.price) * 100;
+                const gp = m.price - m.totalCost;
+                
+                html += `<div class="card p-3 cursor-pointer hover:bg-blue-50" onclick="editRecipe('${d.id}', 'menu')">
+                    <div class="flex justify-between mb-1">
+                        <div class="font-bold text-slate-800">${m.name}</div>
+                        <div class="font-bold text-green-600">${m.price} ฿</div>
+                    </div>
+                    <div class="flex justify-between text-xs items-center bg-slate-50 p-2 rounded">
+                        <div>
+                            <span class="block text-slate-400">Cost</span>
+                            <span class="font-bold text-red-500">${m.totalCost.toFixed(2)} (${costPct.toFixed(0)}%)</span>
+                        </div>
+                        <div>
+                            <span class="block text-slate-400 text-right">Profit</span>
+                            <span class="font-bold text-emerald-500">+${gp.toFixed(2)}</span>
+                        </div>
+                    </div>
+                </div>`;
             });
+            document.getElementById('menu-list').innerHTML = html;
+        }
 
-            // VAT Calculation (Remove VAT from Gross Sales after Discount)
-            // Gross - Disc = NetReceivable -> Extract VAT
-            const salesAfterDisc = grossSales - discTotal;
-            const vatAmt = config.vat ? (salesAfterDisc * config.vat / (100+config.vat)) : 0;
+        window.editRecipe = async (id, type) => {
+            const col = type==='menu' ? TB.MENU : 'pro_semis';
+            const snap = await getDoc(doc(db, col, id));
+            const d = snap.data();
             
-            const netSales = salesAfterDisc - vatAmt - gpTotal;
-
-            // COGS Calculation
-            const errorAmt = expRaw * ((config.error||0)/100);
-            const totalCOGS = expRaw + expIce + errorAmt;
-
-            const grossProfit = netSales - totalCOGS;
-
-            // Monthly Fixed Costs (Pro-rated if viewing today? No, show full committed cost for month view)
-            const salary = config.salary || 0;
-            const bonus = salary/12;
-            const totalLabor = salary + bonus + expLabor; // Fixed Salary + Bonus + Daily OT
+            document.getElementById('rId').value = id;
+            document.getElementById('rName').value = d.name;
+            currentRecipeItems = d.items;
             
-            const rent = config.rent || 0;
-            const depre = (config.invest && config.month) ? (config.invest/config.month) : 0;
-
-            // Totals
-            const totalControllable = totalLabor + expUtil + expOther;
-            const pac = grossProfit - totalControllable;
-            const netProfit = pac - rent - depre;
-
-            // Render UI
-            const fmt = (n) => n.toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:0});
+            if(type==='menu') {
+                document.getElementById('rPrice').value = d.price;
+                document.getElementById('rCat').value = d.cat;
+            } else {
+                document.getElementById('rBatchQty').value = d.batchQty;
+                document.getElementById('rBatchUnit').value = d.unit;
+            }
             
-            document.getElementById('pl-gross-sale').innerText = fmt(grossSales);
-            document.getElementById('pl-gp').innerText = '-' + fmt(gpTotal);
-            document.getElementById('pl-disc').innerText = '-' + fmt(discTotal);
-            document.getElementById('pl-vat').innerText = '-' + fmt(vatAmt);
-            document.getElementById('pl-net-sale').innerText = fmt(netSales);
-            document.getElementById('rpt-netsale').innerText = fmt(netSales);
-
-            document.getElementById('pl-cogs').innerText = '-' + fmt(totalCOGS);
-            document.getElementById('pl-raw').innerText = fmt(expRaw + expIce);
-            document.getElementById('pl-error').innerText = fmt(errorAmt);
-
-            document.getElementById('pl-gp-val').innerText = fmt(grossProfit);
-
-            document.getElementById('pl-control').innerText = '-' + fmt(totalControllable);
-            document.getElementById('pl-labor').innerText = fmt(totalLabor);
-            document.getElementById('pl-util').innerText = fmt(expUtil);
-            document.getElementById('pl-other').innerText = fmt(expOther);
-
-            document.getElementById('pl-pac-val').innerText = fmt(pac);
-            document.getElementById('rpt-pac').innerText = fmt(pac);
-
-            document.getElementById('pl-fixed').innerText = '-' + fmt(rent + depre);
-            document.getElementById('pl-rent').innerText = fmt(rent);
-            document.getElementById('pl-depre').innerText = fmt(depre);
-
-            document.getElementById('pl-final').innerText = fmt(netProfit);
-            const margin = netSales>0 ? (netProfit/netSales)*100 : 0;
-            document.getElementById('pl-margin').innerText = margin.toFixed(1) + '%';
+            openModal(type, true);
+            renderRecipeTable();
         }
 
     </script>
