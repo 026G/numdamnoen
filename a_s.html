@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Coconut PRO V3 (Specific)</title>
+    <title>Coconut PRO (Simple Stock)</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -38,11 +38,9 @@
         .tab-btn.active { color: #0ea5e9; font-weight: bold; }
 
         /* Tags */
-        .tag { padding: 3px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: bold; }
-        .tag-coconut { background: #ecfccb; color: #365314; border: 1px solid #d9f99d; } /* Lime */
-        .tag-milk { background: #e0f2fe; color: #075985; border: 1px solid #bae6fd; } /* Sky */
-        .tag-sweet { background: #fce7f3; color: #9d174d; border: 1px solid #fbcfe8; } /* Pink */
-        .tag-pkg { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; } /* Slate */
+        .tag { padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; }
+        .tag-ing { background: #ecfccb; color: #365314; border: 1px solid #d9f99d; } /* Lime */
+        .tag-pkg { background: #e0f2fe; color: #075985; border: 1px solid #bae6fd; } /* Sky */
     </style>
 </head>
 <body>
@@ -74,17 +72,14 @@
 
         <div id="page-ing" class="page active px-4">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-slate-800">🥥 วัตถุดิบ (Stock)</h2>
+                <h2 class="text-xl font-bold text-slate-800">🥥 สต็อกของ (Stock)</h2>
                 <button onclick="openModal('ing')" class="bg-sky-500 text-white w-10 h-10 rounded-full shadow-lg shadow-sky-200 hover:scale-105 transition"><i class="fa-solid fa-plus"></i></button>
             </div>
             
-            <div class="flex gap-2 mb-4 overflow-x-auto pb-2 no-scrollbar">
-                <button onclick="filterIng('all')" class="tag px-3 py-1.5 bg-slate-700 text-white border-0">ทั้งหมด</button>
-                <button onclick="filterIng('มะพร้าว')" class="tag px-3 py-1.5 bg-lime-100 text-lime-800 border-lime-200">🥥 มะพร้าว</button>
-                <button onclick="filterIng('นม')" class="tag px-3 py-1.5 bg-sky-100 text-sky-800 border-sky-200">🥛 นม/กะทิ</button>
-                <button onclick="filterIng('หวาน')" class="tag px-3 py-1.5 bg-pink-100 text-pink-800 border-pink-200">🍯 น้ำตาล/ไซรัป</button>
-                <button onclick="filterIng('ผลไม้')" class="tag px-3 py-1.5 bg-orange-100 text-orange-800 border-orange-200">🍓 ผลไม้/ท็อปปิ้ง</button>
-                <button onclick="filterIng('บรรจุภัณฑ์')" class="tag px-3 py-1.5 bg-indigo-100 text-indigo-800 border-indigo-200">🥤 แก้ว/ถุง</button>
+            <div class="flex gap-2 mb-4">
+                <button onclick="filterIng('all')" class="flex-1 tag py-2 bg-slate-700 text-white border-0 text-center">ทั้งหมด</button>
+                <button onclick="filterIng('วัตถุดิบ')" class="flex-1 tag py-2 bg-lime-100 text-lime-800 border-lime-200 text-center">🥥 วัตถุดิบ</button>
+                <button onclick="filterIng('บรรจุภัณฑ์')" class="flex-1 tag py-2 bg-sky-100 text-sky-800 border-sky-200 text-center">📦 บรรจุภัณฑ์</button>
             </div>
 
             <div id="ing-list" class="space-y-3 pb-20"></div>
@@ -110,7 +105,7 @@
         </div>
 
         <div class="tab-bar">
-            <button class="tab-btn active" onclick="goPage('ing')"><i class="fa-solid fa-basket-shopping"></i>วัตถุดิบ</button>
+            <button class="tab-btn active" onclick="goPage('ing')"><i class="fa-solid fa-basket-shopping"></i>สต็อก</button>
             <button class="tab-btn" onclick="goPage('semi')"><i class="fa-solid fa-blender"></i>เตรียมของ</button>
             <button class="tab-btn" onclick="goPage('menu')"><i class="fa-solid fa-book-open"></i>เมนูขาย</button>
         </div>
@@ -129,36 +124,26 @@
                 <input type="hidden" id="ingId">
                 
                 <div>
-                    <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">ชื่อวัตถุดิบ</label>
-                    <input type="text" id="iName" class="inp font-bold text-lg" placeholder="เช่น มะพร้าวน้ำหอม (ลูก)">
+                    <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">ชื่อรายการ</label>
+                    <input type="text" id="iName" class="inp font-bold text-lg" placeholder="เช่น มะพร้าวน้ำหอม, แก้ว 22oz">
                 </div>
 
                 <div>
-                    <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">หมวดหมู่ (สำหรับร้านน้ำ)</label>
-                    <div class="grid grid-cols-2 gap-2">
-                        <label class="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-lime-50 hover:border-lime-300 transition">
-                            <input type="radio" name="iCat" value="มะพร้าว" checked class="accent-lime-600">
-                            <span class="text-sm font-bold text-slate-700">🥥 มะพร้าว</span>
+                    <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">หมวดหมู่</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="flex items-center gap-3 p-4 border rounded-xl cursor-pointer hover:bg-lime-50 hover:border-lime-300 transition">
+                            <input type="radio" name="iCat" value="วัตถุดิบ" checked class="w-5 h-5 accent-lime-600">
+                            <div>
+                                <div class="text-sm font-bold text-slate-800">🥥 วัตถุดิบ</div>
+                                <div class="text-[10px] text-slate-400">มะพร้าว, นม, ผลไม้</div>
+                            </div>
                         </label>
-                        <label class="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-sky-50 hover:border-sky-300 transition">
-                            <input type="radio" name="iCat" value="นม" class="accent-sky-600">
-                            <span class="text-sm font-bold text-slate-700">🥛 นม/กะทิ</span>
-                        </label>
-                        <label class="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-pink-50 hover:border-pink-300 transition">
-                            <input type="radio" name="iCat" value="หวาน" class="accent-pink-600">
-                            <span class="text-sm font-bold text-slate-700">🍯 น้ำตาล/ไซรัป</span>
-                        </label>
-                        <label class="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-orange-50 hover:border-orange-300 transition">
-                            <input type="radio" name="iCat" value="ผลไม้" class="accent-orange-600">
-                            <span class="text-sm font-bold text-slate-700">🍓 ผลไม้/ท็อปปิ้ง</span>
-                        </label>
-                        <label class="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-indigo-50 hover:border-indigo-300 transition">
-                            <input type="radio" name="iCat" value="บรรจุภัณฑ์" class="accent-indigo-600">
-                            <span class="text-sm font-bold text-slate-700">📦 แก้ว/ถุง/หลอด</span>
-                        </label>
-                        <label class="flex items-center gap-2 p-3 border rounded-xl cursor-pointer hover:bg-slate-50 hover:border-slate-300 transition">
-                            <input type="radio" name="iCat" value="ของแห้ง" class="accent-slate-600">
-                            <span class="text-sm font-bold text-slate-700">🌾 แป้ง/ของแห้ง</span>
+                        <label class="flex items-center gap-3 p-4 border rounded-xl cursor-pointer hover:bg-sky-50 hover:border-sky-300 transition">
+                            <input type="radio" name="iCat" value="บรรจุภัณฑ์" class="w-5 h-5 accent-sky-600">
+                            <div>
+                                <div class="text-sm font-bold text-slate-800">📦 บรรจุภัณฑ์</div>
+                                <div class="text-[10px] text-slate-400">แก้ว, หลอด, ถุง</div>
+                            </div>
                         </label>
                     </div>
                 </div>
@@ -188,7 +173,7 @@
                             </div>
                             <div>
                                 <label class="text-[10px] text-slate-400">หน่วยใช้ (ในสูตร)</label>
-                                <input type="text" id="iUnitUse" class="inp text-center" placeholder="กรัม / มล.">
+                                <input type="text" id="iUnitUse" class="inp text-center" placeholder="กรัม / มล. / ใบ">
                             </div>
                         </div>
                     </div>
@@ -197,7 +182,7 @@
                 <div class="card bg-orange-50 border-orange-200 !p-4">
                     <label class="text-xs font-bold text-orange-800 flex justify-between mb-1">
                         <span>Yield % (เนื้อที่ใช้ได้จริง)</span>
-                        <span class="text-[10px] font-normal opacity-70">มะพร้าว 1 ลูก ได้น้ำกี่ %?</span>
+                        <span class="text-[10px] font-normal opacity-70">ถ้าเป็นของแห้ง/แก้ว ใส่ 100%</span>
                     </label>
                     <div class="flex items-center gap-3">
                         <input type="range" id="iYieldRange" min="1" max="100" value="100" class="w-full h-2 bg-orange-200 rounded-lg appearance-none cursor-pointer accent-orange-600" oninput="document.getElementById('iYield').value=this.value">
@@ -205,12 +190,14 @@
                     </div>
                 </div>
 
-                <button onclick="saveIng()" class="btn-primary bg-sky-500 hover:bg-sky-600 border-0 shadow-sky-200 text-lg">บันทึกวัตถุดิบ</button>
+                <button onclick="saveIng()" class="btn-primary bg-sky-500 hover:bg-sky-600 border-0 shadow-sky-200 text-lg">บันทึกรายการ</button>
             </div>
 
             <div id="form-recipe" class="hidden space-y-4">
                 <input type="hidden" id="rId">
-                <input type="hidden" id="rType"> <input type="text" id="rName" class="inp mb-2 font-bold text-xl border-0 border-b-2 border-slate-200 rounded-none px-0 focus:ring-0 focus:border-sky-500 placeholder-slate-300" placeholder="ชื่อเมนู...">
+                <input type="hidden" id="rType">
+                
+                <input type="text" id="rName" class="inp mb-2 font-bold text-xl border-0 border-b-2 border-slate-200 rounded-none px-0 focus:ring-0 focus:border-sky-500 placeholder-slate-300" placeholder="ชื่อเมนู...">
                 
                 <div id="box-menu-opt" class="grid grid-cols-2 gap-4 hidden">
                     <div>
@@ -340,7 +327,6 @@
         window.openModal = (type, isEdit=false) => {
             document.getElementById('uni-modal').classList.remove('hidden');
             if(!isEdit) {
-                // Reset
                 document.getElementById('ingId').value = '';
                 document.getElementById('rId').value = '';
                 document.getElementById('iName').value = '';
@@ -354,7 +340,7 @@
             }
 
             if(type === 'ing') {
-                document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-carrot text-sky-500"></i> ' + (isEdit ? 'แก้ไขวัตถุดิบ' : 'เพิ่มวัตถุดิบ');
+                document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-carrot text-sky-500"></i> ' + (isEdit ? 'แก้ไขสต็อก' : 'เพิ่มสต็อก');
                 document.getElementById('form-ing').classList.remove('hidden');
                 document.getElementById('form-recipe').classList.add('hidden');
             } else {
@@ -381,7 +367,7 @@
         window.saveIng = async () => {
             const id = document.getElementById('ingId').value;
             const name = document.getElementById('iName').value;
-            const cat = document.querySelector('input[name="iCat"]:checked')?.value || 'อื่นๆ';
+            const cat = document.querySelector('input[name="iCat"]:checked')?.value || 'วัตถุดิบ';
             const price = parseFloat(document.getElementById('iPrice').value);
             const qtyBuy = parseFloat(document.getElementById('iQtyBuy').value);
             const yieldPct = parseFloat(document.getElementById('iYield').value) || 100;
@@ -391,7 +377,6 @@
 
             if(!name || !price) return Swal.fire('ข้อมูลไม่ครบ');
 
-            // Cost Calculation
             const totalUseUnits = qtyBuy * conv; 
             const realUseUnits = totalUseUnits * (yieldPct/100); 
             const costPerUseUnit = price / realUseUnits; 
@@ -411,10 +396,7 @@
             snap.forEach(d => {
                 const i = d.data();
                 let icon = '🥥';
-                let tagClass = 'tag-coconut';
-                if(i.cat==='นม') { icon='🥛'; tagClass='tag-milk'; }
-                if(i.cat==='หวาน') { icon='🍯'; tagClass='tag-sweet'; }
-                if(i.cat==='ผลไม้') { icon='🍓'; tagClass='tag-sweet'; }
+                let tagClass = 'tag-ing';
                 if(i.cat==='บรรจุภัณฑ์') { icon='📦'; tagClass='tag-pkg'; }
                 
                 html += `
@@ -445,7 +427,6 @@
             const d = snap.data();
             document.getElementById('ingId').value = id;
             document.getElementById('iName').value = d.name;
-            // Set Radio
             const radios = document.getElementsByName('iCat');
             for(let r of radios) { if(r.value === d.cat) r.checked = true; }
             
@@ -460,8 +441,15 @@
         }
 
         window.filterIng = (cat) => {
-            // Client-side filtering logic placeholder
-            loadIng(); // For simplicity, reloads all. In real app, toggle display none.
+            if(cat==='all') loadIng();
+            else {
+                // Client-side Filter
+                const items = document.querySelectorAll('#ing-list .card');
+                items.forEach(el => {
+                    const tag = el.querySelector('.tag').innerText;
+                    el.style.display = tag.includes(cat) ? 'flex' : 'none';
+                });
+            }
         }
 
         // ================= 2. RECIPE SEARCH & BUILD =================
@@ -470,10 +458,10 @@
             const res = allMaterials.filter(m => m.name.toLowerCase().includes(txt.toLowerCase()));
             let html = '';
             res.forEach(m => {
-                const typeBadge = m.type==='raw' ? '<span class="text-[9px] bg-blue-100 text-blue-600 px-1 rounded">Raw</span>' : '<span class="text-[9px] bg-orange-100 text-orange-600 px-1 rounded">Semi</span>';
+                const badge = m.type==='raw' ? '<span class="tag tag-ing">Raw</span>' : '<span class="tag tag-semi">Semi</span>';
                 html += `<div class="search-item" onclick="addMaterialToRecipe('${m.id}', '${m.name}', ${m.cost}, '${m.unit}', '${m.type}')">
                     <div>${m.name} <span class="text-xs text-slate-400">(${m.unit})</span></div>
-                    <div class="flex items-center gap-2">${typeBadge}</div>
+                    <div class="flex items-center gap-2">${badge}</div>
                 </div>`;
             });
             const div = document.getElementById('searchResults');
@@ -565,6 +553,7 @@
             closeModal(); refreshAll();
         }
 
+        // --- Loaders ---
         async function loadSemi() {
             const snap = await getDocs(collection(db, TB.SEMI));
             let html = '';
