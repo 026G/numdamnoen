@@ -1105,8 +1105,6 @@
         }
 
         // ============================================
-        // แก้ไขฟังก์ชัน generateReport (V.52: แยกย่อย OPEX + Labor)
-        // ============================================
         window.generateReport = async () => {
             const startDate = document.getElementById('startDate').value;
             const endDate = document.getElementById('endDate').value;
@@ -1142,111 +1140,97 @@
                 });
 
                 // ============================================
-                // 🔥 การจัดหมวดหมู่ใหม่ (Logic การแยก)
+                // 🔥 การจัดหมวดหมู่ (Filtering)
                 // ============================================
-                
                 const allAccounts = Object.values(ledger);
 
-                // 1. รายได้ (4xxx)
                 const revenueList = allAccounts.filter(i => i.code.startsWith('4'));
-                
-                // 2. หักรายได้ (01xx)
                 const deductionList = allAccounts.filter(i => i.code.startsWith('01'));
-                
-                // 3. ต้นทุนขาย COGS (02xx)
                 const cogsList = allAccounts.filter(i => i.code.startsWith('02'));
-                
-                // 4. ต้นทุนแรงงาน Labor (03xx)
                 const laborList = allAccounts.filter(i => i.code.startsWith('03'));
 
-                // --- แยกย่อย OPEX ---
-                
-                // A. สินเชื่อ (Loans) -> เช็คจากรหัส หรือ ชื่อรายการ
-                // รหัสสินเชื่อ: 0411-G, 0411-L-C, 0411-L-I (หรือหมวดอื่นๆ ที่คุณอาจจะเพิ่มในอนาคตที่เกี่ยวกับหนี้)
+                // แยก OPEX ย่อย
                 const loanCodes = ['0411-G', '0411-L-C', '0411-L-I']; 
                 const loanList = allAccounts.filter(i => loanCodes.includes(i.code) || i.name.includes('สินเชื่อ') || i.name.includes('ผ่อน'));
-
-                // B. ควบคุมไม่ได้/คงที่ (Uncontrollable/Fixed) -> 05xx (ค่าเช่า, GP, บัญชี)
                 const fixedList = allAccounts.filter(i => i.code.startsWith('05'));
-
-                // C. ควบคุมได้ (Controllable) -> 04xx แต่ต้องไม่ใช่อันที่เป็นสินเชื่อ (ตัด Loan ออก)
-                const controlList = allAccounts.filter(i => 
-                    i.code.startsWith('04') && 
-                    !loanCodes.includes(i.code) && 
-                    !i.name.includes('สินเชื่อ') && 
-                    !i.name.includes('ผ่อน')
-                );
+                const controlList = allAccounts.filter(i => i.code.startsWith('04') && !loanCodes.includes(i.code) && !i.name.includes('สินเชื่อ') && !i.name.includes('ผ่อน'));
 
                 // ============================================
-                // 🔥 คำนวณตัวเลข
+                // 🔥 คำนวณตัวเลข (Calculation)
                 // ============================================
                 const sum = (list) => list.reduce((a, b) => a + b.amount, 0);
                 
-                const totalRevenue = sum(revenueList);
+                const totalRevenue = sum(revenueList); // ยอดขายรวม (Gross)
                 const totalDeductions = sum(deductionList);
-                const netSales = totalRevenue - totalDeductions;
+                const netSales = totalRevenue - totalDeductions; // ยอดขายสุทธิ (Net)
                 
                 const totalCOGS = sum(cogsList);
                 const totalLabor = sum(laborList);
-                const grossProfit = netSales - totalCOGS - totalLabor;
+                const grossProfit = netSales - totalCOGS - totalLabor; // กำไรขั้นต้น
                 
                 const totalControl = sum(controlList);
                 const totalFixed = sum(fixedList);
                 const totalLoan = sum(loanList);
-                const totalOpexAll = totalControl + totalFixed + totalLoan; // รวม OPEX ทั้งหมดเพื่อโชว์สรุปท้าย
+                const totalOpexAll = totalControl + totalFixed + totalLoan;
 
-                const netProfit = grossProfit - totalOpexAll;
+                const netProfit = grossProfit - totalOpexAll; // กำไรสุทธิ
 
                 // ============================================
-                // 🔥 แสดงผล (Render Tables)
+                // 🔥 แสดงผล (Rendering)
                 // ============================================
 
-                // 1. รายได้
+                // 1. รายได้ (Gross) -> เทียบกับตัวเอง (100%)
                 renderSectionHeader(tbody, "รายได้ (Gross Revenue)", "text-indigo-700 bg-indigo-50");
                 revenueList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
                 renderTotalRow(tbody, "รวมรายได้ขาย", totalRevenue, 100, "text-indigo-700 bg-indigo-50 border-t-2 border-indigo-200");
 
-                // 2. หักรายได้
+                // 2. หักรายได้ -> เทียบกับ Gross
                 if(deductionList.length > 0) {
                     renderSectionHeader(tbody, "หัก: รายการหักจากรายได้ (Deductions)", "text-pink-700 bg-pink-50 mt-4");
                     deductionList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
+                    // Net Sales -> เทียบกับ Gross ให้เห็นว่าเหลือเท่าไหร่
                     renderTotalRow(tbody, "รายได้สุทธิ (Net Sales)", netSales, (netSales/totalRevenue)*100, "bg-gray-100 font-bold border-y-2");
+                } else {
+                    // ถ้าไม่มีหัก ก็แสดง Net Sales เท่ากับ Gross
+                    renderTotalRow(tbody, "รายได้สุทธิ (Net Sales)", netSales, 100, "bg-gray-100 font-bold border-y-2 mt-4");
                 }
 
-                // 3. ต้นทุนขาย
+                // 3. ต้นทุนขาย (COGS) -> เทียบกับ Gross (ถูกต้องแล้ว)
                 renderSectionHeader(tbody, "ต้นทุนขาย (Cost of Goods Sold)", "text-red-700 bg-red-50 mt-4");
                 cogsList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
                 renderTotalRow(tbody, "รวมต้นทุนขาย", totalCOGS, (totalCOGS/totalRevenue)*100, "text-red-700 bg-red-50 border-t-2 border-red-200");
 
-                // 4. ต้นทุนแรงงาน
+                // 4. ต้นทุนแรงงาน -> เทียบกับ Gross (ถูกต้องแล้ว)
                 renderSectionHeader(tbody, "ต้นทุนแรงงาน (Labor Cost)", "text-yellow-800 bg-yellow-50 mt-4");
                 laborList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
                 renderTotalRow(tbody, "รวมต้นทุนแรงงาน", totalLabor, (totalLabor/totalRevenue)*100, "text-yellow-800 bg-yellow-50 border-t-2 border-yellow-200");
 
-                // สรุปกำไรขั้นต้น
-                renderSummaryRow(tbody, "กำไรขั้นต้น (Gross Profit)", grossProfit, (grossProfit/totalRevenue)*100, "bg-green-50 text-green-800 font-bold text-lg border-y-2 border-green-200");
+                // --- 🟢 กำไรขั้นต้น (GROSS PROFIT) ---
+                // 🔥 แก้ไข: เทียบ % กับ Net Sales
+                renderSummaryRow(tbody, "กำไรขั้นต้น (Gross Profit)", grossProfit, netSales > 0 ? (grossProfit/netSales)*100 : 0, "bg-green-50 text-green-800 font-bold text-lg border-y-2 border-green-200");
 
-                // 5. ค่าใช้จ่ายควบคุมได้ (Controllable)
+                // 5. ค่าใช้จ่ายควบคุมได้ -> เทียบกับ Gross
                 renderSectionHeader(tbody, "ค่าใช้จ่ายที่ควบคุมได้ (Controllable)", "text-teal-700 bg-teal-50 mt-4");
                 controlList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
                 renderTotalRow(tbody, "รวมส่วนควบคุมได้", totalControl, (totalControl/totalRevenue)*100, "text-teal-700 bg-teal-50 border-t-2 border-teal-200");
 
-                // 6. ค่าใช้จ่ายควบคุมไม่ได้ (Fixed)
+                // 6. ค่าใช้จ่ายควบคุมไม่ได้ -> เทียบกับ Gross
                 renderSectionHeader(tbody, "ค่าใช้จ่ายคงที่/ควบคุมไม่ได้ (Fixed/Uncontrollable)", "text-gray-700 bg-gray-100 mt-4");
                 fixedList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
                 renderTotalRow(tbody, "รวมส่วนควบคุมไม่ได้", totalFixed, (totalFixed/totalRevenue)*100, "text-gray-700 bg-gray-100 border-t-2 border-gray-300");
 
-                // 7. สินเชื่อ (Loans)
+                // 7. สินเชื่อ -> เทียบกับ Gross
                 renderSectionHeader(tbody, "สินเชื่อและการเงิน (Loans & Financial)", "text-purple-700 bg-purple-50 mt-4");
                 loanList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
                 renderTotalRow(tbody, "รวมสินเชื่อ", totalLoan, (totalLoan/totalRevenue)*100, "text-purple-700 bg-purple-50 border-t-2 border-purple-200");
 
-                // สรุปยอดรวมค่าใช้จ่ายทั้งหมด (OPEX Total) - บรรทัดนี้มีประโยชน์ไว้ดูภาพรวม
+                // สรุป OPEX
                 renderTotalRow(tbody, "รวมค่าใช้จ่ายดำเนินงานทั้งหมด (Total OPEX)", totalOpexAll, (totalOpexAll/totalRevenue)*100, "text-orange-800 bg-orange-100 font-bold border-t-4 border-orange-300 mt-2");
 
-                // 8. กำไรสุทธิ
+                // --- 🟢 กำไรสุทธิ (NET PROFIT) ---
+                // 🔥 แก้ไข: เทียบ % กับ Net Sales
                 const netColor = netProfit >= 0 ? "bg-emerald-100 text-emerald-900" : "bg-red-100 text-red-900";
-                renderSummaryRow(tbody, "กำไรสุทธิ (Net Profit)", netProfit, (netProfit/totalRevenue)*100, `${netColor} font-extrabold text-xl border-y-4 border-double py-6`);
+                renderSummaryRow(tbody, "กำไรสุทธิ (Net Profit)", netProfit, netSales > 0 ? (netProfit/netSales)*100 : 0, `${netColor} font-extrabold text-xl border-y-4 border-double py-6`);
 
             } catch(e) { console.error(e); }
             showLoading(false);
