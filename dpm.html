@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DPM Mobile (Complete)</title>
+    <title>DPM Mobile (Cashflow Pro)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -52,7 +52,7 @@
         .tx-row:last-child { border-bottom: none; }
         .tx-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1rem; margin-right: 12px; }
 
-        /* Report Styles (Nested) */
+        /* Report Styles */
         .grp-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; cursor: pointer; user-select: none; border-bottom: 1px solid #f1f5f9; }
         .grp-content { overflow: hidden; transition: max-height 0.3s ease-out; max-height: 0; background-color: #ffffff; }
         .grp-content.open { max-height: 3000px; border-bottom: 1px solid #e2e8f0; }
@@ -76,6 +76,16 @@
         /* Utilities */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Chart Filter Buttons */
+        .chart-filter-btn {
+            font-size: 0.65rem; padding: 4px 10px; border-radius: 20px;
+            background: #f1f5f9; color: #64748b; font-weight: 600;
+            transition: all 0.2s; border: 1px solid #e2e8f0;
+        }
+        .chart-filter-btn.active {
+            background: #3b82f6; color: white; border-color: #3b82f6; box-shadow: 0 2px 5px rgba(59,130,246,0.3);
+        }
     </style>
 </head>
 <body>
@@ -149,12 +159,23 @@
                 </div>
             </div>
 
-            <div class="card mb-4">
-                <h3 class="font-bold text-slate-700 mb-3 text-sm flex items-center">
-                    <i class="fa-solid fa-chart-simple mr-2 text-blue-500"></i> สรุป 7 วันล่าสุด (รับ vs จ่าย)
-                </h3>
-                <div class="h-40 w-full relative">
+            <div class="card mb-4 relative">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-slate-700 text-sm flex items-center">
+                        <i class="fa-solid fa-arrow-trend-up mr-2 text-blue-500"></i> แนวโน้มเงินสะสม
+                    </h3>
+                    <div class="flex space-x-1">
+                        <button onclick="setChartPeriod('7days')" id="btn-7days" class="chart-filter-btn active">7 วัน</button>
+                        <button onclick="setChartPeriod('month')" id="btn-month" class="chart-filter-btn">เดือนนี้</button>
+                        <button onclick="setChartPeriod('year')" id="btn-year" class="chart-filter-btn">ปีนี้</button>
+                    </div>
+                </div>
+                
+                <div class="h-48 w-full relative">
                     <canvas id="cashflowChart"></canvas>
+                </div>
+                <div id="chart-loading" class="hidden absolute inset-0 bg-white/80 flex items-center justify-center z-10">
+                    <div class="spinner border-blue-500 border-l-transparent"></div>
                 </div>
             </div>
 
@@ -163,9 +184,7 @@
             </div>
             
             <div class="card !py-2" id="tx-feed">
-                <div class="text-center py-6 text-slate-400">
-                    ...
-                </div>
+                <div class="text-center py-6 text-slate-400">...</div>
             </div>
         </div>
 
@@ -424,7 +443,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, setDoc, addDoc, doc, Timestamp, query, where } 
+        import { getFirestore, collection, getDocs, setDoc, addDoc, doc, Timestamp, query, where, orderBy } 
         from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } 
         from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
@@ -477,8 +496,9 @@
         let currentMonthData = { sales: [], expenses: [] };
         let systemBalance = 0; 
         
-        // --- GLOBAL STATE FOR LAZY LOADING ---
+        // --- GLOBAL STATE ---
         window.isFeedVisible = false;
+        window.chartPeriod = '7days'; // Default Chart View
 
         function initApp() {
             const d = new Date();
@@ -493,13 +513,11 @@
             const m = document.getElementById('globalMonth').value;
             if(!m) return;
             
-            // Reset Feed Visibility on new load
             window.isFeedVisible = false;
-            
             currentMonthData.sales = [];
             currentMonthData.expenses = [];
             
-            // Show Loading State on Cards
+            // UI Loading
             document.getElementById('dash-in').innerText = "...";
             document.getElementById('dash-out').innerText = "...";
             document.getElementById('dash-net').innerText = "...";
@@ -519,32 +537,67 @@
             renderDashboard();
         }
         
-        // --- TOGGLE FUNCTION (GLOBAL) ---
+        // --- TOGGLE FEED ---
         window.toggleFeed = function() {
             window.isFeedVisible = true;
             renderDashboard();
         }
+
+        // --- CHART FILTERS ---
+        window.setChartPeriod = async (period) => {
+            window.chartPeriod = period;
+            // Update Buttons
+            document.querySelectorAll('.chart-filter-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`btn-${period}`).classList.add('active');
+
+            // If Year, we need to fetch specific data
+            if(period === 'year') {
+                await fetchYearData();
+            } else {
+                // For 7days/month, we reuse currentMonthData loaded
+                renderDashboard();
+            }
+        }
+
+        // Fetch Data for "Year" View (Special Case)
+        async function fetchYearData() {
+            const loading = document.getElementById('chart-loading');
+            loading.classList.remove('hidden');
+            
+            const year = document.getElementById('globalMonth').value.split('-')[0];
+            const start = year + '-01-01';
+            const end = year + '-12-31';
+
+            let yearData = { sales: [], expenses: [] };
+            try {
+                const qS = await getDocs(query(collection(db, "daily_sales"), where("date", ">=", start), where("date", "<=", end)));
+                qS.forEach(doc => yearData.sales.push(doc.data()));
+                const qE = await getDocs(query(collection(db, "expenses"), where("date", ">=", start), where("date", "<=", end)));
+                qE.forEach(doc => yearData.expenses.push(doc.data()));
+            } catch(e) { console.error(e); }
+
+            loading.classList.add('hidden');
+            renderChart(null, 'year', yearData);
+        }
+
 
         function renderDashboard() {
             let totalIn = 0;
             let totalOut = 0;
             let transactions = [];
 
-            // Process Expenses
+            // Process Current Data (Month)
             if (currentMonthData.expenses) {
                 currentMonthData.expenses.forEach(e => {
                     totalOut += e.amount;
                     transactions.push({
-                        type: 'exp',
-                        date: e.date,
+                        type: 'exp', date: e.date,
                         name: catNames[e.category] || e.category,
-                        memo: e.memo,
-                        amt: -e.amount
+                        memo: e.memo, amt: -e.amount
                     });
                 });
             }
 
-            // Process Sales
             if (currentMonthData.sales) {
                 currentMonthData.sales.forEach(s => {
                     const addTx = (name, val) => {
@@ -570,7 +623,6 @@
             const feedEl = document.getElementById('tx-feed');
             feedEl.innerHTML = '';
             
-            // Check Visibility State
             if (!window.isFeedVisible) {
                 feedEl.innerHTML = `
                     <div class="text-center py-6">
@@ -584,18 +636,18 @@
                 renderTransactionList(transactions, feedEl);
             }
             
-            // Always Render Chart
-            renderChart(transactions);
+            // Render Chart (Unless we are in Year mode, which is handled by setChartPeriod)
+            if(window.chartPeriod !== 'year') {
+                renderChart(transactions, window.chartPeriod);
+            }
         }
 
         function renderTransactionList(transactions, feedEl) {
             transactions.sort((a,b) => new Date(b.date) - new Date(a.date));
-            
             if(transactions.length === 0) {
                 feedEl.innerHTML = '<div class="text-center py-8 text-slate-400 text-sm">- ไม่มีรายการ -</div>';
                 return;
             }
-
             let lastDate = '';
             transactions.forEach(tx => {
                 const d = new Date(tx.date);
@@ -604,7 +656,6 @@
                     feedEl.innerHTML += `<div class="px-4 py-2 bg-slate-50 text-xs font-bold text-slate-500 mt-2 sticky top-0 border-b border-slate-100 z-10">${dateStr}</div>`;
                     lastDate = dateStr;
                 }
-
                 const isInc = tx.type === 'inc';
                 const colorClass = isInc ? 'text-emerald-600' : 'text-red-500';
                 const bgClass = isInc ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-500';
@@ -630,6 +681,128 @@
             });
         }
 
+        // --- CHART LOGIC (Cumulative Line/Area) ---
+        function renderChart(txs, period, customData = null) {
+            const ctx = document.getElementById('cashflowChart');
+            if(!ctx) return;
+            
+            let labels = [];
+            let dataPoints = [];
+            let dailyNet = {}; // date -> net change
+
+            // 1. Prepare Data based on Period
+            if (period === 'year' && customData) {
+                // Group by Month (Jan-Dec)
+                for(let i=1; i<=12; i++) {
+                    const k = `${i}`;
+                    dailyNet[k] = 0; 
+                    labels.push(getThaiMonth(i));
+                }
+                // Sales
+                customData.sales.forEach(s => {
+                    const month = parseInt(s.date.split('-')[1]).toString();
+                    let total = (s.instore||0)+(s.delivery_grab||0)+(s.delivery_lineman||0)+(s.delivery_robinhood||0)+(s.delivery_other||0);
+                    dailyNet[month] += total;
+                });
+                // Expenses
+                customData.expenses.forEach(e => {
+                    const month = parseInt(e.date.split('-')[1]).toString();
+                    dailyNet[month] -= e.amount;
+                });
+                // Calculate Cumulative
+                let running = 0;
+                for(let i=1; i<=12; i++) {
+                    running += dailyNet[`${i}`];
+                    dataPoints.push(running);
+                }
+
+            } else {
+                // Day Logic (7days or Month)
+                if(!txs) return; 
+
+                // Determine Date Range
+                let startDate = new Date();
+                let endDate = new Date();
+                
+                if (period === '7days') {
+                    startDate.setDate(endDate.getDate() - 6); // Last 7 days
+                } else {
+                    // Month View (based on globalMonth)
+                    const m = document.getElementById('globalMonth').value;
+                    startDate = new Date(m + "-01");
+                    endDate = new Date(m + "-01");
+                    endDate.setMonth(endDate.getMonth() + 1);
+                    endDate.setDate(0); // Last day of month
+                }
+
+                // Initialize Days
+                for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+                    const key = d.toISOString().split('T')[0];
+                    dailyNet[key] = 0;
+                    labels.push(`${d.getDate()}`);
+                }
+
+                // Fill Data
+                txs.forEach(t => {
+                    if (dailyNet[t.date] !== undefined) {
+                        dailyNet[t.date] += t.amt;
+                    }
+                });
+
+                // Calculate Cumulative Running Balance
+                let running = 0;
+                // For smoother chart, we might want to start from 0 at the beginning of period
+                // or visually just show the trend of change.
+                Object.keys(dailyNet).sort().forEach(date => {
+                    running += dailyNet[date];
+                    dataPoints.push(running);
+                });
+            }
+
+            // 2. Draw Chart
+            if(window.cfChart) window.cfChart.destroy();
+            
+            // Config for Gradient Fill
+            const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(59, 130, 246, 0.5)'); // Blue top
+            gradient.addColorStop(1, 'rgba(59, 130, 246, 0.0)'); // Transparent bottom
+
+            window.cfChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'เงินสะสม (Cumulative)',
+                        data: dataPoints,
+                        borderColor: '#3b82f6', // Tailwind Blue-500
+                        backgroundColor: gradient,
+                        borderWidth: 2,
+                        pointRadius: 3,
+                        pointBackgroundColor: '#2563eb',
+                        fill: true,
+                        tension: 0.4 // Smooth curves
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: {
+                        mode: 'index', intersect: false,
+                        callbacks: { label: (c) => `สะสม: ${c.raw.toLocaleString()}` }
+                    }},
+                    scales: {
+                        x: { grid: { display: false }, ticks: { fontSize: 10 } },
+                        y: { display: false } // Hide Y axis for clean look
+                    },
+                    interaction: { mode: 'nearest', axis: 'x', intersect: false }
+                }
+            });
+        }
+
+        function getThaiMonth(i) {
+            const m = ['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+            return m[i];
+        }
+
         // --- IMPORT LOGIC (GRAB/LINEMAN) ---
         window.importGrab = (input) => {
             const file = input.files[0];
@@ -637,12 +810,10 @@
             Papa.parse(file, {
                 header: true, skipEmptyLines: true,
                 complete: async (results) => {
-                    let mapData = {}; // date -> {sale, fee, ads, discount}
-                    
+                    let mapData = {}; 
                     results.data.forEach(row => {
                         const dateRaw = row['Updated On'] || row['วันที่สร้าง'];
                         if(!dateRaw) return;
-                        // Parse Date format '18 Jan 2026' -> '2026-01-18'
                         const d = new Date(dateRaw);
                         const date = d.toISOString().split('T')[0];
                         
@@ -651,28 +822,18 @@
                         const ads = parseFloat(row['ค่าธรรมเนียมการตลาด']||0);
                         const disc = parseFloat(row['ส่วนลด (ออกโดยร้าน)']||0);
                         
-                        // Check if it's an Order (Type = GrabFood)
                         const isOrder = row['ประเภท'] === 'GrabFood' || row['ประเภท'] === 'Market';
-                        
                         if(!mapData[date]) mapData[date] = { sales:0, gp:0, ads:0, disc:0 };
-                        
                         if(isOrder) mapData[date].sales += amt;
-                        if(gp < 0) mapData[date].gp += Math.abs(gp); // GP usually negative in CSV
+                        if(gp < 0) mapData[date].gp += Math.abs(gp);
                         if(ads < 0) mapData[date].ads += Math.abs(ads);
                         if(disc < 0) mapData[date].disc += Math.abs(disc);
                     });
 
-                    // Save to Firestore
                     for(const [date, val] of Object.entries(mapData)) {
-                        // 1. Sales
-                        if(val.sales > 0) {
-                            await setDoc(doc(db, "daily_sales", date), { date: date, delivery_grab: val.sales }, { merge: true });
-                        }
-                        // 2. Expenses (GP)
+                        if(val.sales > 0) await setDoc(doc(db, "daily_sales", date), { date: date, delivery_grab: val.sales }, { merge: true });
                         if(val.gp > 0) await addDoc(collection(db, "expenses"), { date, category:'0504-G', amount:val.gp, memo:'GP Grab Auto', timestamp: Timestamp.now() });
-                        // 3. Expenses (Ads)
                         if(val.ads > 0) await addDoc(collection(db, "expenses"), { date, category:'0408-G', amount:val.ads, memo:'Ads Grab Auto', timestamp: Timestamp.now() });
-                        // 4. Expenses (Discount)
                         if(val.disc > 0) await addDoc(collection(db, "expenses"), { date, category:'0118-G', amount:val.disc, memo:'Discount Grab Auto', timestamp: Timestamp.now() });
                     }
                     alert('✅ Import Grab สำเร็จ'); refreshData();
@@ -687,21 +848,19 @@
                 header: true, skipEmptyLines: true,
                 complete: async (results) => {
                     let mapData = {};
-                    
                     results.data.forEach(row => {
-                        const dateRaw = row['capture_time']; // '2026-01-17 02:38:xx'
+                        const dateRaw = row['capture_time']; 
                         if(!dateRaw) return;
                         const date = dateRaw.split(' ')[0];
                         
                         const cash = parseFloat(row['cash_amount']||0);
                         const epay = parseFloat(row['e_payment_amount']||0);
-                        const fee = parseFloat(row['fee']||0); // GP (negative)
-                        const other = parseFloat(row['other_cost']||0); // Ads (negative)
+                        const fee = parseFloat(row['fee']||0);
+                        const other = parseFloat(row['other_cost']||0);
                         
                         if(row['detail'] === 'Delivery Order') {
                             const gross = cash + epay;
                             if(!mapData[date]) mapData[date] = { sales:0, gp:0, ads:0 };
-                            
                             mapData[date].sales += gross;
                             if(fee < 0) mapData[date].gp += Math.abs(fee);
                             if(other < 0) mapData[date].ads += Math.abs(other);
@@ -718,7 +877,7 @@
             });
         }
 
-        // --- DASHBOARD: CASHFLOW & ADJUSTMENT ---
+        // --- DASHBOARD ACTIONS ---
         window.openAdjustModal = () => { document.getElementById('adjust-modal').classList.remove('hidden'); }
         window.closeAdjustModal = () => { document.getElementById('adjust-modal').classList.add('hidden'); document.getElementById('adjust-amount').value = ''; }
         
@@ -730,69 +889,20 @@
             if(diff === 0) { alert('ยอดตรงกันแล้ว ไม่ต้องปรับ'); closeAdjustModal(); return; }
             
             const today = new Date().toISOString().split('T')[0];
-            
             if(diff > 0) {
-                // Found extra money (Income)
                 let currentSales = currentMonthData.sales.find(s => s.date === today);
                 let currentOther = currentSales ? (currentSales.delivery_other || 0) : 0;
                 await setDoc(doc(db, "daily_sales", today), { date: today, delivery_other: currentOther + diff, timestamp: Timestamp.now() }, { merge: true });
                 alert(`✅ ปรับยอดเพิ่ม +${diff.toLocaleString()} บาท เรียบร้อย`);
             } else {
-                // Money missing (Expense)
                 await addDoc(collection(db, "expenses"), {
-                    date: today,
-                    category: '0411', // Misc
-                    amount: Math.abs(diff),
-                    memo: 'ปรับยอดเงิน (System Adjustment)',
-                    timestamp: Timestamp.now()
+                    date: today, category: '0411', amount: Math.abs(diff),
+                    memo: 'ปรับยอดเงิน (System Adjustment)', timestamp: Timestamp.now()
                 });
                 alert(`✅ ปรับยอดลด ${diff.toLocaleString()} บาท เรียบร้อย`);
             }
-            
             closeAdjustModal();
             refreshData();
-        }
-
-        function renderChart(txs) {
-            const ctx = document.getElementById('cashflowChart');
-            if(!ctx) return;
-
-            const days = {};
-            const today = new Date();
-            for(let i=6; i>=0; i--) {
-                const d = new Date(); d.setDate(today.getDate()-i);
-                const ds = d.toISOString().split('T')[0];
-                const dayLabel = `${d.getDate()}/${d.getMonth()+1}`;
-                days[ds] = { label: dayLabel, in: 0, out: 0 };
-            }
-
-            txs.forEach(t => {
-                if(days[t.date]) {
-                    if(t.type === 'inc') days[t.date].in += t.amt;
-                    else days[t.date].out += Math.abs(t.amt);
-                }
-            });
-
-            const labels = Object.values(days).map(d => d.label);
-            const dataIn = Object.values(days).map(d => d.in);
-            const dataOut = Object.values(days).map(d => d.out);
-
-            if(window.cfChart) window.cfChart.destroy();
-            window.cfChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: 'รับ', data: dataIn, backgroundColor: '#10b981', borderRadius: 4 },
-                        { label: 'จ่าย', data: dataOut, backgroundColor: '#ef4444', borderRadius: 4 }
-                    ]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: { x: { grid: { display: false } }, y: { display: false } }
-                }
-            });
         }
 
         window.saveSales = async () => {
@@ -859,7 +969,6 @@
             const fS = currentMonthData.sales.filter(s => s.date>=start && s.date<=end);
             const fE = currentMonthData.expenses.filter(e => e.date>=start && e.date<=end);
 
-            // 1. Revenue
             let revInstore=0, revGrab=0, revLine=0, revRbh=0, revTotal=0;
             fS.forEach(s => {
                 revInstore+=(s.instore||0); revGrab+=(s.delivery_grab||0);
@@ -867,35 +976,24 @@
             });
             revTotal = revInstore + revGrab + revLine + revRbh;
 
-            // 2. Expenses & Grouping Logic
             let aggCogs = {}, aggStaff = {}, aggUncontrol = {}, aggLoan = {}, aggGeneralControl = {};
             let totalDiscount = 0; 
             
-            // Nested Groups Accumulators
             let grabGroup = { type: 'group', id:'sub-grab', name: 'Grab Marketing (รวม)', amt: 0, items: [] };
             let lineGroup = { type: 'group', id:'sub-line', name: 'Lineman Marketing (รวม)', amt: 0, items: [] };
 
             fE.forEach(e => {
                 const c = e.category;
                 const amt = e.amount;
-                
                 if(c.startsWith('0118')) totalDiscount += amt;
 
                 const isGrabMkt = ['0408-G', '0408-G-MKT', '0118-G', '0118-G-STORE'].includes(c);
                 const isLineMkt = ['0408-L', '0118-L'].includes(c);
 
-                if (c.startsWith('02')) { 
-                    if(!aggCogs[c]) aggCogs[c]={cat:c, amt:0}; aggCogs[c].amt+=amt; 
-                }
-                else if (c.startsWith('03')) { 
-                    if(!aggStaff[c]) aggStaff[c]={cat:c, amt:0}; aggStaff[c].amt+=amt; 
-                }
-                else if (c.startsWith('0411-') && c!=='0411') { 
-                    if(!aggLoan[c]) aggLoan[c]={cat:c, amt:0}; aggLoan[c].amt+=amt; 
-                }
-                else if (['0504','0121','0702','0501','0502','0505'].some(p=>c.startsWith(p))) { 
-                    if(!aggUncontrol[c]) aggUncontrol[c]={cat:c, amt:0}; aggUncontrol[c].amt+=amt; 
-                }
+                if (c.startsWith('02')) { if(!aggCogs[c]) aggCogs[c]={cat:c, amt:0}; aggCogs[c].amt+=amt; }
+                else if (c.startsWith('03')) { if(!aggStaff[c]) aggStaff[c]={cat:c, amt:0}; aggStaff[c].amt+=amt; }
+                else if (c.startsWith('0411-') && c!=='0411') { if(!aggLoan[c]) aggLoan[c]={cat:c, amt:0}; aggLoan[c].amt+=amt; }
+                else if (['0504','0121','0702','0501','0502','0505'].some(p=>c.startsWith(p))) { if(!aggUncontrol[c]) aggUncontrol[c]={cat:c, amt:0}; aggUncontrol[c].amt+=amt; }
                 else {
                     if(isGrabMkt) {
                         grabGroup.amt += amt;
@@ -911,7 +1009,6 @@
                 }
             });
 
-            // Prepare Lists
             const toArray = (map) => Object.values(map).sort((a,b) => b.amt - a.amt);
             const sumArray = (arr) => arr.reduce((sum, item) => sum + item.amt, 0);
 
@@ -932,7 +1029,6 @@
             const grpLoan = sumArray(listLoan);
             const grpControl = (grabGroup.amt + lineGroup.amt + sumArray(toArray(aggGeneralControl)));
 
-            // --- PAC CALCULATION ---
             const netSales = revTotal - totalDiscount;
             const pac = revTotal - grpCogs - grpStaff - grpControl;
             const pacPct = netSales > 0 ? ((pac / netSales) * 100).toFixed(1) + '%' : '0%';
@@ -940,7 +1036,6 @@
             document.getElementById('pl-pac').innerText = pac.toLocaleString();
             document.getElementById('pl-pac-pct').innerText = pacPct;
 
-            // Update Summaries
             const setTxt = (id, val) => document.getElementById(id).innerText = val.toLocaleString();
             const setPct = (id, val) => document.getElementById(id).innerText = revTotal>0 ? ((val/revTotal)*100).toFixed(1)+'%' : '0%';
 
@@ -977,10 +1072,8 @@
         function renderList(elId, list, totalRev) {
             const el = document.getElementById(elId);
             el.innerHTML = '';
-            
             list.forEach(i => {
                 if(i.amt === 0) return;
-                
                 if(i.type === 'group') {
                     const pct = totalRev > 0 ? ((i.amt/totalRev)*100).toFixed(1) + '%' : '0%';
                     let subItemsHtml = '';
@@ -1015,7 +1108,6 @@
                         </div>`;
                     return;
                 }
-
                 let name = catNames[i.cat] || i.cat;
                 if(elId==='grp-rev') name = i.cat; 
                 const pct = totalRev > 0 ? ((i.amt/totalRev)*100).toFixed(1) + '%' : '0%';
