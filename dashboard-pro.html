@@ -1105,12 +1105,13 @@
         }
 
         // ============================================
-        // 2. GENERATE REPORT (V.55: Advance P&L + PAC + 2 Decimals)
+        // 2. GENERATE REPORT (V.56: Collapsible Sections)
         // ============================================
         window.generateReport = async () => {
             const startDate = document.getElementById('startDate').value; const endDate = document.getElementById('endDate').value;
             if(!startDate || !endDate) { alert("กรุณาเลือกช่วงเวลา"); return; } showLoading(true);
             const tbody = document.getElementById('reportBody'); tbody.innerHTML = '';
+            
             try {
                 let ledger = {}; const initAccount = (code, name) => { if(!ledger[code]) ledger[code] = { code, name, amount: 0, details: [] }; };
                 const addTx = (code, name, date, desc, val) => { if(val === 0) return; initAccount(code, name); ledger[code].amount += val; ledger[code].details.push({ date, desc, val }); };
@@ -1156,69 +1157,128 @@
                 const totalOpexAll = totalControl + totalFixed + totalLoan;
                 const netProfit = grossProfit - totalOpexAll;
 
-                // Render Table (Decimal 2 for everything)
-                renderSectionHeader(tbody, "รายได้ (Gross Revenue)", "text-indigo-700 bg-indigo-50");
-                revenueList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
+                // Render Table (with Collapsible Logic)
+                // 1. Revenue
+                const revId = 'rev-group';
+                renderSectionHeader(tbody, "รายได้ (Gross Revenue)", "text-indigo-700 bg-indigo-50", revId);
+                revenueList.forEach(item => renderAccountRow(tbody, item, totalRevenue, revId));
                 renderTotalRow(tbody, "รวมรายได้ขาย", totalRevenue, 100, "text-indigo-700 bg-indigo-50 border-t-2 border-indigo-200");
 
+                // 2. Deductions
                 if(deductionList.length > 0) {
-                    renderSectionHeader(tbody, "หัก: รายการหักจากรายได้ (Deductions)", "text-pink-700 bg-pink-50 mt-4");
-                    deductionList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
+                    const dedId = 'ded-group';
+                    renderSectionHeader(tbody, "หัก: รายการหักจากรายได้ (Deductions)", "text-pink-700 bg-pink-50 mt-4", dedId);
+                    deductionList.forEach(item => renderAccountRow(tbody, item, totalRevenue, dedId));
                     renderTotalRow(tbody, "รายได้สุทธิ (Net Sales)", netSales, (netSales/totalRevenue)*100, "bg-gray-100 font-bold border-y-2");
                 } else { renderTotalRow(tbody, "รายได้สุทธิ (Net Sales)", netSales, 100, "bg-gray-100 font-bold border-y-2 mt-4"); }
 
-                renderSectionHeader(tbody, "ต้นทุนขาย (Cost of Goods Sold)", "text-red-700 bg-red-50 mt-4");
-                cogsList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
+                // 3. COGS
+                const cogsId = 'cogs-group';
+                renderSectionHeader(tbody, "ต้นทุนขาย (Cost of Goods Sold)", "text-red-700 bg-red-50 mt-4", cogsId);
+                cogsList.forEach(item => renderAccountRow(tbody, item, totalRevenue, cogsId));
                 renderTotalRow(tbody, "รวมต้นทุนขาย", totalCOGS, (totalCOGS/totalRevenue)*100, "text-red-700 bg-red-50 border-t-2 border-red-200");
 
-                renderSectionHeader(tbody, "ต้นทุนแรงงาน (Labor Cost)", "text-yellow-800 bg-yellow-50 mt-4");
-                laborList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
+                // 4. Labor
+                const laborId = 'labor-group';
+                renderSectionHeader(tbody, "ต้นทุนแรงงาน (Labor Cost)", "text-yellow-800 bg-yellow-50 mt-4", laborId);
+                laborList.forEach(item => renderAccountRow(tbody, item, totalRevenue, laborId));
                 renderTotalRow(tbody, "รวมต้นทุนแรงงาน", totalLabor, (totalLabor/totalRevenue)*100, "text-yellow-800 bg-yellow-50 border-t-2 border-yellow-200");
 
+                // Gross Profit
                 renderSummaryRow(tbody, "กำไรขั้นต้น (Gross Profit)", grossProfit, netSales > 0 ? (grossProfit/netSales)*100 : 0, "bg-green-50 text-green-800 font-bold text-lg border-y-2 border-green-200");
 
-                renderSectionHeader(tbody, "ค่าใช้จ่ายที่ควบคุมได้ (Controllable)", "text-teal-700 bg-teal-50 mt-4");
-                controlList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
+                // 5. Controllable
+                const ctrlId = 'ctrl-group';
+                renderSectionHeader(tbody, "ค่าใช้จ่ายที่ควบคุมได้ (Controllable)", "text-teal-700 bg-teal-50 mt-4", ctrlId);
+                controlList.forEach(item => renderAccountRow(tbody, item, totalRevenue, ctrlId));
                 renderTotalRow(tbody, "รวมส่วนควบคุมได้", totalControl, netSales > 0 ? (totalControl/netSales)*100 : 0, "text-teal-700 bg-teal-50 border-t-2 border-teal-200");
 
+                // PAC
                 renderSummaryRow(tbody, "กำไรหลังหักค่าใช้จ่ายควบคุมได้ (PAC)", pac, netSales > 0 ? (pac/netSales)*100 : 0, "bg-cyan-100 text-cyan-900 font-bold text-lg border-y-2 border-cyan-300");
 
-                renderSectionHeader(tbody, "ค่าใช้จ่ายคงที่/ควบคุมไม่ได้ (Fixed)", "text-gray-700 bg-gray-100 mt-4");
-                fixedList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
+                // 6. Fixed
+                const fixedId = 'fixed-group';
+                renderSectionHeader(tbody, "ค่าใช้จ่ายคงที่/ควบคุมไม่ได้ (Fixed)", "text-gray-700 bg-gray-100 mt-4", fixedId);
+                fixedList.forEach(item => renderAccountRow(tbody, item, totalRevenue, fixedId));
                 renderTotalRow(tbody, "รวมส่วนควบคุมไม่ได้", totalFixed, netSales > 0 ? (totalFixed/netSales)*100 : 0, "text-gray-700 bg-gray-100 border-t-2 border-gray-300");
 
-                renderSectionHeader(tbody, "สินเชื่อและการเงิน (Loans)", "text-purple-700 bg-purple-50 mt-4");
-                loanList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
+                // 7. Loans
+                const loanId = 'loan-group';
+                renderSectionHeader(tbody, "สินเชื่อและการเงิน (Loans)", "text-purple-700 bg-purple-50 mt-4", loanId);
+                loanList.forEach(item => renderAccountRow(tbody, item, totalRevenue, loanId));
                 renderTotalRow(tbody, "รวมสินเชื่อ", totalLoan, netSales > 0 ? (totalLoan/netSales)*100 : 0, "text-purple-700 bg-purple-50 border-t-2 border-purple-200");
 
+                // Net Profit
                 const netColor = netProfit >= 0 ? "bg-emerald-100 text-emerald-900" : "bg-red-100 text-red-900";
                 renderSummaryRow(tbody, "กำไรสุทธิ (Net Profit)", netProfit, netSales > 0 ? (netProfit/netSales)*100 : 0, `${netColor} font-extrabold text-xl border-y-4 border-double py-6`);
 
             } catch(e) { console.error(e); } showLoading(false);
         }
 
-        function renderAccountRow(tbody, data, totalRev) {
-            const template = document.getElementById('row-template');
+        // Updated Render Helpers for Collapsible
+        function renderSectionHeader(tbody, title, cssClass, groupId) { 
+            // Create a clickable header row
+            const tr = document.createElement('tr');
+            tr.className = "section-header border-b border-gray-200";
+            tr.onclick = () => toggleSection(groupId, tr);
+            tr.innerHTML = `
+                <td colspan="4" class="p-3 font-bold ${cssClass}">
+                    <span class="icon-section mr-2">▶</span> ${title}
+                </td>
+            `;
+            tbody.appendChild(tr); 
+        }
+
+        function renderAccountRow(tbody, data, totalRev, groupId) {
+            const template = document.getElementById('row-template'); 
             const clone = template.content.cloneNode(true);
+            const tr = clone.querySelector('tr');
+            
+            // 🔥 Add class to hide by default and identify group
+            tr.classList.add('hidden', 'sub-row', groupId); 
+            
             clone.querySelector('.account-name').innerHTML = `<span class="font-mono text-gray-400 mr-2">${data.code}</span> ${data.name}`;
             clone.querySelector('.account-amount').innerText = data.amount.toLocaleString(undefined, {minimumFractionDigits: 2});
             clone.querySelector('.account-percent').innerText = totalRev > 0 ? ((data.amount / totalRev) * 100).toFixed(2) + "%" : "0%";
-            const detailContainer = clone.querySelector('.detail-container');
+            
+            const dc = clone.querySelector('.detail-container');
             if (data.details && data.details.length > 0) {
                 data.details.sort((a,b) => b.date.localeCompare(a.date));
-                data.details.forEach(dt => {
-                    const tr = document.createElement('tr');
-                    tr.className = "border-b border-gray-100 last:border-0 hover:bg-gray-100";
-                    tr.innerHTML = `<td class="pl-16 py-2 w-32">${dt.date}</td><td class="py-2">${dt.desc}</td><td class="pr-4 py-2 text-right font-mono">${dt.val.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="w-32"></td>`;
-                    detailContainer.appendChild(tr);
-                });
-            } else { const tr = document.createElement('tr'); tr.innerHTML = `<td colspan="4" class="pl-16 py-2 italic text-gray-400">ไม่มีรายการย่อย</td>`; detailContainer.appendChild(tr); }
+                data.details.forEach(dt => { dc.innerHTML += `<tr class="border-b border-gray-100 hover:bg-gray-100"><td class="pl-16 py-2 w-32">${dt.date}</td><td class="py-2">${dt.desc}</td><td class="pr-4 py-2 text-right font-mono">${dt.val.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="w-32"></td></tr>`; });
+            } else { dc.innerHTML = `<tr class=""><td colspan="4" class="pl-16 py-2 italic text-gray-400">ไม่มีรายการย่อย</td></tr>`; }
+            
             tbody.appendChild(clone);
         }
-        function renderSectionHeader(tbody, title, cssClass) { const tr = document.createElement('tr'); tr.innerHTML = `<td colspan="4" class="p-3 font-bold ${cssClass}">${title}</td>`; tbody.appendChild(tr); }
-        function renderTotalRow(tbody, title, amount, percent, cssClass) { const tr = document.createElement('tr'); tr.className = cssClass; tr.innerHTML = `<td></td><td class="p-3 font-bold text-right pr-8">${title}</td><td class="p-3 font-bold text-right border-t border-gray-300 border-dashed">${amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="p-3 text-right text-sm font-semibold">${percent.toFixed(2)}%</td>`; tbody.appendChild(tr); }
-        function renderSummaryRow(tbody, title, amount, percent, cssClass) { const tr = document.createElement('tr'); tr.className = cssClass; tr.innerHTML = `<td></td><td class="p-4 text-right pr-8">${title}</td><td class="p-4 text-right">${amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="p-4 text-right text-sm">${percent.toFixed(2)}%</td>`; tbody.appendChild(tr); }
 
+        // Global function to toggle sections
+        window.toggleSection = (groupId, headerRow) => {
+            const rows = document.querySelectorAll(`.${groupId}`);
+            const icon = headerRow.querySelector('.icon-section');
+            let isExpanding = false;
+
+            rows.forEach(row => {
+                if (row.classList.contains('hidden')) {
+                    row.classList.remove('hidden');
+                    isExpanding = true;
+                } else {
+                    row.classList.add('hidden');
+                    // Also hide detailed expansion if open
+                    const nextRow = row.nextElementSibling;
+                    if(nextRow && nextRow.classList.contains('detail-row') && !nextRow.classList.contains('hidden')) {
+                        nextRow.classList.add('hidden');
+                        const arrow = row.querySelector('.icon-expand');
+                        if(arrow) arrow.classList.remove('rotate-90');
+                    }
+                }
+            });
+
+            if(isExpanding) icon.classList.add('rotate-90');
+            else icon.classList.remove('rotate-90');
+        }
+
+        // Standard Helpers (No change needed)
+        function renderTotalRow(tbody, title, amount, percent, cssClass) { tbody.innerHTML += `<tr class="${cssClass}"><td></td><td class="p-3 font-bold text-right pr-8">${title}</td><td class="p-3 font-bold text-right border-t border-gray-300 border-dashed">${amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="p-3 text-right text-sm font-semibold">${percent.toFixed(2)}%</td></tr>`; }
+        function renderSummaryRow(tbody, title, amount, percent, cssClass) { tbody.innerHTML += `<tr class="${cssClass}"><td></td><td class="p-4 text-right pr-8">${title}</td><td class="p-4 text-right">${amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="p-4 text-right text-sm">${percent.toFixed(2)}%</td></tr>`; }
         // --- CHARTS & RENDERERS ---
         function renderTrendChart(dataObj) {
             const ctx = document.getElementById('trendChart'); if(!ctx) return;
