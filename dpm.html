@@ -72,6 +72,10 @@
         /* Loading Spinner */
         .spinner { border: 3px solid rgba(255,255,255,0.3); border-left-color: white; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Utilities */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
 <body>
@@ -159,11 +163,8 @@
             </div>
             
             <div class="card !py-2" id="tx-feed">
-                <div class="text-center py-6">
-                    <button onclick="loadTransactions()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm rounded-lg transition-colors duration-200 flex items-center mx-auto gap-2">
-                        <i class="fa-solid fa-clock-rotate-left"></i>
-                        คลิกเพื่อดูรายการ
-                    </button>
+                <div class="text-center py-6 text-slate-400">
+                    ...
                 </div>
             </div>
         </div>
@@ -429,7 +430,7 @@
         from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
         // ⚠️ PASTE YOUR CONFIG HERE ⚠️
-                const firebaseConfig = {
+        const firebaseConfig = {
     apiKey: "AIzaSyDRiTZXUbkdGaCHZVTkOOl1Iu0A-744tE0",
     authDomain: "numdamnoen-6cbd5.firebaseapp.com",
     projectId: "numdamnoen-6cbd5",
@@ -475,6 +476,9 @@
         // --- GLOBAL DATA VARS ---
         let currentMonthData = { sales: [], expenses: [] };
         let systemBalance = 0; 
+        
+        // --- GLOBAL STATE FOR LAZY LOADING ---
+        window.isFeedVisible = false;
 
         function initApp() {
             const d = new Date();
@@ -488,8 +492,17 @@
         window.refreshData = async () => {
             const m = document.getElementById('globalMonth').value;
             if(!m) return;
+            
+            // Reset Feed Visibility on new load
+            window.isFeedVisible = false;
+            
             currentMonthData.sales = [];
             currentMonthData.expenses = [];
+            
+            // Show Loading State on Cards
+            document.getElementById('dash-in').innerText = "...";
+            document.getElementById('dash-out').innerText = "...";
+            document.getElementById('dash-net').innerText = "...";
             
             const startOfMonth = m + "-01";
             const endOfMonth = m + "-31";
@@ -504,6 +517,117 @@
                 console.log("Query Error:", err);
             }
             renderDashboard();
+        }
+        
+        // --- TOGGLE FUNCTION (GLOBAL) ---
+        window.toggleFeed = function() {
+            window.isFeedVisible = true;
+            renderDashboard();
+        }
+
+        function renderDashboard() {
+            let totalIn = 0;
+            let totalOut = 0;
+            let transactions = [];
+
+            // Process Expenses
+            if (currentMonthData.expenses) {
+                currentMonthData.expenses.forEach(e => {
+                    totalOut += e.amount;
+                    transactions.push({
+                        type: 'exp',
+                        date: e.date,
+                        name: catNames[e.category] || e.category,
+                        memo: e.memo,
+                        amt: -e.amount
+                    });
+                });
+            }
+
+            // Process Sales
+            if (currentMonthData.sales) {
+                currentMonthData.sales.forEach(s => {
+                    const addTx = (name, val) => {
+                        if(val > 0) {
+                            totalIn += val;
+                            transactions.push({ type: 'inc', date: s.date, name: name, amt: val });
+                        }
+                    };
+                    addTx('หน้าร้าน', s.instore);
+                    addTx('Grab', s.delivery_grab);
+                    addTx('Lineman', s.delivery_lineman);
+                    addTx('Robinhood', s.delivery_robinhood);
+                    addTx('อื่นๆ', s.delivery_other);
+                });
+            }
+
+            systemBalance = totalIn - totalOut; 
+            document.getElementById('dash-in').innerText = totalIn.toLocaleString();
+            document.getElementById('dash-out').innerText = totalOut.toLocaleString();
+            document.getElementById('dash-net').innerText = systemBalance.toLocaleString();
+
+            // Render Feed
+            const feedEl = document.getElementById('tx-feed');
+            feedEl.innerHTML = '';
+            
+            // Check Visibility State
+            if (!window.isFeedVisible) {
+                feedEl.innerHTML = `
+                    <div class="text-center py-6">
+                        <button onclick="window.toggleFeed()" class="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm rounded-full transition-all flex items-center mx-auto gap-2">
+                            <i class="fa-solid fa-list-ul"></i>
+                            แสดงรายการละเอียด (${transactions.length} รายการ)
+                        </button>
+                    </div>
+                `;
+            } else {
+                renderTransactionList(transactions, feedEl);
+            }
+            
+            // Always Render Chart
+            renderChart(transactions);
+        }
+
+        function renderTransactionList(transactions, feedEl) {
+            transactions.sort((a,b) => new Date(b.date) - new Date(a.date));
+            
+            if(transactions.length === 0) {
+                feedEl.innerHTML = '<div class="text-center py-8 text-slate-400 text-sm">- ไม่มีรายการ -</div>';
+                return;
+            }
+
+            let lastDate = '';
+            transactions.forEach(tx => {
+                const d = new Date(tx.date);
+                const dateStr = `${d.getDate()} / ${d.getMonth()+1}`;
+                if(dateStr !== lastDate) {
+                    feedEl.innerHTML += `<div class="px-4 py-2 bg-slate-50 text-xs font-bold text-slate-500 mt-2 sticky top-0 border-b border-slate-100 z-10">${dateStr}</div>`;
+                    lastDate = dateStr;
+                }
+
+                const isInc = tx.type === 'inc';
+                const colorClass = isInc ? 'text-emerald-600' : 'text-red-500';
+                const bgClass = isInc ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-500';
+                const iconClass = isInc ? 'fa-arrow-down' : 'fa-arrow-up';
+                const sign = isInc ? '+' : '';
+
+                feedEl.innerHTML += `
+                    <div class="tx-row px-4 bg-white border-b border-slate-50 py-2">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="tx-icon ${bgClass} w-8 h-8 flex items-center justify-center rounded-full">
+                                    <i class="fa-solid ${iconClass} text-xs"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-bold text-slate-700">${tx.name}</div>
+                                    ${tx.memo ? `<div class="text-[10px] text-slate-400">${tx.memo}</div>` : ''}
+                                </div>
+                            </div>
+                            <div class="font-bold ${colorClass}">${sign}${tx.amt.toLocaleString()}</div>
+                        </div>
+                    </div>
+                `;
+            });
         }
 
         // --- IMPORT LOGIC (GRAB/LINEMAN) ---
@@ -628,154 +752,6 @@
             closeAdjustModal();
             refreshData();
         }
-
-        // ตัวแปรเช็คสถานะว่าเปิดดูรายการย่อยหรือยัง
-let isFeedVisible = false;
-
-// 1. ฟังก์ชันหลักที่ทำงานเมื่อเปิดหน้าเว็บ (Auto Start)
-async function initDashboard() {
-    // แสดงสถานะกำลังโหลดที่การ์ดสีน้ำเงินก่อน
-    document.getElementById('dash-in').innerText = "...";
-    document.getElementById('dash-out').innerText = "...";
-    document.getElementById('dash-net').innerText = "...";
-
-    try {
-        // *** ส่วนดึงข้อมูล (Fetch Database) ทำงานทันทีตรงนี้ ***
-        // ใส่โค้ดดึงข้อมูลจริงของคุณตรงนี้ เช่น:
-        // currentMonthData = await fetch('/api/get-data').then(res => res.json());
-        
-        // (จำลองการดึงข้อมูล - ลบบรรทัดนี้เมื่อใช้จริง)
-        await new Promise(r => setTimeout(r, 800)); 
-
-        // เมื่อได้ข้อมูลแล้ว ให้ Render หน้าจอ
-        renderDashboard();
-
-    } catch (err) {
-        console.error("Error loading data:", err);
-        // แจ้งเตือนถ้าดึงข้อมูลไม่สำเร็จ
-        document.getElementById('dash-net').innerText = "Error";
-    }
-}
-
-// 2. ฟังก์ชันแสดงผล (ทำงานแยกส่วนกัน)
-function renderDashboard() {
-    let totalIn = 0;
-    let totalOut = 0;
-    let transactions = [];
-
-    // --- ส่วนคำนวณตัวเลข (เหมือนเดิม) ---
-    if (currentMonthData.expenses) {
-        currentMonthData.expenses.forEach(e => {
-            totalOut += e.amount;
-            transactions.push({
-                type: 'exp',
-                date: e.date,
-                name: catNames[e.category] || e.category,
-                memo: e.memo,
-                amt: -e.amount
-            });
-        });
-    }
-
-    if (currentMonthData.sales) {
-        currentMonthData.sales.forEach(s => {
-            const addTx = (name, val) => {
-                if(val > 0) {
-                    totalIn += val;
-                    transactions.push({ type: 'inc', date: s.date, name: name, amt: val });
-                }
-            };
-            addTx('หน้าร้าน', s.instore);
-            addTx('Grab', s.delivery_grab);
-            addTx('Lineman', s.delivery_lineman);
-            addTx('Robinhood', s.delivery_robinhood);
-            addTx('อื่นๆ', s.delivery_other);
-        });
-    }
-
-    // --- ส่วนที่ 1: อัปเดตการ์ดสีน้ำเงิน (แสดงผลทันที) ---
-    let systemBalance = totalIn - totalOut; 
-    document.getElementById('dash-in').innerText = totalIn.toLocaleString();
-    document.getElementById('dash-out').innerText = totalOut.toLocaleString();
-    document.getElementById('dash-net').innerText = systemBalance.toLocaleString();
-
-
-    // --- ส่วนที่ 2: จัดการรายการเคลื่อนไหว (Feed) ---
-    const feedEl = document.getElementById('tx-feed');
-    feedEl.innerHTML = '';
-
-    // เช็คว่ากดปุ่มขอดูหรือยัง?
-    if (!isFeedVisible) {
-        // ถ้ายังไม่กด -> แสดงปุ่ม "โหลดข้อมูล" (จริงๆ คือปุ่มเปิดดู)
-        feedEl.innerHTML = `
-            <div class="text-center py-6">
-                <button onclick="toggleFeed()" class="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm rounded-full transition-all flex items-center mx-auto gap-2">
-                    <i class="fa-solid fa-list-ul"></i>
-                    แสดงรายการละเอียด (${transactions.length} รายการ)
-                </button>
-            </div>
-        `;
-    } else {
-        // ถ้ากดแล้ว -> แสดงรายการทั้งหมด (List)
-        renderTransactionList(transactions, feedEl);
-    }
-
-    // Render Chart เสมอ (หรือจะซ่อนด้วยก็ได้ตามต้องการ)
-    if(typeof renderChart === 'function') renderChart(transactions);
-}
-
-// 3. ฟังก์ชันกดปุ่มเพื่อเปิดดูรายการ
-function toggleFeed() {
-    isFeedVisible = true; // เปลี่ยนสถานะเป็นเปิด
-    renderDashboard();    // เรียก Render ใหม่ (ข้อมูลมีอยู่แล้ว ไม่ต้องดึง DB ใหม่)
-}
-
-// 4. ฟังก์ชันวาด List (แยกออกมาเพื่อให้โค้ดดูง่าย)
-function renderTransactionList(transactions, feedEl) {
-    transactions.sort((a,b) => new Date(b.date) - new Date(a.date));
-
-    if(transactions.length === 0) {
-        feedEl.innerHTML = '<div class="text-center py-8 text-slate-400 text-sm">- ไม่มีรายการ -</div>';
-        return;
-    }
-
-    let lastDate = '';
-    transactions.forEach(tx => {
-        // ... (โค้ด render HTML ของแต่ละบรรทัด แบบเดิมของคุณ) ...
-        const d = new Date(tx.date);
-        const dateStr = `${d.getDate()} / ${d.getMonth()+1}`;
-        if(dateStr !== lastDate) {
-            feedEl.innerHTML += `<div class="px-4 py-2 bg-slate-50 text-xs font-bold text-slate-500 mt-2 sticky top-0 border-b border-slate-100 z-10">${dateStr}</div>`;
-            lastDate = dateStr;
-        }
-
-        const isInc = tx.type === 'inc';
-        const colorClass = isInc ? 'text-emerald-600' : 'text-red-500';
-        const bgClass = isInc ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-500';
-        const iconClass = isInc ? 'fa-arrow-down' : 'fa-arrow-up';
-        const sign = isInc ? '+' : '';
-
-        feedEl.innerHTML += `
-            <div class="tx-row px-4 bg-white border-b border-slate-50 py-2">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="tx-icon ${bgClass} w-8 h-8 flex items-center justify-center rounded-full">
-                            <i class="fa-solid ${iconClass} text-xs"></i>
-                        </div>
-                        <div>
-                            <div class="text-sm font-bold text-slate-700">${tx.name}</div>
-                            ${tx.memo ? `<div class="text-[10px] text-slate-400">${tx.memo}</div>` : ''}
-                        </div>
-                    </div>
-                    <div class="font-bold ${colorClass}">${sign}${tx.amt.toLocaleString()}</div>
-                </div>
-            </div>
-        `;
-    });
-}
-
-// อย่าลืมเรียกใช้งานตอนเริ่ม
-// window.onload = initDashboard; // หรือเรียกในจังหวะที่เหมาะสม
 
         function renderChart(txs) {
             const ctx = document.getElementById('cashflowChart');
