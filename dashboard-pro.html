@@ -1105,7 +1105,7 @@
         }
 
         // ============================================
-        // 2. GENERATE REPORT (V.55: 2-Decimal Precision)
+        // 2. GENERATE REPORT (V.55: Advance P&L + PAC + 2 Decimals)
         // ============================================
         window.generateReport = async () => {
             const startDate = document.getElementById('startDate').value; const endDate = document.getElementById('endDate').value;
@@ -1156,7 +1156,7 @@
                 const totalOpexAll = totalControl + totalFixed + totalLoan;
                 const netProfit = grossProfit - totalOpexAll;
 
-                // Render Table (Decimal 2)
+                // Render Table (Decimal 2 for everything)
                 renderSectionHeader(tbody, "รายได้ (Gross Revenue)", "text-indigo-700 bg-indigo-50");
                 revenueList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
                 renderTotalRow(tbody, "รวมรายได้ขาย", totalRevenue, 100, "text-indigo-700 bg-indigo-50 border-t-2 border-indigo-200");
@@ -1202,7 +1202,7 @@
             const clone = template.content.cloneNode(true);
             clone.querySelector('.account-name').innerHTML = `<span class="font-mono text-gray-400 mr-2">${data.code}</span> ${data.name}`;
             clone.querySelector('.account-amount').innerText = data.amount.toLocaleString(undefined, {minimumFractionDigits: 2});
-            clone.querySelector('.account-percent').innerText = totalRev > 0 ? ((data.amount / totalRev) * 100).toFixed(1) + "%" : "0%";
+            clone.querySelector('.account-percent').innerText = totalRev > 0 ? ((data.amount / totalRev) * 100).toFixed(2) + "%" : "0%";
             const detailContainer = clone.querySelector('.detail-container');
             if (data.details && data.details.length > 0) {
                 data.details.sort((a,b) => b.date.localeCompare(a.date));
@@ -1216,8 +1216,8 @@
             tbody.appendChild(clone);
         }
         function renderSectionHeader(tbody, title, cssClass) { const tr = document.createElement('tr'); tr.innerHTML = `<td colspan="4" class="p-3 font-bold ${cssClass}">${title}</td>`; tbody.appendChild(tr); }
-        function renderTotalRow(tbody, title, amount, percent, cssClass) { const tr = document.createElement('tr'); tr.className = cssClass; tr.innerHTML = `<td></td><td class="p-3 font-bold text-right pr-8">${title}</td><td class="p-3 font-bold text-right border-t border-gray-300 border-dashed">${amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="p-3 text-right text-sm font-semibold">${percent.toFixed(1)}%</td>`; tbody.appendChild(tr); }
-        function renderSummaryRow(tbody, title, amount, percent, cssClass) { const tr = document.createElement('tr'); tr.className = cssClass; tr.innerHTML = `<td></td><td class="p-4 text-right pr-8">${title}</td><td class="p-4 text-right">${amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="p-4 text-right text-sm">${percent.toFixed(1)}%</td>`; tbody.appendChild(tr); }
+        function renderTotalRow(tbody, title, amount, percent, cssClass) { const tr = document.createElement('tr'); tr.className = cssClass; tr.innerHTML = `<td></td><td class="p-3 font-bold text-right pr-8">${title}</td><td class="p-3 font-bold text-right border-t border-gray-300 border-dashed">${amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="p-3 text-right text-sm font-semibold">${percent.toFixed(2)}%</td>`; tbody.appendChild(tr); }
+        function renderSummaryRow(tbody, title, amount, percent, cssClass) { const tr = document.createElement('tr'); tr.className = cssClass; tr.innerHTML = `<td></td><td class="p-4 text-right pr-8">${title}</td><td class="p-4 text-right">${amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="p-4 text-right text-sm">${percent.toFixed(2)}%</td>`; tbody.appendChild(tr); }
 
         // --- CHARTS & RENDERERS ---
         function renderTrendChart(dataObj) {
