@@ -43,6 +43,28 @@
         /* P&L Detail Styles */
         .icon-expand.rotate-90 { transform: rotate(90deg); }
         .detail-row td { padding: 0 !important; border: none !important; }
+        /* Collapsible Styles */
+        .section-header { 
+            cursor: pointer; 
+            user-select: none; 
+            transition: background-color 0.15s ease; 
+        }
+        .section-header:hover { 
+            filter: brightness(0.95); 
+        }
+        .icon-section { 
+            display: inline-block; 
+            transition: transform 0.2s ease; 
+            width: 20px; 
+            text-align: center; 
+            font-size: 0.8rem;
+        }
+        .icon-section.rotate-90 { 
+            transform: rotate(90deg); 
+        }
+        .sub-row {
+            transition: all 0.3s ease;
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -469,7 +491,7 @@
     </div>
 
     <template id="row-template">
-        <tr class="main-row hover:bg-gray-50 cursor-pointer transition-colors duration-150 border-b border-gray-100 group" onclick="toggleDetail(this)">
+        <tr class="main-row sub-row hidden hover:bg-gray-50 cursor-pointer transition-colors duration-150 border-b border-gray-100 group" onclick="toggleDetail(this)">
             <td class="p-4 text-center text-gray-400 group-hover:text-indigo-600">
                 <svg class="w-4 h-4 transform transition-transform duration-200 icon-expand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
             </td>
@@ -480,10 +502,7 @@
         <tr class="detail-row hidden bg-gray-50 shadow-inner">
             <td colspan="4" class="p-0">
                 <div class="overflow-hidden transition-all duration-300">
-                    <table class="w-full">
-                        <tbody class="detail-container text-xs text-gray-500">
-                        </tbody>
-                    </table>
+                    <table class="w-full"><tbody class="detail-container text-xs text-gray-500"></tbody></table>
                 </div>
             </td>
         </tr>
@@ -1216,31 +1235,39 @@
         }
 
         // Updated Render Helpers for Collapsible
-        function renderSectionHeader(tbody, title, cssClass, groupId) { 
-            // Create a clickable header row
+        // ============================================
+        // Helper Functions สำหรับ Collapsible Report
+        // ============================================
+
+        // 1. Render หัวข้อหมวด (คลิกได้)
+        function renderSectionHeader(tbody, title, cssClass, groupId) {
             const tr = document.createElement('tr');
             tr.className = "section-header border-b border-gray-200";
-            tr.onclick = () => toggleSection(groupId, tr);
+            // สั่งให้คลิกแล้วเรียก toggleSection
+            tr.onclick = function() { toggleSection(groupId, this); };
+            
             tr.innerHTML = `
                 <td colspan="4" class="p-3 font-bold ${cssClass}">
                     <span class="icon-section mr-2">▶</span> ${title}
                 </td>
             `;
-            tbody.appendChild(tr); 
+            tbody.appendChild(tr);
         }
 
+        // 2. Render รายการย่อย (ซ่อนไว้ก่อน)
         function renderAccountRow(tbody, data, totalRev, groupId) {
-            const template = document.getElementById('row-template'); 
+            const template = document.getElementById('row-template');
             const clone = template.content.cloneNode(true);
             const tr = clone.querySelector('tr');
             
-            // 🔥 Add class to hide by default and identify group
-            tr.classList.add('hidden', 'sub-row', groupId); 
+            // ใส่ ID กลุ่ม เพื่อให้รู้ว่าเป็นลูกน้องใคร
+            tr.classList.add(groupId);
             
             clone.querySelector('.account-name').innerHTML = `<span class="font-mono text-gray-400 mr-2">${data.code}</span> ${data.name}`;
             clone.querySelector('.account-amount').innerText = data.amount.toLocaleString(undefined, {minimumFractionDigits: 2});
             clone.querySelector('.account-percent').innerText = totalRev > 0 ? ((data.amount / totalRev) * 100).toFixed(2) + "%" : "0%";
             
+            // Detail row logic (เหมือนเดิม)
             const dc = clone.querySelector('.detail-container');
             if (data.details && data.details.length > 0) {
                 data.details.sort((a,b) => b.date.localeCompare(a.date));
@@ -1250,21 +1277,25 @@
             tbody.appendChild(clone);
         }
 
-        // Global function to toggle sections
+        // 3. ฟังก์ชัน Toggle (เปิด/ปิด)
         window.toggleSection = (groupId, headerRow) => {
-            const rows = document.querySelectorAll(`.${groupId}`);
+            const rows = document.querySelectorAll(`.${groupId}`); // หาแถวลูกๆ ทั้งหมด
             const icon = headerRow.querySelector('.icon-section');
             let isExpanding = false;
 
+            // เช็คสถานะจากแถวแรก (ถ้าซ่อนอยู่ แสดงว่าจะเปิด)
+            if (rows.length > 0 && rows[0].classList.contains('hidden')) {
+                isExpanding = true;
+            }
+
             rows.forEach(row => {
-                if (row.classList.contains('hidden')) {
-                    row.classList.remove('hidden');
-                    isExpanding = true;
+                if (isExpanding) {
+                    row.classList.remove('hidden'); // แสดง
                 } else {
-                    row.classList.add('hidden');
-                    // Also hide detailed expansion if open
+                    row.classList.add('hidden');    // ซ่อน
+                    // ซ่อนรายละเอียดระดับลึก (Detail Row) ด้วย ถ้าเปิดค้างไว้
                     const nextRow = row.nextElementSibling;
-                    if(nextRow && nextRow.classList.contains('detail-row') && !nextRow.classList.contains('hidden')) {
+                    if(nextRow && nextRow.classList.contains('detail-row')) {
                         nextRow.classList.add('hidden');
                         const arrow = row.querySelector('.icon-expand');
                         if(arrow) arrow.classList.remove('rotate-90');
@@ -1272,9 +1303,10 @@
                 }
             });
 
+            // หมุนไอคอน
             if(isExpanding) icon.classList.add('rotate-90');
             else icon.classList.remove('rotate-90');
-        }
+        };
 
         // Standard Helpers (No change needed)
         function renderTotalRow(tbody, title, amount, percent, cssClass) { tbody.innerHTML += `<tr class="${cssClass}"><td></td><td class="p-3 font-bold text-right pr-8">${title}</td><td class="p-3 font-bold text-right border-t border-gray-300 border-dashed">${amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="p-3 text-right text-sm font-semibold">${percent.toFixed(2)}%</td></tr>`; }
