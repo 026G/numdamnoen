@@ -771,6 +771,7 @@
 
                 expDocs.forEach(doc => {
                     const d = doc.data();
+                    d.id = doc.id;
                     // ไม่ต้องเช็ค if(d.date.startsWith...) แล้ว เพราะกรองมาจาก Server แล้ว
                     expenses.push(d);
                     const amt = parseFloat(d.amount || 0);
@@ -894,12 +895,25 @@
                 results.forEach(item => {
                     totalFound += parseFloat(item.amount);
                     const catDisplay = accountNames[item.category] || item.category;
+                    
+                    // 🔥 แก้ไขส่วน HTML ตรงนี้ครับ เพิ่มปุ่ม 🗑️ เข้าไปท้ายสุด
                     tbody.innerHTML += `
-                        <tr class="border-b hover:bg-gray-50 transition">
+                        <tr class="border-b hover:bg-gray-50 transition group">
                             <td class="p-4 font-mono text-gray-500">${item.date}</td>
                             <td class="p-4 font-bold text-gray-800">${item.memo || '-'}</td>
-                            <td class="p-4 text-xs text-gray-500 bg-gray-50 rounded"><span class="font-mono text-gray-400 mr-1">${item.category}</span> ${catDisplay}</td>
-                            <td class="p-4 text-right font-mono font-bold text-red-600">-${parseFloat(item.amount).toLocaleString()}</td>
+                            <td class="p-4 text-xs text-gray-500 bg-gray-50 rounded">
+                                <span class="font-mono text-gray-400 mr-1">${item.category}</span> 
+                                ${catDisplay}
+                            </td>
+                            <td class="p-4 text-right font-mono font-bold text-red-600">
+                                -${parseFloat(item.amount).toLocaleString()}
+                            </td>
+                            <td class="p-4 text-center">
+                                <button onclick="deleteExpense('${item.id}', '${item.memo}', ${item.amount})" 
+                                    class="text-gray-300 hover:text-red-600 transition p-2 rounded-full hover:bg-red-50" title="ลบรายการนี้">
+                                    🗑️
+                                </button>
+                            </td>
                         </tr>
                     `;
                 });
@@ -1367,6 +1381,39 @@
         document.getElementById('dashMonth').value = `${year}-${month}`; 
         document.getElementById('saleDate').value = `${year}-${month}-${day}`;
         document.getElementById('expDate').value = `${year}-${month}-${day}`;
+        
+        // ============================================
+        // ฟังก์ชันลบค่าใช้จ่าย (Delete Expense)
+        // ============================================
+        window.deleteExpense = async (id, memo, amount) => {
+            // เช็คสิทธิ์ก่อน (เฉพาะ Owner)
+            if(currentUserRole !== 'OWNER') { alert("⛔️ เฉพาะ Owner เท่านั้นที่จะลบได้"); return; }
+
+            // ถามยืนยันเพื่อความชัวร์
+            const confirmMsg = `⚠️ ยืนยันการลบ?\n\nรายการ: ${memo}\nจำนวนเงิน: ${amount} บาท\n\n(ลบแล้วกู้คืนไม่ได้)`;
+            if(!confirm(confirmMsg)) return;
+
+            showLoading(true);
+            try {
+                // สั่งลบจาก Firebase
+                await deleteDoc(doc(db, "expenses", id));
+                
+                alert("✅ ลบรายการเรียบร้อย");
+                
+                // โหลดข้อมูลใหม่ และค้นหาคำเดิมซ้ำทันที (เพื่อให้เห็นว่าหายไปแล้ว)
+                await loadData(); 
+                
+                // (Optional) ถ้าอยากให้คงหน้าค้นหาไว้ ให้เรียก searchExpenses() ต่อ
+                // แต่ต้องรอ loadData เสร็จก่อน ซึ่งใน code นี้ loadData เป็น async แล้ว
+                // พอโหลดเสร็จ search จะถูกเคลียร์ ต้องพิมพ์ใหม่ หรือจะเขียน logic ให้จำคำค้นหาก็ได้
+                // เบื้องต้นแค่ loadData() ก็พอครับ ข้อมูลจะหายไปจากระบบทันที
+                
+            } catch (e) {
+                console.error(e);
+                alert("❌ เกิดข้อผิดพลาด: " + e.message);
+            }
+            showLoading(false);
+        }
     </script>
 </body>
 </html>
