@@ -1098,15 +1098,18 @@
             const tbody = document.getElementById('reportBody'); tbody.innerHTML = '';
             
             try {
+                // 1. เตรียมตะกร้าบัญชี
                 let ledger = {}; 
                 const initAccount = (code, name) => { if(!ledger[code]) ledger[code] = { code, name, amount: 0, details: [] }; };
                 const addTx = (code, name, date, desc, val) => { if(val === 0) return; initAccount(code, name); ledger[code].amount += val; ledger[code].details.push({ date, desc, val }); };
 
+                // 2. ดึงข้อมูล
                 const qSales = query(collection(db, "daily_sales"), where("date", ">=", startDate), where("date", "<=", endDate));
                 const snapSales = await getDocs(qSales);
                 const qExp = query(collection(db, "expenses"), where("date", ">=", startDate), where("date", "<=", endDate));
                 const snapExp = await getDocs(qExp);
 
+                // 3. ประมวลผลรายได้
                 snapSales.forEach(doc => {
                     const d = doc.data();
                     if(d.instore > 0) addTx('4001', 'หน้าร้าน (Walk-in)', d.date, 'ยอดขายหน้าร้าน', d.instore);
@@ -1115,45 +1118,80 @@
                     if((d.delivery_robinhood + (d.delivery_other||0)) > 0) addTx('4004', 'ช่องทางอื่นๆ', d.date, 'RBH/Other', d.delivery_robinhood + (d.delivery_other||0));
                 });
 
+                // 4. ประมวลผลค่าใช้จ่าย
                 snapExp.forEach(doc => {
                     const d = doc.data();
                     addTx(d.category, accountNames[d.category] || d.category, d.date, d.memo || '-', d.amount);
                 });
 
+                // ============================================
+                // 🔥 จุดที่แก้ไข: แยกหมวดหมู่ใหม่ (03 = แรงงาน)
+                // ============================================
+                
+                // รายได้ (4xxx)
                 const revenueList = Object.values(ledger).filter(i => i.code.startsWith('4'));
+                // หักรายได้ (01xx)
                 const deductionList = Object.values(ledger).filter(i => i.code.startsWith('01'));
+                // ต้นทุนขาย COGS (02xx)
                 const cogsList = Object.values(ledger).filter(i => i.code.startsWith('02'));
-                const opexList = Object.values(ledger).filter(i => !i.code.startsWith('4') && !i.code.startsWith('01') && !i.code.startsWith('02'));
+                // ต้นทุนแรงงาน Labor (03xx) --> ดึงออกมาแยก
+                const laborList = Object.values(ledger).filter(i => i.code.startsWith('03'));
+                // ค่าใช้จ่ายดำเนินงาน OPEX (ที่เหลือ ที่ไม่ใช่ 4, 01, 02, และตัด 03 ออกด้วย)
+                const opexList = Object.values(ledger).filter(i => !i.code.startsWith('4') && !i.code.startsWith('01') && !i.code.startsWith('02') && !i.code.startsWith('03'));
 
+                // ============================================
+                // 🔥 จุดที่แก้ไข: คำนวณตัวเลขใหม่
+                // ============================================
                 const sum = (list) => list.reduce((a, b) => a + b.amount, 0);
+                
                 const totalRevenue = sum(revenueList);
                 const totalDeductions = sum(deductionList);
                 const netSales = totalRevenue - totalDeductions;
+                
                 const totalCOGS = sum(cogsList);
-                const grossProfit = netSales - totalCOGS;
+                const totalLabor = sum(laborList); // รวมต้นทุนแรงงาน
+                
+                // กำไรขั้นต้น = รายได้สุทธิ - COGS - แรงงาน
+                const grossProfit = netSales - totalCOGS - totalLabor;
+                
                 const totalOpex = sum(opexList);
                 const netProfit = grossProfit - totalOpex;
 
+                // ============================================
+                // 🔥 จุดที่แก้ไข: การแสดงผล (Render)
+                // ============================================
+
+                // 1. รายได้
                 renderSectionHeader(tbody, "รายได้ (Gross Revenue)", "text-indigo-700 bg-indigo-50");
                 revenueList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
                 renderTotalRow(tbody, "รวมรายได้ขาย", totalRevenue, 100, "text-indigo-700 bg-indigo-50 border-t-2 border-indigo-200");
 
+                // 2. หักรายได้
                 if(deductionList.length > 0) {
                     renderSectionHeader(tbody, "หัก: รายการหักจากรายได้ (Deductions)", "text-pink-700 bg-pink-50 mt-4");
                     deductionList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
                     renderTotalRow(tbody, "รายได้สุทธิ (Net Sales)", netSales, (netSales/totalRevenue)*100, "bg-gray-100 font-bold border-y-2");
                 }
 
+                // 3. ต้นทุนขาย (COGS)
                 renderSectionHeader(tbody, "ต้นทุนขาย (Cost of Goods Sold)", "text-red-700 bg-red-50 mt-4");
                 cogsList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
                 renderTotalRow(tbody, "รวมต้นทุนขาย", totalCOGS, (totalCOGS/totalRevenue)*100, "text-red-700 bg-red-50 border-t-2 border-red-200");
 
+                // 4. ต้นทุนแรงงาน (Labor) -> เพิ่มส่วนนี้เข้ามา
+                renderSectionHeader(tbody, "ต้นทุนแรงงาน (Labor Cost)", "text-yellow-800 bg-yellow-50 mt-4");
+                laborList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
+                renderTotalRow(tbody, "รวมต้นทุนแรงงาน", totalLabor, (totalLabor/totalRevenue)*100, "text-yellow-800 bg-yellow-50 border-t-2 border-yellow-200");
+
+                // 5. กำไรขั้นต้น (Gross Profit)
                 renderSummaryRow(tbody, "กำไรขั้นต้น (Gross Profit)", grossProfit, (grossProfit/totalRevenue)*100, "bg-green-50 text-green-800 font-bold text-lg border-y-2 border-green-200");
 
+                // 6. OPEX (ที่เหลือ)
                 renderSectionHeader(tbody, "ค่าใช้จ่ายดำเนินงาน (Operating Expenses)", "text-orange-700 bg-orange-50 mt-4");
                 opexList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
-                renderTotalRow(tbody, "รวมค่าใช้จ่าย", totalOpex, (totalOpex/totalRevenue)*100, "text-orange-700 bg-orange-50 border-t-2 border-orange-200");
+                renderTotalRow(tbody, "รวมค่าใช้จ่ายดำเนินงาน", totalOpex, (totalOpex/totalRevenue)*100, "text-orange-700 bg-orange-50 border-t-2 border-orange-200");
 
+                // 7. กำไรสุทธิ
                 const netColor = netProfit >= 0 ? "bg-emerald-100 text-emerald-900" : "bg-red-100 text-red-900";
                 renderSummaryRow(tbody, "กำไรสุทธิ (Net Profit)", netProfit, (netProfit/totalRevenue)*100, `${netColor} font-extrabold text-xl border-y-4 border-double py-6`);
 
