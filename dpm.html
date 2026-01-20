@@ -157,8 +157,14 @@
             <div class="mb-2 flex justify-between items-end">
                 <h3 class="font-bold text-slate-700 text-sm">รายการเคลื่อนไหว (ล่าสุด)</h3>
             </div>
+            
             <div class="card !py-2" id="tx-feed">
-                <div class="text-center py-8 text-slate-400 text-sm">กำลังโหลด...</div>
+                <div class="text-center py-6">
+                    <button onclick="loadTransactions()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm rounded-lg transition-colors duration-200 flex items-center mx-auto gap-2">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        คลิกเพื่อดูรายการ
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -623,85 +629,148 @@
             refreshData();
         }
 
-        function renderDashboard() {
-            let totalIn = 0;
-            let totalOut = 0;
-            let transactions = [];
+        // ตัวแปรสำหรับเช็คว่าโหลดข้อมูลมาหรือยัง
+let isDataLoaded = false; 
 
-            // Process Expenses
-            currentMonthData.expenses.forEach(e => {
-                totalOut += e.amount;
-                transactions.push({
-                    type: 'exp',
-                    date: e.date,
-                    name: catNames[e.category] || e.category,
-                    memo: e.memo,
-                    amt: -e.amount
-                });
+async function renderDashboard() {
+    const feedEl = document.getElementById('tx-feed');
+
+    // ---------------------------------------------------------
+    // ส่วนที่ 1: เช็คก่อนว่าโหลดข้อมูลหรือยัง?
+    // ---------------------------------------------------------
+    if (!isDataLoaded) {
+        // แสดงยอดเงินเป็น 0 หรือ - ไปก่อน
+        document.getElementById('dash-in').innerText = "-";
+        document.getElementById('dash-out').innerText = "-";
+        document.getElementById('dash-net').innerText = "-";
+
+        // สร้างปุ่มกดเพื่อดึงข้อมูล
+        feedEl.innerHTML = `
+            <div class="text-center py-6">
+                <button onclick="fetchDataAndRender()" class="px-6 py-2 bg-blue-600 text-white rounded-full font-bold shadow-lg hover:bg-blue-700 transition-all">
+                    <i class="fa-solid fa-cloud-arrow-down mr-2"></i> โหลดข้อมูล
+                </button>
+            </div>
+        `;
+        return; // *** จบการทำงานทันที ไม่คำนวณต่อ ***
+    }
+
+    // ---------------------------------------------------------
+    // ส่วนที่ 2: ถ้ามีข้อมูลแล้ว (isDataLoaded = true) ให้คำนวณตามปกติ
+    // ---------------------------------------------------------
+    let totalIn = 0;
+    let totalOut = 0;
+    let transactions = [];
+
+    // Process Expenses
+    if (currentMonthData.expenses) {
+        currentMonthData.expenses.forEach(e => {
+            totalOut += e.amount;
+            transactions.push({
+                type: 'exp',
+                date: e.date,
+                name: catNames[e.category] || e.category,
+                memo: e.memo,
+                amt: -e.amount
             });
+        });
+    }
 
-            // Process Sales
-            currentMonthData.sales.forEach(s => {
-                const addTx = (name, val) => {
-                    if(val > 0) {
-                        totalIn += val;
-                        transactions.push({ type: 'inc', date: s.date, name: name, amt: val });
-                    }
-                };
-                addTx('หน้าร้าน', s.instore);
-                addTx('Grab', s.delivery_grab);
-                addTx('Lineman', s.delivery_lineman);
-                addTx('Robinhood', s.delivery_robinhood);
-                addTx('อื่นๆ', s.delivery_other);
-            });
+    // Process Sales
+    if (currentMonthData.sales) {
+        currentMonthData.sales.forEach(s => {
+            const addTx = (name, val) => {
+                if(val > 0) {
+                    totalIn += val;
+                    transactions.push({ type: 'inc', date: s.date, name: name, amt: val });
+                }
+            };
+            addTx('หน้าร้าน', s.instore);
+            addTx('Grab', s.delivery_grab);
+            addTx('Lineman', s.delivery_lineman);
+            addTx('Robinhood', s.delivery_robinhood);
+            addTx('อื่นๆ', s.delivery_other);
+        });
+    }
 
-            systemBalance = totalIn - totalOut; 
+    let systemBalance = totalIn - totalOut; 
 
-            document.getElementById('dash-in').innerText = totalIn.toLocaleString();
-            document.getElementById('dash-out').innerText = totalOut.toLocaleString();
-            document.getElementById('dash-net').innerText = systemBalance.toLocaleString();
+    document.getElementById('dash-in').innerText = totalIn.toLocaleString();
+    document.getElementById('dash-out').innerText = totalOut.toLocaleString();
+    document.getElementById('dash-net').innerText = systemBalance.toLocaleString();
 
-            // Render Feed
-            transactions.sort((a,b) => new Date(b.date) - new Date(a.date)); 
-            const feedEl = document.getElementById('tx-feed');
-            feedEl.innerHTML = '';
-            
-            if(transactions.length === 0) {
-                feedEl.innerHTML = '<div class="text-center py-8 text-slate-400 text-sm">- ไม่มีรายการ -</div>';
-            } else {
-                let lastDate = '';
-                transactions.forEach(tx => {
-                    const d = new Date(tx.date);
-                    const dateStr = `${d.getDate()} / ${d.getMonth()+1}`;
-                    if(dateStr !== lastDate) {
-                        feedEl.innerHTML += `<div class="px-4 py-2 bg-slate-50 text-xs font-bold text-slate-500 mt-2 sticky top-0 border-b border-slate-100">${dateStr}</div>`;
-                        lastDate = dateStr;
-                    }
-
-                    const isInc = tx.type === 'inc';
-                    const colorClass = isInc ? 'text-emerald-600' : 'text-red-500';
-                    const bgClass = isInc ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-500';
-                    const iconClass = isInc ? 'fa-arrow-down' : 'fa-arrow-up';
-                    const sign = isInc ? '+' : '';
-
-                    feedEl.innerHTML += `
-                        <div class="tx-row px-4 bg-white">
-                            <div class="flex items-center">
-                                <div class="tx-icon ${bgClass}">
-                                    <i class="fa-solid ${iconClass} text-sm"></i>
-                                </div>
-                                <div>
-                                    <div class="text-sm font-bold text-slate-700">${tx.name}</div>
-                                    ${tx.memo ? `<div class="text-[10px] text-slate-400">${tx.memo}</div>` : ''}
-                                </div>
-                            </div>
-                            <div class="font-bold ${colorClass}">${sign}${tx.amt.toLocaleString()}</div>
-                        </div>
-                    `;
-                });
+    // Render Feed (ส่วนแสดงรายการ)
+    transactions.sort((a,b) => new Date(b.date) - new Date(a.date)); 
+    feedEl.innerHTML = '';
+    
+    if(transactions.length === 0) {
+        feedEl.innerHTML = '<div class="text-center py-8 text-slate-400 text-sm">- ไม่มีรายการ -</div>';
+    } else {
+        let lastDate = '';
+        transactions.forEach(tx => {
+            const d = new Date(tx.date);
+            const dateStr = `${d.getDate()} / ${d.getMonth()+1}`;
+            if(dateStr !== lastDate) {
+                feedEl.innerHTML += `<div class="px-4 py-2 bg-slate-50 text-xs font-bold text-slate-500 mt-2 sticky top-0 border-b border-slate-100 z-10">${dateStr}</div>`;
+                lastDate = dateStr;
             }
-            renderChart(transactions);
-        }
+
+            const isInc = tx.type === 'inc';
+            const colorClass = isInc ? 'text-emerald-600' : 'text-red-500';
+            const bgClass = isInc ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-500';
+            const iconClass = isInc ? 'fa-arrow-down' : 'fa-arrow-up';
+            const sign = isInc ? '+' : '';
+
+            feedEl.innerHTML += `
+                <div class="tx-row px-4 bg-white border-b border-slate-50 py-2">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="tx-icon ${bgClass} w-8 h-8 flex items-center justify-center rounded-full">
+                                <i class="fa-solid ${iconClass} text-xs"></i>
+                            </div>
+                            <div>
+                                <div class="text-sm font-bold text-slate-700">${tx.name}</div>
+                                ${tx.memo ? `<div class="text-[10px] text-slate-400">${tx.memo}</div>` : ''}
+                            </div>
+                        </div>
+                        <div class="font-bold ${colorClass}">${sign}${tx.amt.toLocaleString()}</div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+    // ถ้ามีกราฟ ก็เรียกตรงนี้
+    if(typeof renderChart === 'function') renderChart(transactions);
+}
+
+// ---------------------------------------------------------
+// ฟังก์ชันใหม่: สำหรับปุ่มกด (วางไว้นอก renderDashboard)
+// ---------------------------------------------------------
+async function fetchDataAndRender() {
+    const feedEl = document.getElementById('tx-feed');
+    // เปลี่ยนปุ่มเป็น Loading
+    feedEl.innerHTML = '<div class="text-center py-8 text-slate-400"><i class="fa-solid fa-spinner fa-spin"></i> กำลังดึงข้อมูล...</div>';
+    
+    try {
+        // *** ตรงนี้ใส่ Code ดึง Database ของคุณ ***
+        // เช่น: currentMonthData = await fetch('/api/data').then(res => res.json());
+        // หรือถ้าใช้ Google Sheet:
+        // currentMonthData = await new Promise((resolve) => google.script.run.withSuccessHandler(resolve).getData());
+
+        // จำลองการดึงข้อมูล (ลบทิ้งเมื่อใช้จริง)
+        await new Promise(r => setTimeout(r, 1000)); 
+        
+        // เมื่อดึงเสร็จ ให้เปลี่ยนสถานะ
+        isDataLoaded = true;
+        
+        // เรียก renderDashboard อีกรอบ (คราวนี้มันจะข้ามไปทำงานส่วนที่ 2 เพราะ isDataLoaded = true แล้ว)
+        renderDashboard();
+
+    } catch (err) {
+        console.error(err);
+        feedEl.innerHTML = '<div class="text-red-500 text-center py-4">เกิดข้อผิดพลาดในการโหลด</div>';
+    }
+}
 
         function renderChart(txs) {
             const ctx = document.getElementById('cashflowChart');
