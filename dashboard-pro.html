@@ -1240,34 +1240,34 @@
         // ============================================
 
         // 1. Render หัวข้อหมวด (คลิกได้)
-        function renderSectionHeader(tbody, title, cssClass, groupId) {
-            const tr = document.createElement('tr');
-            tr.className = "section-header border-b border-gray-200";
-            // สั่งให้คลิกแล้วเรียก toggleSection
-            tr.onclick = function() { toggleSection(groupId, this); };
-            
-            tr.innerHTML = `
-                <td colspan="4" class="p-3 font-bold ${cssClass}">
-                    <span class="icon-section mr-2">▶</span> ${title}
-                </td>
+        function renderSectionHeader(tbody, title, cssClass, groupId) { 
+            // ใช้วิธีแทรก HTML ตรงๆ เลย (Work 100%)
+            tbody.innerHTML += `
+                <tr class="section-header border-b border-gray-200 cursor-pointer hover:brightness-95 transition-all duration-200" 
+                    onclick="toggleSection('${groupId}', this)">
+                    <td colspan="4" class="p-3 font-bold ${cssClass}">
+                        <span class="icon-section mr-2 inline-block transition-transform duration-200">▶</span> 
+                        ${title}
+                    </td>
+                </tr>
             `;
-            tbody.appendChild(tr);
         }
 
         // 2. Render รายการย่อย (ซ่อนไว้ก่อน)
         function renderAccountRow(tbody, data, totalRev, groupId) {
-            const template = document.getElementById('row-template');
+            const template = document.getElementById('row-template'); 
             const clone = template.content.cloneNode(true);
             const tr = clone.querySelector('tr');
             
-            // ใส่ ID กลุ่ม เพื่อให้รู้ว่าเป็นลูกน้องใคร
-            tr.classList.add(groupId);
+            // 🔥 สำคัญ: ใส่ class 'hidden' และ groupId ไว้ตรงนี้
+            tr.className += ` hidden ${groupId}`; 
             
+            // ... (โค้ดใส่ข้อมูลเหมือนเดิม) ...
             clone.querySelector('.account-name').innerHTML = `<span class="font-mono text-gray-400 mr-2">${data.code}</span> ${data.name}`;
             clone.querySelector('.account-amount').innerText = data.amount.toLocaleString(undefined, {minimumFractionDigits: 2});
             clone.querySelector('.account-percent').innerText = totalRev > 0 ? ((data.amount / totalRev) * 100).toFixed(2) + "%" : "0%";
             
-            // Detail row logic (เหมือนเดิม)
+            // ... (ส่วน Detail Container เหมือนเดิม) ...
             const dc = clone.querySelector('.detail-container');
             if (data.details && data.details.length > 0) {
                 data.details.sort((a,b) => b.date.localeCompare(a.date));
@@ -1277,23 +1277,25 @@
             tbody.appendChild(clone);
         }
 
-        // 3. ฟังก์ชัน Toggle (เปิด/ปิด)
-        window.toggleSection = (groupId, headerRow) => {
-            const rows = document.querySelectorAll(`.${groupId}`); // หาแถวลูกๆ ทั้งหมด
-            const icon = headerRow.querySelector('.icon-section');
-            let isExpanding = false;
+        // ============================================
+        // 3. COLLAPSIBLE LOGIC (Global Function - Fix Click Issue)
+        // ============================================
+        window.toggleSection = (groupId, btn) => {
+            const rows = document.querySelectorAll(`.${groupId}`);
+            const icon = btn.querySelector('.icon-section');
+            let isOpening = false;
 
-            // เช็คสถานะจากแถวแรก (ถ้าซ่อนอยู่ แสดงว่าจะเปิด)
+            // เช็คสถานะจากแถวแรก (ถ้าซ่อนอยู่ = กำลังจะเปิด)
             if (rows.length > 0 && rows[0].classList.contains('hidden')) {
-                isExpanding = true;
+                isOpening = true;
             }
 
             rows.forEach(row => {
-                if (isExpanding) {
+                if (isOpening) {
                     row.classList.remove('hidden'); // แสดง
                 } else {
-                    row.classList.add('hidden');    // ซ่อน
-                    // ซ่อนรายละเอียดระดับลึก (Detail Row) ด้วย ถ้าเปิดค้างไว้
+                    row.classList.add('hidden');    // ซ่อนกลับ
+                    // ถ้ามีลูกย่อย (Detail Row) เปิดค้างไว้ ก็ซ่อนด้วย
                     const nextRow = row.nextElementSibling;
                     if(nextRow && nextRow.classList.contains('detail-row')) {
                         nextRow.classList.add('hidden');
@@ -1303,9 +1305,11 @@
                 }
             });
 
-            // หมุนไอคอน
-            if(isExpanding) icon.classList.add('rotate-90');
-            else icon.classList.remove('rotate-90');
+            // หมุนลูกศร
+            if (icon) {
+                if (isOpening) icon.classList.add('rotate-90');
+                else icon.classList.remove('rotate-90');
+            }
         };
 
         // Standard Helpers (No change needed)
