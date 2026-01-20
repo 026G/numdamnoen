@@ -491,7 +491,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore, collection, getDocs, setDoc, addDoc, deleteDoc, doc, Timestamp, query, where } 
+        import { getFirestore, collection, getDocs, setDoc, addDoc, deleteDoc, doc, Timestamp, query, where, enableIndexedDbPersistence } 
         from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
         import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } 
         from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
@@ -516,6 +516,17 @@
         try { 
             const app = initializeApp(firebaseConfig); 
             db = getFirestore(app); 
+            
+            // +++ เพิ่มโค้ดตรงนี้ +++
+            enableIndexedDbPersistence(db).catch((err) => {
+                if (err.code == 'failed-precondition') {
+                    console.log('Persistence failed: เปิดหลายแท็บเกินไป');
+                } else if (err.code == 'unimplemented') {
+                    console.log('Persistence failed: Browser ไม่รองรับ');
+                }
+            });
+            // +++++++++++++++++++
+
             auth = getAuth(app);
             console.log("Firebase OK"); 
         } catch (e) { console.warn("Config Error - Please check firebaseConfig"); }
