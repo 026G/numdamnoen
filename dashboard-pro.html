@@ -1105,7 +1105,7 @@
         }
 
         // ============================================
-        // 2. GENERATE REPORT (V.54.1: Advance P&L + PAC + Net Sales % Basis)
+        // 2. GENERATE REPORT (V.55: 2-Decimal Precision)
         // ============================================
         window.generateReport = async () => {
             const startDate = document.getElementById('startDate').value; const endDate = document.getElementById('endDate').value;
@@ -1149,63 +1149,48 @@
                 const grossProfit = netSales - totalCOGS - totalLabor;
                 
                 const totalControl = sum(controlList);
-                const pac = grossProfit - totalControl; // Profit After Controllable
+                const pac = grossProfit - totalControl;
 
                 const totalFixed = sum(fixedList);
                 const totalLoan = sum(loanList);
                 const totalOpexAll = totalControl + totalFixed + totalLoan;
                 const netProfit = grossProfit - totalOpexAll;
 
-                // Render Table
-                // 1. Revenue (Gross) -> Base 100%
+                // Render Table (Decimal 2)
                 renderSectionHeader(tbody, "รายได้ (Gross Revenue)", "text-indigo-700 bg-indigo-50");
                 revenueList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
                 renderTotalRow(tbody, "รวมรายได้ขาย", totalRevenue, 100, "text-indigo-700 bg-indigo-50 border-t-2 border-indigo-200");
 
-                // 2. Deductions
                 if(deductionList.length > 0) {
                     renderSectionHeader(tbody, "หัก: รายการหักจากรายได้ (Deductions)", "text-pink-700 bg-pink-50 mt-4");
                     deductionList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
                     renderTotalRow(tbody, "รายได้สุทธิ (Net Sales)", netSales, (netSales/totalRevenue)*100, "bg-gray-100 font-bold border-y-2");
                 } else { renderTotalRow(tbody, "รายได้สุทธิ (Net Sales)", netSales, 100, "bg-gray-100 font-bold border-y-2 mt-4"); }
 
-                // 3. COGS (เทียบ Gross - ตามหลักการ)
                 renderSectionHeader(tbody, "ต้นทุนขาย (Cost of Goods Sold)", "text-red-700 bg-red-50 mt-4");
                 cogsList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
                 renderTotalRow(tbody, "รวมต้นทุนขาย", totalCOGS, (totalCOGS/totalRevenue)*100, "text-red-700 bg-red-50 border-t-2 border-red-200");
 
-                // 4. Labor (เทียบ Gross - ตามหลักการ)
                 renderSectionHeader(tbody, "ต้นทุนแรงงาน (Labor Cost)", "text-yellow-800 bg-yellow-50 mt-4");
                 laborList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
                 renderTotalRow(tbody, "รวมต้นทุนแรงงาน", totalLabor, (totalLabor/totalRevenue)*100, "text-yellow-800 bg-yellow-50 border-t-2 border-yellow-200");
 
-                // --- Gross Profit (เทียบ NET) ---
                 renderSummaryRow(tbody, "กำไรขั้นต้น (Gross Profit)", grossProfit, netSales > 0 ? (grossProfit/netSales)*100 : 0, "bg-green-50 text-green-800 font-bold text-lg border-y-2 border-green-200");
 
-                // 5. Controllable (เทียบ Gross สำหรับรายตัว, แต่ยอดรวมเทียบ NET ตามคำขอ)
                 renderSectionHeader(tbody, "ค่าใช้จ่ายที่ควบคุมได้ (Controllable)", "text-teal-700 bg-teal-50 mt-4");
-                controlList.forEach(item => renderAccountRow(tbody, item, totalRevenue)); // รายย่อยเทียบ Gross
-                // 🔥 แก้ไข: รวมส่วนควบคุมได้ เทียบกับ NET SALES
+                controlList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
                 renderTotalRow(tbody, "รวมส่วนควบคุมได้", totalControl, netSales > 0 ? (totalControl/netSales)*100 : 0, "text-teal-700 bg-teal-50 border-t-2 border-teal-200");
 
-                // --- PAC (เทียบ NET) ---
                 renderSummaryRow(tbody, "กำไรหลังหักค่าใช้จ่ายควบคุมได้ (PAC)", pac, netSales > 0 ? (pac/netSales)*100 : 0, "bg-cyan-100 text-cyan-900 font-bold text-lg border-y-2 border-cyan-300");
 
-                // 6. Fixed (เทียบ Gross สำหรับรายตัว, รวมเทียบ NET)
                 renderSectionHeader(tbody, "ค่าใช้จ่ายคงที่/ควบคุมไม่ได้ (Fixed)", "text-gray-700 bg-gray-100 mt-4");
                 fixedList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
-                // 🔥 แก้ไข: รวมส่วนควบคุมไม่ได้ เทียบกับ NET SALES
                 renderTotalRow(tbody, "รวมส่วนควบคุมไม่ได้", totalFixed, netSales > 0 ? (totalFixed/netSales)*100 : 0, "text-gray-700 bg-gray-100 border-t-2 border-gray-300");
 
-                // 7. Loans (เทียบ Gross สำหรับรายตัว, รวมเทียบ NET)
                 renderSectionHeader(tbody, "สินเชื่อและการเงิน (Loans)", "text-purple-700 bg-purple-50 mt-4");
                 loanList.forEach(item => renderAccountRow(tbody, item, totalRevenue));
-                // 🔥 แก้ไข: รวมสินเชื่อ เทียบกับ NET SALES
                 renderTotalRow(tbody, "รวมสินเชื่อ", totalLoan, netSales > 0 ? (totalLoan/netSales)*100 : 0, "text-purple-700 bg-purple-50 border-t-2 border-purple-200");
 
-                // ❌ ลบบรรทัด Total OPEX ออกแล้ว
-
-                // --- Net Profit (เทียบ NET) ---
                 const netColor = netProfit >= 0 ? "bg-emerald-100 text-emerald-900" : "bg-red-100 text-red-900";
                 renderSummaryRow(tbody, "กำไรสุทธิ (Net Profit)", netProfit, netSales > 0 ? (netProfit/netSales)*100 : 0, `${netColor} font-extrabold text-xl border-y-4 border-double py-6`);
 
