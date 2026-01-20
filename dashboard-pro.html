@@ -699,10 +699,12 @@
         // 1. DATA LOADING
         // ============================================
         window.loadData = async () => {
-            const monthVal = document.getElementById('dashMonth').value;
+            const monthVal = document.getElementById('dashMonth').value; // ค่าจะเป็น "2026-01"
             if(document.getElementById('displayMonth')) document.getElementById('displayMonth').innerText = monthVal;
             if(!db || !monthVal) return;
             
+            showLoading(true); // เพิ่ม loading เพื่อความชัวร์
+
             try {
                 let sales = [], expenses = [];
                 let dailyTrend = {}; 
@@ -718,45 +720,64 @@
                     dailyTrend: {} 
                 };
 
-                const qS = await getDocs(collection(db, "daily_sales"));
-                qS.forEach(doc => {
+                // 🔥 เทคนิคประหยัดโควต้า: กำหนดวันเริ่มต้นและสิ้นสุดของเดือน
+                const startStr = monthVal + "-01"; 
+                const endStr = monthVal + "-31";   // ใช้ 31 ครอบคลุมทุกเดือน (String compare ทำงานได้)
+
+                // 1. ดึงยอดขาย (เฉพาะเดือนนี้)
+                const qS = query(
+                    collection(db, "daily_sales"), 
+                    where("date", ">=", startStr), 
+                    where("date", "<=", endStr)
+                );
+                const salesDocs = await getDocs(qS);
+
+                salesDocs.forEach(doc => {
                     const d = doc.data();
+                    // โค้ดเดิม...
                     bucket.dailyTrend[d.date] = (parseFloat(d.instore)||0) + (parseFloat(d.delivery_grab)||0) + (parseFloat(d.delivery_lineman)||0) + (parseFloat(d.delivery_robinhood)||0) + (parseFloat(d.delivery_other)||0);
-
-                    if(d.date.startsWith(monthVal)) {
-                        sales.push(d);
-                        const safeFloat = (v) => parseFloat(v || 0);
-                        dailyTrend[d.date] = { instore: safeFloat(d.instore), grab: safeFloat(d.delivery_grab), line: safeFloat(d.delivery_lineman), rbh: safeFloat(d.delivery_robinhood) + safeFloat(d.delivery_other) };
-                        const total = safeFloat(d.instore) + safeFloat(d.delivery_grab) + safeFloat(d.delivery_lineman) + safeFloat(d.delivery_robinhood) + safeFloat(d.delivery_other);
-                        
-                        bucket.all.rev += total;
-                        bucket.grab.rev += safeFloat(d.delivery_grab);
-                        bucket.line.rev += safeFloat(d.delivery_lineman);
-                        bucket.rbh.rev += safeFloat(d.delivery_robinhood);
-                        
-                        if(d.hourly_stats) { Object.keys(d.hourly_stats).forEach(h => { const hourIndex = parseInt(h); if(!isNaN(hourIndex) && hourIndex >= 0 && hourIndex < 24) { hourlySales[hourIndex] = (hourlySales[hourIndex]||0) + safeFloat(d.hourly_stats[h]); bucket.all.hourly[hourIndex] += safeFloat(d.hourly_stats[h]); } }); }
-                        if(d.order_counts) { bucket.all.orders += safeFloat(d.order_counts.grab) + safeFloat(d.order_counts.line) + safeFloat(d.order_counts.rbh); bucket.grab.orders += safeFloat(d.order_counts.grab); bucket.line.orders += safeFloat(d.order_counts.line); bucket.rbh.orders += safeFloat(d.order_counts.rbh); }
-                    }
+                    sales.push(d);
+                    const safeFloat = (v) => parseFloat(v || 0);
+                    dailyTrend[d.date] = { instore: safeFloat(d.instore), grab: safeFloat(d.delivery_grab), line: safeFloat(d.delivery_lineman), rbh: safeFloat(d.delivery_robinhood) + safeFloat(d.delivery_other) };
+                    const total = safeFloat(d.instore) + safeFloat(d.delivery_grab) + safeFloat(d.delivery_lineman) + safeFloat(d.delivery_robinhood) + safeFloat(d.delivery_other);
+                    
+                    bucket.all.rev += total;
+                    bucket.grab.rev += safeFloat(d.delivery_grab);
+                    bucket.line.rev += safeFloat(d.delivery_lineman);
+                    bucket.rbh.rev += safeFloat(d.delivery_robinhood);
+                    
+                    if(d.hourly_stats) { Object.keys(d.hourly_stats).forEach(h => { const hourIndex = parseInt(h); if(!isNaN(hourIndex) && hourIndex >= 0 && hourIndex < 24) { hourlySales[hourIndex] = (hourlySales[hourIndex]||0) + safeFloat(d.hourly_stats[h]); bucket.all.hourly[hourIndex] += safeFloat(d.hourly_stats[h]); } }); }
+                    if(d.order_counts) { bucket.all.orders += safeFloat(d.order_counts.grab) + safeFloat(d.order_counts.line) + safeFloat(d.order_counts.rbh); bucket.grab.orders += safeFloat(d.order_counts.grab); bucket.line.orders += safeFloat(d.order_counts.line); bucket.rbh.orders += safeFloat(d.order_counts.rbh); }
                 });
 
-                const qE = await getDocs(collection(db, "expenses"));
-                qE.forEach(doc => {
+                // 2. ดึงค่าใช้จ่าย (เฉพาะเดือนนี้)
+                const qE = query(
+                    collection(db, "expenses"), 
+                    where("date", ">=", startStr), 
+                    where("date", "<=", endStr)
+                );
+                const expDocs = await getDocs(qE);
+
+                expDocs.forEach(doc => {
                     const d = doc.data();
-                    if(d.date.startsWith(monthVal)) {
-                        expenses.push(d);
-                        const amt = parseFloat(d.amount || 0);
-                        if(d.category.includes('-G')) { if(d.category.includes('0504') || d.category.includes('0420')) bucket.grab.cost += amt; if(d.category === '0408-G') bucket.grab.ads += amt; }
-                        if(d.category.includes('-L')) { if(d.category.includes('0504') || d.category.includes('0420')) bucket.line.cost += amt; if(d.category.includes('0408') || d.category.includes('Ads')) bucket.line.ads += amt; }
-                        if(d.category.includes('-R')) { if(d.category.includes('0504') || d.category.includes('0420')) bucket.rbh.cost += amt; if(d.category.includes('0408') || d.category.includes('Ads')) bucket.rbh.ads += amt; }
-                        if((d.category.includes('0408') || d.category.includes('Ads')) && d.category !== '0408-G-MKT') { bucket.all.ads += amt; }
-                        if(d.category.startsWith('01')) totalDeductions += amt; 
-                        expTotals[d.category] = (expTotals[d.category]||0) + amt;
-                    }
+                    // ไม่ต้องเช็ค if(d.date.startsWith...) แล้ว เพราะกรองมาจาก Server แล้ว
+                    expenses.push(d);
+                    const amt = parseFloat(d.amount || 0);
+                    // โค้ดเดิม...
+                    if(d.category.includes('-G')) { if(d.category.includes('0504') || d.category.includes('0420')) bucket.grab.cost += amt; if(d.category === '0408-G') bucket.grab.ads += amt; }
+                    if(d.category.includes('-L')) { if(d.category.includes('0504') || d.category.includes('0420')) bucket.line.cost += amt; if(d.category.includes('0408') || d.category.includes('Ads')) bucket.line.ads += amt; }
+                    if(d.category.includes('-R')) { if(d.category.includes('0504') || d.category.includes('0420')) bucket.rbh.cost += amt; if(d.category.includes('0408') || d.category.includes('Ads')) bucket.rbh.ads += amt; }
+                    if((d.category.includes('0408') || d.category.includes('Ads')) && d.category !== '0408-G-MKT') { bucket.all.ads += amt; }
+                    if(d.category.startsWith('01')) totalDeductions += amt; 
+                    expTotals[d.category] = (expTotals[d.category]||0) + amt;
                 });
 
+                // ... (ส่วนการคำนวณ KPI และกราฟ ด้านล่างเหมือนเดิมทุกประการ)
                 currentAnalyticsData = bucket;
-                globalExpenses = expenses; // Store for search
-                updateMemoSuggestions(expenses); // Setup Autocomplete
+                globalExpenses = expenses; 
+                updateMemoSuggestions(expenses); 
+                
+                // ... (โค้ดคำนวณที่เหลือเหมือนเดิม) ...
 
                 let m_gross_sales = 0;
                 Object.values(dailyTrend).forEach(v => { m_gross_sales += (v.instore + v.grab + v.line + v.rbh); });
@@ -766,17 +787,20 @@
                 const m_net = m_net_sales - m_cogs - m_opex;
 
                 if(document.getElementById('m_revenue')) {
-                    document.getElementById('m_revenue').innerText = m_gross_sales.toLocaleString() + ' ฿';
-                    document.getElementById('m_cogs').innerText = m_cogs.toLocaleString() + ' ฿';
-                    document.getElementById('m_opex').innerText = m_opex.toLocaleString() + ' ฿';
-                    document.getElementById('m_net').innerText = m_net.toLocaleString() + ' ฿';
-                    document.getElementById('pct_cogs').innerText = m_gross_sales ? ((m_cogs/m_gross_sales)*100).toFixed(1)+'% ของยอดขาย' : '0%';
-                    document.getElementById('pct_opex').innerText = m_gross_sales ? ((m_opex/m_gross_sales)*100).toFixed(1)+'% ของยอดขาย' : '0%';
-                    document.getElementById('pct_net').innerText = m_gross_sales ? ((m_net/m_gross_sales)*100).toFixed(1)+'% ของยอดขาย' : '0%';
+                     // ... Update UI ...
+                     document.getElementById('m_revenue').innerText = m_gross_sales.toLocaleString() + ' ฿';
+                     document.getElementById('m_cogs').innerText = m_cogs.toLocaleString() + ' ฿';
+                     document.getElementById('m_opex').innerText = m_opex.toLocaleString() + ' ฿';
+                     document.getElementById('m_net').innerText = m_net.toLocaleString() + ' ฿';
+                     document.getElementById('pct_cogs').innerText = m_gross_sales ? ((m_cogs/m_gross_sales)*100).toFixed(1)+'% ของยอดขาย' : '0%';
+                     document.getElementById('pct_opex').innerText = m_gross_sales ? ((m_opex/m_gross_sales)*100).toFixed(1)+'% ของยอดขาย' : '0%';
+                     document.getElementById('pct_net').innerText = m_gross_sales ? ((m_net/m_gross_sales)*100).toFixed(1)+'% ของยอดขาย' : '0%';
                 }
-
-                const goal = parseFloat(localStorage.getItem('monthly_goal')) || 0;
-                if(goal > 0) {
+                
+                // ... Goal Pacing & Charts เหมือนเดิม ...
+                 const goal = parseFloat(localStorage.getItem('monthly_goal')) || 0;
+                 // ... Copy logic goal pacing เดิมมาใส่ ...
+                 if(goal > 0) {
                     const today = new Date(); const [y, m] = monthVal.split('-');
                     const daysInMonth = new Date(y, m, 0).getDate();
                     let remainingDays = 0;
@@ -798,14 +822,16 @@
                     else if (remainingDays > 0) { const idealPct = (today.getDate() / daysInMonth) * 100; if(achievedPct < idealPct - 10) { bar.classList.add('warning'); document.getElementById('goalTextStatus').innerText = "⚠️ ช้ากว่าแผน (Behind Pace)"; } }
                 } else { document.getElementById('goalTextStatus').innerText = "ยังไม่ได้ตั้งเป้า"; }
 
+
                 requestAnimationFrame(() => {
                     renderTrendChart(dailyTrend);
                     renderTopExpenses(expTotals, m_gross_sales);
                     updateRecentTables(sales, expenses);
                     switchAnalyticsTab('all');
+                    showLoading(false); // ปิด loading
                 });
 
-            } catch(e) { console.error("Error loading data:", e); }
+            } catch(e) { console.error("Error loading data:", e); showLoading(false); }
         }
 
         // ============================================
