@@ -193,20 +193,38 @@
                         <h3 class="font-bold text-gray-700 mb-4">📈 แนวโน้มยอดขายรายวัน (แยกช่องทาง)</h3>
                         <div class="chart-container"><canvas id="trendChart"></canvas></div>
                     </div>
-                    <div class="bg-white p-6 rounded-lg shadow">
-                        <h3 class="text-lg font-bold mb-4 text-gray-700 flex justify-between items-center">
-                            🍰 สัดส่วนต้นทุน (Cost Structure)
-                        </h3>
-                        <div class="chart-container" style="height: 220px; position: relative;">
+                    <div class="bg-white p-6 rounded-lg shadow h-full flex flex-col">
+                        <h3 class="text-lg font-bold mb-4 text-gray-700">🍰 สัดส่วนต้นทุน (Cost Structure)</h3>
+                        
+                        <div class="chart-container flex-grow mb-4" style="height: 200px; position: relative;">
                             <canvas id="costStructureChart"></canvas>
                         </div>
-                        <div class="mt-4 grid grid-cols-2 gap-2 text-xs text-gray-500">
-                            <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-yellow-400 mr-2"></span>วัตถุดิบ (COGS)</div>
-                            <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-orange-400 mr-2"></span>ค่าแรง (Labor)</div>
-                            <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-red-400 mr-2"></span>ค่าเช่า/Fixed</div>
-                            <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-blue-400 mr-2"></span>การตลาด/Ads</div>
-                            <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-purple-400 mr-2"></span>อื่นๆ/Loan</div>
-                            <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-green-500 mr-2"></span>กำไร (Profit)</div>
+                    
+                        <div class="space-y-2 text-xs text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-yellow-400 mr-2"></span>วัตถุดิบ (COGS)</div>
+                                <div class="font-mono"><span class="font-bold text-gray-800" id="leg_cogs_val">0</span> <span class="text-gray-400" id="leg_cogs_pct">(0%)</span></div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-orange-400 mr-2"></span>ค่าแรง (Labor)</div>
+                                <div class="font-mono"><span class="font-bold text-gray-800" id="leg_labor_val">0</span> <span class="text-gray-400" id="leg_labor_pct">(0%)</span></div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-red-400 mr-2"></span>ค่าเช่า/Fixed</div>
+                                <div class="font-mono"><span class="font-bold text-gray-800" id="leg_fixed_val">0</span> <span class="text-gray-400" id="leg_fixed_pct">(0%)</span></div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-blue-400 mr-2"></span>การตลาด (Ads)</div>
+                                <div class="font-mono"><span class="font-bold text-gray-800" id="leg_ads_val">0</span> <span class="text-gray-400" id="leg_ads_pct">(0%)</span></div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center"><span class="w-3 h-3 rounded-full bg-purple-400 mr-2"></span>อื่นๆ/Loan</div>
+                                <div class="font-mono"><span class="font-bold text-gray-800" id="leg_other_val">0</span> <span class="text-gray-400" id="leg_other_pct">(0%)</span></div>
+                            </div>
+                            <div class="flex justify-between items-center pt-2 border-t border-gray-200 mt-1">
+                                <div class="flex items-center font-bold text-green-700"><span class="w-3 h-3 rounded-full bg-green-500 mr-2"></span>กำไร (Net Profit)</div>
+                                <div class="font-mono"><span class="font-bold text-green-700" id="leg_profit_val">0</span> <span class="text-green-600" id="leg_profit_pct">(0%)</span></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -862,23 +880,112 @@
                 } else { document.getElementById('goalTextStatus').innerText = "ยังไม่ได้ตั้งเป้า"; }
 
 
-                requestAnimationFrame(() => { 
-                    renderTrendChart(dailyTrend); 
-                    
-                    // 🔥 ลบ renderTopExpenses ออก แล้วใส่บรรทัดนี้แทน:
-                    // ต้องเตรียมข้อมูลส่งเข้ากราฟก่อน
-                    const ads = bucket.all.ads; // ค่าโฆษณา
-                    const fixed = expenses.filter(e => e.category.startsWith('05')).reduce((a,b)=>a+b.amount,0); // ค่าเช่า/GP
-                    const loan = expenses.filter(e => e.memo && (e.memo.includes('สินเชื่อ') || e.memo.includes('ผ่อน'))).reduce((a,b)=>a+b.amount,0);
-                    // "อื่นๆ" คือ OPEX ที่เหลือ - Ads - Fixed - Loan
-                    const other = m_opex - ads - fixed - loan; 
-                    
-                    renderCostStructureChart(m_gross_sales, m_cogs, expenses.filter(e => e.category.startsWith('03')).reduce((a,b)=>a+b.amount,0), fixed, ads, loan+other, m_net);
-                    
-                    updateRecentTables(sales, expenses); 
-                    switchAnalyticsTab('all'); 
-                    showLoading(false); 
-                });
+                // ==========================================
+        // ส่วนท้ายของ loadData (แทนที่ requestAnimationFrame เดิม)
+        // ==========================================
+        requestAnimationFrame(() => { 
+            renderTrendChart(dailyTrend); 
+            
+            // --- 1. เตรียมข้อมูลสำหรับ Cost Structure Chart (เลียนแบบ Logic P&L) ---
+            
+            // ตัวตั้ง: Net Sales (ยอดขายสุทธิ) เพื่อให้ Profit % ตรงกับหน้า P&L
+            const netSalesBase = m_net_sales; 
+
+            // A. COGS (02xx)
+            const val_cogs = expenses.filter(e => e.category.startsWith('02')).reduce((a,b)=>a+parseFloat(b.amount),0);
+            
+            // B. Labor (03xx)
+            const val_labor = expenses.filter(e => e.category.startsWith('03')).reduce((a,b)=>a+parseFloat(b.amount),0);
+            
+            // C. Fixed (05xx)
+            const val_fixed = expenses.filter(e => e.category.startsWith('05')).reduce((a,b)=>a+parseFloat(b.amount),0);
+            
+            // D. Ads (0408, Ads) - ดึงออกจาก Controllable
+            const val_ads = expenses.filter(e => e.category.includes('0408') || e.category.toLowerCase().includes('ads')).reduce((a,b)=>a+parseFloat(b.amount),0);
+            
+            // E. Loans + Others (04xx ที่ไม่ใช่ Ads + Loans)
+            const loanCodes = ['0411-G', '0411-L-C', '0411-L-I'];
+            const val_loans = expenses.filter(e => loanCodes.includes(e.category) || (e.memo && (e.memo.includes('สินเชื่อ') || e.memo.includes('ผ่อน')))).reduce((a,b)=>a+parseFloat(b.amount),0);
+            
+            // Controllable ทั้งหมด (04xx)
+            const val_control_total = expenses.filter(e => e.category.startsWith('04')).reduce((a,b)=>a+parseFloat(b.amount),0);
+            
+            // Others = (Controllable ทั้งหมด - Ads - Loansที่ปนใน04) + Loansจริงๆ
+            // แต่เพื่อความง่ายและแม่น: Others/Loan = (Loan List) + (Controllable - Ads)
+            // *หมายเหตุ: ต้องระวังนับซ้ำ loanCodes ถ้าอยู่ใน 04 แต่ในระบบนี้แยกชัดเจน
+            
+            // สูตร Other/Loan รวม:
+            // 1. Loans ทั้งหมด
+            // 2. Controllable (04xx) ที่ไม่ใช่ Ads และไม่ใช่ Loan
+            const val_other_pure = expenses.filter(e => 
+                e.category.startsWith('04') && 
+                !e.category.includes('0408') && !e.category.toLowerCase().includes('ads') &&
+                !loanCodes.includes(e.category) && 
+                !(e.memo && (e.memo.includes('สินเชื่อ') || e.memo.includes('ผ่อน')))
+            ).reduce((a,b)=>a+parseFloat(b.amount),0);
+
+            const val_mixed_other = val_loans + val_other_pure;
+
+            // F. Net Profit (คำนวณจาก Net Sales - ค่าใช้จ่ายทุกตัว)
+            const total_expenses_calc = val_cogs + val_labor + val_fixed + val_ads + val_mixed_other;
+            const val_profit = netSalesBase - total_expenses_calc;
+
+            // ส่งข้อมูลไปวาดกราฟและอัปเดตตัวเลข
+            renderCostStructureChart(netSalesBase, val_cogs, val_labor, val_fixed, val_ads, val_mixed_other, val_profit);
+            
+            updateRecentTables(sales, expenses); 
+            switchAnalyticsTab('all'); 
+            showLoading(false); 
+        });
+
+        // ==========================================
+        // ฟังก์ชันวาดกราฟ + อัปเดตตัวเลข (ใส่ต่อท้าย script)
+        // ==========================================
+        function renderCostStructureChart(baseTotal, cogs, labor, fixed, ads, other, profit) {
+            const ctx = document.getElementById('costStructureChart'); 
+            if(!ctx) return;
+            if(charts.costPie) charts.costPie.destroy();
+
+            // 1. วาดกราฟ Doughnut
+            charts.costPie = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['วัตถุดิบ', 'ค่าแรง', 'ค่าเช่า/Fixed', 'การตลาด', 'อื่นๆ/Loan', 'กำไร'],
+                    datasets: [{
+                        data: [cogs, labor, fixed, ads, other, profit],
+                        backgroundColor: ['#FACC15', '#FB923C', '#F87171', '#60A5FA', '#C084FC', '#22C55E'],
+                        borderWidth: 0, hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c) { return ' ' + c.formattedValue + ' ฿'; } } } },
+                    cutout: '70%'
+                }
+            });
+
+            // 2. อัปเดตตัวเลขใน HTML (Legend)
+            const calcPct = (val) => baseTotal > 0 ? ((val / baseTotal) * 100).toFixed(2) + '%' : '0%';
+            const fmtVal = (val) => val.toLocaleString(undefined, {minimumFractionDigits: 2});
+
+            document.getElementById('leg_cogs_val').innerText = fmtVal(cogs);
+            document.getElementById('leg_cogs_pct').innerText = calcPct(cogs);
+
+            document.getElementById('leg_labor_val').innerText = fmtVal(labor);
+            document.getElementById('leg_labor_pct').innerText = calcPct(labor);
+
+            document.getElementById('leg_fixed_val').innerText = fmtVal(fixed);
+            document.getElementById('leg_fixed_pct').innerText = calcPct(fixed);
+
+            document.getElementById('leg_ads_val').innerText = fmtVal(ads);
+            document.getElementById('leg_ads_pct').innerText = calcPct(ads);
+
+            document.getElementById('leg_other_val').innerText = fmtVal(other);
+            document.getElementById('leg_other_pct').innerText = calcPct(other);
+
+            document.getElementById('leg_profit_val').innerText = fmtVal(profit);
+            document.getElementById('leg_profit_pct').innerText = calcPct(profit);
+        }
 
             } catch(e) { console.error("Error loading data:", e); showLoading(false); }
         }
