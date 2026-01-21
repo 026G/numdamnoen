@@ -213,7 +213,7 @@
             <div id="import-section" class="section-content hidden">
                 <div class="bg-white p-8 rounded-lg shadow-lg max-w-3xl mx-auto border-t-4 border-green-500">
                     <h2 class="text-2xl font-bold mb-6 text-gray-800 border-b pb-2">📂 Import ยอดขาย</h2>
-                    <div class="bg-red-50 border border-red-200 p-4 rounded mb-6 flex justify-between items-center"><div><p class="text-red-800 font-bold">⚠️ เคลียร์ข้อมูลเก่า?</p><p class="text-xs text-red-600">กดปุ่มนี้เพื่อล้างข้อมูล "เดือนนี้" แล้ว Import ใหม่ให้สะอาด</p></div><button onclick="resetMonthData()" class="bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700 font-bold text-sm">🗑️ ล้างข้อมูลเดือนนี้</button></div>
+                    
                     <div class="mb-6"><div class="flex items-center justify-center w-full"><label for="csvFileInput" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition"><div class="flex flex-col items-center justify-center pt-5 pb-6"><span class="text-4xl">📂</span><p class="mb-2 text-sm text-gray-500 mt-2"><span class="font-semibold">คลิกเพื่อเลือกไฟล์</span></p></div><input id="csvFileInput" type="file" accept=".csv" class="hidden" /></label></div><div id="fileNameDisplay" class="mt-2 text-sm text-center text-green-600 font-medium"></div></div>
                     <button onclick="processCSV()" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 font-bold shadow-lg transform transition hover:scale-[1.02]">🚀 เริ่มประมวลผล (Import)</button>
                 </div>
