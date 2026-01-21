@@ -1538,12 +1538,35 @@
 
         document.getElementById('expenseForm').addEventListener('submit', async (e) => {
             if(currentUserRole !== 'OWNER') { alert("⛔️ เฉพาะ Owner เท่านั้น"); return; }
-            e.preventDefault(); showLoading(true);
+            e.preventDefault(); 
+            showLoading(true);
+
+            // 1. เก็บวันที่ปัจจุบันในช่อง input ไว้ในตัวแปรก่อนจะล้างฟอร์ม
+            const selectedDate = document.getElementById('expDate').value;
+
             await addDoc(collection(db, "expenses"), {
-                date: document.getElementById('expDate').value, category: document.getElementById('expCategory').value,
-                amount: getVal('expAmount'), memo: document.getElementById('expMemo').value, timestamp: Timestamp.now()
+                date: selectedDate, // ใช้วันที่ที่เก็บไว้
+                category: document.getElementById('expCategory').value,
+                amount: getVal('expAmount'), 
+                memo: document.getElementById('expMemo').value, 
+                timestamp: Timestamp.now()
             });
-            showLoading(false); setTimeout(() => { alert("บันทึกสำเร็จ"); e.target.reset(); loadData(); }, 100);
+
+            showLoading(false); 
+            
+            // 2. ล้างค่าในฟอร์ม (ตอนนี้วันที่หายไปแล้ว)
+            e.target.reset(); 
+            
+            // 3. เอาวันที่เดิมยัดกลับเข้าไปทันที
+            document.getElementById('expDate').value = selectedDate;
+
+            // 4. แจ้งเตือนและโหลดข้อมูล
+            setTimeout(() => { 
+                alert("บันทึกสำเร็จ (วันที่ยังคงเดิม)"); 
+                loadData(); 
+                // แถม: โฟกัสไปที่ช่องจำนวนเงิน ให้พิมพ์รายการต่อไปได้เลย ไม่ต้องใช้เมาส์คลิก
+                document.getElementById('expAmount').focus();
+            }, 100);
         });
 
         const today = new Date(); const year = today.getFullYear(); const month = String(today.getMonth() + 1).padStart(2, '0'); const day = String(today.getDate()).padStart(2, '0');
