@@ -270,15 +270,20 @@
                         </div>
                     </div>
                 </div>
-                </div> <div id="analytics" class="section-content hidden">
+                <div id="analytics" class="section-content hidden">
                 <div class="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0">
                     <h2 class="text-2xl font-bold text-indigo-800">📈 วิเคราะห์เชิงลึก (Pro Analytics)</h2>
-                    <div class="flex space-x-2 bg-white p-1 rounded-full shadow border">
-                        <button onclick="switchAnalyticsTab('all')" id="tab-all" class="sub-tab-btn active-all">รวมทุกค่าย</button>
-                        <button onclick="switchAnalyticsTab('grab')" id="tab-grab" class="sub-tab-btn text-gray-500 hover:text-green-600">Grab</button>
-                        <button onclick="switchAnalyticsTab('line')" id="tab-line" class="sub-tab-btn text-gray-500 hover:text-orange-500">Lineman</button>
-                        <button onclick="switchAnalyticsTab('rbh')" id="tab-rbh" class="sub-tab-btn text-gray-500 hover:text-purple-600">Robinhood</button>
+                    
+                    <div class="flex items-center space-x-2 bg-white p-1.5 rounded-lg shadow border border-gray-200">
+                        <span class="text-xs text-gray-500 font-bold pl-2">กรองวันที่:</span>
+                        <input type="date" id="anaStartDate" class="text-xs border rounded p-1 outline-none text-gray-600">
+                        <span class="text-gray-400">-</span>
+                        <input type="date" id="anaEndDate" class="text-xs border rounded p-1 outline-none text-gray-600">
+                        <button onclick="filterAnalyticsByDate()" class="bg-indigo-600 text-white px-3 py-1 rounded text-xs hover:bg-indigo-700 shadow">ตกลง</button>
+                        <button onclick="resetAnalyticsFilter()" class="bg-gray-200 text-gray-600 px-3 py-1 rounded text-xs hover:bg-gray-300">ทั้งเดือน</button>
                     </div>
+                    <div class="flex space-x-2 bg-white p-1 rounded-full shadow border">
+                        </div>
                 </div>
                 <div class="mb-8">
                     <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
@@ -679,6 +684,9 @@
 
         let db, auth;
         let currentUserRole = ''; 
+        // ประกาศตัวแปร Global ไว้เก็บข้อมูลดิบ
+        let globalSalesData = []; 
+        let globalExpensesData = [];
 
         try { 
             const app = initializeApp(firebaseConfig); 
@@ -950,7 +958,8 @@
                     if(d.category.startsWith('01')) totalDeductions += amt; 
                     expTotals[d.category] = (expTotals[d.category]||0) + amt;
                 });
-
+                globalSalesData = sales;       // <--- เก็บยอดขายทั้งเดือนไว้ที่ส่วนกลาง
+                globalExpensesData = expenses; // <--- เก็บรายจ่ายทั้งเดือนไว้ที่ส่วนกลาง
                 // ... (ส่วนการคำนวณ KPI และกราฟ ด้านล่างเหมือนเดิมทุกประการ)
                 currentAnalyticsData = bucket;
                 globalExpenses = expenses; 
@@ -1850,6 +1859,37 @@
             updateCard(platforms.grab, 'grab');
             updateCard(platforms.line, 'line');
             updateCard(platforms.rbh, 'rbh');
+        }
+        // ==========================================
+        // ฟังก์ชันกรอง Analytics ตามช่วงเวลา
+        // ==========================================
+        window.filterAnalyticsByDate = () => {
+            const start = document.getElementById('anaStartDate').value;
+            const end = document.getElementById('anaEndDate').value;
+
+            if (!start || !end) { alert("กรุณาเลือกวันเริ่มต้นและสิ้นสุด"); return; }
+
+            // กรองข้อมูลจาก Global Variable
+            const filteredSales = globalSalesData.filter(s => s.date >= start && s.date <= end);
+            const filteredExpenses = globalExpensesData.filter(e => e.date >= start && e.date <= end);
+
+            // คำนวณ Analytics ใหม่ด้วยข้อมูลที่กรองแล้ว
+            // 1. Deep Dive Cards
+            renderPlatformDeepDive(filteredSales, filteredExpenses);
+            
+            // 2. กราฟอื่นๆ (ต้องคำนวณ Bucket ใหม่เล็กน้อย หรือส่งไป render เลยถ้ารองรับ)
+            // เพื่อความง่าย: เราจะอัปเดตเฉพาะส่วน Deep Dive ที่คุณเน้นก่อน
+            // ถ้าอยากอัปเดตทั้งหน้า ต้องเขียน Logic คำนวณ Bucket ใหม่ (bucket = ...) 
+            // แต่สำหรับ Deep Dive ใช้แค่นี้พอครับ:
+            
+            alert(`แสดงข้อมูลวันที่ ${start} ถึง ${end}`);
+        }
+
+        window.resetAnalyticsFilter = () => {
+            // โหลดข้อมูลทั้งเดือนกลับมา
+            renderPlatformDeepDive(globalSalesData, globalExpensesData);
+            document.getElementById('anaStartDate').value = '';
+            document.getElementById('anaEndDate').value = '';
         }
     </script>
 </body>
