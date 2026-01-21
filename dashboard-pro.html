@@ -1400,10 +1400,9 @@
             });
         }
         // ==========================================
-        // ฟังก์ชันคำนวณและแสดงผล Deep Dive รายค่าย (เพิ่ม %)
+        // ฟังก์ชันคำนวณและแสดงผล Deep Dive (แก้ไข Logic แยก Ads/Promo)
         // ==========================================
         function renderPlatformDeepDive(sales, expenses) {
-            // เช็คก่อนว่ามี Element รองรับไหม (กัน Error ค้าง)
             if(!document.getElementById('grab_gross')) return;
 
             let p = { g: {g:0,gp:0,ad:0,ds:0,ln:0}, l: {g:0,gp:0,ad:0,ds:0,ln:0}, r: {g:0,gp:0,ad:0,ds:0,ln:0} };
@@ -1415,55 +1414,64 @@
                 p.r.g += (parseFloat(s.delivery_robinhood||0) + parseFloat(s.delivery_other||0));
             });
 
-            // 2. รวมรายจ่าย
+            // 2. รวมรายจ่าย (แก้ Logic ตรงนี้)
             expenses.forEach(e => {
                 const c = e.category; const v = parseFloat(e.amount||0); const m = e.memo || '';
+                
+                // --- GRAB ---
                 if(c.includes('-G') || m.includes('Grab')) {
-                    if(c.includes('0504') || c.includes('VAT')) p.g.gp += v;
-                    else if(c.includes('0408') || c.includes('Ads')) p.g.ad += v;
-                    else if(c.includes('0118')) p.g.ds += v;
-                    else if(c.includes('0411') || m.includes('สินเชื่อ')) p.g.ln += v;
-                } else if(c.includes('-L') || m.includes('Line')) {
+                    if(c.includes('0504') || c.includes('VAT')) {
+                        p.g.gp += v; // GP + VAT
+                    } 
+                    else if (c === '0408-G') { 
+                        p.g.ad += v; // 🔥 เฉพาะ '0408-G' เท่านั้นที่เป็น Ads (1,378.14)
+                    }
+                    else if (c.includes('0408') || c.includes('MKT') || c.includes('แคมเปญ')) {
+                        p.g.ds += v; // 🔥 พวก 0408-G-MKT หรือ Campaign ให้ย้ายมารวมกับ ส่วนลด
+                    }
+                    else if(c.includes('0118')) {
+                        p.g.ds += v; // ส่วนลดปกติ
+                    }
+                    else if(c.includes('0411') || m.includes('สินเชื่อ')) {
+                        p.g.ln += v; // สินเชื่อ
+                    }
+                    else if (c.includes('Ads')) {
+                        p.g.ad += v; // Fallback ถ้ามีคำว่า Ads โดดๆ
+                    }
+                } 
+                // --- LINEMAN ---
+                else if(c.includes('-L') || m.includes('Line')) {
                     if(c.includes('0504')) p.l.gp += v;
-                    else if(c.includes('0408') || c.includes('Ads')) p.l.ad += v;
+                    else if(c === '0408-L') p.l.ad += v; // Ads Lineman
+                    else if(c.includes('0408') || c.includes('MKT')) p.l.ds += v; // ย้าย Campaign Lineman มาส่วนลดเหมือนกัน
+                    else if(c.includes('Ads')) p.l.ad += v;
                     else if(c.includes('0118')) p.l.ds += v;
                     else if(c.includes('0411') || m.includes('สินเชื่อ') || m.includes('ผ่อน')) p.l.ln += v;
-                } else if(c.includes('-R') || c.includes('RBH')) {
+                } 
+                // --- RBH / OTHER ---
+                else if(c.includes('-R') || c.includes('RBH')) {
                     if(c.includes('0504')) p.r.gp += v;
-                    else if(c.includes('0408')) p.r.ad += v;
+                    else if(c.includes('0408') || c.includes('Ads')) p.r.ad += v;
                     else if(c.includes('0118')) p.r.ds += v;
                 }
             });
 
-            // 3. ฟังก์ชันอัปเดตหน้าจอ (เพิ่มการคำนวณ %)
+            // 3. อัปเดตหน้าจอ (คงเดิม)
             const update = (k, d) => {
                 const net = d.g - d.gp - d.ad - d.ds;
                 const cash = net - d.ln;
                 const pct = d.g > 0 ? (net/d.g)*100 : 0;
                 
-                // Helper คำนวณ % เทียบยอดขายรวม
                 const calcPct = (val) => d.g > 0 ? ((val / d.g) * 100).toFixed(1) + '%' : '0%';
 
-                // ใช้ innerHTML เพื่อแทรก <span> ตัวเล็กๆ
                 document.getElementById(`${k}_gross`).innerText = d.g.toLocaleString();
-                
-                document.getElementById(`${k}_gp`).innerHTML = 
-                    `-${d.gp.toLocaleString()} <span class="text-xs opacity-75 ml-1">(${calcPct(d.gp)})</span>`;
-                
-                document.getElementById(`${k}_ads`).innerHTML = 
-                    `-${d.ad.toLocaleString()} <span class="text-xs opacity-75 ml-1">(${calcPct(d.ad)})</span>`;
-                
-                document.getElementById(`${k}_disc`).innerHTML = 
-                    `-${d.ds.toLocaleString()} <span class="text-xs opacity-75 ml-1">(${calcPct(d.ds)})</span>`;
-                
+                document.getElementById(`${k}_gp`).innerHTML = `-${d.gp.toLocaleString()} <span class="text-xs opacity-75 ml-1">(${calcPct(d.gp)})</span>`;
+                document.getElementById(`${k}_ads`).innerHTML = `-${d.ad.toLocaleString()} <span class="text-xs opacity-75 ml-1">(${calcPct(d.ad)})</span>`;
+                document.getElementById(`${k}_disc`).innerHTML = `-${d.ds.toLocaleString()} <span class="text-xs opacity-75 ml-1">(${calcPct(d.ds)})</span>`;
                 document.getElementById(`${k}_net`).innerText = net.toLocaleString();
-                
-                document.getElementById(`${k}_loan`).innerHTML = 
-                    `-${d.ln.toLocaleString()} <span class="text-xs opacity-75 ml-1">(${calcPct(d.ln)})</span>`;
-                
+                document.getElementById(`${k}_loan`).innerHTML = `-${d.ln.toLocaleString()} <span class="text-xs opacity-75 ml-1">(${calcPct(d.ln)})</span>`;
                 document.getElementById(`${k}_cash`).innerText = cash.toLocaleString() + ' ฿';
                 
-                // สี Badge Margin
                 const badge = document.getElementById(`${k}_margin_pct`);
                 badge.innerText = pct.toFixed(1) + '%';
                 if(pct > 50) badge.className = "text-xs font-bold bg-green-200 text-green-800 px-2 py-1 rounded";
