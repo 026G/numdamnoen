@@ -1069,7 +1069,7 @@
                     
                     updateRecentTables(sales, expenses); 
                     switchAnalyticsTab('all'); 
-                    renderPlatformDeepDive(sales, expenses);
+                    try { renderPlatformDeepDive(sales, expenses); } catch(e) { console.log('Deep Dive Error:', e); }
                     showLoading(false); 
                 });
 
@@ -1788,77 +1788,54 @@
         // ฟังก์ชันคำนวณและแสดงผล Deep Dive รายค่าย
         // ==========================================
         function renderPlatformDeepDive(sales, expenses) {
-            // 1. เตรียมถังข้อมูลแยกค่าย
-            let platforms = {
-                grab: { gross: 0, gp: 0, ads: 0, disc: 0, loan: 0 },
-                line: { gross: 0, gp: 0, ads: 0, disc: 0, loan: 0 },
-                rbh:  { gross: 0, gp: 0, ads: 0, disc: 0, loan: 0 }
-            };
+            // เช็คก่อนว่ามี Element รองรับไหม (กัน Error ค้าง)
+            if(!document.getElementById('grab_gross')) return;
 
-            // 2. รวมยอดขาย (Gross Sales)
+            let p = { g: {g:0,gp:0,ad:0,ds:0,ln:0}, l: {g:0,gp:0,ad:0,ds:0,ln:0}, r: {g:0,gp:0,ad:0,ds:0,ln:0} };
+            
+            // รวมยอดขาย
             sales.forEach(s => {
-                platforms.grab.gross += parseFloat(s.delivery_grab || 0);
-                platforms.line.gross += parseFloat(s.delivery_lineman || 0);
-                platforms.rbh.gross  += (parseFloat(s.delivery_robinhood || 0) + parseFloat(s.delivery_other || 0));
+                p.g.g += parseFloat(s.delivery_grab||0);
+                p.l.g += parseFloat(s.delivery_lineman||0);
+                p.r.g += (parseFloat(s.delivery_robinhood||0) + parseFloat(s.delivery_other||0));
             });
 
-            // 3. รวมค่าใช้จ่าย (Expenses) โดยดูจากรหัส Category
+            // รวมรายจ่าย
             expenses.forEach(e => {
-                const c = e.category;
-                const val = parseFloat(e.amount || 0);
-                
-                // --- GRAB ---
-                if (c.includes('-G')) {
-                    if (c.includes('0504')) platforms.grab.gp += val;      // GP
-                    if (c.includes('0408')) platforms.grab.ads += val;     // Ads
-                    if (c.includes('0118')) platforms.grab.disc += val;    // Discount
-                    if (c.includes('0411') || (e.memo && e.memo.includes('สินเชื่อ'))) platforms.grab.loan += val; // Loan
-                }
-                // --- LINEMAN ---
-                else if (c.includes('-L')) {
-                    if (c.includes('0504')) platforms.line.gp += val;
-                    if (c.includes('0408') || c.includes('Ads')) platforms.line.ads += val;
-                    if (c.includes('0118')) platforms.line.disc += val;
-                    if (c.includes('0411') || (e.memo && (e.memo.includes('สินเชื่อ') || e.memo.includes('ผ่อน')))) platforms.line.loan += val;
-                }
-                // --- ROBINHOOD / OTHER ---
-                else if (c.includes('-R') || c.includes('RBH')) {
-                    if (c.includes('0504')) platforms.rbh.gp += val;
-                    if (c.includes('0408')) platforms.rbh.ads += val;
-                    if (c.includes('0118')) platforms.rbh.disc += val;
+                const c = e.category; const v = parseFloat(e.amount||0); const m = e.memo || '';
+                if(c.includes('-G') || m.includes('Grab')) {
+                    if(c.includes('0504') || c.includes('VAT')) p.g.gp += v;
+                    else if(c.includes('0408') || c.includes('Ads')) p.g.ad += v;
+                    else if(c.includes('0118')) p.g.ds += v;
+                    else if(c.includes('0411') || m.includes('สินเชื่อ')) p.g.ln += v;
+                } else if(c.includes('-L') || m.includes('Line')) {
+                    if(c.includes('0504')) p.l.gp += v;
+                    else if(c.includes('0408') || c.includes('Ads')) p.l.ad += v;
+                    else if(c.includes('0118')) p.l.ds += v;
+                    else if(c.includes('0411') || m.includes('สินเชื่อ') || m.includes('ผ่อน')) p.l.ln += v;
+                } else if(c.includes('-R') || c.includes('RBH')) {
+                    if(c.includes('0504')) p.r.gp += v;
+                    else if(c.includes('0408')) p.r.ad += v;
+                    else if(c.includes('0118')) p.r.ds += v;
                 }
             });
 
-            // 4. ฟังก์ชันอัปเดต HTML รายค่าย
-            const updateCard = (p, key) => {
-                const gross = p.gross;
-                const deductions = p.gp + p.ads + p.disc;
-                const trueMargin = gross - deductions; // กำไรเนื้อๆ ก่อนหักสินเชื่อ
-                const cashFlow = trueMargin - p.loan;  // เงินเหลือโอนเข้าจริง
-
-                const marginPct = gross > 0 ? (trueMargin / gross) * 100 : 0;
-
-                // ใส่ค่าลงใน HTML
-                document.getElementById(`${key}_gross`).innerText = gross.toLocaleString();
-                document.getElementById(`${key}_gp`).innerText = '-' + p.gp.toLocaleString();
-                document.getElementById(`${key}_ads`).innerText = '-' + p.ads.toLocaleString();
-                document.getElementById(`${key}_disc`).innerText = '-' + p.disc.toLocaleString();
-                document.getElementById(`${key}_net`).innerText = trueMargin.toLocaleString();
-                document.getElementById(`${key}_loan`).innerText = '-' + p.loan.toLocaleString();
-                document.getElementById(`${key}_cash`).innerText = cashFlow.toLocaleString() + ' ฿';
+            const update = (k, d) => {
+                const net = d.g - d.gp - d.ad - d.ds;
+                const cash = net - d.ln;
+                const pct = d.g > 0 ? (net/d.g)*100 : 0;
                 
-                document.getElementById(`${key}_margin_pct`).innerText = marginPct.toFixed(1) + '%';
-                
-                // เปลี่ยนสี Margin ตามความคุ้มค่า
-                const badge = document.getElementById(`${key}_margin_pct`).parentElement;
-                if(marginPct > 65) badge.className = "text-xs font-bold bg-green-200 text-green-800 px-2 py-1 rounded";
-                else if(marginPct > 50) badge.className = "text-xs font-bold bg-yellow-200 text-yellow-800 px-2 py-1 rounded";
-                else badge.className = "text-xs font-bold bg-red-200 text-red-800 px-2 py-1 rounded";
+                document.getElementById(`${k}_gross`).innerText = d.g.toLocaleString();
+                document.getElementById(`${k}_gp`).innerText = '-' + d.gp.toLocaleString();
+                document.getElementById(`${k}_ads`).innerText = '-' + d.ad.toLocaleString();
+                document.getElementById(`${k}_disc`).innerText = '-' + d.ds.toLocaleString();
+                document.getElementById(`${k}_net`).innerText = net.toLocaleString();
+                document.getElementById(`${k}_loan`).innerText = '-' + d.ln.toLocaleString();
+                document.getElementById(`${k}_cash`).innerText = cash.toLocaleString() + ' ฿';
+                document.getElementById(`${k}_margin_pct`).innerText = pct.toFixed(1) + '%';
             };
 
-            updateCard(platforms.grab, 'grab');
-            updateCard(platforms.line, 'line');
-            updateCard(platforms.rbh, 'rbh');
+            update('grab', p.g); update('line', p.l); update('rbh', p.r);
         }
         // ==========================================
         // ฟังก์ชันกรอง Analytics ตามช่วงเวลา
