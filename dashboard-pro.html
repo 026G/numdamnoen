@@ -1400,7 +1400,7 @@
             });
         }
         // ==========================================
-        // ฟังก์ชันคำนวณและแสดงผล Deep Dive รายค่าย
+        // ฟังก์ชันคำนวณและแสดงผล Deep Dive รายค่าย (เพิ่ม %)
         // ==========================================
         function renderPlatformDeepDive(sales, expenses) {
             // เช็คก่อนว่ามี Element รองรับไหม (กัน Error ค้าง)
@@ -1408,14 +1408,14 @@
 
             let p = { g: {g:0,gp:0,ad:0,ds:0,ln:0}, l: {g:0,gp:0,ad:0,ds:0,ln:0}, r: {g:0,gp:0,ad:0,ds:0,ln:0} };
             
-            // รวมยอดขาย
+            // 1. รวมยอดขาย
             sales.forEach(s => {
                 p.g.g += parseFloat(s.delivery_grab||0);
                 p.l.g += parseFloat(s.delivery_lineman||0);
                 p.r.g += (parseFloat(s.delivery_robinhood||0) + parseFloat(s.delivery_other||0));
             });
 
-            // รวมรายจ่าย
+            // 2. รวมรายจ่าย
             expenses.forEach(e => {
                 const c = e.category; const v = parseFloat(e.amount||0); const m = e.memo || '';
                 if(c.includes('-G') || m.includes('Grab')) {
@@ -1435,19 +1435,40 @@
                 }
             });
 
+            // 3. ฟังก์ชันอัปเดตหน้าจอ (เพิ่มการคำนวณ %)
             const update = (k, d) => {
                 const net = d.g - d.gp - d.ad - d.ds;
                 const cash = net - d.ln;
                 const pct = d.g > 0 ? (net/d.g)*100 : 0;
                 
+                // Helper คำนวณ % เทียบยอดขายรวม
+                const calcPct = (val) => d.g > 0 ? ((val / d.g) * 100).toFixed(1) + '%' : '0%';
+
+                // ใช้ innerHTML เพื่อแทรก <span> ตัวเล็กๆ
                 document.getElementById(`${k}_gross`).innerText = d.g.toLocaleString();
-                document.getElementById(`${k}_gp`).innerText = '-' + d.gp.toLocaleString();
-                document.getElementById(`${k}_ads`).innerText = '-' + d.ad.toLocaleString();
-                document.getElementById(`${k}_disc`).innerText = '-' + d.ds.toLocaleString();
+                
+                document.getElementById(`${k}_gp`).innerHTML = 
+                    `-${d.gp.toLocaleString()} <span class="text-xs opacity-75 ml-1">(${calcPct(d.gp)})</span>`;
+                
+                document.getElementById(`${k}_ads`).innerHTML = 
+                    `-${d.ad.toLocaleString()} <span class="text-xs opacity-75 ml-1">(${calcPct(d.ad)})</span>`;
+                
+                document.getElementById(`${k}_disc`).innerHTML = 
+                    `-${d.ds.toLocaleString()} <span class="text-xs opacity-75 ml-1">(${calcPct(d.ds)})</span>`;
+                
                 document.getElementById(`${k}_net`).innerText = net.toLocaleString();
-                document.getElementById(`${k}_loan`).innerText = '-' + d.ln.toLocaleString();
+                
+                document.getElementById(`${k}_loan`).innerHTML = 
+                    `-${d.ln.toLocaleString()} <span class="text-xs opacity-75 ml-1">(${calcPct(d.ln)})</span>`;
+                
                 document.getElementById(`${k}_cash`).innerText = cash.toLocaleString() + ' ฿';
-                document.getElementById(`${k}_margin_pct`).innerText = pct.toFixed(1) + '%';
+                
+                // สี Badge Margin
+                const badge = document.getElementById(`${k}_margin_pct`);
+                badge.innerText = pct.toFixed(1) + '%';
+                if(pct > 50) badge.className = "text-xs font-bold bg-green-200 text-green-800 px-2 py-1 rounded";
+                else if(pct > 40) badge.className = "text-xs font-bold bg-yellow-200 text-yellow-800 px-2 py-1 rounded";
+                else badge.className = "text-xs font-bold bg-red-200 text-red-800 px-2 py-1 rounded";
             };
 
             update('grab', p.g); update('line', p.l); update('rbh', p.r);
