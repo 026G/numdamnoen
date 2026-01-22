@@ -3,267 +3,285 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>หนุ่มดำเนิน - เช็คความหวาน</title>
+    <title>หนุ่มดำเนิน - ตรวจสอบที่มา</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* --- Base Setup --- */
+        /* --- Base Styles --- */
         body { font-family: 'Kanit', sans-serif; background-color: #f0fdf4; display: flex; flex-direction: column; align-items: center; padding: 30px 20px; color: #333; min-height: 100vh; margin: 0; }
         .container { width: 100%; max-width: 420px; }
         
-        /* Logo & Header */
-        .header-area { text-align: center; margin-bottom: 20px; }
-        .brand-logo { width: 75px; height: 75px; border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 5px; }
-        .brand-name { font-size: 20px; font-weight: 800; color: #166534; margin: 0; }
+        /* Header */
+        .brand-header { text-align: center; margin-bottom: 20px; }
+        .brand-logo { width: 80px; height: 80px; border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
-        /* --- 1. RESULT CARD (Bar Chart) --- */
+        /* --- STATUS BADGE (หัวใจสำคัญของโจทย์นี้) --- */
+        .product-status-card {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .status-badge {
+            display: inline-block; padding: 6px 15px; border-radius: 30px;
+            font-size: 14px; font-weight: 600; color: white; margin-bottom: 10px;
+        }
+        
+        /* สีสถานะ */
+        .bg-today { background: linear-gradient(to right, #16a34a, #059669); } /* วันนี้ */
+        .bg-past { background: linear-gradient(to right, #0284c7, #0369a1); } /* ของสต็อกเก่า */
+
+        .status-desc { font-size: 13px; color: #64748b; line-height: 1.5; }
+        .lot-date-big { font-size: 18px; font-weight: 800; color: #333; margin-top: 5px; }
+
+        /* --- BAR CHART (ความหวาน) --- */
         .result-card {
             background: white; border-radius: 20px; padding: 25px 20px;
             box-shadow: 0 8px 20px rgba(0,0,0,0.06); margin-bottom: 25px;
             text-align: center; position: relative;
         }
-
-        .brix-number { font-size: 50px; font-weight: 800; color: #166534; line-height: 1; }
-        .brix-label { font-size: 13px; color: #888; }
-        .status-highlight { font-size: 18px; font-weight: 600; color: #00B900; margin: 5px 0 20px 0; }
-
-        /* The Bar */
+        .brix-number { font-size: 48px; font-weight: 800; color: #166534; line-height: 1; }
+        .brix-label { font-size: 12px; color: #888; margin-bottom: 5px; }
+        
         .bar-container {
-            position: relative; width: 100%; height: 40px; background: #eee;
-            border-radius: 50px; display: flex; overflow: hidden;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+            position: relative; width: 100%; height: 35px; background: #eee;
+            border-radius: 50px; display: flex; overflow: hidden; margin: 25px 0 10px 0;
         }
-        .bar-segment { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; color: rgba(0,0,0,0.5); border-right: 1px solid rgba(255,255,255,0.3); }
-        .bar-segment:last-child { border-right: none; }
-        
-        /* Segments Color */
-        .bg-low { background-color: #86efac; }    /* 6.0-6.9 */
-        .bg-mid { background-color: #fde047; }    /* 7.0-7.5 */
-        .bg-high { background-color: #fb923c; }   /* 7.6-8.0 */
-        .bg-max { background-color: #f87171; }    /* 8.1-9.0 */
+        .bar-segment { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; color: rgba(0,0,0,0.4); border-right: 1px solid rgba(255,255,255,0.3); }
+        .bg-1 { background:#86efac; } .bg-2 { background:#fde047; } .bg-3 { background:#fb923c; } .bg-4 { background:#f87171; }
 
-        /* Marker */
         .marker-wrapper {
-            position: absolute; top: -10px; left: 0%; transform: translateX(-50%);
-            display: flex; flex-direction: column; align-items: center; transition: left 1s ease-out; z-index: 10;
+            position: absolute; top: -12px; left: 0%; transform: translateX(-50%);
+            display: flex; flex-direction: column; align-items: center; transition: left 1s; z-index: 10;
         }
-        .pin-head { background: #166534; color: white; padding: 3px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); margin-bottom: 2px; }
-        .pin-arrow { width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid #166534; }
-        .scale-labels { display: flex; justify-content: space-between; margin-top: 5px; font-size: 10px; color: #aaa; padding: 0 2px; }
+        .pin-head { background: #166534; color: white; padding: 3px 8px; border-radius: 8px; font-size: 10px; font-weight: bold; white-space: nowrap; }
+        .pin-arrow { border-top: 6px solid #166534; border-left: 5px solid transparent; border-right: 5px solid transparent; }
 
-        /* --- 2. HISTORY SECTION (New!) --- */
+        /* --- HISTORY LIST --- */
         .history-section {
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-            border: 1px solid white;
+            background: rgba(255,255,255,0.7); border-radius: 20px; padding: 20px;
+            border: 1px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.03);
         }
-
-        .history-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 15px; font-size: 16px; font-weight: 700; color: #166534;
-        }
-        .history-header i { margin-right: 8px; }
-
-        /* Scroll Area */
-        .history-list {
-            max-height: 380px; /* ความสูงโชว์ประมาณ 6-7 รายการ */
-            overflow-y: auto; /* เลื่อนลงได้ */
-            padding-right: 5px;
-        }
-        /* Custom Scrollbar */
-        .history-list::-webkit-scrollbar { width: 4px; }
-        .history-list::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
-        .history-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
-
-        /* Item Row */
-        .history-item {
-            display: flex; align-items: center; justify-content: space-between;
-            background: white; padding: 12px 15px; border-radius: 12px; margin-bottom: 10px;
-            position: relative; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-            transition: transform 0.2s;
-        }
-        .history-item:active { transform: scale(0.98); }
-
-        /* Color Strip Indicator */
-        .color-strip {
-            position: absolute; left: 0; top: 0; bottom: 0; width: 6px;
-        }
-
-        .h-date { font-size: 14px; font-weight: 600; color: #555; }
-        .h-date span { display: block; font-size: 10px; color: #999; font-weight: 400; margin-top: 2px; }
+        .h-title { font-size: 16px; font-weight: 700; color: #166534; margin-bottom: 15px; display: flex; justify-content: space-between; }
         
-        .h-value { font-size: 18px; font-weight: 800; color: #333; display: flex; align-items: center; gap: 5px; }
-        .h-unit { font-size: 10px; color: #aaa; font-weight: 400; margin-top: 4px; }
-
-        .cta-btn {
-            display: block; width: 100%; padding: 14px; text-align: center; margin-top: 25px;
-            background: #00B900; color: white; border-radius: 50px; text-decoration: none; font-weight: 700;
-            box-shadow: 0 4px 15px rgba(0, 185, 0, 0.3);
+        .history-list { max-height: 350px; overflow-y: auto; }
+        
+        .h-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px; background: white; border-radius: 12px; margin-bottom: 8px;
+            border-left: 4px solid #eee; position: relative;
         }
+        
+        /* Highlight Item (ขวดปัจจุบัน) */
+        .h-item.active-lot {
+            border: 2px solid #00B900;
+            background: #f0fdf4;
+            transform: scale(1.02);
+            box-shadow: 0 4px 12px rgba(0, 185, 0, 0.15);
+        }
+        .active-badge {
+            position: absolute; top: -8px; right: 10px;
+            background: #00B900; color: white; font-size: 9px; padding: 2px 8px; border-radius: 10px;
+        }
+
+        .h-date { font-size: 14px; font-weight: 600; color: #444; }
+        .h-brix { font-size: 16px; font-weight: 700; color: #166534; }
+        .h-status { font-size: 10px; color: #888; }
+        
+        .cta-btn { display: block; width: 100%; padding: 14px; text-align: center; background: #00B900; color: white; border-radius: 50px; text-decoration: none; font-weight: 700; margin-top: 20px; box-shadow: 0 5px 15px rgba(0,185,0,0.3); }
 
     </style>
 </head>
 <body>
 
     <div class="container">
-        <div class="header-area">
+        <div class="brand-header">
             <img src="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8" class="brand-logo" alt="Logo">
-            <h1 class="brand-name">หนุ่มดำเนิน</h1>
-            <div style="font-size:12px; color:#888;">ตรวจสอบคุณภาพ ความหวานธรรมชาติ</div>
+            <h2 style="margin:5px 0 0 0; color:#166534;">หนุ่มดำเนิน</h2>
+        </div>
+
+        <div class="product-status-card" id="status-card">
+            <div style="color:#aaa;">กำลังอ่านข้อมูลจาก QR Code...</div>
         </div>
 
         <div class="result-card">
-            <div class="brix-number" id="display-brix">0.0</div>
-            <div class="brix-label">ค่าความหวาน (Brix)</div>
-            <div class="status-highlight" id="status-text">...</div>
-
-            <div style="position: relative; margin: 15px 0;">
+            <div class="brix-number" id="brix-val">0.0</div>
+            <div class="brix-label">ระดับความหวาน (Brix)</div>
+            
+            <div style="position: relative;">
                 <div class="marker-wrapper" id="marker">
                     <div class="pin-head">ขวดนี้</div>
                     <div class="pin-arrow"></div>
                 </div>
                 <div class="bar-container">
-                    <div class="bar-segment bg-low">น้อย</div>
-                    <div class="bar-segment bg-mid">กลาง</div>
-                    <div class="bar-segment bg-high">มาก</div>
-                    <div class="bar-segment bg-max">สุด</div>
-                </div>
-                <div class="scale-labels">
-                    <span>6.0</span><span>7.0</span><span>7.6</span><span>8.1</span><span>9.0</span>
+                    <div class="bar-segment bg-1">น้อย</div>
+                    <div class="bar-segment bg-2">กลาง</div>
+                    <div class="bar-segment bg-3">มาก</div>
+                    <div class="bar-segment bg-4">สุด</div>
                 </div>
             </div>
-            
-            <div style="font-size: 10px; color:#aaa; margin-top:10px;">
-                Lot ID: <span id="lot-id">ND-????</span> | <span id="harvest-date">--/--/--</span>
-            </div>
+            <div style="font-size:16px; font-weight:600; color:#00B900; margin-top:10px;" id="taste-text">...</div>
         </div>
 
         <div class="history-section">
-            <div class="history-header">
-                <span><i class="fa-solid fa-clock-rotate-left"></i> ประวัติ 20 ล็อตล่าสุด</span>
-                <span style="font-size:10px; background:#e0f2fe; color:#0284c7; padding:2px 8px; border-radius:10px;">Scroll ดูเพิ่ม</span>
+            <div class="h-title">
+                <span>ประวัติล็อตการผลิต</span>
+                <span style="font-size:12px; color:#999; font-weight:400;">(เลื่อนดูย้อนหลัง)</span>
             </div>
-            
             <div class="history-list" id="history-container">
-                <div style="text-align:center; padding:20px; color:#999;">กำลังโหลดข้อมูล...</div>
-            </div>
+                </div>
         </div>
 
-        <a href="#" class="cta-btn">สั่งซื้อสินค้า</a>
+        <a href="#" class="cta-btn">สั่งซื้อ/จองล็อตถัดไป</a>
     </div>
 
     <script>
-        // --- 1. Main Gauge Logic (เหมือนเดิม) ---
-        function getQueryParam(param) { return new URLSearchParams(window.location.search).get(param); }
-
-        function initPage() {
-            // -- Mock Data for Current Bottle --
-            let brixParam = getQueryParam('brix');
-            let brix = brixParam ? parseFloat(brixParam) : (Math.random() * (8.2 - 6.8) + 6.8).toFixed(1);
-            
-            // Set Date
-            const today = new Date();
-            const dateStr = today.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
-            document.getElementById('harvest-date').innerText = dateStr;
-            document.getElementById('lot-id').innerText = 'ND-' + Math.floor(1000 + Math.random() * 9000);
-
-            // Animate & Bar Logic
-            animateValue("display-brix", 0, brix, 1000);
-            updateBar(brix);
-            
-            // -- Init History --
-            renderHistory(20); 
+        // ฟังก์ชันช่วยแปลงวันที่ให้เป็นรูปแบบที่เทียบง่าย (YYYY-MM-DD)
+        function formatDateToISO(date) {
+            return date.toISOString().split('T')[0];
         }
 
-        function updateBar(brix) {
-            let percent = 0;
-            let status = "";
-            let colorClass = "";
-
-            if (brix <= 6.9) {
-                status = "หวานน้อย (สดชื่น)"; colorClass = "#16a34a"; // Green Text
-                percent = ((brix - 6.0) / 0.9) * 25;
-            } else if (brix <= 7.5) {
-                status = "หวานกลาง (กำลังดี)"; colorClass = "#ca8a04"; // Yellow-Dark Text
-                percent = 25 + ((brix - 7.0) / 0.5) * 25;
-            } else if (brix <= 8.0) {
-                status = "หวานมาก (หอม)"; colorClass = "#ea580c"; // Orange Text
-                percent = 50 + ((brix - 7.6) / 0.4) * 25;
-            } else {
-                status = "หวานสุด (ฉ่ำ)"; colorClass = "#dc2626"; // Red Text
-                percent = 75 + ((brix - 8.1) / 0.9) * 25;
-            }
-
-            if(percent < 2) percent = 2; if(percent > 98) percent = 98;
-
-            setTimeout(() => {
-                document.getElementById('marker').style.left = percent + "%";
-                const statusEl = document.getElementById('status-text');
-                statusEl.innerText = status;
-                statusEl.style.color = colorClass;
-            }, 300);
-        }
-
-        function animateValue(id, start, end, duration) {
-            let obj = document.getElementById(id);
-            let startTimestamp = null;
-            const step = (timestamp) => {
-                if (!startTimestamp) startTimestamp = timestamp;
-                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                obj.innerHTML = (progress * (end - start) + start).toFixed(1);
-                if (progress < 1) window.requestAnimationFrame(step);
-            };
-            window.requestAnimationFrame(step);
-        }
-
-        // --- 2. History Logic (ใหม่!) ---
-        function renderHistory(count) {
-            const container = document.getElementById('history-container');
-            container.innerHTML = ''; // Clear loading text
-
-            const startDate = new Date();
-            startDate.setDate(startDate.getDate() - 1); // เริ่มจากเมื่อวาน
-
-            for (let i = 0; i < count; i++) {
-                // สร้างข้อมูลสมมติ (Simulation)
-                let tempBrix = (Math.random() * (8.5 - 6.5) + 6.5).toFixed(1);
-                
-                // กำหนดสีตามเกณฑ์
-                let stripColor = '';
-                let statusLabel = '';
-                if(tempBrix <= 6.9) { stripColor = '#86efac'; statusLabel = 'หวานน้อย'; }
-                else if(tempBrix <= 7.5) { stripColor = '#fde047'; statusLabel = 'หวานกลาง'; }
-                else if(tempBrix <= 8.0) { stripColor = '#fb923c'; statusLabel = 'หวานมาก'; }
-                else { stripColor = '#f87171'; statusLabel = 'หวานสุด'; }
-
-                // Format วันที่
-                let d = new Date(startDate);
+        // ฟังก์ชันสร้าง Mockup ข้อมูลประวัติ 7 วันย้อนหลัง
+        function generateHistoryData(baseDate) {
+            let history = [];
+            for (let i = 0; i < 7; i++) {
+                let d = new Date(baseDate);
                 d.setDate(d.getDate() - i);
-                let dateString = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
-                let dayName = d.toLocaleDateString('th-TH', { weekday: 'long' });
+                
+                // สุ่มค่าความหวานแต่ละวัน
+                let brix = (Math.random() * (8.5 - 6.5) + 6.5).toFixed(1);
+                
+                // สมมติวันที่ 3 (นับจากวันนี้) ร้านหยุด ไม่มีการผลิต
+                if (i === 3) { brix = null; } 
 
-                // สร้าง HTML
-                const itemHtml = `
-                    <div class="history-item">
-                        <div class="color-strip" style="background-color: ${stripColor};"></div>
-                        <div class="h-date">
-                            ${dateString}
-                            <span>${dayName}</span>
-                        </div>
-                        <div style="font-size:12px; color:#888; text-align:right; flex-grow:1; margin-right:10px;">
-                            ${statusLabel}
-                        </div>
-                        <div class="h-value">
-                            ${tempBrix} <span class="h-unit">Brix</span>
-                        </div>
+                history.push({
+                    date: d,
+                    dateStr: formatDateToISO(d),
+                    brix: brix
+                });
+            }
+            return history;
+        }
+
+        // --- MAIN LOGIC ---
+        function initPage() {
+            // 1. รับค่าจาก URL (QR Code)
+            const urlParams = new URLSearchParams(window.location.search);
+            const qrBrix = urlParams.get('brix') || '7.2'; // ค่า Default ถ้าไม่มี
+            
+            // รับวันที่จาก QR (สมมติส่งมาเป็น format 2026-01-22)
+            // ถ้าไม่มี ให้สมมติว่าเป็น "เมื่อวาน" เพื่อเทสระบบสต็อกตกค้าง
+            let yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const qrDateStr = urlParams.get('date') || formatDateToISO(yesterday); 
+
+            // วันที่ปัจจุบัน (วันทีสแกน)
+            const today = new Date();
+            const todayStr = formatDateToISO(today);
+
+            // 2. เปรียบเทียบวันผลิต (QR) vs วันสแกน (Today)
+            const statusCard = document.getElementById('status-card');
+            const qrDateObj = new Date(qrDateStr);
+            const diffTime = Math.abs(today - qrDateObj);
+            const diffDays = Math.ceil((today.setHours(0,0,0,0) - qrDateObj.setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
+
+            let dateDisplay = qrDateObj.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
+
+            // LOGIC แสดงผลสถานะ
+            if (qrDateStr === todayStr) {
+                // กรณี: ผลิตวันนี้
+                statusCard.innerHTML = `
+                    <div class="status-badge bg-today"><i class="fa-solid fa-leaf"></i> ผลิตใหม่วันนี้</div>
+                    <div class="lot-date-big">${dateDisplay}</div>
+                    <div class="status-desc">สดจากสวน ลงขวดทันที<br>รสชาติหอมหวานธรรมชาติ 100%</div>
+                `;
+            } else if (diffDays > 0) {
+                // กรณี: ของล็อตก่อน (สต็อก)
+                statusCard.innerHTML = `
+                    <div class="status-badge bg-past"><i class="fa-solid fa-temperature-low"></i> สินค้าล็อตวันที่ ${dateDisplay}</div>
+                    <div class="lot-date-big" style="color:#0284c7;">อายุสินค้า ${diffDays} วัน</div>
+                    <div class="status-desc">
+                        เก็บรักษาในอุณหภูมิเย็นจัด (Cold Storage)<br>
+                        <span style="color:#0284c7; font-weight:600;"><i class="fa-solid fa-check-circle"></i> คุณภาพความหวานยังคงเดิม</span>
                     </div>
                 `;
-                container.innerHTML += itemHtml;
+            } else {
+                // กรณีแปลกๆ (อนาคต?)
+                 statusCard.innerHTML = `<div>ข้อมูลวันที่ไม่ถูกต้อง</div>`;
             }
+
+            // 3. แสดงเกจความหวาน (ใช้ค่าจาก QR เท่านั้น ไม่สนใจวัน)
+            updateBar(qrBrix);
+
+            // 4. สร้างตารางประวัติ และ Highlight บรรทัดที่ตรงกับ QR
+            const historyData = generateHistoryData(today);
+            const historyContainer = document.getElementById('history-container');
+            
+            historyData.forEach(item => {
+                // ข้ามวันที่ไม่มีการผลิต (ถ้ามี logic ร้านหยุด)
+                if(!item.brix && item.dateStr !== qrDateStr) return; 
+
+                // เช็คว่าเป็นล็อตเดียวกับขวดนี้ไหม?
+                const isCurrentBottle = (item.dateStr === qrDateStr);
+                
+                // ถ้าเป็นขวดนี้ ให้ใช้ค่าจาก QR (เผื่อ Database ไม่ตรง ให้เชื่อ QR ที่ขวดเป็นหลัก)
+                const displayBrix = isCurrentBottle ? qrBrix : (item.brix || "-");
+                
+                // กำหนดสีเส้นซ้าย
+                let stripColor = '#ccc';
+                if(displayBrix <= 6.9) stripColor = '#86efac';
+                else if(displayBrix <= 7.5) stripColor = '#fde047';
+                else if(displayBrix <= 8.0) stripColor = '#fb923c';
+                else stripColor = '#f87171';
+
+                const dayName = item.date.toLocaleDateString('th-TH', { weekday: 'long' });
+                const dateTh = item.date.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
+
+                const activeClass = isCurrentBottle ? 'active-lot' : '';
+                const badgeHtml = isCurrentBottle ? '<div class="active-badge">ขวดที่คุณถืออยู่</div>' : '';
+
+                const html = `
+                    <div class="h-item ${activeClass}" style="border-left-color: ${stripColor};">
+                        ${badgeHtml}
+                        <div>
+                            <div class="h-date">${dateTh} <span style="font-size:11px; color:#888;">${dayName}</span></div>
+                            <div class="h-status">${isCurrentBottle ? 'กำลังตรวจสอบ...' : (displayBrix=='-' ? 'ร้านหยุด' : 'จำหน่ายหมดแล้ว')}</div>
+                        </div>
+                        <div class="h-brix">${displayBrix} <span style="font-size:10px; font-weight:400; color:#aaa;">Brix</span></div>
+                    </div>
+                `;
+                historyContainer.innerHTML += html;
+            });
+        }
+
+        // Helper Update Bar (Logic เดิม)
+        function updateBar(brix) {
+            document.getElementById('brix-val').innerText = brix;
+            let percent = 0;
+            let status = "";
+            
+            if (brix <= 6.9) {
+                status = "หวานน้อย (Healthy)";
+                percent = ((brix - 6.0) / 0.9) * 25;
+            } else if (brix <= 7.5) {
+                status = "หวานกลาง (Standard)";
+                percent = 25 + ((brix - 7.0) / 0.5) * 25;
+            } else if (brix <= 8.0) {
+                status = "หวานมาก (Sweet)";
+                percent = 50 + ((brix - 7.6) / 0.4) * 25;
+            } else {
+                status = "หวานสุด (Super)";
+                percent = 75 + ((brix - 8.1) / 0.9) * 25;
+            }
+            if(percent < 2) percent = 2; if(percent > 98) percent = 98;
+            
+            document.getElementById('taste-text').innerText = status;
+            setTimeout(() => { document.getElementById('marker').style.left = percent + "%"; }, 200);
         }
 
         window.onload = initPage;
