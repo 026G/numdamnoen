@@ -3,261 +3,235 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>หนุ่มดำเนิน - ตรวจสอบความหวาน</title>
+    <title>หนุ่มดำเนิน - กราฟความหวาน</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        body { font-family: 'Kanit', sans-serif; background-color: #f0fdf4; display: flex; flex-direction: column; align-items: center; padding: 30px 20px; color: #333; min-height: 100vh; margin: 0; }
+        body { font-family: 'Kanit', sans-serif; background-color: #f8fafc; display: flex; flex-direction: column; align-items: center; padding: 20px; color: #333; min-height: 100vh; margin: 0; }
         .container { width: 100%; max-width: 420px; }
-        
-        /* 1. Header Area */
-        .brand-header { text-align: center; margin-bottom: 25px; }
-        .brand-logo { width: 70px; height: 70px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .update-badge {
-            display: inline-block;
-            background: #fff;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 13px;
-            color: #166534;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            margin-top: 10px;
-            border: 1px solid #dcfce7;
-        }
 
-        /* 2. Main Result Card */
-        .result-card {
-            background: white; border-radius: 20px; padding: 30px 20px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.06); margin-bottom: 25px;
-            text-align: center; position: relative; border: 1px solid #f0f0f0;
-        }
-        .brix-big { font-size: 56px; font-weight: 800; color: #166534; line-height: 1; }
-        .brix-desc { font-size: 14px; color: #888; margin-bottom: 15px; }
+        /* Header */
+        .header { text-align: center; margin-bottom: 20px; }
+        .brand-logo { width: 60px; height: 60px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
-        /* Bar Chart */
-        .bar-container {
-            position: relative; width: 100%; height: 25px; background: #eee;
-            border-radius: 50px; display: flex; overflow: hidden; margin: 30px 0 10px 0;
+        /* 1. Main Display (แสดงค่าของแท่งที่กดเลือก) */
+        .display-card {
+            background: white; border-radius: 20px; padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 15px;
+            text-align: center; border: 1px solid #e2e8f0;
+            transition: all 0.3s;
         }
-        .bar-seg { flex: 1; border-right: 1px solid rgba(255,255,255,0.4); }
-        .bg-1 { background:#86efac; } .bg-2 { background:#fde047; } .bg-3 { background:#fb923c; } .bg-4 { background:#f87171; }
+        .selected-date { font-size: 14px; color: #888; font-weight: 400; margin-bottom: 5px; }
+        .selected-brix { font-size: 48px; font-weight: 800; color: #166534; line-height: 1; }
+        .selected-status { font-size: 16px; font-weight: 600; color: #16a34a; margin-top: 5px; }
         
-        .marker {
-            position: absolute; top: -8px; left: 0%; transform: translateX(-50%);
-            display: flex; flex-direction: column; align-items: center; transition: left 1s; z-index: 10;
+        /* 2. Scrollable Graph Area */
+        .graph-wrapper {
+            width: 100%;
+            overflow-x: auto; /* เลื่อนแนวนอน */
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            /* ซ่อน Scrollbar แต่ยังเลื่อนได้ */
+            scrollbar-width: none; 
+            -ms-overflow-style: none;
         }
-        .pin { background: #166534; color: white; padding: 2px 8px; border-radius: 8px; font-size: 10px; font-weight: bold; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        .arrow { width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 5px solid #166534; }
+        .graph-wrapper::-webkit-scrollbar { display: none; }
 
-        /* 3. History Timeline */
-        .history-box {
-            background: rgba(255,255,255,0.8); border-radius: 20px; padding: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
-        }
-        .h-header { font-size: 16px; font-weight: 700; color: #166534; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
-        
-        .timeline-list {
-            max-height: 400px; /* สูงประมาณ 7-8 รายการ */
-            overflow-y: auto;
+        .chart-container {
+            display: flex;
+            align-items: flex-end; /* แท่งกราฟชิดล่าง */
+            height: 200px; /* ความสูงพื้นที่กราฟ */
+            padding: 20px 10px 0 10px;
+            gap: 12px; /* ระยะห่างระหว่างแท่ง */
+            width: max-content; /* ขยายความกว้างตามจำนวนแท่ง */
             position: relative;
         }
-        /* เส้นแกนเวลาด้านซ้าย */
-        .timeline-list::before {
-            content: ''; position: absolute; left: 18px; top: 0; bottom: 0;
-            width: 2px; background: #e2e8f0; z-index: 0;
+
+        /* เส้นประบอกระดับมาตรฐาน (Reference Line) */
+        .ref-line {
+            position: absolute; left: 0; right: 0; 
+            border-top: 1px dashed #cbd5e1; z-index: 0;
+            pointer-events: none;
+        }
+        .ref-label {
+            position: absolute; left: 10px; font-size: 10px; color: #94a3b8; background: #f8fafc; padding-right: 5px;
         }
 
-        .t-item {
-            display: flex; align-items: flex-start; margin-bottom: 20px; position: relative; z-index: 1;
+        /* ตัวแท่งกราฟ (Bar Item) */
+        .bar-group {
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+            cursor: pointer; position: relative; z-index: 1;
         }
-        .t-dot {
-            width: 12px; height: 12px; border-radius: 50%; background: #ccc;
-            margin: 5px 12px 0 12px; flex-shrink: 0; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        .bar {
+            width: 24px;
+            border-radius: 6px 6px 4px 4px;
+            transition: height 1s ease-out, transform 0.2s;
+            position: relative;
         }
-        .t-content {
-            background: white; padding: 10px 15px; border-radius: 12px; width: 100%;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center;
-        }
+        /* วันที่ใต้กราฟ */
+        .bar-date { font-size: 10px; color: #94a3b8; margin-top: 8px; font-weight: 300; }
         
-        .date-col { font-size: 14px; font-weight: 600; color: #444; }
-        .date-col span { display: block; font-size: 11px; color: #999; font-weight: 400; }
-        .val-col { text-align: right; }
-        .val-num { font-size: 16px; font-weight: 800; color: #333; }
-        .val-source { font-size: 10px; color: #aaa; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; margin-top: 2px; display: inline-block;}
+        /* Effect ตอนกดเลือก */
+        .bar-group.active .bar { transform: scale(1.1); box-shadow: 0 0 10px rgba(0,0,0,0.1); border: 2px solid rgba(0,0,0,0.2); }
+        .bar-group.active .bar-date { color: #333; font-weight: 700; }
 
-        /* สี Dot ตามความหวาน */
-        .dot-green { background: #4ade80; }
-        .dot-yellow { background: #facc15; }
-        .dot-orange { background: #fb923c; }
-        .dot-red { background: #f87171; }
+        /* สีแท่งกราฟ */
+        .bg-green { background: linear-gradient(to top, #22c55e, #86efac); }
+        .bg-yellow { background: linear-gradient(to top, #eab308, #fde047); }
+        .bg-orange { background: linear-gradient(to top, #f97316, #fdba74); }
+        .bg-red { background: linear-gradient(to top, #dc2626, #fca5a5); }
+
+        /* ป้ายกำกับบนแท่ง (Tooltip) */
+        .bar-val {
+            font-size: 10px; font-weight: 700; color: #555; margin-bottom: 4px;
+            opacity: 0; transition: opacity 0.2s; transform: translateY(5px);
+        }
+        .bar-group.active .bar-val { opacity: 1; transform: translateY(0); }
 
     </style>
 </head>
 <body>
 
     <div class="container">
-        <div class="brand-header">
+        <div class="header">
             <img src="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8" class="brand-logo" alt="Logo">
-            <h3 style="margin:5px 0 0 0; color:#166534;">หนุ่มดำเนิน</h3>
-            <div class="update-badge">
-                <i class="fa-solid fa-calendar-check"></i> ข้อมูลอัพเดต: <span id="current-date-text">--/--/--</span>
-            </div>
+            <h3 style="margin:5px 0; color:#166534;">สถิติความหวาน</h3>
+            <div style="font-size:12px; color:#64748b;">ข้อมูลย้อนหลัง 30 วัน</div>
         </div>
 
-        <div class="result-card">
-            <div style="font-size:12px; color:#aaa; margin-bottom:5px;">ความหวานขวดนี้</div>
-            <div class="brix-big" id="main-brix">-.-</div>
-            <div class="brix-desc" id="main-status">กำลังโหลด...</div>
-
-            <div style="position: relative;">
-                <div class="marker" id="marker">
-                    <div class="pin">ขวดนี้</div>
-                    <div class="arrow"></div>
-                </div>
-                <div class="bar-container">
-                    <div class="bar-seg bg-1"></div>
-                    <div class="bar-seg bg-2"></div>
-                    <div class="bar-seg bg-3"></div>
-                    <div class="bar-seg bg-4"></div>
-                </div>
-                <div style="display:flex; justify-content:space-between; font-size:10px; color:#ccc;">
-                    <span>น้อย</span><span>กลาง</span><span>มาก</span><span>สุด</span>
-                </div>
-            </div>
+        <div class="display-card">
+            <div class="selected-date" id="show-date">--/--/--</div>
+            <div class="selected-brix" id="show-brix">-.-</div>
+            <div class="selected-status" id="show-status">...</div>
         </div>
 
-        <div class="history-box">
-            <div class="h-header">
-                ประวัติความหวาน (30 วัน)
-                <span style="font-size:11px; font-weight:400; color:#888;">เลื่อนดูได้</span>
-            </div>
-            <div class="timeline-list" id="timeline-container">
+        <div class="graph-wrapper" id="scroll-area">
+            <div class="chart-container" id="chart-area">
+                <div class="ref-line" style="bottom: 45%;"></div> <div class="ref-label" style="bottom: 46%;">มาตรฐาน (7.0)</div>
+
                 </div>
+        </div>
+
+        <div style="text-align:center; font-size:11px; color:#94a3b8; margin-top:10px;">
+            <i class="fa-solid fa-hand-pointer"></i> แตะที่แท่งกราฟเพื่อดูรายละเอียด
         </div>
     </div>
 
     <script>
-        // --- ส่วนจำลองฐานข้อมูล (Database Simulation) ---
-        // สมมติว่ามีข้อมูลแค่บางวัน (วันอื่นๆ คือหยุดผลิต)
-        const productionDB = {
-            '2026-01-22': 7.5, // วันนี้ (สมมติ)
-            // '2026-01-21': ไม่มีข้อมูล (หยุด) -> ระบบต้องดึงวันที่ 20 มาโชว์
-            '2026-01-20': 7.2,
+        // --- Mock Data (จำลองฐานข้อมูลวันที่มีการผลิต) ---
+        const db = {
+            '2026-01-22': 7.5, // วันนี้
+            '2026-01-20': 7.1,
             '2026-01-19': 6.8,
-            // '2026-01-18': หยุด
-            '2026-01-17': 8.1,
-            '2026-01-14': 7.9
+            '2026-01-17': 8.2,
+            '2026-01-14': 7.9,
+            '2026-01-10': 6.5
         };
 
-        // ฟังก์ชันแปลงวันที่เป็น Key (YYYY-MM-DD)
+        // แปลงวันที่เป็น Key
         const toKey = (d) => d.toISOString().split('T')[0];
 
-        // ฟังก์ชันหลัก
-        function initSystem() {
-            // 1. จัดการ Header วันที่ปัจจุบัน (Real-time)
-            const now = new Date();
-            const options = { year: '2-digit', month: 'short', day: 'numeric' };
-            document.getElementById('current-date-text').innerText = now.toLocaleDateString('th-TH', options);
-
-            // 2. ดึงค่าจาก QR Code (ถ้ามี)
-            const urlParams = new URLSearchParams(window.location.search);
-            const qrBrix = urlParams.get('brix');
-            
-            // ถ้า QR มีค่า -> ใช้ค่านั้นเป็นหลัก (Main Card)
-            // ถ้า QR ไม่มีค่า (สแกนลิงก์กลาง) -> ใช้ข้อมูลล่าสุดของ "วันนี้"
-            let currentBrix = qrBrix ? parseFloat(qrBrix) : getDataWithFallback(now).brix;
-            
-            updateMainCard(currentBrix);
-
-            // 3. สร้าง Timeline 30 วัน
-            renderTimeline(30);
-        }
-
-        // Logic หัวใจสำคัญ: การค้นหาข้อมูลย้อนหลัง (Recursive Fallback)
-        function getDataWithFallback(startDate) {
-            let d = new Date(startDate);
+        // Logic ดึงข้อมูลแบบ Fallback (ถ้าไม่มีใช้วันก่อนหน้า)
+        function getDataRecursive(targetDate) {
+            let d = new Date(targetDate);
             let steps = 0;
-            // วนลูปย้อนหลังไปเรื่อยๆ จนกว่าจะเจอข้อมูลจริง (Max 10 วันกันค้าง)
-            while (steps < 10) {
-                let key = toKey(d);
-                if (productionDB[key] !== undefined) {
-                    return { 
-                        brix: productionDB[key], 
-                        sourceDate: d, // วันที่เจอข้อมูลจริง
-                        isOriginal: (steps === 0) // ถ้าเจอเลย = จริง, ถ้าต้องย้อน = Fallback
-                    };
-                }
-                d.setDate(d.getDate() - 1); // ถอยหลัง 1 วัน
+            while(steps < 10) { // ย้อนหลังได้ไม่เกิน 10 วัน
+                let k = toKey(d);
+                if(db[k] !== undefined) return { val: db[k], isReal: (steps===0) };
+                d.setDate(d.getDate() - 1);
                 steps++;
             }
-            return { brix: 7.0, sourceDate: startDate, isOriginal: false }; // กันตาย (Default)
+            return { val: 7.0, isReal: false }; // Default
         }
 
-        function renderTimeline(days) {
-            const container = document.getElementById('timeline-container');
-            let html = '';
-            let cursorDate = new Date(); // เริ่มจากวันนี้
+        // สร้างกราฟ
+        function initGraph() {
+            const chartArea = document.getElementById('chart-area');
+            const today = new Date(); // วันนี้ (ขวาสุด)
+            const daysToShow = 30; // โชว์ย้อนหลัง 30 วัน
 
-            for (let i = 0; i < days; i++) {
-                // ดึงข้อมูล (พร้อม Logic ถอยหลังถ้าไม่เจอ)
-                const data = getDataWithFallback(cursorDate);
+            // วนลูปสร้างข้อมูลย้อนหลัง (แต่เวลา Render ต้องเรียง อดีต -> ปัจจุบัน)
+            let items = [];
+            for(let i = 0; i < daysToShow; i++) {
+                let d = new Date(today);
+                d.setDate(d.getDate() - i);
                 
-                // คำนวณสี
-                let colorClass = 'dot-green';
-                let textStatus = 'หวานน้อย';
-                if(data.brix > 6.9) { colorClass = 'dot-yellow'; textStatus = 'หวานกลาง'; }
-                if(data.brix > 7.5) { colorClass = 'dot-orange'; textStatus = 'หวานมาก'; }
-                if(data.brix > 8.0) { colorClass = 'dot-red'; textStatus = 'หวานสุด'; }
-
-                // จัดรูปแบบวันที่
-                const dateText = cursorDate.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
-                const dayName = cursorDate.toLocaleDateString('th-TH', { weekday: 'short' });
-
-                // ถ้าข้อมูลมาจากวันอื่น (Carry-over) ให้แสดง Note
-                const sourceNote = data.isOriginal ? 'ล็อตใหม่' : `จากล็อต ${data.sourceDate.getDate()}`;
-                const sourceStyle = data.isOriginal ? 'color:#16a34a; background:#dcfce7;' : 'color:#888; background:#f1f5f9;';
-
-                html += `
-                <div class="t-item">
-                    <div class="t-dot ${colorClass}"></div>
-                    <div class="t-content">
-                        <div class="date-col">
-                            ${dateText}
-                            <span>${dayName}</span>
-                        </div>
-                        <div class="val-col">
-                            <div class="val-num">${data.brix}</div>
-                            <div class="val-source" style="${sourceStyle}">${sourceNote}</div>
-                        </div>
-                    </div>
-                </div>
-                `;
-
-                cursorDate.setDate(cursorDate.getDate() - 1); // ถอยวันใน Loop
+                let data = getDataRecursive(d);
+                items.push({ date: d, ...data });
             }
-            container.innerHTML = html;
+            items.reverse(); // กลับด้านให้ อดีตอยู่ซ้าย ปัจจุบันอยู่ขวา
+
+            // Render HTML
+            items.forEach((item, index) => {
+                const isToday = (index === items.length - 1);
+                
+                // คำนวณความสูงแท่ง (Max 9.0 = 100%, Min 5.0 = 0%)
+                // สูตรง่ายๆ: (Val / 9) * 120px
+                let heightPx = (item.val / 9) * 150; 
+                if(heightPx < 20) heightPx = 20; // กันเตี้ยเกิน
+
+                // สี
+                let colorClass = 'bg-green';
+                let statusText = 'หวานน้อย';
+                if(item.val > 6.9) { colorClass = 'bg-yellow'; statusText = 'หวานกลาง'; }
+                if(item.val > 7.5) { colorClass = 'bg-orange'; statusText = 'หวานมาก'; }
+                if(item.val > 8.0) { colorClass = 'bg-red'; statusText = 'หวานสุด'; }
+
+                // วันที่
+                let dateLabel = item.date.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
+                if(isToday) dateLabel = "วันนี้";
+
+                // สร้าง Element
+                const el = document.createElement('div');
+                el.className = `bar-group ${isToday ? 'active' : ''}`; // เลือกวันนี้เป็นค่าเริ่มต้น
+                el.innerHTML = `
+                    <div class="bar-val">${item.val}</div>
+                    <div class="bar ${colorClass}" style="height: ${heightPx}px;"></div>
+                    <div class="bar-date">${dateLabel}</div>
+                `;
+                
+                // Event Click
+                el.onclick = () => {
+                    // Remove active from all
+                    document.querySelectorAll('.bar-group').forEach(b => b.classList.remove('active'));
+                    el.classList.add('active');
+                    updateDisplay(item.date, item.val, statusText, colorClass);
+                };
+
+                chartArea.appendChild(el);
+
+                // ถ้าเป็นวันนี้ ให้โชว์ค่าเริ่มต้นเลย
+                if(isToday) {
+                    updateDisplay(item.date, item.val, statusText, colorClass);
+                }
+            });
+
+            // Auto Scroll ไปขวาสุด (ล่าสุด)
+            setTimeout(() => {
+                const scrollArea = document.getElementById('scroll-area');
+                scrollArea.scrollLeft = scrollArea.scrollWidth;
+            }, 100);
         }
 
-        function updateMainCard(brix) {
-            document.getElementById('main-brix').innerText = brix.toFixed(1);
+        function updateDisplay(date, val, text, colorClass) {
+            const dateStr = date.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: '2-digit' });
+            document.getElementById('show-date').innerText = "ประจำวันที่ " + dateStr;
+            document.getElementById('show-brix').innerText = val;
             
-            // Update Bar Position
-            let percent = 0;
-            let status = "";
-            if (brix <= 6.9) { status = "หวานน้อย (สดชื่น)"; percent = ((brix - 6.0)/0.9)*25; }
-            else if (brix <= 7.5) { status = "หวานกลาง (ยอดนิยม)"; percent = 25 + ((brix - 7.0)/0.5)*25; }
-            else if (brix <= 8.0) { status = "หวานมาก (หอม)"; percent = 50 + ((brix - 7.6)/0.4)*25; }
-            else { status = "หวานสุด (ฉ่ำ)"; percent = 75 + ((brix - 8.1)/0.9)*25; }
+            const statusEl = document.getElementById('show-status');
+            statusEl.innerText = text;
             
-            if(percent<5) percent=5; if(percent>95) percent=95;
-            
-            document.getElementById('main-status').innerText = status;
-            setTimeout(() => { document.getElementById('marker').style.left = percent + "%"; }, 100);
+            // เปลี่ยนสีข้อความสถานะตามแท่งกราฟ
+            if(colorClass.includes('green')) statusEl.style.color = '#16a34a';
+            if(colorClass.includes('yellow')) statusEl.style.color = '#ca8a04';
+            if(colorClass.includes('orange')) statusEl.style.color = '#ea580c';
+            if(colorClass.includes('red')) statusEl.style.color = '#dc2626';
         }
 
-        // Start
-        initSystem();
+        // Run
+        initGraph();
+
     </script>
 </body>
 </html>
