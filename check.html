@@ -18,7 +18,7 @@
         /* Display Card */
         .display-card {
             background: white; border-radius: 20px; padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 15px;
             text-align: center; border: 1px solid #e2e8f0; position: relative;
         }
         .selected-date { font-size: 13px; color: #888; font-weight: 400; margin-bottom: 5px; }
@@ -26,13 +26,38 @@
         .selected-status { font-size: 16px; font-weight: 600; color: #16a34a; margin-top: 5px; }
         .unit-label { font-size: 12px; color: #aaa; font-weight: 400; }
 
+        /* --- LEGEND BOX (ส่วนที่เพิ่มใหม่) --- */
+        .legend-box {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            background: rgba(255,255,255,0.6);
+            padding: 10px;
+            border-radius: 12px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 10px;
+            color: #555;
+            background: white;
+            padding: 4px 8px;
+            border-radius: 20px;
+            border: 1px solid #eee;
+        }
+        .legend-dot {
+            width: 8px; height: 8px; border-radius: 50%; margin-right: 5px;
+        }
+
         /* --- GRAPH WRAPPER --- */
         .chart-wrapper-outer {
             position: relative; 
             background: white;
             border-radius: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-            padding: 20px 0 10px 0; /* เพิ่ม padding ล่างนิดหน่อย */
+            padding: 20px 0 10px 0;
             overflow: hidden; 
         }
 
@@ -45,7 +70,6 @@
         }
         .graph-scroll-area::-webkit-scrollbar { display: none; }
 
-        /* แก้ไข: เพิ่มความสูง SVG ให้พอดีกับวันที่ */
         svg { display: block; height: 220px; overflow: visible; }
 
         /* เส้นและจุด */
@@ -55,7 +79,6 @@
         .dot { fill: white; stroke: #16a34a; stroke-width: 2; cursor: pointer; transition: all 0.2s; }
         .dot.active { fill: #16a34a; stroke: #bbf7d0; stroke-width: 4; r: 6; }
         
-        /* แก้ไข: ปรับตำแหน่งวันที่ให้ชัดขึ้น */
         .date-label { font-size: 11px; fill: #94a3b8; text-anchor: middle; font-family: 'Kanit', sans-serif; }
         .date-label.active { fill: #166534; font-weight: 600; font-size: 12px; }
 
@@ -67,36 +90,22 @@
         .y-axis-overlay {
             position: absolute;
             top: 20px; 
-            bottom: 40px; /* เว้นที่ด้านล่างให้วันที่ด้วย */
+            bottom: 40px;
             right: 0;
             width: 45px;
             pointer-events: none; 
             z-index: 10;
         }
 
-        /* แถบสี */
         .sweetness-bar {
-            position: absolute;
-            right: 0; 
-            top: 0;
-            bottom: 0; /* เต็มความสูงที่กำหนดใน .y-axis-overlay */
-            width: 6px;
-            background: linear-gradient(to top, #4ade80 0%, #facc15 33%, #fb923c 66%, #ef4444 100%);
-            border-top-left-radius: 4px;
-            border-bottom-left-radius: 4px;
+            position: absolute; right: 0; top: 0; bottom: 0; width: 6px;
+            background: linear-gradient(to top, #16a34a 0%, #ca8a04 33%, #ea580c 66%, #dc2626 100%); /* ปรับสี Gradient ให้ตรงกับ Logic ใหม่ */
+            border-top-left-radius: 4px; border-bottom-left-radius: 4px;
         }
 
-        /* ตัวเลขบอกระดับ */
         .y-label {
-            position: absolute;
-            right: 12px;
-            font-size: 10px;
-            font-weight: 700;
-            color: #94a3b8;
-            transform: translateY(-50%);
-            background: rgba(255,255,255,0.85);
-            padding-left: 5px;
-            border-radius: 4px;
+            position: absolute; right: 12px; font-size: 10px; font-weight: 700; color: #94a3b8;
+            transform: translateY(-50%); background: rgba(255,255,255,0.85); padding-left: 5px; border-radius: 4px;
         }
 
     </style>
@@ -107,7 +116,7 @@
         <div class="header">
             <img src="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8" class="brand-logo" alt="Logo">
             <h3 style="margin:5px 0; color:#166534;">Trend ความหวาน</h3>
-            <div style="font-size:12px; color:#64748b;">ย้อนหลัง 30 วัน (เลื่อนซ้าย-ขวา)</div>
+            <div style="font-size:12px; color:#64748b;">ย้อนหลัง 30 วัน</div>
         </div>
 
         <div class="display-card">
@@ -117,8 +126,22 @@
             <div class="selected-status" id="show-status">...</div>
         </div>
 
+        <div class="legend-box">
+            <div class="legend-item">
+                <div class="legend-dot" style="background:#16a34a;"></div> หวานน้อย (6.0-6.9)
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background:#ca8a04;"></div> หวานกลาง (7.0-7.5)
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background:#ea580c;"></div> หวานกำลังดี (7.6-8.0)
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background:#dc2626;"></div> หวานสุด (8.1+)
+            </div>
+        </div>
+
         <div class="chart-wrapper-outer">
-            
             <div class="y-axis-overlay" id="y-axis-container">
                 <div class="sweetness-bar"></div>
             </div>
@@ -168,7 +191,7 @@
         }
 
         // --- Chart Config ---
-        const CHART_HEIGHT = 150; // ความสูงเฉพาะส่วนเส้นกราฟ
+        const CHART_HEIGHT = 150; 
         const TOP_PADDING = 20;
         const STEP_X = 50;
         const MIN_BRIX = 6.0;
@@ -207,14 +230,12 @@
             [6.0, 7.0, 8.0, 9.0].forEach(level => {
                 const yPos = mapY(level);
 
-                // สร้างตัวเลข
                 const label = document.createElement('div');
                 label.className = 'y-label';
                 label.innerText = level.toFixed(1);
                 label.style.top = yPos + 'px';
                 yAxisContainer.appendChild(label);
 
-                // สร้างเส้น Grid
                 const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
                 line.setAttribute("x1", 0); line.setAttribute("y1", yPos);
                 line.setAttribute("x2", totalWidth); line.setAttribute("y2", yPos);
@@ -249,9 +270,8 @@
                 dot.addEventListener('click', () => { selectPoint(index, pt, x); });
                 document.getElementById('dots-layer').appendChild(dot);
 
-                // แก้ไข: Date Label
+                // Date Label
                 const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                // ตำแหน่ง Y = 200 (CHART_HEIGHT(150) + TOP_PADDING(20) + 30px)
                 text.setAttribute("x", x); 
                 text.setAttribute("y", 200); 
                 text.setAttribute("class", "date-label");
@@ -291,11 +311,12 @@
             document.getElementById('show-date').innerText = "ประจำวันที่ " + dateStr;
             document.getElementById('show-brix').innerText = data.val.toFixed(1);
 
+            // --- Updated Logic ตามที่ขอ ---
             let status = "", color = "";
-            if(data.val <= 6.9) { status = "หวานน้อย (สดชื่น)"; color = "#16a34a"; }
-            else if(data.val <= 7.5) { status = "หวานกลาง (กำลังดี)"; color = "#ca8a04"; }
-            else if(data.val <= 8.0) { status = "หวานมาก (หอม)"; color = "#ea580c"; }
-            else { status = "หวานสุด (ฉ่ำ)"; color = "#dc2626"; }
+            if(data.val <= 6.9) { status = "หวานน้อย"; color = "#16a34a"; }
+            else if(data.val <= 7.5) { status = "หวานกลาง"; color = "#ca8a04"; }
+            else if(data.val <= 8.0) { status = "หวานกำลังดี"; color = "#ea580c"; }
+            else { status = "หวานสุด"; color = "#dc2626"; }
             
             const statusEl = document.getElementById('show-status');
             statusEl.innerText = status;
