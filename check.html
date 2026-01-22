@@ -26,21 +26,20 @@
         .selected-status { font-size: 16px; font-weight: 600; color: #16a34a; margin-top: 5px; }
         .unit-label { font-size: 12px; color: #aaa; font-weight: 400; }
 
-        /* --- GRAPH WRAPPER (ตัวคลุม) --- */
+        /* --- GRAPH WRAPPER --- */
         .chart-wrapper-outer {
-            position: relative; /* เพื่อให้วางแกน Y ทับได้ */
+            position: relative; 
             background: white;
             border-radius: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.03);
             padding: 20px 0;
-            overflow: hidden; /* บังส่วนเกิน */
+            overflow: hidden; 
         }
 
-        /* พื้นที่กราฟเลื่อนได้ */
         .graph-scroll-area {
             width: 100%;
             overflow-x: auto;
-            padding-right: 40px; /* เว้นที่ด้านขวาให้ตัวเลขแกน Y */
+            padding-right: 50px; /* เว้นที่ด้านขวาเพิ่มขึ้น สำหรับแถบสี */
             scrollbar-width: none; 
             -ms-overflow-style: none;
         }
@@ -58,32 +57,48 @@
         .date-label { font-size: 10px; fill: #94a3b8; text-anchor: middle; }
         .date-label.active { fill: #166534; font-weight: bold; }
 
-        /* Cursor & Grid */
         .cursor-line { stroke: #cbd5e1; stroke-width: 1; stroke-dasharray: 4; opacity: 0; }
         .cursor-line.show { opacity: 1; }
-        
-        /* Horizontal Grid Line (เส้นบรรทัดแนวนอน) */
         .h-grid-line { stroke: #f1f5f9; stroke-width: 1; }
 
-        /* --- FIXED RIGHT AXIS (แกน Y ด้านขวา) --- */
+        /* --- FIXED RIGHT AXIS (แกน Y + แถบสี) --- */
         .y-axis-overlay {
             position: absolute;
-            top: 20px; /* ตรงกับ padding ของกราฟ */
-            bottom: 20px;
+            top: 20px; 
+            bottom: 20px; /* ให้ตรงกับความสูงกราฟ */
             right: 0;
-            width: 35px; /* ความกว้างแถบตัวเลข */
-            background: linear-gradient(to left, rgba(255,255,255,1) 60%, rgba(255,255,255,0)); /* ไล่สีให้ตัวเลขชัด */
-            pointer-events: none; /* กดทะลุได้ */
+            width: 45px;
+            pointer-events: none; 
             z-index: 10;
         }
 
+        /* 1. แถบสีไล่ระดับ (Gradient Bar) */
+        .sweetness-bar {
+            position: absolute;
+            right: 0; /* ชิดขอบขวาสุด */
+            top: 0;
+            bottom: 30px; /* เว้นพื้นที่ด้านล่างไว้สำหรับ label วันที่ */
+            width: 6px;
+            background: linear-gradient(to top, 
+                #4ade80 0%,   /* 6.0 เขียว */
+                #facc15 33%,  /* 7.0 เหลือง */
+                #fb923c 66%,  /* 8.0 ส้ม */
+                #ef4444 100%  /* 9.0 แดง */
+            );
+            border-top-left-radius: 4px;
+            border-bottom-left-radius: 4px;
+        }
+
+        /* 2. ตัวเลขบอกระดับ */
         .y-label {
             position: absolute;
-            right: 8px;
+            right: 12px; /* ขยับออกมาจากแถบสี */
             font-size: 10px;
-            font-weight: 600;
+            font-weight: 700;
             color: #94a3b8;
-            transform: translateY(-50%); /* จัดกึ่งกลางแนวตั้ง */
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.8); /* พื้นหลังขาวจางๆ ให้อ่านง่าย */
+            padding-left: 5px;
         }
 
     </style>
@@ -107,6 +122,7 @@
         <div class="chart-wrapper-outer">
             
             <div class="y-axis-overlay" id="y-axis-container">
+                <div class="sweetness-bar"></div>
                 </div>
 
             <div class="graph-scroll-area" id="scroll-area">
@@ -118,7 +134,8 @@
                         </linearGradient>
                     </defs>
                     
-                    <g id="grid-layer"></g> <path id="area-layer" class="area-path"></path>
+                    <g id="grid-layer"></g> 
+                    <path id="area-layer" class="area-path"></path>
                     <path id="line-layer" class="line-path"></path>
                     <line id="cursor-line" class="cursor-line" y1="0" y2="180"></line>
                     <g id="dots-layer"></g>
@@ -159,7 +176,6 @@
         const MIN_BRIX = 6.0;
         const MAX_BRIX = 9.0;
 
-        // ฟังก์ชันแปลงค่า Brix เป็นตำแหน่ง Y
         function mapY(val) {
             let percent = (val - MIN_BRIX) / (MAX_BRIX - MIN_BRIX);
             if(percent < 0) percent = 0;
@@ -172,7 +188,7 @@
             const today = new Date();
             let points = [];
 
-            // 1. Prepare Data
+            // 1. Data Prep
             for(let i = 0; i < daysToShow; i++) {
                 let d = new Date(today);
                 d.setDate(d.getDate() - i);
@@ -181,38 +197,34 @@
             }
             points.reverse();
 
-            // 2. Setup SVG Width
-            // เผื่อที่ด้านซ้าย 30px และด้านขวาเยอะหน่อย (40px) ให้เส้นไม่ชนขอบ
+            // 2. SVG Width
             const totalWidth = (daysToShow * STEP_X) + 60; 
             const svg = document.getElementById('chart-svg');
             svg.setAttribute('width', totalWidth);
 
-            // 3. Draw Axis & Grid (ส่วนเพิ่มเติม)
+            // 3. Draw Axis Numbers
             const yAxisContainer = document.getElementById('y-axis-container');
             const gridLayer = document.getElementById('grid-layer');
             
-            // วาดเส้นบรรทัดที่ระดับ 6.0, 7.0, 8.0, 9.0
             [6.0, 7.0, 8.0, 9.0].forEach(level => {
                 const yPos = mapY(level);
 
-                // A. ใส่ตัวเลขทางขวา (HTML)
+                // สร้างตัวเลข
                 const label = document.createElement('div');
                 label.className = 'y-label';
                 label.innerText = level.toFixed(1);
                 label.style.top = yPos + 'px';
                 yAxisContainer.appendChild(label);
 
-                // B. วาดเส้นแนวนอนยาวตลอดกราฟ (SVG)
+                // สร้างเส้น Grid
                 const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                line.setAttribute("x1", 0);
-                line.setAttribute("y1", yPos);
-                line.setAttribute("x2", totalWidth); // ลากยาวสุดกราฟ
-                line.setAttribute("y2", yPos);
+                line.setAttribute("x1", 0); line.setAttribute("y1", yPos);
+                line.setAttribute("x2", totalWidth); line.setAttribute("y2", yPos);
                 line.setAttribute("class", "h-grid-line");
                 gridLayer.appendChild(line);
             });
 
-            // 4. Draw Graph Line & Dots
+            // 4. Draw Graph
             let lineD = "M";
             let areaD = "";
             
