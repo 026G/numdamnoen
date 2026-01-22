@@ -3,223 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>หนุ่มดำเนิน - เช็คความหวาน</title>
+    <title>หนุ่มดำเนิน - ระดับความหวาน</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* --- Base Styles --- */
-        :root {
-            --bg-color: #f0fdf4;
-            --primary-green: #00B900;
-        }
-        body { font-family: 'Kanit', sans-serif; background-color: var(--bg-color); display: flex; flex-direction: column; align-items: center; padding: 20px; color: #333; min-height: 100vh; margin: 0; }
-        .container { width: 100%; max-width: 420px; }
+        /* --- Base Setup --- */
+        body { font-family: 'Kanit', sans-serif; background-color: #f0fdf4; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; color: #333; min-height: 100vh; margin: 0; }
+        .container { width: 100%; max-width: 420px; text-align: center; }
+        
+        /* Logo Area */
+        .brand-logo { width: 80px; height: 80px; border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 10px; }
+        .header-title { font-size: 20px; font-weight: 800; color: #166534; margin: 0; }
 
-        /* --- Header --- */
-        .header-area { text-align: center; margin-bottom: 20px; }
-        .brand-logo { width: 70px; height: 70px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .brand-name { font-size: 18px; font-weight: 800; color: #166534; margin: 5px 0 0 0; }
-
-        /* --- GAUGE SECTION (ฉลากเบอร์ 5 สไตล์) --- */
-        .gauge-card {
+        /* --- HORIZONTAL BAR CARD --- */
+        .result-card {
             background: white;
             border-radius: 20px;
-            padding: 25px 15px 40px 15px; /* เพิ่ม padding ล่างสำหรับ Label */
-            text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            padding: 30px 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+            margin-top: 20px;
             position: relative;
-            margin-bottom: 25px;
-            overflow: visible;
         }
 
-        .gauge-title {
-            font-size: 16px; font-weight: 600; color: #333; margin-bottom: 20px;
-            background: #f0fdf4; display: inline-block; padding: 5px 15px; border-radius: 20px;
-        }
-
-        .gauge-container {
+        /* กล่องแสดงตัวเลข Brix ใหญ่ๆ */
+        .brix-display-area { margin-bottom: 35px; }
+        .brix-number { font-size: 56px; font-weight: 800; color: #166534; line-height: 1; letter-spacing: -1px; }
+        .brix-label { font-size: 14px; color: #888; font-weight: 400; }
+        
+        /* --- ตัวแท่ง (The Bar) --- */
+        .bar-container {
             position: relative;
-            width: 260px;
-            height: 130px; /* ครึ่งวงกลม */
-            margin: 0 auto;
-            overflow: hidden;
+            width: 100%;
+            height: 45px; /* ความสูงของแท่ง */
+            background: #eee;
+            border-radius: 50px;
+            display: flex; /* จัดเรียงแนวนอน */
+            overflow: hidden; /* ตัดส่วนเกิน */
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1); /* เงาในให้ดูมีมิติ */
         }
 
-        /* แถบสีครึ่งวงกลม (สร้างด้วย Conic Gradient) */
-        .gauge-arc {
-            width: 260px; height: 260px;
-            border-radius: 50%;
-            background: conic-gradient(
-                from 270deg,
-                #4ADE80 0deg 54deg,   /* 6.0-6.9 (30%) เขียวอ่อน */
-                #FACC15 54deg 90deg,  /* 7.0-7.5 (20%) เหลือง */
-                #FB923C 90deg 126deg, /* 7.6-8.0 (20%) ส้ม */
-                #EF4444 126deg 180deg /* 8.1-9.0 (30%) แดง */
-            );
-            position: absolute;
-            top: 0; left: 0;
-            /* Mask ตรงกลางให้กลวง */
-            -webkit-mask: radial-gradient(transparent 55%, black 56%);
-            mask: radial-gradient(transparent 55%, black 56%);
+        /* แต่ละช่องสี (Segments) */
+        .bar-segment {
+            flex: 1; /* แบ่งเท่าๆ กัน 4 ช่อง */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(0,0,0,0.6); /* สีตัวอักษรจางๆ */
+            position: relative;
+            border-right: 1px solid rgba(255,255,255,0.3); /* เส้นคั่นบางๆ */
         }
+        .bar-segment:last-child { border-right: none; }
 
-        /* เข็มชี้ */
-        .gauge-needle {
-            position: absolute;
-            bottom: 0; left: 50%;
-            width: 4px; height: 120px;
-            background: #333;
-            transform-origin: bottom center;
-            transform: rotate(-90deg); /* เริ่มที่ซ้ายสุด */
-            transition: transform 1.5s cubic-bezier(0.4, 2.5, 0.4, 0.7); /* เด้งนิดๆ */
-            z-index: 2;
-            border-radius: 4px;
-        }
-        .gauge-needle::after {
-            content: ''; position: absolute; top: -5px; left: -6px;
-            border-left: 8px solid transparent; border-right: 8px solid transparent;
-            border-bottom: 15px solid #333;
-        }
+        /* สีพื้นหลังแต่ละช่วง */
+        .seg-1 { background-color: #86efac; } /* หวานน้อย (เขียวอ่อน) */
+        .seg-2 { background-color: #fde047; } /* หวานกลาง (เหลือง) */
+        .seg-3 { background-color: #fb923c; } /* หวานมาก (ส้ม) */
+        .seg-4 { background-color: #f87171; } /* หวานสุด (แดง) */
 
-        /* วงกลมแดงใหญ่ (เลียนแบบเลข 5) */
-        .big-badge-wrapper {
+        /* --- ตัวชี้ (The Marker/Pin) --- */
+        .marker-wrapper {
             position: absolute;
-            bottom: -35px; /* ห้อยลงมา */
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 5;
+            top: -12px; /* ลอยอยู่เหนือแท่งนิดหน่อย */
+            left: 0%; /* จะถูกแก้ด้วย JS */
+            transform: translateX(-50%); /* จัดกึ่งกลางจุด */
             display: flex;
             flex-direction: column;
             align-items: center;
+            transition: left 1.2s cubic-bezier(0.34, 1.56, 0.64, 1); /* Animation แบบเด้งดึ๋ง */
+            z-index: 10;
         }
 
-        .big-badge {
-            width: 90px; height: 90px;
-            background: #D80000; /* สีแดงแบบฉลากเบอร์ 5 */
-            border: 4px solid white;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            position: relative;
+        .pin-head {
+            background: #166534; /* สีเขียวเข้มหัวหมุด */
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+            margin-bottom: 2px;
         }
         
-        /* วงกลมสีเหลืองซ้อนด้านหลัง เพื่อให้เหมือนฉลากจริง */
-        .big-badge::before {
-            content: '';
+        .pin-arrow {
+            width: 0; height: 0; 
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 8px solid #166534; /* สามเหลี่ยมชี้ลง */
+        }
+        
+        /* เส้นประลากลงมา (Option) */
+        .marker-line {
+            width: 2px;
+            height: 55px; /* ลากผ่านแท่ง */
+            background: #166534;
+            opacity: 0.5;
             position: absolute;
-            top: -6px; left: -6px; right: -6px; bottom: -6px;
-            border-radius: 50%;
-            background: #FFD700;
+            top: 20px;
             z-index: -1;
         }
 
-        .brix-value {
-            font-size: 38px; font-weight: 800; color: white;
-            line-height: 1; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
-        }
-        .brix-unit {
-            position: absolute; bottom: 8px;
-            font-size: 10px; color: white; font-weight: 400; opacity: 0.9;
+        /* --- คำอธิบายสั้นๆ --- */
+        .scale-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            padding: 0 5px;
+            font-size: 10px;
+            color: #aaa;
         }
 
-        .result-text-box {
-            margin-top: 45px; /* หลบวงกลมแดง */
-        }
-        .result-title { font-size: 14px; color: #888; }
-        .result-level { font-size: 24px; font-weight: 700; color: #166534; }
-
-        /* --- Ranges Legend (คำอธิบายเกณฑ์) --- */
-        .ranges-legend {
-            display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 15px;
-        }
-        .range-tag { font-size: 11px; padding: 4px 8px; border-radius: 10px; color: #555; background: #f9fafb; border: 1px solid #eee; }
-        .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 3px; }
-
-        /* --- Q&A & Footer --- */
-        .qa-section { margin-top: 20px; width: 100%; }
-        .accordion-item { background: white; border-radius: 12px; margin-bottom: 10px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
-        .accordion-header { padding: 15px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; cursor: pointer; color: #444; }
-        .accordion-body { max-height: 0; overflow: hidden; transition: max-height 0.3s; background: #fafafa; padding: 0 15px; color: #666; font-size: 14px; }
-        .accordion-header.active { color: var(--primary-green); background: #f0fff4; }
+        .note-text { margin-top: 25px; font-size: 13px; color: #666; line-height: 1.6; }
 
         .cta-btn {
-            display: block; width: 100%; padding: 15px; text-align: center;
-            background: linear-gradient(45deg, #00B900, #048a04);
-            color: white; border-radius: 50px; text-decoration: none; font-weight: 700; font-size: 18px;
-            box-shadow: 0 5px 15px rgba(0,185,0,0.3); margin-top: 20px;
+            display: block; width: 100%; padding: 15px; text-align: center; margin-top: 20px;
+            background: #00B900; color: white; border-radius: 50px; text-decoration: none; font-weight: 700;
+            box-shadow: 0 4px 15px rgba(0, 185, 0, 0.3);
         }
+
     </style>
 </head>
 <body>
 
     <div class="container">
-        <div class="header-area">
-            <img src="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8" class="brand-logo" alt="Logo">
-            <h1 class="brand-name">หนุ่มดำเนิน</h1>
-            <p style="font-size:12px; color:#888; margin:2px;">มะพร้าวน้ำหอมแท้ 100%</p>
-        </div>
+        <img src="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8" class="brand-logo" alt="Logo">
+        <h1 class="header-title">ผลการตรวจสอบ</h1>
 
-        <div class="gauge-card">
-            <div class="gauge-title">ระดับความหวาน (Brix)</div>
-
-            <div class="gauge-container">
-                <div class="gauge-arc"></div>
-                <div class="gauge-needle" id="needle"></div>
-            </div>
-
-            <div class="big-badge-wrapper">
-                <div class="big-badge">
-                    <span class="brix-value" id="brix-number">-</span>
-                    <span class="brix-unit">ค่าความหวาน</span>
-                </div>
-            </div>
-
-            <div class="result-text-box">
-                <div class="result-title">ผลการตรวจสอบขวดนี้</div>
-                <div class="result-level" id="level-text">กำลังประมวลผล...</div>
-            </div>
-
-            <div class="ranges-legend">
-                <div class="range-tag"><span class="dot" style="background:#4ADE80"></span>6-6.9 หวานน้อย</div>
-                <div class="range-tag"><span class="dot" style="background:#FACC15"></span>7-7.5 หวานกลาง</div>
-                <div class="range-tag"><span class="dot" style="background:#FB923C"></span>7.6-8 หวานมาก</div>
-                <div class="range-tag"><span class="dot" style="background:#EF4444"></span>8.1-9 หวานสุด</div>
-            </div>
-        </div>
-
-        <div class="qa-section">
-            <div style="font-weight:700; color:#166534; margin-bottom:10px;"><i class="fa-solid fa-book-open"></i> รู้หรือไม่?</div>
+        <div class="result-card">
             
-            <div class="accordion-item">
-                <div class="accordion-header" onclick="toggleAccordion(this)">
-                    ทำไมต้องวัดค่าความหวาน? <i class="fa-solid fa-chevron-down"></i>
+            <div class="brix-display-area">
+                <div class="brix-number" id="display-brix">0.0</div>
+                <div class="brix-label">ค่าความหวาน (Brix)</div>
+                <div style="font-size: 18px; font-weight: 600; color: #00B900; margin-top: 5px;" id="status-text">...</div>
+            </div>
+
+            <div style="position: relative; margin: 20px 0;">
+                
+                <div class="marker-wrapper" id="marker">
+                    <div class="pin-head">ขวดนี้</div>
+                    <div class="pin-arrow"></div>
+                    <div class="marker-line"></div>
                 </div>
-                <div class="accordion-body">
-                    <p>เพราะมะพร้าวแต่ละทะลายมีความหวานตามธรรมชาติไม่เท่ากัน เราจึงวัดค่า Brix เพื่อให้คุณมั่นใจและเลือกทานรสชาติที่ชอบได้ถูกใจที่สุดครับ</p>
+
+                <div class="bar-container">
+                    <div class="bar-segment seg-1">น้อย</div>
+                    <div class="bar-segment seg-2">กลาง</div>
+                    <div class="bar-segment seg-3">มาก</div>
+                    <div class="bar-segment seg-4">สุด</div>
+                </div>
+
+                <div class="scale-labels">
+                    <span>6.0</span>
+                    <span>7.0</span>
+                    <span>7.6</span>
+                    <span>8.1</span>
+                    <span>9.0</span>
                 </div>
             </div>
-            
-            <div class="accordion-item">
-                <div class="accordion-header" onclick="toggleAccordion(this)">
-                    ค่า Brix ยิ่งมากยิ่งดีใช่ไหม? <i class="fa-solid fa-chevron-down"></i>
-                </div>
-                <div class="accordion-body">
-                    <p>ขึ้นอยู่กับความชอบครับ! <br>
-                    • <b>6-7:</b> เหมาะกับสายสุขภาพ ดื่มได้เรื่อยๆ<br>
-                    • <b>7-8:</b> รสยอดนิยม หวานกำลังดี<br>
-                    • <b>8 ขึ้นไป:</b> สำหรับคนชอบหวานจัด ชื่นใจเป็นพิเศษ</p>
-                </div>
-            </div>
+
+            <p class="note-text">
+                <i class="fa-solid fa-circle-info"></i> น้ำมะพร้าวเป็นผลผลิตธรรมชาติ <br>
+                ความหวานอาจแตกต่างกันเล็กน้อยในแต่ละลูก
+            </p>
         </div>
 
-        <a href="#" class="cta-btn"><i class="fa-solid fa-cart-shopping"></i> สั่งซื้อเพิ่ม</a>
+        <a href="#" class="cta-btn">สั่งซื้อความสดชื่นเพิ่ม</a>
         
-        <div style="text-align: center; margin-top: 20px; font-size: 11px; color: #ccc;">
-            Product Ref: <span id="ref-id">ND-X88</span>
-        </div>
     </div>
 
     <script>
@@ -228,85 +180,77 @@
             return urlParams.get(param);
         }
 
-        function initGauge() {
-            // 1. รับค่า Brix (ถ้าไม่มี ให้สุ่มค่า 6.0 - 9.0 เพื่อ Demo)
+        function initBar() {
+            // 1. รับค่า (ถ้าไม่มี สุ่มเอา)
             let brixParam = getQueryParam('brix');
             let brix = brixParam ? parseFloat(brixParam) : (Math.random() * (8.5 - 6.5) + 6.5).toFixed(1);
-
-            const needle = document.getElementById('needle');
-            const brixNum = document.getElementById('brix-number');
-            const levelText = document.getElementById('level-text');
-
-            // 2. กำหนดช่วงคะแนน (Logic)
-            // Range ทั้งหมดคือ 6.0 ถึง 9.0 (ความกว้าง 3.0 หน่วย)
-            // แมพค่า Brix เข้ากับองศา (0 ถึง 180 องศา)
             
-            const minBrix = 6.0;
-            const maxBrix = 9.0;
-            let degrees = 0;
+            // อัพเดตตัวเลข
+            animateValue("display-brix", 0, brix, 1000);
+            
+            // 2. คำนวณตำแหน่ง % บนกราฟ
+            // เราแบ่งกราฟเป็น 4 ช่องเท่าๆ กัน (ช่องละ 25%) เพื่อความสวยงาม
+            // ดังนั้นเราต้อง map ค่า brix เข้าสู่ช่วง 0-100% ตาม Logic แต่ละช่วง
+            
+            let percent = 0;
+            let status = "";
 
-            if (brix < minBrix) degrees = 0;
-            else if (brix > maxBrix) degrees = 180;
-            else {
-                // คำนวณองศาตามสัดส่วน
-                degrees = ((brix - minBrix) / (maxBrix - minBrix)) * 180;
-            }
+            if (brix <= 6.9) {
+                // ช่วง 6.0 - 6.9 (Range = 0.9) -> อยู่ใน 0-25%
+                status = "หวานน้อย (สดชื่น)";
+                let range = 6.9 - 6.0;
+                let val = brix - 6.0;
+                percent = (val / range) * 25; 
 
-            // 3. แสดงข้อความระดับความหวาน
-            let text = "";
-            let color = "";
+            } else if (brix <= 7.5) {
+                // ช่วง 7.0 - 7.5 (Range = 0.5) -> อยู่ใน 25-50%
+                status = "หวานปานกลาง (กำลังดี)";
+                let range = 7.5 - 7.0;
+                let val = brix - 7.0;
+                percent = 25 + ((val / range) * 25);
 
-            if (brix >= 6.0 && brix <= 6.9) {
-                text = "หวานน้อย (Healthy)";
-                color = "#4ADE80"; // เขียว
-            } else if (brix >= 7.0 && brix <= 7.5) {
-                text = "หวานกลาง (Standard)";
-                color = "#EAB308"; // เหลืองเข้ม
-            } else if (brix >= 7.6 && brix <= 8.0) {
-                text = "หวานมาก (Sweet)";
-                color = "#F97316"; // ส้ม
-            } else if (brix >= 8.1 && brix <= 9.0) {
-                text = "หวานสุด (Super Sweet)";
-                color = "#DC2626"; // แดง
+            } else if (brix <= 8.0) {
+                // ช่วง 7.6 - 8.0 (Range = 0.4) -> อยู่ใน 50-75%
+                status = "หวานมาก (หอม)";
+                let range = 8.0 - 7.6;
+                let val = brix - 7.6;
+                percent = 50 + ((val / range) * 25);
+
             } else {
-                text = "อยู่นอกเกณฑ์มาตรฐาน";
-                color = "#888";
+                // ช่วง 8.1 - 9.0 (Range = 0.9) -> อยู่ใน 75-100%
+                status = "หวานสุด (ฉ่ำ)";
+                let range = 9.0 - 8.1;
+                let val = brix - 8.1;
+                percent = 75 + ((val / range) * 25);
             }
 
-            // 4. Update UI
-            // เริ่มต้นที่ -90deg (ซ้ายสุด) + องศาที่คำนวณได้
+            // Limit ไม่ให้เกินขอบ
+            if(percent < 2) percent = 2;
+            if(percent > 98) percent = 98;
+
+            // 3. เลื่อนหมุด
             setTimeout(() => {
-                needle.style.transform = `rotate(${-90 + degrees}deg)`;
+                document.getElementById('marker').style.left = percent + "%";
+                document.getElementById('status-text').innerText = status;
             }, 300);
+        }
 
-            // Run ตัวเลข
-            let current = 0;
-            const step = brix / 50;
-            const counter = setInterval(() => {
-                current += step;
-                if (current >= brix) {
-                    current = brix;
-                    clearInterval(counter);
+        // ฟังก์ชันวิ่งตัวเลขสวยๆ
+        function animateValue(id, start, end, duration) {
+            let obj = document.getElementById(id);
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = (progress * (end - start) + start).toFixed(1);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
                 }
-                brixNum.innerText = parseFloat(current).toFixed(1);
-            }, 20);
-
-            levelText.innerText = text;
-            levelText.style.color = color;
-            document.getElementById('ref-id').innerText = 'LOT-' + Math.floor(Math.random() * 10000);
+            };
+            window.requestAnimationFrame(step);
         }
 
-        function toggleAccordion(header) {
-            header.classList.toggle('active');
-            const body = header.nextElementSibling;
-            if (body.style.maxHeight) {
-                body.style.maxHeight = null;
-            } else {
-                body.style.maxHeight = body.scrollHeight + "px";
-            }
-        }
-
-        window.onload = initGauge;
+        window.onload = initBar;
     </script>
 </body>
 </html>
