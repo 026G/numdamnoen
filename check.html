@@ -4,11 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>หนุ่มดำเนิน - กราฟเส้น</title>
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        body { font-family: 'Kanit', sans-serif; background-color: #f8fafc; display: flex; flex-direction: column; align-items: center; padding: 20px; color: #333; min-height: 100vh; margin: 0; }
+        /* ปรับ Base Font เป็น IBM Plex Sans Thai */
+        body { 
+            font-family: 'IBM Plex Sans Thai', sans-serif; 
+            background-color: #f8fafc; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 20px; 
+            color: #333; 
+            min-height: 100vh; 
+            margin: 0; 
+            line-height: 1.5; /* เพิ่มระยะห่างบรรทัดให้อ่านง่ายขึ้น */
+        }
         .container { width: 100%; max-width: 420px; }
 
         /* Header */
@@ -21,18 +33,22 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px;
             text-align: center; border: 1px solid #e2e8f0; position: relative;
         }
-        .selected-date { font-size: 13px; color: #888; font-weight: 400; margin-bottom: 5px; }
-        .selected-brix { font-size: 52px; font-weight: 800; color: #166534; line-height: 1; }
-        .selected-status { font-size: 16px; font-weight: 600; color: #16a34a; margin-top: 5px; }
-        .unit-label { font-size: 12px; color: #aaa; font-weight: 400; }
+        .selected-date { font-size: 14px; color: #64748b; font-weight: 400; margin-bottom: 5px; } /* ปรับสีให้อ่านง่าย */
+        .selected-brix { font-size: 56px; font-weight: 700; color: #166534; line-height: 1; letter-spacing: -1px; }
+        .selected-status { font-size: 18px; font-weight: 600; color: #16a34a; margin-top: 5px; }
+        .unit-label { font-size: 13px; color: #94a3b8; font-weight: 400; }
 
         /* --- LEGEND SINGLE BAR --- */
         .legend-single-bar {
-            display: flex; width: 100%; height: 32px; border-radius: 16px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+            display: flex; width: 100%; height: 36px; /* สูงขึ้นนิดนึง */
+            border-radius: 18px; overflow: hidden; margin-bottom: 25px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
         .legend-segment {
             flex: 1; display: flex; align-items: center; justify-content: center;
-            font-size: 10px; font-weight: 600; color: white; white-space: nowrap; padding: 0 2px; text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            font-size: 11px; /* ตัวใหญ่ขึ้น */
+            font-weight: 500; color: white; white-space: nowrap; padding: 0 2px; 
+            text-shadow: 0 1px 2px rgba(0,0,0,0.15);
         }
         .seg-low { background-color: #16a34a; }
         .seg-mid { background-color: #ca8a04; }
@@ -41,46 +57,45 @@
 
         /* --- GRAPH WRAPPER --- */
         .chart-wrapper-outer {
-            position: relative; background: white; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); padding: 20px 0 10px 0; overflow: hidden; margin-bottom: 30px;
+            position: relative; background: white; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); padding: 25px 0 15px 0; overflow: hidden; margin-bottom: 30px;
         }
         .graph-scroll-area { width: 100%; overflow-x: auto; padding-right: 50px; scrollbar-width: none; -ms-overflow-style: none; }
         .graph-scroll-area::-webkit-scrollbar { display: none; }
-        svg { display: block; height: 220px; overflow: visible; }
+        svg { display: block; height: 240px; overflow: visible; } /* เพิ่มความสูงอีกนิดให้โปร่ง */
 
         .line-path { fill: none; stroke: #16a34a; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
         .area-path { fill: url(#gradient); stroke: none; opacity: 0.3; }
         .dot { fill: white; stroke: #16a34a; stroke-width: 2; cursor: pointer; transition: all 0.2s; }
-        .dot.active { fill: #16a34a; stroke: #bbf7d0; stroke-width: 4; r: 6; }
-        .date-label { font-size: 11px; fill: #94a3b8; text-anchor: middle; font-family: 'Kanit', sans-serif; }
-        .date-label.active { fill: #166534; font-weight: 600; font-size: 12px; }
+        .dot.active { fill: #16a34a; stroke: #bbf7d0; stroke-width: 4; r: 7; } /* จุดใหญ่ขึ้น */
+        .date-label { font-size: 12px; fill: #64748b; text-anchor: middle; font-family: 'IBM Plex Sans Thai', sans-serif; }
+        .date-label.active { fill: #166534; font-weight: 600; font-size: 13px; }
         .cursor-line { stroke: #cbd5e1; stroke-width: 1; stroke-dasharray: 4; opacity: 0; }
         .cursor-line.show { opacity: 1; }
         .h-grid-line { stroke: #f1f5f9; stroke-width: 1; }
 
-        .y-axis-overlay { position: absolute; top: 20px; bottom: 40px; right: 0; width: 45px; pointer-events: none; z-index: 10; }
+        .y-axis-overlay { position: absolute; top: 25px; bottom: 45px; right: 0; width: 45px; pointer-events: none; z-index: 10; }
         .sweetness-bar { position: absolute; right: 0; top: 0; bottom: 0; width: 6px; background: linear-gradient(to top, #16a34a 0%, #ca8a04 33%, #ea580c 66%, #dc2626 100%); border-top-left-radius: 4px; border-bottom-left-radius: 4px; }
-        .y-label { position: absolute; right: 12px; font-size: 10px; font-weight: 700; color: #94a3b8; transform: translateY(-50%); background: rgba(255,255,255,0.85); padding-left: 5px; border-radius: 4px; }
+        .y-label { position: absolute; right: 12px; font-size: 11px; font-weight: 600; color: #64748b; transform: translateY(-50%); background: rgba(255,255,255,0.9); padding-left: 5px; border-radius: 4px; }
 
-        /* --- Q&A SECTION (NEW) --- */
-        .qa-section {
-            width: 100%; margin-bottom: 40px;
-        }
+        /* --- Q&A SECTION --- */
+        .qa-section { width: 100%; margin-bottom: 40px; }
         .qa-title {
             font-size: 18px; font-weight: 700; color: #166534; margin-bottom: 15px;
             display: flex; align-items: center; gap: 8px;
         }
         .qa-category {
-            font-size: 12px; font-weight: 600; color: #888; margin: 15px 0 8px 5px; text-transform: uppercase; letter-spacing: 0.5px;
+            font-size: 13px; font-weight: 600; color: #64748b; margin: 20px 0 10px 5px; 
+            text-transform: uppercase; letter-spacing: 0.5px;
         }
         
         .accordion-item {
-            background: white; border-radius: 12px; margin-bottom: 8px; overflow: hidden;
+            background: white; border-radius: 12px; margin-bottom: 10px; overflow: hidden;
             box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid #f1f5f9;
         }
         
         .accordion-header {
-            padding: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
-            font-size: 14px; font-weight: 500; color: #333; transition: background 0.2s;
+            padding: 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+            font-size: 15px; font-weight: 500; color: #333; transition: background 0.2s;
         }
         .accordion-header:hover { background: #f8fafc; }
         .accordion-header.active { color: #166534; background: #f0fdf4; }
@@ -89,17 +104,17 @@
         
         .accordion-body {
             max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out;
-            background: #fff; padding: 0 15px; border-top: 1px solid transparent;
+            background: #fff; padding: 0 16px; border-top: 1px solid transparent;
         }
         .accordion-header.active + .accordion-body { border-top-color: #f0fdf4; }
         
         .qa-content {
-            padding: 15px 0; font-size: 13px; color: #64748b; line-height: 1.6;
+            padding: 15px 0; font-size: 14px; color: #475569; line-height: 1.6; /* ตัวหนังสืออ่านง่ายขึ้น */
         }
         .qa-highlight { color: #ea580c; font-weight: 600; }
 
         /* Floating Contact */
-        .float-contact { position: fixed; bottom: 20px; right: 20px; background: #25D366; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); text-decoration: none; z-index: 100; transition: transform 0.2s;}
+        .float-contact { position: fixed; bottom: 20px; right: 20px; background: #06C755; color: white; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: 0 4px 15px rgba(6, 199, 85, 0.4); text-decoration: none; z-index: 100; transition: transform 0.2s;}
         .float-contact:hover { transform: scale(1.1); }
 
     </style>
@@ -109,8 +124,8 @@
     <div class="container">
         <div class="header">
             <img src="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8" class="brand-logo" alt="Logo">
-            <h3 style="margin:5px 0; color:#166534;">Trend ความหวาน</h3>
-            <div style="font-size:12px; color:#64748b;">ย้อนหลัง 30 วัน</div>
+            <h3 style="margin:8px 0; color:#166534; font-weight: 700;">Trend ความหวาน</h3>
+            <div style="font-size:13px; color:#64748b;">ย้อนหลัง 30 วัน</div>
         </div>
 
         <div class="display-card">
@@ -142,7 +157,7 @@
                     <g id="grid-layer"></g> 
                     <path id="area-layer" class="area-path"></path>
                     <path id="line-layer" class="line-path"></path>
-                    <line id="cursor-line" class="cursor-line" y1="0" y2="200"></line>
+                    <line id="cursor-line" class="cursor-line" y1="0" y2="220"></line>
                     <g id="dots-layer"></g>
                     <g id="labels-layer"></g>
                 </svg>
@@ -160,7 +175,7 @@
                 </div>
                 <div class="accordion-body"><div class="qa-content">
                     <b>Brix (บริกซ์)</b> คือหน่วยวัดความหวานตามธรรมชาติครับ
-                    <ul>
+                    <ul style="margin: 10px 0 10px 20px; padding: 0;">
                         <li><b style="color:#166534;">ตัวเลขยิ่งสูง = ยิ่งหวานเข้มข้น</b></li>
                         <li><b>6.0 - 6.9:</b> หวานน้อย สดชื่น (Healthy)</li>
                         <li><b>7.0 - 8.0:</b> หวานหอม กลมกล่อม (Popular)</li>
@@ -194,9 +209,9 @@
                 </div>
                 <div class="accordion-body"><div class="qa-content">
                     เนื่องจากเราไม่ใส่วัตถุกันเสีย:
-                    <ul>
-                        <li><b>ตู้เย็นช่องธรรมดา:</b> 3-5 วัน (แนะนำอุณหภูมิ 2-4°C)</li>
-                        <li><b>ช่องแช่แข็ง (Freezer):</b> เก็บได้นาน 1 เดือน (ควรละลายในตู้เย็นก่อนดื่ม)</li>
+                    <ul style="margin: 10px 0 10px 20px; padding: 0;">
+                        <li><b>ตู้เย็นช่องธรรมดา:</b> 3-5 วัน (แนะนำ 2-4°C)</li>
+                        <li><b>ช่องแช่แข็ง (Freezer):</b> เก็บได้นาน 1 เดือน</li>
                     </ul>
                     *หากเปิดขวดแล้วควรดื่มให้หมดภายในวันเดียวครับ
                 </div></div>
@@ -221,10 +236,9 @@
                     ทานได้แต่ควรจำกัดปริมาณครับ แม้จะเป็นน้ำตาลธรรมชาติ (Low GI) แต่ก็ยังมีคาร์โบไฮเดรต แนะนำให้ปรึกษาแพทย์และดื่มวันละไม่เกิน 1 แก้วครับ
                 </div></div>
             </div>
-
         </div>
 
-        <div style="text-align:center; font-size:11px; color:#94a3b8; margin-top:10px; margin-bottom:50px;">
+        <div style="text-align:center; font-size:12px; color:#94a3b8; margin-top:10px; margin-bottom:50px;">
             <i class="fa-solid fa-leaf"></i> หนุ่มดำเนิน - คัดสรรสิ่งที่ดีที่สุดเพื่อคุณ
         </div>
     </div>
@@ -234,7 +248,7 @@
     </a>
 
     <script>
-        // Mock DB & Logic (เหมือนเดิมจากรอบที่แล้ว)
+        // Mock DB & Logic
         const db = { '2026-01-22': 7.5, '2026-01-20': 7.1, '2026-01-19': 6.8, '2026-01-17': 8.2, '2026-01-14': 7.9, '2026-01-10': 6.5 };
         const toKey = (d) => d.toISOString().split('T')[0];
         function getDataRecursive(targetDate) {
@@ -249,7 +263,10 @@
             return { val: 7.0 };
         }
 
-        const CHART_HEIGHT = 150; const TOP_PADDING = 20; const STEP_X = 50; const MIN_BRIX = 6.0; const MAX_BRIX = 9.0;
+        const CHART_HEIGHT = 160; /* เพิ่มความสูงพื้นที่วาด */
+        const TOP_PADDING = 25; 
+        const STEP_X = 55; /* ขยายระยะห่างระหว่างจุด */
+        const MIN_BRIX = 6.0; const MAX_BRIX = 9.0;
         function mapY(val) {
             let percent = (val - MIN_BRIX) / (MAX_BRIX - MIN_BRIX);
             if(percent < 0) percent = 0; if(percent > 1) percent = 1;
@@ -282,12 +299,12 @@
                 if (index === points.length - 1) { areaD += ` L${x},${CHART_HEIGHT + TOP_PADDING} Z`; }
                 
                 const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                dot.setAttribute("cx", x); dot.setAttribute("cy", y); dot.setAttribute("r", 4); dot.setAttribute("class", "dot"); dot.setAttribute("data-index", index);
+                dot.setAttribute("cx", x); dot.setAttribute("cy", y); dot.setAttribute("r", 5); dot.setAttribute("class", "dot"); dot.setAttribute("data-index", index);
                 dot.addEventListener('click', () => { selectPoint(index, pt, x); });
                 document.getElementById('dots-layer').appendChild(dot);
 
                 const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                text.setAttribute("x", x); text.setAttribute("y", 200); text.setAttribute("class", "date-label");
+                text.setAttribute("x", x); text.setAttribute("y", 220); text.setAttribute("class", "date-label");
                 text.textContent = pt.date.toLocaleDateString('th-TH', { day: 'numeric' }); text.setAttribute("data-index", index);
                 document.getElementById('labels-layer').appendChild(text);
             });
@@ -313,15 +330,10 @@
             const statusEl = document.getElementById('show-status'); statusEl.innerText = status; statusEl.style.color = color;
         }
 
-        // Q&A Toggle Function
         function toggleQA(header) {
             header.classList.toggle('active');
             const body = header.nextElementSibling;
-            if (body.style.maxHeight) {
-                body.style.maxHeight = null;
-            } else {
-                body.style.maxHeight = body.scrollHeight + "px";
-            }
+            if (body.style.maxHeight) { body.style.maxHeight = null; } else { body.style.maxHeight = body.scrollHeight + "px"; }
         }
 
         initChart();
