@@ -992,15 +992,21 @@
         }
 
         // ============================================
-        // 2. GENERATE REPORT (V.56: Collapsible Sections)
+        // 2. GENERATE REPORT (ฉบับแก้ไข: String Builder เพื่อประสิทธิภาพ + แก้คลิกไม่ติด)
         // ============================================
         window.generateReport = async () => {
-            const startDate = document.getElementById('startDate').value; const endDate = document.getElementById('endDate').value;
-            if(!startDate || !endDate) { alert("กรุณาเลือกช่วงเวลา"); return; } showLoading(true);
-            const tbody = document.getElementById('reportBody'); tbody.innerHTML = '';
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            if(!startDate || !endDate) { alert("กรุณาเลือกช่วงเวลา"); return; }
+            
+            showLoading(true);
+            const tbody = document.getElementById('reportBody');
+            tbody.innerHTML = ''; // ล้างของเก่า
             
             try {
-                let ledger = {}; const initAccount = (code, name) => { if(!ledger[code]) ledger[code] = { code, name, amount: 0, details: [] }; };
+                // --- 1. เตรียมข้อมูล (Logic เดิม) ---
+                let ledger = {};
+                const initAccount = (code, name) => { if(!ledger[code]) ledger[code] = { code, name, amount: 0, details: [] }; };
                 const addTx = (code, name, date, desc, val) => { if(val === 0) return; initAccount(code, name); ledger[code].amount += val; ledger[code].details.push({ date, desc, val }); };
                 
                 const qSales = query(collection(db, "daily_sales"), where("date", ">=", startDate), where("date", "<=", endDate));
@@ -1018,6 +1024,9 @@
                 snapExp.forEach(doc => { const d = doc.data(); addTx(d.category, accountNames[d.category] || d.category, d.date, d.memo || '-', d.amount); });
 
                 const allAccounts = Object.values(ledger);
+                // เรียงลำดับบัญชีตามรหัส
+                allAccounts.sort((a,b) => a.code.localeCompare(b.code));
+
                 const revenueList = allAccounts.filter(i => i.code.startsWith('4'));
                 const deductionList = allAccounts.filter(i => i.code.startsWith('01'));
                 const cogsList = allAccounts.filter(i => i.code.startsWith('02'));
@@ -1035,72 +1044,160 @@
                 const totalCOGS = sum(cogsList);
                 const totalLabor = sum(laborList);
                 const grossProfit = netSales - totalCOGS - totalLabor;
-                
                 const totalControl = sum(controlList);
                 const pac = grossProfit - totalControl;
-
                 const totalFixed = sum(fixedList);
                 const totalLoan = sum(loanList);
                 const totalOpexAll = totalControl + totalFixed + totalLoan;
                 const netProfit = grossProfit - totalOpexAll;
 
-                // Render Table (with Collapsible Logic)
+                // --- 2. สร้าง HTML String (วิธีใหม่: เร็วและเสถียร) ---
+                let html = '';
+
+                // Helper: สร้างหัวข้อหมวด (Header)
+                const buildHeader = (title, css, id) => `
+                    <tr class="section-header border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" onclick="toggleSection('${id}', this)">
+                        <td colspan="4" class="py-2 px-3 font-bold ${css}">
+                            <span class="icon-section mr-2 inline-block transition-transform">▶</span> ${title}
+                        </td>
+                    </tr>`;
+
+                // Helper: สร้างรายการบัญชี (Rows)
+                const buildRows = (list, groupId) => {
+                    if(list.length === 0) return '';
+                    return list.map(item => {
+                        const pct = totalRevenue > 0 ? ((item.amount/totalRevenue)*100).toFixed(2)+'%' : '0%';
+                        // สร้างรายการย่อย (Details)
+                        item.details.sort((a,b) => b.date.localeCompare(a.date));
+                        const detailsHtml = item.details.map(dt => 
+                            `<tr class="border-b border-gray-100 hover:bg-white text-xs text-gray-500">
+                                <td class="pl-12 py-1 w-32">${dt.date}</td>
+                                <td class="py-1">${dt.desc}</td>
+                                <td class="pr-4 py-1 text-right font-mono">${dt.val.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+                                <td></td>
+                            </tr>`
+                        ).join('');
+
+                        // สร้างรายการหลัก (Main Row) + รายการย่อย (Hidden Row)
+                        return `
+                        <tr class="hidden ${groupId} hover:bg-indigo-50 cursor-pointer transition-colors border-b border-gray-100 group" onclick="toggleDetail(this)">
+                            <td class="py-1 px-2 text-center text-gray-300 group-hover:text-indigo-500 w-10">
+                                <svg class="w-3 h-3 icon-expand transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </td>
+                            <td class="py-1 px-2 font-medium text-gray-700 text-sm"><span class="font-mono text-gray-400 mr-2 text-xs">${item.code}</span>${item.name}</td>
+                            <td class="py-1 px-2 text-right font-bold text-gray-800 text-sm">${item.amount.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+                            <td class="py-1 px-2 text-right text-xs text-gray-400">${pct}</td>
+                        </tr>
+                        <tr class="detail-row hidden bg-gray-50 shadow-inner"><td colspan="4" class="p-0"><table class="w-full">${detailsHtml}</table></td></tr>
+                        `;
+                    }).join('');
+                };
+
+                // Helper: สร้างบรรทัดรวม (Total)
+                const buildTotal = (title, amt, css) => `
+                    <tr class="${css}">
+                        <td></td>
+                        <td class="py-1 px-2 font-bold text-right pr-8 text-sm">${title}</td>
+                        <td class="py-1 px-2 font-bold text-right border-t border-gray-300 border-dashed text-sm">${amt.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+                        <td class="py-1 px-2 text-right text-xs font-semibold">${totalRevenue > 0 ? ((amt/totalRevenue)*100).toFixed(2)+'%' : '0%'}</td>
+                    </tr>`;
+
+                // --- ประกอบร่าง HTML ---
+                
                 // 1. Revenue
-                const revId = 'rev-group';
-                renderSectionHeader(tbody, "รายได้ (Gross Revenue)", "text-indigo-700 bg-indigo-50", revId);
-                revenueList.forEach(item => renderAccountRow(tbody, item, totalRevenue, revId));
-                renderTotalRow(tbody, "รวมรายได้ขาย", totalRevenue, 100, "text-indigo-700 bg-indigo-50 border-t-2 border-indigo-200");
+                html += buildHeader("รายได้ (Gross Revenue)", "text-indigo-700 bg-indigo-50", "rev-g");
+                html += buildRows(revenueList, "rev-g");
+                html += buildTotal("รวมรายได้ขาย", totalRevenue, "text-indigo-700 bg-indigo-50 border-t-2 border-indigo-200");
 
                 // 2. Deductions
-                if(deductionList.length > 0) {
-                    const dedId = 'ded-group';
-                    renderSectionHeader(tbody, "หัก: รายการหักจากรายได้ (Deductions)", "text-pink-700 bg-pink-50 mt-4", dedId);
-                    deductionList.forEach(item => renderAccountRow(tbody, item, totalRevenue, dedId));
-                    renderTotalRow(tbody, "รายได้สุทธิ (Net Sales)", netSales, (netSales/totalRevenue)*100, "bg-gray-100 font-bold border-y-2");
-                } else { renderTotalRow(tbody, "รายได้สุทธิ (Net Sales)", netSales, 100, "bg-gray-100 font-bold border-y-2 mt-4"); }
+                html += buildHeader("หัก: รายการหักจากรายได้", "text-pink-700 bg-pink-50 mt-2", "ded-g");
+                html += buildRows(deductionList, "ded-g");
+                html += buildTotal("รายได้สุทธิ (Net Sales)", netSales, "bg-gray-100 font-bold border-y-2 mt-2 text-gray-800");
 
                 // 3. COGS
-                const cogsId = 'cogs-group';
-                renderSectionHeader(tbody, "ต้นทุนขาย (Cost of Goods Sold)", "text-red-700 bg-red-50 mt-4", cogsId);
-                cogsList.forEach(item => renderAccountRow(tbody, item, totalRevenue, cogsId));
-                renderTotalRow(tbody, "รวมต้นทุนขาย", totalCOGS, (totalCOGS/totalRevenue)*100, "text-red-700 bg-red-50 border-t-2 border-red-200");
+                html += buildHeader("ต้นทุนขาย (COGS)", "text-red-700 bg-red-50 mt-2", "cogs-g");
+                html += buildRows(cogsList, "cogs-g");
+                html += buildTotal("รวมต้นทุนขาย", totalCOGS, "text-red-700 bg-red-50 border-t-2 border-red-200");
 
                 // 4. Labor
-                const laborId = 'labor-group';
-                renderSectionHeader(tbody, "ต้นทุนแรงงาน (Labor Cost)", "text-yellow-800 bg-yellow-50 mt-4", laborId);
-                laborList.forEach(item => renderAccountRow(tbody, item, totalRevenue, laborId));
-                renderTotalRow(tbody, "รวมต้นทุนแรงงาน", totalLabor, (totalLabor/totalRevenue)*100, "text-yellow-800 bg-yellow-50 border-t-2 border-yellow-200");
+                html += buildHeader("ต้นทุนแรงงาน (Labor)", "text-yellow-800 bg-yellow-50 mt-2", "labor-g");
+                html += buildRows(laborList, "labor-g");
+                html += buildTotal("รวมต้นทุนแรงงาน", totalLabor, "text-yellow-800 bg-yellow-50 border-t-2 border-yellow-200");
 
                 // Gross Profit
-                renderSummaryRow(tbody, "กำไรขั้นต้น (Gross Profit)", grossProfit, netSales > 0 ? (grossProfit/netSales)*100 : 0, "bg-green-50 text-green-800 font-bold text-lg border-y-2 border-green-200");
+                html += `<tr class="bg-green-50 text-green-900 font-bold border-y-2 border-green-200"><td class="py-2"></td><td class="py-2 text-right pr-8">กำไรขั้นต้น (Gross Profit)</td><td class="py-2 text-right text-lg">${grossProfit.toLocaleString()}</td><td class="py-2 text-right text-sm">${netSales>0?((grossProfit/netSales)*100).toFixed(2):0}%</td></tr>`;
 
                 // 5. Controllable
-                const ctrlId = 'ctrl-group';
-                renderSectionHeader(tbody, "ค่าใช้จ่ายที่ควบคุมได้ (Controllable)", "text-teal-700 bg-teal-50 mt-4", ctrlId);
-                controlList.forEach(item => renderAccountRow(tbody, item, totalRevenue, ctrlId));
-                renderTotalRow(tbody, "รวมส่วนควบคุมได้", totalControl, netSales > 0 ? (totalControl/netSales)*100 : 0, "text-teal-700 bg-teal-50 border-t-2 border-teal-200");
+                html += buildHeader("ค่าใช้จ่ายที่ควบคุมได้", "text-teal-700 bg-teal-50 mt-2", "ctrl-g");
+                html += buildRows(controlList, "ctrl-g");
+                html += buildTotal("รวมส่วนควบคุมได้", totalControl, "text-teal-700 bg-teal-50 border-t-2 border-teal-200");
 
                 // PAC
-                renderSummaryRow(tbody, "กำไรหลังหักค่าใช้จ่ายควบคุมได้ (PAC)", pac, netSales > 0 ? (pac/netSales)*100 : 0, "bg-cyan-100 text-cyan-900 font-bold text-lg border-y-2 border-cyan-300");
+                html += `<tr class="bg-cyan-50 text-cyan-900 font-bold border-y-2 border-cyan-200"><td class="py-2"></td><td class="py-2 text-right pr-8">กำไรหลังหักค่าใช้จ่ายควบคุมได้ (PAC)</td><td class="py-2 text-right text-base">${pac.toLocaleString()}</td><td class="py-2 text-right text-sm">${netSales>0?((pac/netSales)*100).toFixed(2):0}%</td></tr>`;
 
                 // 6. Fixed
-                const fixedId = 'fixed-group';
-                renderSectionHeader(tbody, "ค่าใช้จ่ายคงที่/ควบคุมไม่ได้ (Fixed)", "text-gray-700 bg-gray-100 mt-4", fixedId);
-                fixedList.forEach(item => renderAccountRow(tbody, item, totalRevenue, fixedId));
-                renderTotalRow(tbody, "รวมส่วนควบคุมไม่ได้", totalFixed, netSales > 0 ? (totalFixed/netSales)*100 : 0, "text-gray-700 bg-gray-100 border-t-2 border-gray-300");
+                html += buildHeader("ค่าใช้จ่ายคงที่ (Fixed)", "text-gray-700 bg-gray-100 mt-2", "fixed-g");
+                html += buildRows(fixedList, "fixed-g");
+                html += buildTotal("รวมส่วนควบคุมไม่ได้", totalFixed, "text-gray-700 bg-gray-100 border-t-2 border-gray-300");
 
                 // 7. Loans
-                const loanId = 'loan-group';
-                renderSectionHeader(tbody, "สินเชื่อและการเงิน (Loans)", "text-purple-700 bg-purple-50 mt-4", loanId);
-                loanList.forEach(item => renderAccountRow(tbody, item, totalRevenue, loanId));
-                renderTotalRow(tbody, "รวมสินเชื่อ", totalLoan, netSales > 0 ? (totalLoan/netSales)*100 : 0, "text-purple-700 bg-purple-50 border-t-2 border-purple-200");
+                html += buildHeader("สินเชื่อและการเงิน (Loans)", "text-purple-700 bg-purple-50 mt-2", "loan-g");
+                html += buildRows(loanList, "loan-g");
+                html += buildTotal("รวมสินเชื่อ", totalLoan, "text-purple-700 bg-purple-50 border-t-2 border-purple-200");
 
                 // Net Profit
                 const netColor = netProfit >= 0 ? "bg-emerald-100 text-emerald-900" : "bg-red-100 text-red-900";
-                renderSummaryRow(tbody, "กำไรสุทธิ (Net Profit)", netProfit, netSales > 0 ? (netProfit/netSales)*100 : 0, `${netColor} font-extrabold text-xl border-y-4 border-double py-6`);
+                html += `<tr class="${netColor} font-extrabold text-xl border-y-4 border-double"><td class="py-4"></td><td class="py-4 text-right pr-8">กำไรสุทธิ (Net Profit)</td><td class="py-4 text-right">${netProfit.toLocaleString(undefined, {minimumFractionDigits:2})}</td><td class="py-4 text-right text-base">${netSales>0?((netProfit/netSales)*100).toFixed(2):0}%</td></tr>`;
 
-            } catch(e) { console.error(e); } showLoading(false);
+                // ยัด HTML ใส่ตารางทีเดียว (ทำให้ onclick ทำงานได้แน่นอน)
+                tbody.innerHTML = html;
+
+            } catch(e) { console.error(e); alert("Error generating report"); }
+            showLoading(false);
         }
+
+        // ============================================
+        // 3. COLLAPSIBLE LOGIC (ทำงานคู่กับ HTML ที่สร้างข้างบน)
+        // ============================================
+        window.toggleSection = (groupId, btn) => {
+            // ค้นหาแถวทั้งหมดที่มี class ตาม groupId
+            const rows = document.getElementsByClassName(groupId);
+            const icon = btn.querySelector('.icon-section');
+            
+            let isOpening = false;
+            if(rows.length > 0 && rows[0].classList.contains('hidden')) {
+                isOpening = true;
+            }
+
+            // วนลูปเปิด/ปิด
+            for(let row of rows) {
+                if(isOpening) {
+                    row.classList.remove('hidden');
+                } else {
+                    row.classList.add('hidden');
+                    // ถ้ามีลูกย่อยเปิดค้างไว้ ให้ปิดด้วย
+                    const next = row.nextElementSibling;
+                    if(next && next.classList.contains('detail-row')) {
+                        next.classList.add('hidden');
+                        const arrow = row.querySelector('.icon-expand');
+                        if(arrow) arrow.style.transform = 'rotate(0deg)';
+                    }
+                }
+            }
+            if(icon) icon.style.transform = isOpening ? 'rotate(90deg)' : 'rotate(0deg)';
+        };
+
+        window.toggleDetail = (row) => {
+            const detailRow = row.nextElementSibling;
+            const icon = row.querySelector('.icon-expand');
+            if(detailRow.classList.contains('hidden')) {
+                detailRow.classList.remove('hidden');
+                icon.style.transform = 'rotate(90deg)';
+            } else {
+                detailRow.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        };
 
         // ============================================
         // Helper Functions สำหรับ Collapsible Report (ปรับ Padding ให้บางลง)
