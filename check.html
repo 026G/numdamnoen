@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>หนุ่มดำเนิน - กราฟความหวาน</title>
+    <title>หนุ่มดำเนิน - กราฟเส้น</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -15,79 +15,94 @@
         .header { text-align: center; margin-bottom: 20px; }
         .brand-logo { width: 60px; height: 60px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
-        /* 1. Main Display (แสดงค่าของแท่งที่กดเลือก) */
+        /* 1. Display Card (ส่วนแสดงผลข้างบน) */
         .display-card {
             background: white; border-radius: 20px; padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 15px;
-            text-align: center; border: 1px solid #e2e8f0;
-            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px;
+            text-align: center; border: 1px solid #e2e8f0; position: relative;
         }
-        .selected-date { font-size: 14px; color: #888; font-weight: 400; margin-bottom: 5px; }
-        .selected-brix { font-size: 48px; font-weight: 800; color: #166534; line-height: 1; }
+        .selected-date { font-size: 13px; color: #888; font-weight: 400; margin-bottom: 5px; }
+        .selected-brix { font-size: 52px; font-weight: 800; color: #166534; line-height: 1; }
         .selected-status { font-size: 16px; font-weight: 600; color: #16a34a; margin-top: 5px; }
-        
-        /* 2. Scrollable Graph Area */
-        .graph-wrapper {
+        .unit-label { font-size: 12px; color: #aaa; font-weight: 400; }
+
+        /* 2. Graph Container (พื้นที่เลื่อน) */
+        .graph-window {
             width: 100%;
             overflow-x: auto; /* เลื่อนแนวนอน */
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-            /* ซ่อน Scrollbar แต่ยังเลื่อนได้ */
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            padding: 20px 0;
+            position: relative;
+            
+            /* ซ่อน Scrollbar */
             scrollbar-width: none; 
             -ms-overflow-style: none;
         }
-        .graph-wrapper::-webkit-scrollbar { display: none; }
+        .graph-window::-webkit-scrollbar { display: none; }
 
-        .chart-container {
-            display: flex;
-            align-items: flex-end; /* แท่งกราฟชิดล่าง */
-            height: 200px; /* ความสูงพื้นที่กราฟ */
-            padding: 20px 10px 0 10px;
-            gap: 12px; /* ระยะห่างระหว่างแท่ง */
-            width: max-content; /* ขยายความกว้างตามจำนวนแท่ง */
-            position: relative;
+        /* ตัว SVG ที่ใช้วาดเส้น */
+        svg {
+            display: block;
+            height: 180px; /* ความสูงกราฟ */
+            overflow: visible; /* ให้จุดเด้งออกมานอกกรอบได้ */
         }
 
-        /* เส้นประบอกระดับมาตรฐาน (Reference Line) */
-        .ref-line {
-            position: absolute; left: 0; right: 0; 
-            border-top: 1px dashed #cbd5e1; z-index: 0;
-            pointer-events: none;
+        /* Styling เส้นและจุด */
+        .line-path {
+            fill: none;
+            stroke: #16a34a; /* สีเส้นเขียว */
+            stroke-width: 3;
+            stroke-linecap: round;
+            stroke-linejoin: round;
         }
-        .ref-label {
-            position: absolute; left: 10px; font-size: 10px; color: #94a3b8; background: #f8fafc; padding-right: 5px;
+        .area-path {
+            fill: url(#gradient); /* สีจางๆ ใต้เส้น */
+            stroke: none;
+            opacity: 0.3;
         }
-
-        /* ตัวแท่งกราฟ (Bar Item) */
-        .bar-group {
-            display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
-            cursor: pointer; position: relative; z-index: 1;
-        }
-        .bar {
-            width: 24px;
-            border-radius: 6px 6px 4px 4px;
-            transition: height 1s ease-out, transform 0.2s;
-            position: relative;
-        }
-        /* วันที่ใต้กราฟ */
-        .bar-date { font-size: 10px; color: #94a3b8; margin-top: 8px; font-weight: 300; }
         
-        /* Effect ตอนกดเลือก */
-        .bar-group.active .bar { transform: scale(1.1); box-shadow: 0 0 10px rgba(0,0,0,0.1); border: 2px solid rgba(0,0,0,0.2); }
-        .bar-group.active .bar-date { color: #333; font-weight: 700; }
-
-        /* สีแท่งกราฟ */
-        .bg-green { background: linear-gradient(to top, #22c55e, #86efac); }
-        .bg-yellow { background: linear-gradient(to top, #eab308, #fde047); }
-        .bg-orange { background: linear-gradient(to top, #f97316, #fdba74); }
-        .bg-red { background: linear-gradient(to top, #dc2626, #fca5a5); }
-
-        /* ป้ายกำกับบนแท่ง (Tooltip) */
-        .bar-val {
-            font-size: 10px; font-weight: 700; color: #555; margin-bottom: 4px;
-            opacity: 0; transition: opacity 0.2s; transform: translateY(5px);
+        .dot {
+            fill: white;
+            stroke: #16a34a;
+            stroke-width: 2;
+            cursor: pointer;
+            transition: all 0.3s ease;
         }
-        .bar-group.active .bar-val { opacity: 1; transform: translateY(0); }
+        /* จุดที่ถูกเลือก */
+        .dot.active {
+            fill: #16a34a;
+            stroke: #bbf7d0; /* ขอบเขียวอ่อน */
+            stroke-width: 4;
+            r: 6; /* ขยายขนาด */
+        }
+        
+        /* เส้นแกน X แนวนอน */
+        .grid-line {
+            stroke: #f1f5f9;
+            stroke-width: 1;
+        }
+
+        .date-label {
+            font-size: 10px;
+            fill: #94a3b8;
+            text-anchor: middle;
+        }
+        .date-label.active {
+            fill: #166534;
+            font-weight: bold;
+        }
+
+        /* เส้นแนวตั้งเวลาเลือก (Cursor Line) */
+        .cursor-line {
+            stroke: #cbd5e1;
+            stroke-width: 1;
+            stroke-dasharray: 4;
+            opacity: 0; /* ซ่อนก่อน */
+            transition: opacity 0.2s;
+        }
+        .cursor-line.show { opacity: 1; }
 
     </style>
 </head>
@@ -96,30 +111,34 @@
     <div class="container">
         <div class="header">
             <img src="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8" class="brand-logo" alt="Logo">
-            <h3 style="margin:5px 0; color:#166534;">สถิติความหวาน</h3>
-            <div style="font-size:12px; color:#64748b;">ข้อมูลย้อนหลัง 30 วัน</div>
+            <h3 style="margin:5px 0; color:#166534;">Trend ความหวาน</h3>
+            <div style="font-size:12px; color:#64748b;">ย้อนหลัง 30 วัน (เลื่อนซ้าย-ขวา)</div>
         </div>
 
         <div class="display-card">
             <div class="selected-date" id="show-date">--/--/--</div>
-            <div class="selected-brix" id="show-brix">-.-</div>
+            <div class="selected-brix" id="show-brix">0.0</div>
+            <div class="unit-label">ค่าความหวาน (Brix)</div>
             <div class="selected-status" id="show-status">...</div>
         </div>
 
-        <div class="graph-wrapper" id="scroll-area">
-            <div class="chart-container" id="chart-area">
-                <div class="ref-line" style="bottom: 45%;"></div> <div class="ref-label" style="bottom: 46%;">มาตรฐาน (7.0)</div>
-
-                </div>
+        <div class="graph-window" id="scroll-area">
+            <svg id="chart-svg">
+                <defs>
+                    <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#22c55e" /> <stop offset="100%" stop-color="#ffffff" stop-opacity="0" /> </linearGradient>
+                </defs>
+                
+                <g id="grid-layer"></g> <path id="area-layer" class="area-path"></path> <path id="line-layer" class="line-path"></path> <line id="cursor-line" class="cursor-line" y1="0" y2="180"></line> <g id="dots-layer"></g> <g id="labels-layer"></g> </svg>
         </div>
-
+        
         <div style="text-align:center; font-size:11px; color:#94a3b8; margin-top:10px;">
-            <i class="fa-solid fa-hand-pointer"></i> แตะที่แท่งกราฟเพื่อดูรายละเอียด
+            <i class="fa-solid fa-chart-line"></i> แตะที่จุดเพื่อดูข้อมูลละเอียด
         </div>
     </div>
 
     <script>
-        // --- Mock Data (จำลองฐานข้อมูลวันที่มีการผลิต) ---
+        // --- 1. Mock Database (เหมือนเดิม) ---
         const db = {
             '2026-01-22': 7.5, // วันนี้
             '2026-01-20': 7.1,
@@ -129,109 +148,166 @@
             '2026-01-10': 6.5
         };
 
-        // แปลงวันที่เป็น Key
         const toKey = (d) => d.toISOString().split('T')[0];
 
-        // Logic ดึงข้อมูลแบบ Fallback (ถ้าไม่มีใช้วันก่อนหน้า)
+        // Fallback Logic
         function getDataRecursive(targetDate) {
             let d = new Date(targetDate);
             let steps = 0;
-            while(steps < 10) { // ย้อนหลังได้ไม่เกิน 10 วัน
+            while(steps < 10) { 
                 let k = toKey(d);
-                if(db[k] !== undefined) return { val: db[k], isReal: (steps===0) };
+                if(db[k] !== undefined) return { val: db[k] };
                 d.setDate(d.getDate() - 1);
                 steps++;
             }
-            return { val: 7.0, isReal: false }; // Default
+            return { val: 7.0 }; // Default
         }
 
-        // สร้างกราฟ
-        function initGraph() {
-            const chartArea = document.getElementById('chart-area');
-            const today = new Date(); // วันนี้ (ขวาสุด)
-            const daysToShow = 30; // โชว์ย้อนหลัง 30 วัน
+        // --- 2. Chart Settings ---
+        const CHART_HEIGHT = 150; // ความสูงกราฟ
+        const TOP_PADDING = 20;   // เว้นที่ด้านบน
+        const STEP_X = 50;        // ระยะห่างระหว่างวัน (แนวนอน)
+        const MIN_BRIX = 6.0;     // ค่าต่ำสุดในกราฟ (Base Line)
+        const MAX_BRIX = 9.0;     // ค่าสูงสุด
 
-            // วนลูปสร้างข้อมูลย้อนหลัง (แต่เวลา Render ต้องเรียง อดีต -> ปัจจุบัน)
-            let items = [];
+        function mapY(val) {
+            // แปลงค่า Brix เป็นพิกัด Y (กลับด้าน เพราะ SVG 0 อยู่บน)
+            // สูตร: Height - ((val - min) / (max - min) * Height)
+            let percent = (val - MIN_BRIX) / (MAX_BRIX - MIN_BRIX);
+            if(percent < 0) percent = 0;
+            if(percent > 1) percent = 1;
+            return CHART_HEIGHT - (percent * CHART_HEIGHT) + TOP_PADDING;
+        }
+
+        // --- 3. Draw Chart Function ---
+        function initChart() {
+            const daysToShow = 30;
+            const today = new Date();
+            let points = [];
+
+            // เตรียมข้อมูล 30 วัน (เรียง อดีต -> ปัจจุบัน)
             for(let i = 0; i < daysToShow; i++) {
                 let d = new Date(today);
                 d.setDate(d.getDate() - i);
-                
                 let data = getDataRecursive(d);
-                items.push({ date: d, ...data });
+                points.push({ date: d, val: data.val });
             }
-            items.reverse(); // กลับด้านให้ อดีตอยู่ซ้าย ปัจจุบันอยู่ขวา
+            points.reverse();
 
-            // Render HTML
-            items.forEach((item, index) => {
-                const isToday = (index === items.length - 1);
+            // ตั้งค่าความกว้าง SVG
+            const totalWidth = (daysToShow * STEP_X) + 20; // เผื่อขอบขวา
+            const svg = document.getElementById('chart-svg');
+            svg.setAttribute('width', totalWidth);
+
+            // ตัวแปรเก็บ Path String
+            let lineD = "M"; // Start command
+            let areaD = "";  // Area path
+            
+            // Loop สร้างจุดและเส้น
+            points.forEach((pt, index) => {
+                const x = (index * STEP_X) + 30; // เริ่มที่ x=30
+                const y = mapY(pt.val);
                 
-                // คำนวณความสูงแท่ง (Max 9.0 = 100%, Min 5.0 = 0%)
-                // สูตรง่ายๆ: (Val / 9) * 120px
-                let heightPx = (item.val / 9) * 150; 
-                if(heightPx < 20) heightPx = 20; // กันเตี้ยเกิน
-
-                // สี
-                let colorClass = 'bg-green';
-                let statusText = 'หวานน้อย';
-                if(item.val > 6.9) { colorClass = 'bg-yellow'; statusText = 'หวานกลาง'; }
-                if(item.val > 7.5) { colorClass = 'bg-orange'; statusText = 'หวานมาก'; }
-                if(item.val > 8.0) { colorClass = 'bg-red'; statusText = 'หวานสุด'; }
-
-                // วันที่
-                let dateLabel = item.date.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
-                if(isToday) dateLabel = "วันนี้";
-
-                // สร้าง Element
-                const el = document.createElement('div');
-                el.className = `bar-group ${isToday ? 'active' : ''}`; // เลือกวันนี้เป็นค่าเริ่มต้น
-                el.innerHTML = `
-                    <div class="bar-val">${item.val}</div>
-                    <div class="bar ${colorClass}" style="height: ${heightPx}px;"></div>
-                    <div class="bar-date">${dateLabel}</div>
-                `;
-                
-                // Event Click
-                el.onclick = () => {
-                    // Remove active from all
-                    document.querySelectorAll('.bar-group').forEach(b => b.classList.remove('active'));
-                    el.classList.add('active');
-                    updateDisplay(item.date, item.val, statusText, colorClass);
-                };
-
-                chartArea.appendChild(el);
-
-                // ถ้าเป็นวันนี้ ให้โชว์ค่าเริ่มต้นเลย
-                if(isToday) {
-                    updateDisplay(item.date, item.val, statusText, colorClass);
+                // 1. สร้าง Path เส้นกราฟ
+                if (index === 0) {
+                    lineD += `${x},${y}`;
+                    areaD += `M${x},${CHART_HEIGHT + TOP_PADDING} L${x},${y}`; // Start area bottom
+                } else {
+                    lineD += ` L${x},${y}`;
+                    areaD += ` L${x},${y}`;
                 }
+
+                // ปิดท้าย Area Path (ถ้าเป็นจุดสุดท้าย)
+                if (index === points.length - 1) {
+                    areaD += ` L${x},${CHART_HEIGHT + TOP_PADDING} Z`;
+                }
+
+                // 2. สร้างจุด (Dot)
+                const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                dot.setAttribute("cx", x);
+                dot.setAttribute("cy", y);
+                dot.setAttribute("r", 4);
+                dot.setAttribute("class", "dot");
+                dot.setAttribute("data-index", index);
+                
+                // Event Click Dot
+                dot.addEventListener('click', () => {
+                    selectPoint(index, pt, x);
+                });
+                document.getElementById('dots-layer').appendChild(dot);
+
+                // 3. สร้าง Label วันที่ด้านล่าง
+                const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                const dayStr = pt.date.toLocaleDateString('th-TH', { day: 'numeric' });
+                text.setAttribute("x", x);
+                text.setAttribute("y", 195); // อยู่ล่างสุด
+                text.setAttribute("class", "date-label");
+                text.textContent = dayStr;
+                text.setAttribute("data-index", index);
+                document.getElementById('labels-layer').appendChild(text);
+
+                // 4. สร้างเส้น Grid แนวนอน (Grid) เฉพาะจุด
+                 const grid = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                 grid.setAttribute("x1", x); grid.setAttribute("y1", TOP_PADDING);
+                 grid.setAttribute("x2", x); grid.setAttribute("y2", 180);
+                 grid.setAttribute("class", "grid-line");
+                 grid.setAttribute("stroke-dasharray", "2");
+                 document.getElementById('grid-layer').prepend(grid); // ไว้หลังสุด
             });
 
-            // Auto Scroll ไปขวาสุด (ล่าสุด)
+            // Apply Path to Elements
+            document.getElementById('line-layer').setAttribute('d', lineD);
+            document.getElementById('area-layer').setAttribute('d', areaD);
+
+            // Auto Select Today (Last Point)
+            const lastIndex = points.length - 1;
+            const lastX = (lastIndex * STEP_X) + 30;
+            selectPoint(lastIndex, points[lastIndex], lastX);
+
+            // Auto Scroll to Right
             setTimeout(() => {
                 const scrollArea = document.getElementById('scroll-area');
                 scrollArea.scrollLeft = scrollArea.scrollWidth;
             }, 100);
         }
 
-        function updateDisplay(date, val, text, colorClass) {
-            const dateStr = date.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: '2-digit' });
+        // --- 4. Update Display ---
+        function selectPoint(index, data, xPos) {
+            // Update Active Classes
+            document.querySelectorAll('.dot').forEach(d => d.classList.remove('active'));
+            document.querySelectorAll('.date-label').forEach(t => t.classList.remove('active'));
+            
+            const activeDot = document.querySelector(`.dot[data-index="${index}"]`);
+            const activeText = document.querySelector(`.date-label[data-index="${index}"]`);
+            
+            if(activeDot) activeDot.classList.add('active');
+            if(activeText) activeText.classList.add('active');
+
+            // Move Cursor Line
+            const cursor = document.getElementById('cursor-line');
+            cursor.setAttribute('x1', xPos);
+            cursor.setAttribute('x2', xPos);
+            cursor.classList.add('show');
+
+            // Update Card Info
+            const dateStr = data.date.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: '2-digit' });
             document.getElementById('show-date').innerText = "ประจำวันที่ " + dateStr;
-            document.getElementById('show-brix').innerText = val;
+            document.getElementById('show-brix').innerText = data.val.toFixed(1);
+
+            let status = "";
+            let color = "";
+            if(data.val <= 6.9) { status = "หวานน้อย (สดชื่น)"; color = "#16a34a"; }
+            else if(data.val <= 7.5) { status = "หวานกลาง (กำลังดี)"; color = "#ca8a04"; }
+            else if(data.val <= 8.0) { status = "หวานมาก (หอม)"; color = "#ea580c"; }
+            else { status = "หวานสุด (ฉ่ำ)"; color = "#dc2626"; }
             
             const statusEl = document.getElementById('show-status');
-            statusEl.innerText = text;
-            
-            // เปลี่ยนสีข้อความสถานะตามแท่งกราฟ
-            if(colorClass.includes('green')) statusEl.style.color = '#16a34a';
-            if(colorClass.includes('yellow')) statusEl.style.color = '#ca8a04';
-            if(colorClass.includes('orange')) statusEl.style.color = '#ea580c';
-            if(colorClass.includes('red')) statusEl.style.color = '#dc2626';
+            statusEl.innerText = status;
+            statusEl.style.color = color;
         }
 
         // Run
-        initGraph();
-
+        initChart();
     </script>
 </body>
 </html>
