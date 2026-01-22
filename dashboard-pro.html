@@ -260,13 +260,9 @@
 
     <template id="row-template">
         <tr class="main-row sub-row hidden hover:bg-gray-50 cursor-pointer transition-colors duration-150 border-b border-gray-100 group" onclick="toggleDetail(this)">
-            <td class="p-4 text-center text-gray-400 group-hover:text-indigo-600">
-                <svg class="w-4 h-4 transform transition-transform duration-200 icon-expand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            <td class="py-1 px-2 text-center text-gray-400 group-hover:text-indigo-600"> <svg class="w-4 h-4 transform transition-transform duration-200 icon-expand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
             </td>
-            <td class="p-4 font-medium account-name"></td>
-            <td class="p-4 text-right font-bold account-amount"></td>
-            <td class="p-4 text-right text-gray-500 account-percent"></td>
-        </tr>
+            <td class="py-1 px-2 font-medium account-name"></td> <td class="py-1 px-2 text-right font-bold account-amount"></td> <td class="py-1 px-2 text-right text-gray-500 account-percent"></td> </tr>
         <tr class="detail-row hidden bg-gray-50 shadow-inner">
             <td colspan="4" class="p-0">
                 <div class="overflow-hidden transition-all duration-300">
@@ -1106,19 +1102,16 @@
             } catch(e) { console.error(e); } showLoading(false);
         }
 
-        // Updated Render Helpers for Collapsible
         // ============================================
-        // Helper Functions สำหรับ Collapsible Report
+        // Helper Functions สำหรับ Collapsible Report (ปรับ Padding ให้บางลง)
         // ============================================
 
         // 1. Render หัวข้อหมวด (คลิกได้)
         function renderSectionHeader(tbody, title, cssClass, groupId) { 
-            // ใช้วิธีแทรก HTML ตรงๆ เลย (Work 100%)
             tbody.innerHTML += `
                 <tr class="section-header border-b border-gray-200 cursor-pointer hover:brightness-95 transition-all duration-200" 
                     onclick="toggleSection('${groupId}', this)">
-                    <td colspan="4" class="p-3 font-bold ${cssClass}">
-                        <span class="icon-section mr-2 inline-block transition-transform duration-200">▶</span> 
+                    <td colspan="4" class="py-2 px-3 font-bold ${cssClass}"> <span class="icon-section mr-2 inline-block transition-transform duration-200">▶</span> 
                         ${title}
                     </td>
                 </tr>
@@ -1126,63 +1119,40 @@
         }
 
         // 2. Render รายการย่อย (ซ่อนไว้ก่อน)
+        // ** ฟังก์ชันนี้ใช้ Template ข้างบนที่เราแก้ไปแล้ว (จุดที่ 1) **
         function renderAccountRow(tbody, data, totalRev, groupId) {
             const template = document.getElementById('row-template'); 
             const clone = template.content.cloneNode(true);
             const tr = clone.querySelector('tr');
             
-            // 🔥 สำคัญ: ใส่ class 'hidden' และ groupId ไว้ตรงนี้
             tr.className += ` hidden ${groupId}`; 
             
-            // ... (โค้ดใส่ข้อมูลเหมือนเดิม) ...
             clone.querySelector('.account-name').innerHTML = `<span class="font-mono text-gray-400 mr-2">${data.code}</span> ${data.name}`;
             clone.querySelector('.account-amount').innerText = data.amount.toLocaleString(undefined, {minimumFractionDigits: 2});
             clone.querySelector('.account-percent').innerText = totalRev > 0 ? ((data.amount / totalRev) * 100).toFixed(2) + "%" : "0%";
             
-            // ... (ส่วน Detail Container เหมือนเดิม) ...
+            // ส่วน Detail (ไส้ในสุด)
             const dc = clone.querySelector('.detail-container');
             if (data.details && data.details.length > 0) {
                 data.details.sort((a,b) => b.date.localeCompare(a.date));
-                data.details.forEach(dt => { dc.innerHTML += `<tr class="border-b border-gray-100 hover:bg-gray-100"><td class="pl-16 py-2 w-32">${dt.date}</td><td class="py-2">${dt.desc}</td><td class="pr-4 py-2 text-right font-mono">${dt.val.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="w-32"></td></tr>`; });
-            } else { dc.innerHTML = `<tr class=""><td colspan="4" class="pl-16 py-2 italic text-gray-400">ไม่มีรายการย่อย</td></tr>`; }
+                // ปรับ padding รายการย่อยตรงนี้ (py-1)
+                data.details.forEach(dt => { dc.innerHTML += `<tr class="border-b border-gray-100 hover:bg-gray-100"><td class="pl-16 py-1 w-32">${dt.date}</td><td class="py-1">${dt.desc}</td><td class="pr-4 py-1 text-right font-mono">${dt.val.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="w-32"></td></tr>`; });
+            } else { dc.innerHTML = `<tr class=""><td colspan="4" class="pl-16 py-1 italic text-gray-400">ไม่มีรายการย่อย</td></tr>`; }
             
             tbody.appendChild(clone);
         }
 
-        // ============================================
-        // 3. COLLAPSIBLE LOGIC (Global Function - Fix Click Issue)
-        // ============================================
-        window.toggleSection = (groupId, btn) => {
-            const rows = document.querySelectorAll(`.${groupId}`);
-            const icon = btn.querySelector('.icon-section');
-            let isOpening = false;
+        // 3. Render บรรทัดรวม (Total Row)
+        function renderTotalRow(tbody, title, amount, percent, cssClass) { 
+            // ปรับ p-3 เป็น py-1 px-2 ตรงนี้
+            tbody.innerHTML += `<tr class="${cssClass}"><td></td><td class="py-1 px-2 font-bold text-right pr-8">${title}</td><td class="py-1 px-2 font-bold text-right border-t border-gray-300 border-dashed">${amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="py-1 px-2 text-right text-sm font-semibold">${percent.toFixed(2)}%</td></tr>`; 
+        }
 
-            // เช็คสถานะจากแถวแรก (ถ้าซ่อนอยู่ = กำลังจะเปิด)
-            if (rows.length > 0 && rows[0].classList.contains('hidden')) {
-                isOpening = true;
-            }
-
-            rows.forEach(row => {
-                if (isOpening) {
-                    row.classList.remove('hidden'); // แสดง
-                } else {
-                    row.classList.add('hidden');    // ซ่อนกลับ
-                    // ถ้ามีลูกย่อย (Detail Row) เปิดค้างไว้ ก็ซ่อนด้วย
-                    const nextRow = row.nextElementSibling;
-                    if(nextRow && nextRow.classList.contains('detail-row')) {
-                        nextRow.classList.add('hidden');
-                        const arrow = row.querySelector('.icon-expand');
-                        if(arrow) arrow.classList.remove('rotate-90');
-                    }
-                }
-            });
-
-            // หมุนลูกศร
-            if (icon) {
-                if (isOpening) icon.classList.add('rotate-90');
-                else icon.classList.remove('rotate-90');
-            }
-        };
+        // 4. Render สรุปใหญ่ (Summary Row - กำไรสุทธิ)
+        function renderSummaryRow(tbody, title, amount, percent, cssClass) { 
+            // ปรับ p-4 เป็น py-2 px-4 (ให้ใหญ่กว่าตัวอื่นนิดนึง แต่ยังบาง)
+            tbody.innerHTML += `<tr class="${cssClass}"><td></td><td class="py-2 px-4 text-right pr-8">${title}</td><td class="py-2 px-4 text-right">${amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="py-2 px-4 text-right text-sm">${percent.toFixed(2)}%</td></tr>`; 
+        }
 
         // Standard Helpers (No change needed)
         function renderTotalRow(tbody, title, amount, percent, cssClass) { tbody.innerHTML += `<tr class="${cssClass}"><td></td><td class="p-3 font-bold text-right pr-8">${title}</td><td class="p-3 font-bold text-right border-t border-gray-300 border-dashed">${amount.toLocaleString(undefined, {minimumFractionDigits: 2})}</td><td class="p-3 text-right text-sm font-semibold">${percent.toFixed(2)}%</td></tr>`; }
