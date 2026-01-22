@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>หนุ่มดำเนิน - ตรวจสอบความหวาน</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- Styles พื้นฐาน (Theme เดิม) --- */
+        :root {
+            --primary-green: #00B900;
+            --dark-green: #166534;
+            --bg-color: #f0fdf4;
+            --card-bg: #ffffff;
+        }
+        body { font-family: 'Kanit', sans-serif; background-color: var(--bg-color); display: flex; flex-direction: column; align-items: center; padding: 30px 20px; color: #333; min-height: 100vh; margin: 0; }
+        
+        .container { width: 100%; max-width: 420px; }
+
+        /* --- Header & Logo --- */
+        .header-area { text-align: center; margin-bottom: 25px; }
+        .brand-logo { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 10px; }
+        .brand-name { font-size: 20px; font-weight: 800; color: var(--dark-green); margin: 0; }
+        .page-subtitle { color: #666; font-size: 14px; margin-top: 5px; }
+
+        /* --- Sweetness Meter (Gauge) --- */
+        .meter-card {
+            background: white;
+            border-radius: 24px;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(22, 101, 52, 0.1);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .gauge-wrapper {
+            width: 200px;
+            height: 100px; /* ครึ่งวงกลม */
+            margin: 0 auto 20px auto;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .gauge-bg {
+            width: 200px; height: 200px;
+            background: #e5e7eb;
+            border-radius: 50%;
+            position: absolute;
+            top: 0; left: 0;
+        }
+        
+        .gauge-fill {
+            width: 200px; height: 200px;
+            background: conic-gradient(from 270deg, #ffd700 0%, #00B900 100%);
+            border-radius: 50%;
+            position: absolute;
+            top: 0; left: 0;
+            transform: rotate(-180deg); /* เริ่มต้นที่ 0 */
+            transition: transform 1.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        
+        .gauge-cover {
+            width: 160px; height: 160px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 20px; left: 20px;
+            display: flex;
+            align-items: flex-end; /* ชิดล่างของครึ่งวงกลม */
+            justify-content: center;
+            z-index: 2;
+        }
+
+        .brix-value-wrapper {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+        }
+
+        .brix-number { font-size: 48px; font-weight: 800; line-height: 1; color: var(--dark-green); }
+        .brix-unit { font-size: 14px; color: #888; font-weight: 400; display: block; margin-top: 5px; }
+        .brix-label { font-size: 16px; font-weight: 600; color: #00B900; margin-top: 10px; }
+
+        /* --- Details Grid --- */
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .detail-item {
+            background: white;
+            padding: 15px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        
+        .detail-icon { font-size: 24px; color: var(--primary-green); margin-bottom: 8px; }
+        .detail-title { font-size: 12px; color: #888; margin-bottom: 2px; }
+        .detail-value { font-size: 16px; font-weight: 600; color: #333; }
+
+        /* --- Q&A Accordion --- */
+        .qa-section { margin-bottom: 30px; }
+        .section-header { font-size: 18px; font-weight: 700; color: var(--dark-green); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        
+        .accordion-item {
+            background: white;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            border: 1px solid #f0f0f0;
+        }
+        
+        .accordion-header {
+            padding: 15px;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 15px;
+            color: #444;
+            transition: background 0.2s;
+        }
+        .accordion-header:hover { background: #f9f9f9; }
+        .accordion-header.active { color: var(--primary-green); }
+        .accordion-header i { transition: transform 0.3s; font-size: 14px; color: #ccc; }
+        .accordion-header.active i { transform: rotate(180deg); color: var(--primary-green); }
+        
+        .accordion-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: #fafafa;
+            padding: 0 15px;
+        }
+        .accordion-body p { margin: 15px 0; font-size: 14px; color: #666; line-height: 1.6; }
+
+        /* --- CTA Button --- */
+        .cta-btn {
+            display: flex; justify-content: center; align-items: center; gap: 10px;
+            width: 100%; padding: 16px;
+            background: linear-gradient(45deg, #00B900, #009e46);
+            color: white; border: none; border-radius: 50px;
+            font-size: 18px; font-weight: 700; text-decoration: none;
+            box-shadow: 0 8px 20px rgba(0, 185, 0, 0.3);
+            transition: transform 0.2s;
+        }
+        .cta-btn:active { transform: scale(0.98); }
+        
+        /* Floating Elements */
+        .bg-element { position: fixed; z-index: -1; opacity: 0.1; animation: float 6s ease-in-out infinite; pointer-events: none; }
+        @keyframes float { 0% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-15px) rotate(5deg); } 100% { transform: translateY(0px) rotate(0deg); } }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header-area">
+            <img src="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8" class="brand-logo" alt="Logo">
+            <h1 class="brand-name">หนุ่มดำเนิน</h1>
+            <div class="page-subtitle">Pure Coconut Water 100%</div>
+        </div>
+
+        <div class="meter-card">
+            <div style="font-size: 14px; color:#888; margin-bottom: 15px;">ความหวานธรรมชาติขวดนี้</div>
+            
+            <div class="gauge-wrapper">
+                <div class="gauge-bg"></div>
+                <div class="gauge-fill" id="gauge-fill"></div> <div class="gauge-cover"></div> <div class="brix-value-wrapper">
+                    <div class="brix-number" id="brix-display">0.0</div>
+                </div>
+            </div>
+            <span class="brix-unit">ค่าความหวาน (Brix)</span>
+            
+            <div class="brix-label" id="brix-text">กำลังวิเคราะห์...</div>
+        </div>
+
+        <div class="details-grid">
+            <div class="detail-item">
+                <div class="detail-icon"><i class="fa-regular fa-calendar-check"></i></div>
+                <div class="detail-title">วันที่เก็บเกี่ยว</div>
+                <div class="detail-value" id="harvest-date">-</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-icon"><i class="fa-solid fa-location-dot"></i></div>
+                <div class="detail-title">แหล่งปลูก</div>
+                <div class="detail-value">ดำเนินสะดวก</div>
+            </div>
+        </div>
+
+        <div class="qa-section">
+            <div class="section-header">
+                <i class="fa-solid fa-circle-question" style="color:#00B900;"></i> เรื่องน่ารู้ของน้ำมะพร้าว
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    ทำไมแต่ละขวดหวานไม่เท่ากัน?
+                    <i class="fa-solid fa-chevron-down"></i>
+                </div>
+                <div class="accordion-body">
+                    <p>เพราะเป็นน้ำมะพร้าวแท้ 100% จากธรรมชาติ ไม่เติมน้ำตาล ความหวานจึงขึ้นอยู่กับอายุของลูกมะพร้าว สภาพอากาศ และฤดูกาลในช่วงที่เก็บเกี่ยวครับ (ปกติจะอยู่ที่ 6.5 - 7.5 Brix)</p>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    ค่า Brix คืออะไร?
+                    <i class="fa-solid fa-chevron-down"></i>
+                </div>
+                <div class="accordion-body">
+                    <p>Brix (บริกซ์) คือหน่วยวัดความหวาน ยิ่งค่าสูง = ยิ่งหวาน สำหรับมะพร้าวน้ำหอมที่ดี ค่า Brix ควรอยู่ระหว่าง 6-8 เพื่อรสชาติที่สดชื่นที่สุดครับ</p>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    เก็บได้นานแค่ไหน?
+                    <i class="fa-solid fa-chevron-down"></i>
+                </div>
+                <div class="accordion-body">
+                    <p>เนื่องจากไม่ใส่วัตถุกันเสีย ควรเก็บในตู้เย็นช่องธรรมดา (2-4 องศา) ได้นาน 3-5 วัน หากเปิดขวดแล้วแนะนำให้ดื่มให้หมดภายในวันเดียวครับ</p>
+                </div>
+            </div>
+        </div>
+
+        <a href="#" class="cta-btn">
+            <i class="fa-solid fa-cart-shopping"></i> สั่งซื้อเพิ่ม (ส่งถึงบ้าน)
+        </a>
+        
+        <div style="text-align: center; margin-top: 20px; font-size: 12px; color: #aaa;">
+            Product ID: <span id="product-id">ND-00000</span>
+        </div>
+
+    </div>
+
+    <i class="fa-solid fa-leaf bg-element" style="color:#bbf7d0; font-size: 100px; top: -20px; right: -20px;"></i>
+    <i class="fa-solid fa-droplet bg-element" style="color:#bbf7d0; font-size: 60px; bottom: 50px; left: -10px; animation-delay: 2s;"></i>
+
+    <script>
+        // ฟังก์ชันดึงค่าจาก URL (Query String)
+        // วิธีใช้: yourwebsite.com?brix=7.2&date=22/01/67
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        // ตั้งค่าเริ่มต้น (Simulation)
+        function initPage() {
+            // 1. รับค่าความหวานจาก URL ถ้าไม่มีให้สุ่มระหว่าง 6.8 - 7.5
+            let brix = parseFloat(getQueryParam('brix'));
+            if (isNaN(brix)) {
+                brix = (Math.random() * (7.5 - 6.8) + 6.8).toFixed(1); // สุ่มค่า demo
+            }
+
+            // 2. รับวันที่เก็บเกี่ยว ถ้าไม่มีใช้วันปัจจุบัน
+            let date = getQueryParam('date');
+            if (!date) {
+                const today = new Date();
+                date = today.getDate() + '/' + (today.getMonth()+1) + '/' + (today.getFullYear()+543).toString().slice(-2);
+            }
+
+            // แสดงผลข้อมูล
+            updateGauge(brix);
+            document.getElementById('harvest-date').innerText = date;
+            document.getElementById('product-id').innerText = 'ND-' + Math.floor(10000 + Math.random() * 90000);
+        }
+
+        // ฟังก์ชันอัปเดตเกจวัดความหวาน
+        function updateGauge(value) {
+            const display = document.getElementById('brix-display');
+            const fill = document.getElementById('gauge-fill');
+            const text = document.getElementById('brix-text');
+
+            // Animation ตัวเลขวิ่ง
+            let currentVal = 0;
+            const interval = setInterval(() => {
+                currentVal += 0.1;
+                display.innerText = currentVal.toFixed(1);
+                if (currentVal >= value) {
+                    display.innerText = value; // ค่าสุดท้ายจริง
+                    clearInterval(interval);
+                }
+            }, 30);
+
+            // คำนวณองศาการหมุน (Max Brix สมมติที่ 10 = 180องศา)
+            // สูตร: (value / 10) * 180 - 180 (เพราะเราเริ่ม rotate ที่ -180)
+            const maxBrix = 10; 
+            const rotation = (value / maxBrix) * 180 - 180;
+            
+            // รอแป๊บนึงค่อยหมุนเกจ เพื่อความสวยงาม
+            setTimeout(() => {
+                fill.style.transform = `rotate(${rotation}deg)`;
+            }, 300);
+
+            // กำหนดคำนิยามความหวาน
+            if(value < 6.5) text.innerText = "หวานน้อย (สดชื่น)";
+            else if(value < 7.5) text.innerText = "หวานกลมกล่อม (ยอดนิยม)";
+            else text.innerText = "หวานฉ่ำพิเศษ!";
+        }
+
+        // ฟังก์ชัน Accordion
+        function toggleAccordion(header) {
+            header.classList.toggle('active');
+            const body = header.nextElementSibling;
+            
+            if (header.classList.contains('active')) {
+                body.style.maxHeight = body.scrollHeight + "px";
+            } else {
+                body.style.maxHeight = 0;
+            }
+        }
+
+        // เริ่มทำงานเมื่อโหลดหน้า
+        window.onload = initPage;
+
+    </script>
+</body>
+</html>
