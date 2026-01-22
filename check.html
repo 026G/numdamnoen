@@ -32,20 +32,21 @@
             background: white;
             border-radius: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-            padding: 20px 0;
+            padding: 20px 0 10px 0; /* เพิ่ม padding ล่างนิดหน่อย */
             overflow: hidden; 
         }
 
         .graph-scroll-area {
             width: 100%;
             overflow-x: auto;
-            padding-right: 50px; /* เว้นที่ด้านขวาเพิ่มขึ้น สำหรับแถบสี */
+            padding-right: 50px;
             scrollbar-width: none; 
             -ms-overflow-style: none;
         }
         .graph-scroll-area::-webkit-scrollbar { display: none; }
 
-        svg { display: block; height: 180px; overflow: visible; }
+        /* แก้ไข: เพิ่มความสูง SVG ให้พอดีกับวันที่ */
+        svg { display: block; height: 220px; overflow: visible; }
 
         /* เส้นและจุด */
         .line-path { fill: none; stroke: #16a34a; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
@@ -54,51 +55,48 @@
         .dot { fill: white; stroke: #16a34a; stroke-width: 2; cursor: pointer; transition: all 0.2s; }
         .dot.active { fill: #16a34a; stroke: #bbf7d0; stroke-width: 4; r: 6; }
         
-        .date-label { font-size: 10px; fill: #94a3b8; text-anchor: middle; }
-        .date-label.active { fill: #166534; font-weight: bold; }
+        /* แก้ไข: ปรับตำแหน่งวันที่ให้ชัดขึ้น */
+        .date-label { font-size: 11px; fill: #94a3b8; text-anchor: middle; font-family: 'Kanit', sans-serif; }
+        .date-label.active { fill: #166534; font-weight: 600; font-size: 12px; }
 
         .cursor-line { stroke: #cbd5e1; stroke-width: 1; stroke-dasharray: 4; opacity: 0; }
         .cursor-line.show { opacity: 1; }
         .h-grid-line { stroke: #f1f5f9; stroke-width: 1; }
 
-        /* --- FIXED RIGHT AXIS (แกน Y + แถบสี) --- */
+        /* --- FIXED RIGHT AXIS --- */
         .y-axis-overlay {
             position: absolute;
             top: 20px; 
-            bottom: 20px; /* ให้ตรงกับความสูงกราฟ */
+            bottom: 40px; /* เว้นที่ด้านล่างให้วันที่ด้วย */
             right: 0;
             width: 45px;
             pointer-events: none; 
             z-index: 10;
         }
 
-        /* 1. แถบสีไล่ระดับ (Gradient Bar) */
+        /* แถบสี */
         .sweetness-bar {
             position: absolute;
-            right: 0; /* ชิดขอบขวาสุด */
+            right: 0; 
             top: 0;
-            bottom: 30px; /* เว้นพื้นที่ด้านล่างไว้สำหรับ label วันที่ */
+            bottom: 0; /* เต็มความสูงที่กำหนดใน .y-axis-overlay */
             width: 6px;
-            background: linear-gradient(to top, 
-                #4ade80 0%,   /* 6.0 เขียว */
-                #facc15 33%,  /* 7.0 เหลือง */
-                #fb923c 66%,  /* 8.0 ส้ม */
-                #ef4444 100%  /* 9.0 แดง */
-            );
+            background: linear-gradient(to top, #4ade80 0%, #facc15 33%, #fb923c 66%, #ef4444 100%);
             border-top-left-radius: 4px;
             border-bottom-left-radius: 4px;
         }
 
-        /* 2. ตัวเลขบอกระดับ */
+        /* ตัวเลขบอกระดับ */
         .y-label {
             position: absolute;
-            right: 12px; /* ขยับออกมาจากแถบสี */
+            right: 12px;
             font-size: 10px;
             font-weight: 700;
             color: #94a3b8;
             transform: translateY(-50%);
-            background: rgba(255,255,255,0.8); /* พื้นหลังขาวจางๆ ให้อ่านง่าย */
+            background: rgba(255,255,255,0.85);
             padding-left: 5px;
+            border-radius: 4px;
         }
 
     </style>
@@ -123,7 +121,7 @@
             
             <div class="y-axis-overlay" id="y-axis-container">
                 <div class="sweetness-bar"></div>
-                </div>
+            </div>
 
             <div class="graph-scroll-area" id="scroll-area">
                 <svg id="chart-svg">
@@ -137,7 +135,7 @@
                     <g id="grid-layer"></g> 
                     <path id="area-layer" class="area-path"></path>
                     <path id="line-layer" class="line-path"></path>
-                    <line id="cursor-line" class="cursor-line" y1="0" y2="180"></line>
+                    <line id="cursor-line" class="cursor-line" y1="0" y2="200"></line>
                     <g id="dots-layer"></g>
                     <g id="labels-layer"></g>
                 </svg>
@@ -170,7 +168,7 @@
         }
 
         // --- Chart Config ---
-        const CHART_HEIGHT = 150;
+        const CHART_HEIGHT = 150; // ความสูงเฉพาะส่วนเส้นกราฟ
         const TOP_PADDING = 20;
         const STEP_X = 50;
         const MIN_BRIX = 6.0;
@@ -202,7 +200,7 @@
             const svg = document.getElementById('chart-svg');
             svg.setAttribute('width', totalWidth);
 
-            // 3. Draw Axis Numbers
+            // 3. Draw Axis Numbers & Grid
             const yAxisContainer = document.getElementById('y-axis-container');
             const gridLayer = document.getElementById('grid-layer');
             
@@ -251,9 +249,11 @@
                 dot.addEventListener('click', () => { selectPoint(index, pt, x); });
                 document.getElementById('dots-layer').appendChild(dot);
 
-                // Date Label
+                // แก้ไข: Date Label
                 const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                text.setAttribute("x", x); text.setAttribute("y", 195);
+                // ตำแหน่ง Y = 200 (CHART_HEIGHT(150) + TOP_PADDING(20) + 30px)
+                text.setAttribute("x", x); 
+                text.setAttribute("y", 200); 
                 text.setAttribute("class", "date-label");
                 text.textContent = pt.date.toLocaleDateString('th-TH', { day: 'numeric' });
                 text.setAttribute("data-index", index);
