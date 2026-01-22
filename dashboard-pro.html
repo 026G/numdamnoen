@@ -181,7 +181,8 @@
                     <div class="bg-white p-6 rounded-lg shadow border-t-4 border-blue-500"><h3 class="font-bold text-gray-800 mb-2">⏰ ช่วงเวลาทำเงิน (Peak Time)</h3><div class="text-xs text-gray-400 mb-2">*รวมทุกช่องทาง</div><div class="chart-container" style="height:250px"><canvas id="peakTimeChart"></canvas></div></div>
                     <div class="bg-white p-6 rounded-lg shadow border-t-4 border-green-500"><h3 class="font-bold text-gray-800 mb-2">🛒 Basket Size (ยอดต่อบิล)</h3><div class="chart-container" style="height:250px"><canvas id="basketChart"></canvas></div></div>
                 </div>
-            </div> <div id="report-section" class="section-content hidden">
+            </div> 
+            <div id="report-section" class="section-content hidden">
                 <div class="bg-white p-8 rounded-lg shadow-lg min-h-screen">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 border-b pb-6">
                         <h2 class="text-3xl font-bold text-gray-800 flex items-center mb-4 md:mb-0">📑 งบกำไร-ขาดทุน (P&L Detailed)</h2>
@@ -199,6 +200,25 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <div class="overflow-x-auto rounded-lg border border-gray-200">
+                        <table class="w-full text-left border-collapse">
+                            <thead class="bg-indigo-50 text-indigo-900 font-semibold uppercase text-xs tracking-wider sticky top-0 z-10">
+                                <tr>
+                                    <th class="py-2 px-3 w-10 text-center"></th>
+                                    <th class="py-2 px-3">รายการบัญชี (Account)</th>
+                                    <th class="py-2 px-3 text-right">จำนวนเงิน (บาท)</th>
+                                    <th class="py-2 px-3 text-right w-24 text-gray-500">% Gross<br>(ก่อนหัก)</th>
+                                    <th class="py-2 px-3 text-right w-24 text-blue-600">% Net<br>(หลังหัก)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportBody" class="text-sm text-gray-700 divide-y divide-gray-100">
+                                <tr><td colspan="5" class="text-center py-12 text-gray-400">กดค้นหาเพื่อดูรายงาน</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
                     <div class="overflow-x-auto rounded-lg border border-gray-200"><table class="w-full text-left border-collapse"><thead class="bg-indigo-50 text-indigo-900 font-semibold uppercase text-xs tracking-wider sticky top-0 z-10"><tr><th class="p-4 w-12 text-center"></th><th class="p-4">รายการบัญชี (Account)</th><th class="p-4 text-right">จำนวนเงิน (บาท)</th><th class="p-4 text-right w-32">% ยอดขาย</th></tr></thead><tbody id="reportBody" class="text-sm text-gray-700 divide-y divide-gray-100"><tr><td colspan="4" class="text-center py-12 text-gray-400">กดค้นหาเพื่อดูรายงาน</td></tr></tbody></table></div>
                 </div>
             </div> <div id="search-section" class="section-content hidden">
@@ -992,7 +1012,7 @@
         }
 
         // ============================================
-        // 2. GENERATE REPORT (ฉบับแก้ไข: String Builder เพื่อประสิทธิภาพ + แก้คลิกไม่ติด)
+        // 2. GENERATE REPORT (ฉบับ V.58: แสดง % Gross และ % Net คู่กัน)
         // ============================================
         window.generateReport = async () => {
             const startDate = document.getElementById('startDate').value;
@@ -1001,7 +1021,7 @@
             
             showLoading(true);
             const tbody = document.getElementById('reportBody');
-            tbody.innerHTML = ''; // ล้างของเก่า
+            tbody.innerHTML = ''; 
             
             try {
                 // --- 1. เตรียมข้อมูล (Logic เดิม) ---
@@ -1024,7 +1044,6 @@
                 snapExp.forEach(doc => { const d = doc.data(); addTx(d.category, accountNames[d.category] || d.category, d.date, d.memo || '-', d.amount); });
 
                 const allAccounts = Object.values(ledger);
-                // เรียงลำดับบัญชีตามรหัส
                 allAccounts.sort((a,b) => a.code.localeCompare(b.code));
 
                 const revenueList = allAccounts.filter(i => i.code.startsWith('4'));
@@ -1038,9 +1057,10 @@
                 const controlList = allAccounts.filter(i => i.code.startsWith('04') && !loanCodes.includes(i.code) && !i.name.includes('สินเชื่อ') && !i.name.includes('ผ่อน'));
 
                 const sum = (list) => list.reduce((a, b) => a + b.amount, 0);
-                const totalRevenue = sum(revenueList);
+                const totalRevenue = sum(revenueList);     // ยอดขายรวม (Gross Sales)
                 const totalDeductions = sum(deductionList);
-                const netSales = totalRevenue - totalDeductions;
+                const netSales = totalRevenue - totalDeductions; // ยอดขายสุทธิ (Net Sales)
+                
                 const totalCOGS = sum(cogsList);
                 const totalLabor = sum(laborList);
                 const grossProfit = netSales - totalCOGS - totalLabor;
@@ -1051,34 +1071,37 @@
                 const totalOpexAll = totalControl + totalFixed + totalLoan;
                 const netProfit = grossProfit - totalOpexAll;
 
-                // --- 2. สร้าง HTML String (วิธีใหม่: เร็วและเสถียร) ---
+                // --- 2. Helper คำนวณ % ---
+                // คำนวณ % เทียบ Gross (สีเทา)
+                const pctG = (val) => totalRevenue > 0 ? ((val/totalRevenue)*100).toFixed(1)+'%' : '0%';
+                // คำนวณ % เทียบ Net (สีน้ำเงิน) - มาตรฐานบัญชี
+                const pctN = (val) => netSales > 0 ? ((val/netSales)*100).toFixed(1)+'%' : '0%';
+
+                // --- 3. สร้าง HTML String ---
                 let html = '';
 
-                // Helper: สร้างหัวข้อหมวด (Header)
+                // Helper: Header (เพิ่ม colspan เป็น 5)
                 const buildHeader = (title, css, id) => `
                     <tr class="section-header border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors" onclick="toggleSection('${id}', this)">
-                        <td colspan="4" class="py-2 px-3 font-bold ${css}">
+                        <td colspan="5" class="py-2 px-3 font-bold ${css}">
                             <span class="icon-section mr-2 inline-block transition-transform">▶</span> ${title}
                         </td>
                     </tr>`;
 
-                // Helper: สร้างรายการบัญชี (Rows)
+                // Helper: Rows (เพิ่มคอลัมน์ % Net)
                 const buildRows = (list, groupId) => {
                     if(list.length === 0) return '';
                     return list.map(item => {
-                        const pct = totalRevenue > 0 ? ((item.amount/totalRevenue)*100).toFixed(2)+'%' : '0%';
-                        // สร้างรายการย่อย (Details)
                         item.details.sort((a,b) => b.date.localeCompare(a.date));
                         const detailsHtml = item.details.map(dt => 
                             `<tr class="border-b border-gray-100 hover:bg-white text-xs text-gray-500">
                                 <td class="pl-12 py-1 w-32">${dt.date}</td>
-                                <td class="py-1">${dt.desc}</td>
+                                <td class="py-1" colspan="2">${dt.desc}</td>
                                 <td class="pr-4 py-1 text-right font-mono">${dt.val.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
                                 <td></td>
                             </tr>`
                         ).join('');
 
-                        // สร้างรายการหลัก (Main Row) + รายการย่อย (Hidden Row)
                         return `
                         <tr class="hidden ${groupId} hover:bg-indigo-50 cursor-pointer transition-colors border-b border-gray-100 group" onclick="toggleDetail(this)">
                             <td class="py-1 px-2 text-center text-gray-300 group-hover:text-indigo-500 w-10">
@@ -1086,20 +1109,22 @@
                             </td>
                             <td class="py-1 px-2 font-medium text-gray-700 text-sm"><span class="font-mono text-gray-400 mr-2 text-xs">${item.code}</span>${item.name}</td>
                             <td class="py-1 px-2 text-right font-bold text-gray-800 text-sm">${item.amount.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
-                            <td class="py-1 px-2 text-right text-xs text-gray-400">${pct}</td>
+                            <td class="py-1 px-2 text-right text-xs text-gray-400 font-mono">${pctG(item.amount)}</td>
+                            <td class="py-1 px-2 text-right text-xs text-blue-600 font-mono font-bold">${pctN(item.amount)}</td>
                         </tr>
-                        <tr class="detail-row hidden bg-gray-50 shadow-inner"><td colspan="4" class="p-0"><table class="w-full">${detailsHtml}</table></td></tr>
+                        <tr class="detail-row hidden bg-gray-50 shadow-inner"><td colspan="5" class="p-0"><table class="w-full">${detailsHtml}</table></td></tr>
                         `;
                     }).join('');
                 };
 
-                // Helper: สร้างบรรทัดรวม (Total)
+                // Helper: Total (เพิ่มคอลัมน์ % Net)
                 const buildTotal = (title, amt, css) => `
                     <tr class="${css}">
                         <td></td>
                         <td class="py-1 px-2 font-bold text-right pr-8 text-sm">${title}</td>
                         <td class="py-1 px-2 font-bold text-right border-t border-gray-300 border-dashed text-sm">${amt.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
-                        <td class="py-1 px-2 text-right text-xs font-semibold">${totalRevenue > 0 ? ((amt/totalRevenue)*100).toFixed(2)+'%' : '0%'}</td>
+                        <td class="py-1 px-2 text-right text-xs text-gray-500 font-semibold">${pctG(amt)}</td>
+                        <td class="py-1 px-2 text-right text-xs text-blue-700 font-bold">${pctN(amt)}</td>
                     </tr>`;
 
                 // --- ประกอบร่าง HTML ---
@@ -1112,7 +1137,16 @@
                 // 2. Deductions
                 html += buildHeader("หัก: รายการหักจากรายได้", "text-pink-700 bg-pink-50 mt-2", "ded-g");
                 html += buildRows(deductionList, "ded-g");
-                html += buildTotal("รายได้สุทธิ (Net Sales)", netSales, "bg-gray-100 font-bold border-y-2 mt-2 text-gray-800");
+                // Net Sales Row (พิเศษหน่อย)
+                html += `
+                    <tr class="bg-gray-100 font-bold border-y-2 mt-2 text-gray-800">
+                        <td></td>
+                        <td class="py-1 px-2 text-right pr-8 text-sm">รายได้สุทธิ (Net Sales)</td>
+                        <td class="py-1 px-2 text-right text-sm">${netSales.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+                        <td class="py-1 px-2 text-right text-xs text-gray-500">${pctG(netSales)}</td>
+                        <td class="py-1 px-2 text-right text-xs text-blue-700">100%</td>
+                    </tr>
+                `;
 
                 // 3. COGS
                 html += buildHeader("ต้นทุนขาย (COGS)", "text-red-700 bg-red-50 mt-2", "cogs-g");
@@ -1125,7 +1159,7 @@
                 html += buildTotal("รวมต้นทุนแรงงาน", totalLabor, "text-yellow-800 bg-yellow-50 border-t-2 border-yellow-200");
 
                 // Gross Profit
-                html += `<tr class="bg-green-50 text-green-900 font-bold border-y-2 border-green-200"><td class="py-2"></td><td class="py-2 text-right pr-8">กำไรขั้นต้น (Gross Profit)</td><td class="py-2 text-right text-lg">${grossProfit.toLocaleString()}</td><td class="py-2 text-right text-sm">${netSales>0?((grossProfit/netSales)*100).toFixed(2):0}%</td></tr>`;
+                html += `<tr class="bg-green-50 text-green-900 font-bold border-y-2 border-green-200"><td class="py-2"></td><td class="py-2 text-right pr-8">กำไรขั้นต้น (Gross Profit)</td><td class="py-2 text-right text-lg">${grossProfit.toLocaleString()}</td><td class="py-2 text-right text-xs text-gray-500">${pctG(grossProfit)}</td><td class="py-2 text-right text-sm text-blue-700">${pctN(grossProfit)}</td></tr>`;
 
                 // 5. Controllable
                 html += buildHeader("ค่าใช้จ่ายที่ควบคุมได้", "text-teal-700 bg-teal-50 mt-2", "ctrl-g");
@@ -1133,7 +1167,7 @@
                 html += buildTotal("รวมส่วนควบคุมได้", totalControl, "text-teal-700 bg-teal-50 border-t-2 border-teal-200");
 
                 // PAC
-                html += `<tr class="bg-cyan-50 text-cyan-900 font-bold border-y-2 border-cyan-200"><td class="py-2"></td><td class="py-2 text-right pr-8">กำไรหลังหักค่าใช้จ่ายควบคุมได้ (PAC)</td><td class="py-2 text-right text-base">${pac.toLocaleString()}</td><td class="py-2 text-right text-sm">${netSales>0?((pac/netSales)*100).toFixed(2):0}%</td></tr>`;
+                html += `<tr class="bg-cyan-50 text-cyan-900 font-bold border-y-2 border-cyan-200"><td class="py-2"></td><td class="py-2 text-right pr-8">กำไรหลังหักค่าใช้จ่ายควบคุมได้ (PAC)</td><td class="py-2 text-right text-base">${pac.toLocaleString()}</td><td class="py-2 text-right text-xs text-gray-500">${pctG(pac)}</td><td class="py-2 text-right text-sm text-blue-700">${pctN(pac)}</td></tr>`;
 
                 // 6. Fixed
                 html += buildHeader("ค่าใช้จ่ายคงที่ (Fixed)", "text-gray-700 bg-gray-100 mt-2", "fixed-g");
@@ -1147,9 +1181,8 @@
 
                 // Net Profit
                 const netColor = netProfit >= 0 ? "bg-emerald-100 text-emerald-900" : "bg-red-100 text-red-900";
-                html += `<tr class="${netColor} font-extrabold text-xl border-y-4 border-double"><td class="py-4"></td><td class="py-4 text-right pr-8">กำไรสุทธิ (Net Profit)</td><td class="py-4 text-right">${netProfit.toLocaleString(undefined, {minimumFractionDigits:2})}</td><td class="py-4 text-right text-base">${netSales>0?((netProfit/netSales)*100).toFixed(2):0}%</td></tr>`;
+                html += `<tr class="${netColor} font-extrabold text-xl border-y-4 border-double"><td class="py-4"></td><td class="py-4 text-right pr-8">กำไรสุทธิ (Net Profit)</td><td class="py-4 text-right">${netProfit.toLocaleString(undefined, {minimumFractionDigits:2})}</td><td class="py-4 text-right text-xs text-gray-500 font-normal">${pctG(netProfit)}</td><td class="py-4 text-right text-base">${pctN(netProfit)}</td></tr>`;
 
-                // ยัด HTML ใส่ตารางทีเดียว (ทำให้ onclick ทำงานได้แน่นอน)
                 tbody.innerHTML = html;
 
             } catch(e) { console.error(e); alert("Error generating report"); }
