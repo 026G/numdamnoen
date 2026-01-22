@@ -3,97 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>หนุ่มดำเนิน - ตรวจสอบที่มา</title>
+    <title>หนุ่มดำเนิน - ตรวจสอบความหวาน</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        /* --- Base Styles --- */
         body { font-family: 'Kanit', sans-serif; background-color: #f0fdf4; display: flex; flex-direction: column; align-items: center; padding: 30px 20px; color: #333; min-height: 100vh; margin: 0; }
         .container { width: 100%; max-width: 420px; }
         
-        /* Header */
-        .brand-header { text-align: center; margin-bottom: 20px; }
-        .brand-logo { width: 80px; height: 80px; border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        
-        /* --- STATUS BADGE (หัวใจสำคัญของโจทย์นี้) --- */
-        .product-status-card {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-            border: 1px solid #e2e8f0;
+        /* 1. Header Area */
+        .brand-header { text-align: center; margin-bottom: 25px; }
+        .brand-logo { width: 70px; height: 70px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .update-badge {
+            display: inline-block;
+            background: #fff;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 13px;
+            color: #166534;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            margin-top: 10px;
+            border: 1px solid #dcfce7;
         }
 
-        .status-badge {
-            display: inline-block; padding: 6px 15px; border-radius: 30px;
-            font-size: 14px; font-weight: 600; color: white; margin-bottom: 10px;
-        }
-        
-        /* สีสถานะ */
-        .bg-today { background: linear-gradient(to right, #16a34a, #059669); } /* วันนี้ */
-        .bg-past { background: linear-gradient(to right, #0284c7, #0369a1); } /* ของสต็อกเก่า */
-
-        .status-desc { font-size: 13px; color: #64748b; line-height: 1.5; }
-        .lot-date-big { font-size: 18px; font-weight: 800; color: #333; margin-top: 5px; }
-
-        /* --- BAR CHART (ความหวาน) --- */
+        /* 2. Main Result Card */
         .result-card {
-            background: white; border-radius: 20px; padding: 25px 20px;
+            background: white; border-radius: 20px; padding: 30px 20px;
             box-shadow: 0 8px 20px rgba(0,0,0,0.06); margin-bottom: 25px;
-            text-align: center; position: relative;
+            text-align: center; position: relative; border: 1px solid #f0f0f0;
         }
-        .brix-number { font-size: 48px; font-weight: 800; color: #166534; line-height: 1; }
-        .brix-label { font-size: 12px; color: #888; margin-bottom: 5px; }
+        .brix-big { font-size: 56px; font-weight: 800; color: #166534; line-height: 1; }
+        .brix-desc { font-size: 14px; color: #888; margin-bottom: 15px; }
         
+        /* Bar Chart */
         .bar-container {
-            position: relative; width: 100%; height: 35px; background: #eee;
-            border-radius: 50px; display: flex; overflow: hidden; margin: 25px 0 10px 0;
+            position: relative; width: 100%; height: 25px; background: #eee;
+            border-radius: 50px; display: flex; overflow: hidden; margin: 30px 0 10px 0;
         }
-        .bar-segment { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; color: rgba(0,0,0,0.4); border-right: 1px solid rgba(255,255,255,0.3); }
+        .bar-seg { flex: 1; border-right: 1px solid rgba(255,255,255,0.4); }
         .bg-1 { background:#86efac; } .bg-2 { background:#fde047; } .bg-3 { background:#fb923c; } .bg-4 { background:#f87171; }
-
-        .marker-wrapper {
-            position: absolute; top: -12px; left: 0%; transform: translateX(-50%);
+        
+        .marker {
+            position: absolute; top: -8px; left: 0%; transform: translateX(-50%);
             display: flex; flex-direction: column; align-items: center; transition: left 1s; z-index: 10;
         }
-        .pin-head { background: #166534; color: white; padding: 3px 8px; border-radius: 8px; font-size: 10px; font-weight: bold; white-space: nowrap; }
-        .pin-arrow { border-top: 6px solid #166534; border-left: 5px solid transparent; border-right: 5px solid transparent; }
+        .pin { background: #166534; color: white; padding: 2px 8px; border-radius: 8px; font-size: 10px; font-weight: bold; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .arrow { width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 5px solid #166534; }
 
-        /* --- HISTORY LIST --- */
-        .history-section {
-            background: rgba(255,255,255,0.7); border-radius: 20px; padding: 20px;
-            border: 1px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        /* 3. History Timeline */
+        .history-box {
+            background: rgba(255,255,255,0.8); border-radius: 20px; padding: 20px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
         }
-        .h-title { font-size: 16px; font-weight: 700; color: #166534; margin-bottom: 15px; display: flex; justify-content: space-between; }
+        .h-header { font-size: 16px; font-weight: 700; color: #166534; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
         
-        .history-list { max-height: 350px; overflow-y: auto; }
-        
-        .h-item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 12px; background: white; border-radius: 12px; margin-bottom: 8px;
-            border-left: 4px solid #eee; position: relative;
+        .timeline-list {
+            max-height: 400px; /* สูงประมาณ 7-8 รายการ */
+            overflow-y: auto;
+            position: relative;
         }
-        
-        /* Highlight Item (ขวดปัจจุบัน) */
-        .h-item.active-lot {
-            border: 2px solid #00B900;
-            background: #f0fdf4;
-            transform: scale(1.02);
-            box-shadow: 0 4px 12px rgba(0, 185, 0, 0.15);
-        }
-        .active-badge {
-            position: absolute; top: -8px; right: 10px;
-            background: #00B900; color: white; font-size: 9px; padding: 2px 8px; border-radius: 10px;
+        /* เส้นแกนเวลาด้านซ้าย */
+        .timeline-list::before {
+            content: ''; position: absolute; left: 18px; top: 0; bottom: 0;
+            width: 2px; background: #e2e8f0; z-index: 0;
         }
 
-        .h-date { font-size: 14px; font-weight: 600; color: #444; }
-        .h-brix { font-size: 16px; font-weight: 700; color: #166534; }
-        .h-status { font-size: 10px; color: #888; }
+        .t-item {
+            display: flex; align-items: flex-start; margin-bottom: 20px; position: relative; z-index: 1;
+        }
+        .t-dot {
+            width: 12px; height: 12px; border-radius: 50%; background: #ccc;
+            margin: 5px 12px 0 12px; flex-shrink: 0; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .t-content {
+            background: white; padding: 10px 15px; border-radius: 12px; width: 100%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center;
+        }
         
-        .cta-btn { display: block; width: 100%; padding: 14px; text-align: center; background: #00B900; color: white; border-radius: 50px; text-decoration: none; font-weight: 700; margin-top: 20px; box-shadow: 0 5px 15px rgba(0,185,0,0.3); }
+        .date-col { font-size: 14px; font-weight: 600; color: #444; }
+        .date-col span { display: block; font-size: 11px; color: #999; font-weight: 400; }
+        .val-col { text-align: right; }
+        .val-num { font-size: 16px; font-weight: 800; color: #333; }
+        .val-source { font-size: 10px; color: #aaa; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; margin-top: 2px; display: inline-block;}
+
+        /* สี Dot ตามความหวาน */
+        .dot-green { background: #4ade80; }
+        .dot-yellow { background: #facc15; }
+        .dot-orange { background: #fb923c; }
+        .dot-red { background: #f87171; }
 
     </style>
 </head>
@@ -102,189 +99,165 @@
     <div class="container">
         <div class="brand-header">
             <img src="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8" class="brand-logo" alt="Logo">
-            <h2 style="margin:5px 0 0 0; color:#166534;">หนุ่มดำเนิน</h2>
-        </div>
-
-        <div class="product-status-card" id="status-card">
-            <div style="color:#aaa;">กำลังอ่านข้อมูลจาก QR Code...</div>
+            <h3 style="margin:5px 0 0 0; color:#166534;">หนุ่มดำเนิน</h3>
+            <div class="update-badge">
+                <i class="fa-solid fa-calendar-check"></i> ข้อมูลอัพเดต: <span id="current-date-text">--/--/--</span>
+            </div>
         </div>
 
         <div class="result-card">
-            <div class="brix-number" id="brix-val">0.0</div>
-            <div class="brix-label">ระดับความหวาน (Brix)</div>
-            
+            <div style="font-size:12px; color:#aaa; margin-bottom:5px;">ความหวานขวดนี้</div>
+            <div class="brix-big" id="main-brix">-.-</div>
+            <div class="brix-desc" id="main-status">กำลังโหลด...</div>
+
             <div style="position: relative;">
-                <div class="marker-wrapper" id="marker">
-                    <div class="pin-head">ขวดนี้</div>
-                    <div class="pin-arrow"></div>
+                <div class="marker" id="marker">
+                    <div class="pin">ขวดนี้</div>
+                    <div class="arrow"></div>
                 </div>
                 <div class="bar-container">
-                    <div class="bar-segment bg-1">น้อย</div>
-                    <div class="bar-segment bg-2">กลาง</div>
-                    <div class="bar-segment bg-3">มาก</div>
-                    <div class="bar-segment bg-4">สุด</div>
+                    <div class="bar-seg bg-1"></div>
+                    <div class="bar-seg bg-2"></div>
+                    <div class="bar-seg bg-3"></div>
+                    <div class="bar-seg bg-4"></div>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:10px; color:#ccc;">
+                    <span>น้อย</span><span>กลาง</span><span>มาก</span><span>สุด</span>
                 </div>
             </div>
-            <div style="font-size:16px; font-weight:600; color:#00B900; margin-top:10px;" id="taste-text">...</div>
         </div>
 
-        <div class="history-section">
-            <div class="h-title">
-                <span>ประวัติล็อตการผลิต</span>
-                <span style="font-size:12px; color:#999; font-weight:400;">(เลื่อนดูย้อนหลัง)</span>
+        <div class="history-box">
+            <div class="h-header">
+                ประวัติความหวาน (30 วัน)
+                <span style="font-size:11px; font-weight:400; color:#888;">เลื่อนดูได้</span>
             </div>
-            <div class="history-list" id="history-container">
+            <div class="timeline-list" id="timeline-container">
                 </div>
         </div>
-
-        <a href="#" class="cta-btn">สั่งซื้อ/จองล็อตถัดไป</a>
     </div>
 
     <script>
-        // ฟังก์ชันช่วยแปลงวันที่ให้เป็นรูปแบบที่เทียบง่าย (YYYY-MM-DD)
-        function formatDateToISO(date) {
-            return date.toISOString().split('T')[0];
-        }
+        // --- ส่วนจำลองฐานข้อมูล (Database Simulation) ---
+        // สมมติว่ามีข้อมูลแค่บางวัน (วันอื่นๆ คือหยุดผลิต)
+        const productionDB = {
+            '2026-01-22': 7.5, // วันนี้ (สมมติ)
+            // '2026-01-21': ไม่มีข้อมูล (หยุด) -> ระบบต้องดึงวันที่ 20 มาโชว์
+            '2026-01-20': 7.2,
+            '2026-01-19': 6.8,
+            // '2026-01-18': หยุด
+            '2026-01-17': 8.1,
+            '2026-01-14': 7.9
+        };
 
-        // ฟังก์ชันสร้าง Mockup ข้อมูลประวัติ 7 วันย้อนหลัง
-        function generateHistoryData(baseDate) {
-            let history = [];
-            for (let i = 0; i < 7; i++) {
-                let d = new Date(baseDate);
-                d.setDate(d.getDate() - i);
-                
-                // สุ่มค่าความหวานแต่ละวัน
-                let brix = (Math.random() * (8.5 - 6.5) + 6.5).toFixed(1);
-                
-                // สมมติวันที่ 3 (นับจากวันนี้) ร้านหยุด ไม่มีการผลิต
-                if (i === 3) { brix = null; } 
+        // ฟังก์ชันแปลงวันที่เป็น Key (YYYY-MM-DD)
+        const toKey = (d) => d.toISOString().split('T')[0];
 
-                history.push({
-                    date: d,
-                    dateStr: formatDateToISO(d),
-                    brix: brix
-                });
-            }
-            return history;
-        }
+        // ฟังก์ชันหลัก
+        function initSystem() {
+            // 1. จัดการ Header วันที่ปัจจุบัน (Real-time)
+            const now = new Date();
+            const options = { year: '2-digit', month: 'short', day: 'numeric' };
+            document.getElementById('current-date-text').innerText = now.toLocaleDateString('th-TH', options);
 
-        // --- MAIN LOGIC ---
-        function initPage() {
-            // 1. รับค่าจาก URL (QR Code)
+            // 2. ดึงค่าจาก QR Code (ถ้ามี)
             const urlParams = new URLSearchParams(window.location.search);
-            const qrBrix = urlParams.get('brix') || '7.2'; // ค่า Default ถ้าไม่มี
+            const qrBrix = urlParams.get('brix');
             
-            // รับวันที่จาก QR (สมมติส่งมาเป็น format 2026-01-22)
-            // ถ้าไม่มี ให้สมมติว่าเป็น "เมื่อวาน" เพื่อเทสระบบสต็อกตกค้าง
-            let yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            const qrDateStr = urlParams.get('date') || formatDateToISO(yesterday); 
-
-            // วันที่ปัจจุบัน (วันทีสแกน)
-            const today = new Date();
-            const todayStr = formatDateToISO(today);
-
-            // 2. เปรียบเทียบวันผลิต (QR) vs วันสแกน (Today)
-            const statusCard = document.getElementById('status-card');
-            const qrDateObj = new Date(qrDateStr);
-            const diffTime = Math.abs(today - qrDateObj);
-            const diffDays = Math.ceil((today.setHours(0,0,0,0) - qrDateObj.setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
-
-            let dateDisplay = qrDateObj.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
-
-            // LOGIC แสดงผลสถานะ
-            if (qrDateStr === todayStr) {
-                // กรณี: ผลิตวันนี้
-                statusCard.innerHTML = `
-                    <div class="status-badge bg-today"><i class="fa-solid fa-leaf"></i> ผลิตใหม่วันนี้</div>
-                    <div class="lot-date-big">${dateDisplay}</div>
-                    <div class="status-desc">สดจากสวน ลงขวดทันที<br>รสชาติหอมหวานธรรมชาติ 100%</div>
-                `;
-            } else if (diffDays > 0) {
-                // กรณี: ของล็อตก่อน (สต็อก)
-                statusCard.innerHTML = `
-                    <div class="status-badge bg-past"><i class="fa-solid fa-temperature-low"></i> สินค้าล็อตวันที่ ${dateDisplay}</div>
-                    <div class="lot-date-big" style="color:#0284c7;">อายุสินค้า ${diffDays} วัน</div>
-                    <div class="status-desc">
-                        เก็บรักษาในอุณหภูมิเย็นจัด (Cold Storage)<br>
-                        <span style="color:#0284c7; font-weight:600;"><i class="fa-solid fa-check-circle"></i> คุณภาพความหวานยังคงเดิม</span>
-                    </div>
-                `;
-            } else {
-                // กรณีแปลกๆ (อนาคต?)
-                 statusCard.innerHTML = `<div>ข้อมูลวันที่ไม่ถูกต้อง</div>`;
-            }
-
-            // 3. แสดงเกจความหวาน (ใช้ค่าจาก QR เท่านั้น ไม่สนใจวัน)
-            updateBar(qrBrix);
-
-            // 4. สร้างตารางประวัติ และ Highlight บรรทัดที่ตรงกับ QR
-            const historyData = generateHistoryData(today);
-            const historyContainer = document.getElementById('history-container');
+            // ถ้า QR มีค่า -> ใช้ค่านั้นเป็นหลัก (Main Card)
+            // ถ้า QR ไม่มีค่า (สแกนลิงก์กลาง) -> ใช้ข้อมูลล่าสุดของ "วันนี้"
+            let currentBrix = qrBrix ? parseFloat(qrBrix) : getDataWithFallback(now).brix;
             
-            historyData.forEach(item => {
-                // ข้ามวันที่ไม่มีการผลิต (ถ้ามี logic ร้านหยุด)
-                if(!item.brix && item.dateStr !== qrDateStr) return; 
+            updateMainCard(currentBrix);
 
-                // เช็คว่าเป็นล็อตเดียวกับขวดนี้ไหม?
-                const isCurrentBottle = (item.dateStr === qrDateStr);
-                
-                // ถ้าเป็นขวดนี้ ให้ใช้ค่าจาก QR (เผื่อ Database ไม่ตรง ให้เชื่อ QR ที่ขวดเป็นหลัก)
-                const displayBrix = isCurrentBottle ? qrBrix : (item.brix || "-");
-                
-                // กำหนดสีเส้นซ้าย
-                let stripColor = '#ccc';
-                if(displayBrix <= 6.9) stripColor = '#86efac';
-                else if(displayBrix <= 7.5) stripColor = '#fde047';
-                else if(displayBrix <= 8.0) stripColor = '#fb923c';
-                else stripColor = '#f87171';
-
-                const dayName = item.date.toLocaleDateString('th-TH', { weekday: 'long' });
-                const dateTh = item.date.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
-
-                const activeClass = isCurrentBottle ? 'active-lot' : '';
-                const badgeHtml = isCurrentBottle ? '<div class="active-badge">ขวดที่คุณถืออยู่</div>' : '';
-
-                const html = `
-                    <div class="h-item ${activeClass}" style="border-left-color: ${stripColor};">
-                        ${badgeHtml}
-                        <div>
-                            <div class="h-date">${dateTh} <span style="font-size:11px; color:#888;">${dayName}</span></div>
-                            <div class="h-status">${isCurrentBottle ? 'กำลังตรวจสอบ...' : (displayBrix=='-' ? 'ร้านหยุด' : 'จำหน่ายหมดแล้ว')}</div>
-                        </div>
-                        <div class="h-brix">${displayBrix} <span style="font-size:10px; font-weight:400; color:#aaa;">Brix</span></div>
-                    </div>
-                `;
-                historyContainer.innerHTML += html;
-            });
+            // 3. สร้าง Timeline 30 วัน
+            renderTimeline(30);
         }
 
-        // Helper Update Bar (Logic เดิม)
-        function updateBar(brix) {
-            document.getElementById('brix-val').innerText = brix;
+        // Logic หัวใจสำคัญ: การค้นหาข้อมูลย้อนหลัง (Recursive Fallback)
+        function getDataWithFallback(startDate) {
+            let d = new Date(startDate);
+            let steps = 0;
+            // วนลูปย้อนหลังไปเรื่อยๆ จนกว่าจะเจอข้อมูลจริง (Max 10 วันกันค้าง)
+            while (steps < 10) {
+                let key = toKey(d);
+                if (productionDB[key] !== undefined) {
+                    return { 
+                        brix: productionDB[key], 
+                        sourceDate: d, // วันที่เจอข้อมูลจริง
+                        isOriginal: (steps === 0) // ถ้าเจอเลย = จริง, ถ้าต้องย้อน = Fallback
+                    };
+                }
+                d.setDate(d.getDate() - 1); // ถอยหลัง 1 วัน
+                steps++;
+            }
+            return { brix: 7.0, sourceDate: startDate, isOriginal: false }; // กันตาย (Default)
+        }
+
+        function renderTimeline(days) {
+            const container = document.getElementById('timeline-container');
+            let html = '';
+            let cursorDate = new Date(); // เริ่มจากวันนี้
+
+            for (let i = 0; i < days; i++) {
+                // ดึงข้อมูล (พร้อม Logic ถอยหลังถ้าไม่เจอ)
+                const data = getDataWithFallback(cursorDate);
+                
+                // คำนวณสี
+                let colorClass = 'dot-green';
+                let textStatus = 'หวานน้อย';
+                if(data.brix > 6.9) { colorClass = 'dot-yellow'; textStatus = 'หวานกลาง'; }
+                if(data.brix > 7.5) { colorClass = 'dot-orange'; textStatus = 'หวานมาก'; }
+                if(data.brix > 8.0) { colorClass = 'dot-red'; textStatus = 'หวานสุด'; }
+
+                // จัดรูปแบบวันที่
+                const dateText = cursorDate.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
+                const dayName = cursorDate.toLocaleDateString('th-TH', { weekday: 'short' });
+
+                // ถ้าข้อมูลมาจากวันอื่น (Carry-over) ให้แสดง Note
+                const sourceNote = data.isOriginal ? 'ล็อตใหม่' : `จากล็อต ${data.sourceDate.getDate()}`;
+                const sourceStyle = data.isOriginal ? 'color:#16a34a; background:#dcfce7;' : 'color:#888; background:#f1f5f9;';
+
+                html += `
+                <div class="t-item">
+                    <div class="t-dot ${colorClass}"></div>
+                    <div class="t-content">
+                        <div class="date-col">
+                            ${dateText}
+                            <span>${dayName}</span>
+                        </div>
+                        <div class="val-col">
+                            <div class="val-num">${data.brix}</div>
+                            <div class="val-source" style="${sourceStyle}">${sourceNote}</div>
+                        </div>
+                    </div>
+                </div>
+                `;
+
+                cursorDate.setDate(cursorDate.getDate() - 1); // ถอยวันใน Loop
+            }
+            container.innerHTML = html;
+        }
+
+        function updateMainCard(brix) {
+            document.getElementById('main-brix').innerText = brix.toFixed(1);
+            
+            // Update Bar Position
             let percent = 0;
             let status = "";
+            if (brix <= 6.9) { status = "หวานน้อย (สดชื่น)"; percent = ((brix - 6.0)/0.9)*25; }
+            else if (brix <= 7.5) { status = "หวานกลาง (ยอดนิยม)"; percent = 25 + ((brix - 7.0)/0.5)*25; }
+            else if (brix <= 8.0) { status = "หวานมาก (หอม)"; percent = 50 + ((brix - 7.6)/0.4)*25; }
+            else { status = "หวานสุด (ฉ่ำ)"; percent = 75 + ((brix - 8.1)/0.9)*25; }
             
-            if (brix <= 6.9) {
-                status = "หวานน้อย (Healthy)";
-                percent = ((brix - 6.0) / 0.9) * 25;
-            } else if (brix <= 7.5) {
-                status = "หวานกลาง (Standard)";
-                percent = 25 + ((brix - 7.0) / 0.5) * 25;
-            } else if (brix <= 8.0) {
-                status = "หวานมาก (Sweet)";
-                percent = 50 + ((brix - 7.6) / 0.4) * 25;
-            } else {
-                status = "หวานสุด (Super)";
-                percent = 75 + ((brix - 8.1) / 0.9) * 25;
-            }
-            if(percent < 2) percent = 2; if(percent > 98) percent = 98;
+            if(percent<5) percent=5; if(percent>95) percent=95;
             
-            document.getElementById('taste-text').innerText = status;
-            setTimeout(() => { document.getElementById('marker').style.left = percent + "%"; }, 200);
+            document.getElementById('main-status').innerText = status;
+            setTimeout(() => { document.getElementById('marker').style.left = percent + "%"; }, 100);
         }
 
-        window.onload = initPage;
+        // Start
+        initSystem();
     </script>
 </body>
 </html>
