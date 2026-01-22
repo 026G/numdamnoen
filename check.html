@@ -15,7 +15,7 @@
         .header { text-align: center; margin-bottom: 20px; }
         .brand-logo { width: 60px; height: 60px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
-        /* 1. Display Card (ส่วนแสดงผลข้างบน) */
+        /* Display Card */
         .display-card {
             background: white; border-radius: 20px; padding: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px;
@@ -26,83 +26,65 @@
         .selected-status { font-size: 16px; font-weight: 600; color: #16a34a; margin-top: 5px; }
         .unit-label { font-size: 12px; color: #aaa; font-weight: 400; }
 
-        /* 2. Graph Container (พื้นที่เลื่อน) */
-        .graph-window {
-            width: 100%;
-            overflow-x: auto; /* เลื่อนแนวนอน */
+        /* --- GRAPH WRAPPER (ตัวคลุม) --- */
+        .chart-wrapper-outer {
+            position: relative; /* เพื่อให้วางแกน Y ทับได้ */
             background: white;
             border-radius: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.03);
             padding: 20px 0;
-            position: relative;
-            
-            /* ซ่อน Scrollbar */
+            overflow: hidden; /* บังส่วนเกิน */
+        }
+
+        /* พื้นที่กราฟเลื่อนได้ */
+        .graph-scroll-area {
+            width: 100%;
+            overflow-x: auto;
+            padding-right: 40px; /* เว้นที่ด้านขวาให้ตัวเลขแกน Y */
             scrollbar-width: none; 
             -ms-overflow-style: none;
         }
-        .graph-window::-webkit-scrollbar { display: none; }
+        .graph-scroll-area::-webkit-scrollbar { display: none; }
 
-        /* ตัว SVG ที่ใช้วาดเส้น */
-        svg {
-            display: block;
-            height: 180px; /* ความสูงกราฟ */
-            overflow: visible; /* ให้จุดเด้งออกมานอกกรอบได้ */
-        }
+        svg { display: block; height: 180px; overflow: visible; }
 
-        /* Styling เส้นและจุด */
-        .line-path {
-            fill: none;
-            stroke: #16a34a; /* สีเส้นเขียว */
-            stroke-width: 3;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-        .area-path {
-            fill: url(#gradient); /* สีจางๆ ใต้เส้น */
-            stroke: none;
-            opacity: 0.3;
-        }
+        /* เส้นและจุด */
+        .line-path { fill: none; stroke: #16a34a; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+        .area-path { fill: url(#gradient); stroke: none; opacity: 0.3; }
         
-        .dot {
-            fill: white;
-            stroke: #16a34a;
-            stroke-width: 2;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        /* จุดที่ถูกเลือก */
-        .dot.active {
-            fill: #16a34a;
-            stroke: #bbf7d0; /* ขอบเขียวอ่อน */
-            stroke-width: 4;
-            r: 6; /* ขยายขนาด */
-        }
+        .dot { fill: white; stroke: #16a34a; stroke-width: 2; cursor: pointer; transition: all 0.2s; }
+        .dot.active { fill: #16a34a; stroke: #bbf7d0; stroke-width: 4; r: 6; }
         
-        /* เส้นแกน X แนวนอน */
-        .grid-line {
-            stroke: #f1f5f9;
-            stroke-width: 1;
-        }
+        .date-label { font-size: 10px; fill: #94a3b8; text-anchor: middle; }
+        .date-label.active { fill: #166534; font-weight: bold; }
 
-        .date-label {
-            font-size: 10px;
-            fill: #94a3b8;
-            text-anchor: middle;
-        }
-        .date-label.active {
-            fill: #166534;
-            font-weight: bold;
-        }
-
-        /* เส้นแนวตั้งเวลาเลือก (Cursor Line) */
-        .cursor-line {
-            stroke: #cbd5e1;
-            stroke-width: 1;
-            stroke-dasharray: 4;
-            opacity: 0; /* ซ่อนก่อน */
-            transition: opacity 0.2s;
-        }
+        /* Cursor & Grid */
+        .cursor-line { stroke: #cbd5e1; stroke-width: 1; stroke-dasharray: 4; opacity: 0; }
         .cursor-line.show { opacity: 1; }
+        
+        /* Horizontal Grid Line (เส้นบรรทัดแนวนอน) */
+        .h-grid-line { stroke: #f1f5f9; stroke-width: 1; }
+
+        /* --- FIXED RIGHT AXIS (แกน Y ด้านขวา) --- */
+        .y-axis-overlay {
+            position: absolute;
+            top: 20px; /* ตรงกับ padding ของกราฟ */
+            bottom: 20px;
+            right: 0;
+            width: 35px; /* ความกว้างแถบตัวเลข */
+            background: linear-gradient(to left, rgba(255,255,255,1) 60%, rgba(255,255,255,0)); /* ไล่สีให้ตัวเลขชัด */
+            pointer-events: none; /* กดทะลุได้ */
+            z-index: 10;
+        }
+
+        .y-label {
+            position: absolute;
+            right: 8px;
+            font-size: 10px;
+            font-weight: 600;
+            color: #94a3b8;
+            transform: translateY(-50%); /* จัดกึ่งกลางแนวตั้ง */
+        }
 
     </style>
 </head>
@@ -122,14 +104,27 @@
             <div class="selected-status" id="show-status">...</div>
         </div>
 
-        <div class="graph-window" id="scroll-area">
-            <svg id="chart-svg">
-                <defs>
-                    <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" stop-color="#22c55e" /> <stop offset="100%" stop-color="#ffffff" stop-opacity="0" /> </linearGradient>
-                </defs>
-                
-                <g id="grid-layer"></g> <path id="area-layer" class="area-path"></path> <path id="line-layer" class="line-path"></path> <line id="cursor-line" class="cursor-line" y1="0" y2="180"></line> <g id="dots-layer"></g> <g id="labels-layer"></g> </svg>
+        <div class="chart-wrapper-outer">
+            
+            <div class="y-axis-overlay" id="y-axis-container">
+                </div>
+
+            <div class="graph-scroll-area" id="scroll-area">
+                <svg id="chart-svg">
+                    <defs>
+                        <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#22c55e" />
+                            <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+                        </linearGradient>
+                    </defs>
+                    
+                    <g id="grid-layer"></g> <path id="area-layer" class="area-path"></path>
+                    <path id="line-layer" class="line-path"></path>
+                    <line id="cursor-line" class="cursor-line" y1="0" y2="180"></line>
+                    <g id="dots-layer"></g>
+                    <g id="labels-layer"></g>
+                </svg>
+            </div>
         </div>
         
         <div style="text-align:center; font-size:11px; color:#94a3b8; margin-top:10px;">
@@ -138,19 +133,13 @@
     </div>
 
     <script>
-        // --- 1. Mock Database (เหมือนเดิม) ---
+        // Mock DB
         const db = {
-            '2026-01-22': 7.5, // วันนี้
-            '2026-01-20': 7.1,
-            '2026-01-19': 6.8,
-            '2026-01-17': 8.2,
-            '2026-01-14': 7.9,
-            '2026-01-10': 6.5
+            '2026-01-22': 7.5, '2026-01-20': 7.1, '2026-01-19': 6.8,
+            '2026-01-17': 8.2, '2026-01-14': 7.9, '2026-01-10': 6.5
         };
-
         const toKey = (d) => d.toISOString().split('T')[0];
 
-        // Fallback Logic
         function getDataRecursive(targetDate) {
             let d = new Date(targetDate);
             let steps = 0;
@@ -160,32 +149,30 @@
                 d.setDate(d.getDate() - 1);
                 steps++;
             }
-            return { val: 7.0 }; // Default
+            return { val: 7.0 };
         }
 
-        // --- 2. Chart Settings ---
-        const CHART_HEIGHT = 150; // ความสูงกราฟ
-        const TOP_PADDING = 20;   // เว้นที่ด้านบน
-        const STEP_X = 50;        // ระยะห่างระหว่างวัน (แนวนอน)
-        const MIN_BRIX = 6.0;     // ค่าต่ำสุดในกราฟ (Base Line)
-        const MAX_BRIX = 9.0;     // ค่าสูงสุด
+        // --- Chart Config ---
+        const CHART_HEIGHT = 150;
+        const TOP_PADDING = 20;
+        const STEP_X = 50;
+        const MIN_BRIX = 6.0;
+        const MAX_BRIX = 9.0;
 
+        // ฟังก์ชันแปลงค่า Brix เป็นตำแหน่ง Y
         function mapY(val) {
-            // แปลงค่า Brix เป็นพิกัด Y (กลับด้าน เพราะ SVG 0 อยู่บน)
-            // สูตร: Height - ((val - min) / (max - min) * Height)
             let percent = (val - MIN_BRIX) / (MAX_BRIX - MIN_BRIX);
             if(percent < 0) percent = 0;
             if(percent > 1) percent = 1;
             return CHART_HEIGHT - (percent * CHART_HEIGHT) + TOP_PADDING;
         }
 
-        // --- 3. Draw Chart Function ---
         function initChart() {
             const daysToShow = 30;
             const today = new Date();
             let points = [];
 
-            // เตรียมข้อมูล 30 วัน (เรียง อดีต -> ปัจจุบัน)
+            // 1. Prepare Data
             for(let i = 0; i < daysToShow; i++) {
                 let d = new Date(today);
                 d.setDate(d.getDate() - i);
@@ -194,108 +181,105 @@
             }
             points.reverse();
 
-            // ตั้งค่าความกว้าง SVG
-            const totalWidth = (daysToShow * STEP_X) + 20; // เผื่อขอบขวา
+            // 2. Setup SVG Width
+            // เผื่อที่ด้านซ้าย 30px และด้านขวาเยอะหน่อย (40px) ให้เส้นไม่ชนขอบ
+            const totalWidth = (daysToShow * STEP_X) + 60; 
             const svg = document.getElementById('chart-svg');
             svg.setAttribute('width', totalWidth);
 
-            // ตัวแปรเก็บ Path String
-            let lineD = "M"; // Start command
-            let areaD = "";  // Area path
+            // 3. Draw Axis & Grid (ส่วนเพิ่มเติม)
+            const yAxisContainer = document.getElementById('y-axis-container');
+            const gridLayer = document.getElementById('grid-layer');
             
-            // Loop สร้างจุดและเส้น
+            // วาดเส้นบรรทัดที่ระดับ 6.0, 7.0, 8.0, 9.0
+            [6.0, 7.0, 8.0, 9.0].forEach(level => {
+                const yPos = mapY(level);
+
+                // A. ใส่ตัวเลขทางขวา (HTML)
+                const label = document.createElement('div');
+                label.className = 'y-label';
+                label.innerText = level.toFixed(1);
+                label.style.top = yPos + 'px';
+                yAxisContainer.appendChild(label);
+
+                // B. วาดเส้นแนวนอนยาวตลอดกราฟ (SVG)
+                const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                line.setAttribute("x1", 0);
+                line.setAttribute("y1", yPos);
+                line.setAttribute("x2", totalWidth); // ลากยาวสุดกราฟ
+                line.setAttribute("y2", yPos);
+                line.setAttribute("class", "h-grid-line");
+                gridLayer.appendChild(line);
+            });
+
+            // 4. Draw Graph Line & Dots
+            let lineD = "M";
+            let areaD = "";
+            
             points.forEach((pt, index) => {
-                const x = (index * STEP_X) + 30; // เริ่มที่ x=30
+                const x = (index * STEP_X) + 30;
                 const y = mapY(pt.val);
                 
-                // 1. สร้าง Path เส้นกราฟ
                 if (index === 0) {
                     lineD += `${x},${y}`;
-                    areaD += `M${x},${CHART_HEIGHT + TOP_PADDING} L${x},${y}`; // Start area bottom
+                    areaD += `M${x},${CHART_HEIGHT + TOP_PADDING} L${x},${y}`;
                 } else {
                     lineD += ` L${x},${y}`;
                     areaD += ` L${x},${y}`;
                 }
-
-                // ปิดท้าย Area Path (ถ้าเป็นจุดสุดท้าย)
                 if (index === points.length - 1) {
                     areaD += ` L${x},${CHART_HEIGHT + TOP_PADDING} Z`;
                 }
 
-                // 2. สร้างจุด (Dot)
+                // Dot
                 const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                dot.setAttribute("cx", x);
-                dot.setAttribute("cy", y);
-                dot.setAttribute("r", 4);
-                dot.setAttribute("class", "dot");
+                dot.setAttribute("cx", x); dot.setAttribute("cy", y);
+                dot.setAttribute("r", 4); dot.setAttribute("class", "dot");
                 dot.setAttribute("data-index", index);
-                
-                // Event Click Dot
-                dot.addEventListener('click', () => {
-                    selectPoint(index, pt, x);
-                });
+                dot.addEventListener('click', () => { selectPoint(index, pt, x); });
                 document.getElementById('dots-layer').appendChild(dot);
 
-                // 3. สร้าง Label วันที่ด้านล่าง
+                // Date Label
                 const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                const dayStr = pt.date.toLocaleDateString('th-TH', { day: 'numeric' });
-                text.setAttribute("x", x);
-                text.setAttribute("y", 195); // อยู่ล่างสุด
+                text.setAttribute("x", x); text.setAttribute("y", 195);
                 text.setAttribute("class", "date-label");
-                text.textContent = dayStr;
+                text.textContent = pt.date.toLocaleDateString('th-TH', { day: 'numeric' });
                 text.setAttribute("data-index", index);
                 document.getElementById('labels-layer').appendChild(text);
-
-                // 4. สร้างเส้น Grid แนวนอน (Grid) เฉพาะจุด
-                 const grid = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                 grid.setAttribute("x1", x); grid.setAttribute("y1", TOP_PADDING);
-                 grid.setAttribute("x2", x); grid.setAttribute("y2", 180);
-                 grid.setAttribute("class", "grid-line");
-                 grid.setAttribute("stroke-dasharray", "2");
-                 document.getElementById('grid-layer').prepend(grid); // ไว้หลังสุด
             });
 
-            // Apply Path to Elements
             document.getElementById('line-layer').setAttribute('d', lineD);
             document.getElementById('area-layer').setAttribute('d', areaD);
 
-            // Auto Select Today (Last Point)
+            // Auto Select & Scroll
             const lastIndex = points.length - 1;
             const lastX = (lastIndex * STEP_X) + 30;
             selectPoint(lastIndex, points[lastIndex], lastX);
 
-            // Auto Scroll to Right
             setTimeout(() => {
                 const scrollArea = document.getElementById('scroll-area');
                 scrollArea.scrollLeft = scrollArea.scrollWidth;
             }, 100);
         }
 
-        // --- 4. Update Display ---
         function selectPoint(index, data, xPos) {
-            // Update Active Classes
             document.querySelectorAll('.dot').forEach(d => d.classList.remove('active'));
             document.querySelectorAll('.date-label').forEach(t => t.classList.remove('active'));
             
             const activeDot = document.querySelector(`.dot[data-index="${index}"]`);
             const activeText = document.querySelector(`.date-label[data-index="${index}"]`);
-            
             if(activeDot) activeDot.classList.add('active');
             if(activeText) activeText.classList.add('active');
 
-            // Move Cursor Line
             const cursor = document.getElementById('cursor-line');
-            cursor.setAttribute('x1', xPos);
-            cursor.setAttribute('x2', xPos);
+            cursor.setAttribute('x1', xPos); cursor.setAttribute('x2', xPos);
             cursor.classList.add('show');
 
-            // Update Card Info
             const dateStr = data.date.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: '2-digit' });
             document.getElementById('show-date').innerText = "ประจำวันที่ " + dateStr;
             document.getElementById('show-brix').innerText = data.val.toFixed(1);
 
-            let status = "";
-            let color = "";
+            let status = "", color = "";
             if(data.val <= 6.9) { status = "หวานน้อย (สดชื่น)"; color = "#16a34a"; }
             else if(data.val <= 7.5) { status = "หวานกลาง (กำลังดี)"; color = "#ca8a04"; }
             else if(data.val <= 8.0) { status = "หวานมาก (หอม)"; color = "#ea580c"; }
@@ -306,7 +290,6 @@
             statusEl.style.color = color;
         }
 
-        // Run
         initChart();
     </script>
 </body>
