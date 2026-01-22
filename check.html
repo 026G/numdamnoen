@@ -3,123 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>หนุ่มดำเนิน - ระดับความหวาน</title>
+    <title>หนุ่มดำเนิน - เช็คความหวาน</title>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         /* --- Base Setup --- */
-        body { font-family: 'Kanit', sans-serif; background-color: #f0fdf4; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; color: #333; min-height: 100vh; margin: 0; }
-        .container { width: 100%; max-width: 420px; text-align: center; }
+        body { font-family: 'Kanit', sans-serif; background-color: #f0fdf4; display: flex; flex-direction: column; align-items: center; padding: 30px 20px; color: #333; min-height: 100vh; margin: 0; }
+        .container { width: 100%; max-width: 420px; }
         
-        /* Logo Area */
-        .brand-logo { width: 80px; height: 80px; border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 10px; }
-        .header-title { font-size: 20px; font-weight: 800; color: #166534; margin: 0; }
-
-        /* --- HORIZONTAL BAR CARD --- */
+        /* Logo & Header */
+        .header-area { text-align: center; margin-bottom: 20px; }
+        .brand-logo { width: 75px; height: 75px; border-radius: 50%; border: 4px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 5px; }
+        .brand-name { font-size: 20px; font-weight: 800; color: #166534; margin: 0; }
+        
+        /* --- 1. RESULT CARD (Bar Chart) --- */
         .result-card {
-            background: white;
-            border-radius: 20px;
-            padding: 30px 20px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
-            margin-top: 20px;
-            position: relative;
+            background: white; border-radius: 20px; padding: 25px 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06); margin-bottom: 25px;
+            text-align: center; position: relative;
         }
 
-        /* กล่องแสดงตัวเลข Brix ใหญ่ๆ */
-        .brix-display-area { margin-bottom: 35px; }
-        .brix-number { font-size: 56px; font-weight: 800; color: #166534; line-height: 1; letter-spacing: -1px; }
-        .brix-label { font-size: 14px; color: #888; font-weight: 400; }
-        
-        /* --- ตัวแท่ง (The Bar) --- */
+        .brix-number { font-size: 50px; font-weight: 800; color: #166534; line-height: 1; }
+        .brix-label { font-size: 13px; color: #888; }
+        .status-highlight { font-size: 18px; font-weight: 600; color: #00B900; margin: 5px 0 20px 0; }
+
+        /* The Bar */
         .bar-container {
-            position: relative;
-            width: 100%;
-            height: 45px; /* ความสูงของแท่ง */
-            background: #eee;
-            border-radius: 50px;
-            display: flex; /* จัดเรียงแนวนอน */
-            overflow: hidden; /* ตัดส่วนเกิน */
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1); /* เงาในให้ดูมีมิติ */
+            position: relative; width: 100%; height: 40px; background: #eee;
+            border-radius: 50px; display: flex; overflow: hidden;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
         }
-
-        /* แต่ละช่องสี (Segments) */
-        .bar-segment {
-            flex: 1; /* แบ่งเท่าๆ กัน 4 ช่อง */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            font-weight: 600;
-            color: rgba(0,0,0,0.6); /* สีตัวอักษรจางๆ */
-            position: relative;
-            border-right: 1px solid rgba(255,255,255,0.3); /* เส้นคั่นบางๆ */
-        }
+        .bar-segment { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; color: rgba(0,0,0,0.5); border-right: 1px solid rgba(255,255,255,0.3); }
         .bar-segment:last-child { border-right: none; }
+        
+        /* Segments Color */
+        .bg-low { background-color: #86efac; }    /* 6.0-6.9 */
+        .bg-mid { background-color: #fde047; }    /* 7.0-7.5 */
+        .bg-high { background-color: #fb923c; }   /* 7.6-8.0 */
+        .bg-max { background-color: #f87171; }    /* 8.1-9.0 */
 
-        /* สีพื้นหลังแต่ละช่วง */
-        .seg-1 { background-color: #86efac; } /* หวานน้อย (เขียวอ่อน) */
-        .seg-2 { background-color: #fde047; } /* หวานกลาง (เหลือง) */
-        .seg-3 { background-color: #fb923c; } /* หวานมาก (ส้ม) */
-        .seg-4 { background-color: #f87171; } /* หวานสุด (แดง) */
-
-        /* --- ตัวชี้ (The Marker/Pin) --- */
+        /* Marker */
         .marker-wrapper {
-            position: absolute;
-            top: -12px; /* ลอยอยู่เหนือแท่งนิดหน่อย */
-            left: 0%; /* จะถูกแก้ด้วย JS */
-            transform: translateX(-50%); /* จัดกึ่งกลางจุด */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            transition: left 1.2s cubic-bezier(0.34, 1.56, 0.64, 1); /* Animation แบบเด้งดึ๋ง */
-            z-index: 10;
+            position: absolute; top: -10px; left: 0%; transform: translateX(-50%);
+            display: flex; flex-direction: column; align-items: center; transition: left 1s ease-out; z-index: 10;
+        }
+        .pin-head { background: #166534; color: white; padding: 3px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); margin-bottom: 2px; }
+        .pin-arrow { width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid #166534; }
+        .scale-labels { display: flex; justify-content: space-between; margin-top: 5px; font-size: 10px; color: #aaa; padding: 0 2px; }
+
+        /* --- 2. HISTORY SECTION (New!) --- */
+        .history-section {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            border: 1px solid white;
         }
 
-        .pin-head {
-            background: #166534; /* สีเขียวเข้มหัวหมุด */
-            color: white;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-            white-space: nowrap;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
-            margin-bottom: 2px;
+        .history-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 15px; font-size: 16px; font-weight: 700; color: #166534;
         }
+        .history-header i { margin-right: 8px; }
+
+        /* Scroll Area */
+        .history-list {
+            max-height: 380px; /* ความสูงโชว์ประมาณ 6-7 รายการ */
+            overflow-y: auto; /* เลื่อนลงได้ */
+            padding-right: 5px;
+        }
+        /* Custom Scrollbar */
+        .history-list::-webkit-scrollbar { width: 4px; }
+        .history-list::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .history-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+
+        /* Item Row */
+        .history-item {
+            display: flex; align-items: center; justify-content: space-between;
+            background: white; padding: 12px 15px; border-radius: 12px; margin-bottom: 10px;
+            position: relative; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            transition: transform 0.2s;
+        }
+        .history-item:active { transform: scale(0.98); }
+
+        /* Color Strip Indicator */
+        .color-strip {
+            position: absolute; left: 0; top: 0; bottom: 0; width: 6px;
+        }
+
+        .h-date { font-size: 14px; font-weight: 600; color: #555; }
+        .h-date span { display: block; font-size: 10px; color: #999; font-weight: 400; margin-top: 2px; }
         
-        .pin-arrow {
-            width: 0; height: 0; 
-            border-left: 6px solid transparent;
-            border-right: 6px solid transparent;
-            border-top: 8px solid #166534; /* สามเหลี่ยมชี้ลง */
-        }
-        
-        /* เส้นประลากลงมา (Option) */
-        .marker-line {
-            width: 2px;
-            height: 55px; /* ลากผ่านแท่ง */
-            background: #166534;
-            opacity: 0.5;
-            position: absolute;
-            top: 20px;
-            z-index: -1;
-        }
-
-        /* --- คำอธิบายสั้นๆ --- */
-        .scale-labels {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 8px;
-            padding: 0 5px;
-            font-size: 10px;
-            color: #aaa;
-        }
-
-        .note-text { margin-top: 25px; font-size: 13px; color: #666; line-height: 1.6; }
+        .h-value { font-size: 18px; font-weight: 800; color: #333; display: flex; align-items: center; gap: 5px; }
+        .h-unit { font-size: 10px; color: #aaa; font-weight: 400; margin-top: 4px; }
 
         .cta-btn {
-            display: block; width: 100%; padding: 15px; text-align: center; margin-top: 20px;
+            display: block; width: 100%; padding: 14px; text-align: center; margin-top: 25px;
             background: #00B900; color: white; border-radius: 50px; text-decoration: none; font-weight: 700;
             box-shadow: 0 4px 15px rgba(0, 185, 0, 0.3);
         }
@@ -129,113 +110,104 @@
 <body>
 
     <div class="container">
-        <img src="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8" class="brand-logo" alt="Logo">
-        <h1 class="header-title">ผลการตรวจสอบ</h1>
+        <div class="header-area">
+            <img src="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8" class="brand-logo" alt="Logo">
+            <h1 class="brand-name">หนุ่มดำเนิน</h1>
+            <div style="font-size:12px; color:#888;">ตรวจสอบคุณภาพ ความหวานธรรมชาติ</div>
+        </div>
 
         <div class="result-card">
-            
-            <div class="brix-display-area">
-                <div class="brix-number" id="display-brix">0.0</div>
-                <div class="brix-label">ค่าความหวาน (Brix)</div>
-                <div style="font-size: 18px; font-weight: 600; color: #00B900; margin-top: 5px;" id="status-text">...</div>
-            </div>
+            <div class="brix-number" id="display-brix">0.0</div>
+            <div class="brix-label">ค่าความหวาน (Brix)</div>
+            <div class="status-highlight" id="status-text">...</div>
 
-            <div style="position: relative; margin: 20px 0;">
-                
+            <div style="position: relative; margin: 15px 0;">
                 <div class="marker-wrapper" id="marker">
                     <div class="pin-head">ขวดนี้</div>
                     <div class="pin-arrow"></div>
-                    <div class="marker-line"></div>
                 </div>
-
                 <div class="bar-container">
-                    <div class="bar-segment seg-1">น้อย</div>
-                    <div class="bar-segment seg-2">กลาง</div>
-                    <div class="bar-segment seg-3">มาก</div>
-                    <div class="bar-segment seg-4">สุด</div>
+                    <div class="bar-segment bg-low">น้อย</div>
+                    <div class="bar-segment bg-mid">กลาง</div>
+                    <div class="bar-segment bg-high">มาก</div>
+                    <div class="bar-segment bg-max">สุด</div>
                 </div>
-
                 <div class="scale-labels">
-                    <span>6.0</span>
-                    <span>7.0</span>
-                    <span>7.6</span>
-                    <span>8.1</span>
-                    <span>9.0</span>
+                    <span>6.0</span><span>7.0</span><span>7.6</span><span>8.1</span><span>9.0</span>
                 </div>
             </div>
-
-            <p class="note-text">
-                <i class="fa-solid fa-circle-info"></i> น้ำมะพร้าวเป็นผลผลิตธรรมชาติ <br>
-                ความหวานอาจแตกต่างกันเล็กน้อยในแต่ละลูก
-            </p>
+            
+            <div style="font-size: 10px; color:#aaa; margin-top:10px;">
+                Lot ID: <span id="lot-id">ND-????</span> | <span id="harvest-date">--/--/--</span>
+            </div>
         </div>
 
-        <a href="#" class="cta-btn">สั่งซื้อความสดชื่นเพิ่ม</a>
-        
+        <div class="history-section">
+            <div class="history-header">
+                <span><i class="fa-solid fa-clock-rotate-left"></i> ประวัติ 20 ล็อตล่าสุด</span>
+                <span style="font-size:10px; background:#e0f2fe; color:#0284c7; padding:2px 8px; border-radius:10px;">Scroll ดูเพิ่ม</span>
+            </div>
+            
+            <div class="history-list" id="history-container">
+                <div style="text-align:center; padding:20px; color:#999;">กำลังโหลดข้อมูล...</div>
+            </div>
+        </div>
+
+        <a href="#" class="cta-btn">สั่งซื้อสินค้า</a>
     </div>
 
     <script>
-        function getQueryParam(param) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(param);
+        // --- 1. Main Gauge Logic (เหมือนเดิม) ---
+        function getQueryParam(param) { return new URLSearchParams(window.location.search).get(param); }
+
+        function initPage() {
+            // -- Mock Data for Current Bottle --
+            let brixParam = getQueryParam('brix');
+            let brix = brixParam ? parseFloat(brixParam) : (Math.random() * (8.2 - 6.8) + 6.8).toFixed(1);
+            
+            // Set Date
+            const today = new Date();
+            const dateStr = today.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
+            document.getElementById('harvest-date').innerText = dateStr;
+            document.getElementById('lot-id').innerText = 'ND-' + Math.floor(1000 + Math.random() * 9000);
+
+            // Animate & Bar Logic
+            animateValue("display-brix", 0, brix, 1000);
+            updateBar(brix);
+            
+            // -- Init History --
+            renderHistory(20); 
         }
 
-        function initBar() {
-            // 1. รับค่า (ถ้าไม่มี สุ่มเอา)
-            let brixParam = getQueryParam('brix');
-            let brix = brixParam ? parseFloat(brixParam) : (Math.random() * (8.5 - 6.5) + 6.5).toFixed(1);
-            
-            // อัพเดตตัวเลข
-            animateValue("display-brix", 0, brix, 1000);
-            
-            // 2. คำนวณตำแหน่ง % บนกราฟ
-            // เราแบ่งกราฟเป็น 4 ช่องเท่าๆ กัน (ช่องละ 25%) เพื่อความสวยงาม
-            // ดังนั้นเราต้อง map ค่า brix เข้าสู่ช่วง 0-100% ตาม Logic แต่ละช่วง
-            
+        function updateBar(brix) {
             let percent = 0;
             let status = "";
+            let colorClass = "";
 
             if (brix <= 6.9) {
-                // ช่วง 6.0 - 6.9 (Range = 0.9) -> อยู่ใน 0-25%
-                status = "หวานน้อย (สดชื่น)";
-                let range = 6.9 - 6.0;
-                let val = brix - 6.0;
-                percent = (val / range) * 25; 
-
+                status = "หวานน้อย (สดชื่น)"; colorClass = "#16a34a"; // Green Text
+                percent = ((brix - 6.0) / 0.9) * 25;
             } else if (brix <= 7.5) {
-                // ช่วง 7.0 - 7.5 (Range = 0.5) -> อยู่ใน 25-50%
-                status = "หวานปานกลาง (กำลังดี)";
-                let range = 7.5 - 7.0;
-                let val = brix - 7.0;
-                percent = 25 + ((val / range) * 25);
-
+                status = "หวานกลาง (กำลังดี)"; colorClass = "#ca8a04"; // Yellow-Dark Text
+                percent = 25 + ((brix - 7.0) / 0.5) * 25;
             } else if (brix <= 8.0) {
-                // ช่วง 7.6 - 8.0 (Range = 0.4) -> อยู่ใน 50-75%
-                status = "หวานมาก (หอม)";
-                let range = 8.0 - 7.6;
-                let val = brix - 7.6;
-                percent = 50 + ((val / range) * 25);
-
+                status = "หวานมาก (หอม)"; colorClass = "#ea580c"; // Orange Text
+                percent = 50 + ((brix - 7.6) / 0.4) * 25;
             } else {
-                // ช่วง 8.1 - 9.0 (Range = 0.9) -> อยู่ใน 75-100%
-                status = "หวานสุด (ฉ่ำ)";
-                let range = 9.0 - 8.1;
-                let val = brix - 8.1;
-                percent = 75 + ((val / range) * 25);
+                status = "หวานสุด (ฉ่ำ)"; colorClass = "#dc2626"; // Red Text
+                percent = 75 + ((brix - 8.1) / 0.9) * 25;
             }
 
-            // Limit ไม่ให้เกินขอบ
-            if(percent < 2) percent = 2;
-            if(percent > 98) percent = 98;
+            if(percent < 2) percent = 2; if(percent > 98) percent = 98;
 
-            // 3. เลื่อนหมุด
             setTimeout(() => {
                 document.getElementById('marker').style.left = percent + "%";
-                document.getElementById('status-text').innerText = status;
+                const statusEl = document.getElementById('status-text');
+                statusEl.innerText = status;
+                statusEl.style.color = colorClass;
             }, 300);
         }
 
-        // ฟังก์ชันวิ่งตัวเลขสวยๆ
         function animateValue(id, start, end, duration) {
             let obj = document.getElementById(id);
             let startTimestamp = null;
@@ -243,14 +215,58 @@
                 if (!startTimestamp) startTimestamp = timestamp;
                 const progress = Math.min((timestamp - startTimestamp) / duration, 1);
                 obj.innerHTML = (progress * (end - start) + start).toFixed(1);
-                if (progress < 1) {
-                    window.requestAnimationFrame(step);
-                }
+                if (progress < 1) window.requestAnimationFrame(step);
             };
             window.requestAnimationFrame(step);
         }
 
-        window.onload = initBar;
+        // --- 2. History Logic (ใหม่!) ---
+        function renderHistory(count) {
+            const container = document.getElementById('history-container');
+            container.innerHTML = ''; // Clear loading text
+
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() - 1); // เริ่มจากเมื่อวาน
+
+            for (let i = 0; i < count; i++) {
+                // สร้างข้อมูลสมมติ (Simulation)
+                let tempBrix = (Math.random() * (8.5 - 6.5) + 6.5).toFixed(1);
+                
+                // กำหนดสีตามเกณฑ์
+                let stripColor = '';
+                let statusLabel = '';
+                if(tempBrix <= 6.9) { stripColor = '#86efac'; statusLabel = 'หวานน้อย'; }
+                else if(tempBrix <= 7.5) { stripColor = '#fde047'; statusLabel = 'หวานกลาง'; }
+                else if(tempBrix <= 8.0) { stripColor = '#fb923c'; statusLabel = 'หวานมาก'; }
+                else { stripColor = '#f87171'; statusLabel = 'หวานสุด'; }
+
+                // Format วันที่
+                let d = new Date(startDate);
+                d.setDate(d.getDate() - i);
+                let dateString = d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' });
+                let dayName = d.toLocaleDateString('th-TH', { weekday: 'long' });
+
+                // สร้าง HTML
+                const itemHtml = `
+                    <div class="history-item">
+                        <div class="color-strip" style="background-color: ${stripColor};"></div>
+                        <div class="h-date">
+                            ${dateString}
+                            <span>${dayName}</span>
+                        </div>
+                        <div style="font-size:12px; color:#888; text-align:right; flex-grow:1; margin-right:10px;">
+                            ${statusLabel}
+                        </div>
+                        <div class="h-value">
+                            ${tempBrix} <span class="h-unit">Brix</span>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += itemHtml;
+            }
+        }
+
+        window.onload = initPage;
     </script>
 </body>
 </html>
