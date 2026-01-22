@@ -26,92 +26,81 @@
         .selected-status { font-size: 16px; font-weight: 600; color: #16a34a; margin-top: 5px; }
         .unit-label { font-size: 12px; color: #aaa; font-weight: 400; }
 
-        /* --- LEGEND SINGLE BAR (แบบแท่งเดียว) --- */
+        /* --- LEGEND SINGLE BAR --- */
         .legend-single-bar {
-            display: flex;
-            width: 100%;
-            height: 32px; /* กำหนดความสูง */
-            border-radius: 16px; /* มุมโค้ง */
-            overflow: hidden; /* ตัดส่วนเกิน */
-            margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+            display: flex; width: 100%; height: 32px; border-radius: 16px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.08);
         }
-
         .legend-segment {
-            flex: 1; /* แบ่งความกว้างเท่าๆ กัน */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            font-weight: 400;
-            color: white;
-            white-space: nowrap; /* ป้องกันข้อความตกบรรทัด */
-            padding: 0 2px;
-            text-shadow: 0 1px 2px rgba(0,0,0,0.1); /* เพิ่มเงาให้ตัวหนังสืออ่านง่ายขึ้น */
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            font-size: 10px; font-weight: 600; color: white; white-space: nowrap; padding: 0 2px; text-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
-
-        /* สีพื้นหลังแต่ละ Segment */
-        .seg-low { background-color: #16a34a; } /* หวานน้อย (เขียว) */
-        .seg-mid { background-color: #ca8a04; } /* หวานกลาง (เหลืองเข้ม) */
-        .seg-high { background-color: #ea580c; } /* หวานกำลังดี (ส้ม) */
-        .seg-max { background-color: #dc2626; } /* หวานสุด (แดง) */
+        .seg-low { background-color: #16a34a; }
+        .seg-mid { background-color: #ca8a04; }
+        .seg-high { background-color: #ea580c; }
+        .seg-max { background-color: #dc2626; }
 
         /* --- GRAPH WRAPPER --- */
         .chart-wrapper-outer {
-            position: relative; 
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-            padding: 20px 0 10px 0;
-            overflow: hidden; 
+            position: relative; background: white; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); padding: 20px 0 10px 0; overflow: hidden; margin-bottom: 30px;
         }
-
-        .graph-scroll-area {
-            width: 100%;
-            overflow-x: auto;
-            padding-right: 50px;
-            scrollbar-width: none; 
-            -ms-overflow-style: none;
-        }
+        .graph-scroll-area { width: 100%; overflow-x: auto; padding-right: 50px; scrollbar-width: none; -ms-overflow-style: none; }
         .graph-scroll-area::-webkit-scrollbar { display: none; }
-
         svg { display: block; height: 220px; overflow: visible; }
 
-        /* เส้นและจุด */
         .line-path { fill: none; stroke: #16a34a; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
         .area-path { fill: url(#gradient); stroke: none; opacity: 0.3; }
-        
         .dot { fill: white; stroke: #16a34a; stroke-width: 2; cursor: pointer; transition: all 0.2s; }
         .dot.active { fill: #16a34a; stroke: #bbf7d0; stroke-width: 4; r: 6; }
-        
         .date-label { font-size: 11px; fill: #94a3b8; text-anchor: middle; font-family: 'Kanit', sans-serif; }
         .date-label.active { fill: #166534; font-weight: 600; font-size: 12px; }
-
         .cursor-line { stroke: #cbd5e1; stroke-width: 1; stroke-dasharray: 4; opacity: 0; }
         .cursor-line.show { opacity: 1; }
         .h-grid-line { stroke: #f1f5f9; stroke-width: 1; }
 
-        /* --- FIXED RIGHT AXIS --- */
-        .y-axis-overlay {
-            position: absolute;
-            top: 20px; 
-            bottom: 40px;
-            right: 0;
-            width: 45px;
-            pointer-events: none; 
-            z-index: 10;
-        }
+        .y-axis-overlay { position: absolute; top: 20px; bottom: 40px; right: 0; width: 45px; pointer-events: none; z-index: 10; }
+        .sweetness-bar { position: absolute; right: 0; top: 0; bottom: 0; width: 6px; background: linear-gradient(to top, #16a34a 0%, #ca8a04 33%, #ea580c 66%, #dc2626 100%); border-top-left-radius: 4px; border-bottom-left-radius: 4px; }
+        .y-label { position: absolute; right: 12px; font-size: 10px; font-weight: 700; color: #94a3b8; transform: translateY(-50%); background: rgba(255,255,255,0.85); padding-left: 5px; border-radius: 4px; }
 
-        .sweetness-bar {
-            position: absolute; right: 0; top: 0; bottom: 0; width: 6px;
-            background: linear-gradient(to top, #16a34a 0%, #ca8a04 33%, #ea580c 66%, #dc2626 100%);
-            border-top-left-radius: 4px; border-bottom-left-radius: 4px;
+        /* --- Q&A SECTION (NEW) --- */
+        .qa-section {
+            width: 100%; margin-bottom: 40px;
         }
+        .qa-title {
+            font-size: 18px; font-weight: 700; color: #166534; margin-bottom: 15px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .qa-category {
+            font-size: 12px; font-weight: 600; color: #888; margin: 15px 0 8px 5px; text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        
+        .accordion-item {
+            background: white; border-radius: 12px; margin-bottom: 8px; overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid #f1f5f9;
+        }
+        
+        .accordion-header {
+            padding: 15px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+            font-size: 14px; font-weight: 500; color: #333; transition: background 0.2s;
+        }
+        .accordion-header:hover { background: #f8fafc; }
+        .accordion-header.active { color: #166534; background: #f0fdf4; }
+        .accordion-header i { color: #cbd5e1; transition: transform 0.3s; }
+        .accordion-header.active i { transform: rotate(180deg); color: #166534; }
+        
+        .accordion-body {
+            max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out;
+            background: #fff; padding: 0 15px; border-top: 1px solid transparent;
+        }
+        .accordion-header.active + .accordion-body { border-top-color: #f0fdf4; }
+        
+        .qa-content {
+            padding: 15px 0; font-size: 13px; color: #64748b; line-height: 1.6;
+        }
+        .qa-highlight { color: #ea580c; font-weight: 600; }
 
-        .y-label {
-            position: absolute; right: 12px; font-size: 10px; font-weight: 700; color: #94a3b8;
-            transform: translateY(-50%); background: rgba(255,255,255,0.85); padding-left: 5px; border-radius: 4px;
-        }
+        /* Floating Contact */
+        .float-contact { position: fixed; bottom: 20px; right: 20px; background: #25D366; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); text-decoration: none; z-index: 100; transition: transform 0.2s;}
+        .float-contact:hover { transform: scale(1.1); }
 
     </style>
 </head>
@@ -142,7 +131,6 @@
             <div class="y-axis-overlay" id="y-axis-container">
                 <div class="sweetness-bar"></div>
             </div>
-
             <div class="graph-scroll-area" id="scroll-area">
                 <svg id="chart-svg">
                     <defs>
@@ -151,7 +139,6 @@
                             <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
                         </linearGradient>
                     </defs>
-                    
                     <g id="grid-layer"></g> 
                     <path id="area-layer" class="area-path"></path>
                     <path id="line-layer" class="line-path"></path>
@@ -161,20 +148,88 @@
                 </svg>
             </div>
         </div>
-        
-        <div style="text-align:center; font-size:11px; color:#94a3b8; margin-top:10px;">
-            <i class="fa-solid fa-chart-line"></i> แตะที่จุดเพื่อดูข้อมูลละเอียด
+
+        <div class="qa-section">
+            <div class="qa-title"><i class="fa-solid fa-circle-question"></i> คำถามที่พบบ่อย (Q&A)</div>
+
+            <div class="qa-category">คุณภาพและรสชาติ</div>
+
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleQA(this)">
+                    ทำไมแต่ละขวดหวานไม่เท่ากัน? <i class="fa-solid fa-chevron-down"></i>
+                </div>
+                <div class="accordion-body"><div class="qa-content">
+                    น้ำมะพร้าวของเราเป็น <b>"น้ำมะพร้าวแท้ 100%"</b> ไม่เติมน้ำตาล ความหวานจึงขึ้นอยู่กับธรรมชาติของลูกมะพร้าวแต่ละทะลาย ฤดูกาล และสภาพอากาศในช่วงนั้นๆ (เช่น หน้าแล้งอาจจะหวานจัด หน้าฝนอาจจะหวานน้อยลง)
+                </div></div>
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleQA(this)">
+                    ทำไมบางขวดน้ำเป็นสีชมพู? <i class="fa-solid fa-chevron-down"></i>
+                </div>
+                <div class="accordion-body"><div class="qa-content">
+                    ไม่ต้องตกใจครับ! <span class="qa-highlight">น้ำมะพร้าวสีชมพู คือน้ำมะพร้าวที่ดีที่สุด</span> เกิดจากสารต้านอนุมูลอิสระ (Antioxidant) ตามธรรมชาติทำปฏิกิริยากับแสงและอากาศ เป็นเครื่องยืนยันว่าเป็นน้ำมะพร้าวสดจริง ไม่ผ่านการฟอกสีครับ
+                </div></div>
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleQA(this)">
+                    เก็บได้นานกี่วัน? <i class="fa-solid fa-chevron-down"></i>
+                </div>
+                <div class="accordion-body"><div class="qa-content">
+                    เนื่องจากเราไม่ใส่วัตถุกันเสีย:
+                    <ul>
+                        <li><b>ตู้เย็นช่องธรรมดา:</b> 3-5 วัน (แนะนำอุณหภูมิ 2-4°C)</li>
+                        <li><b>ช่องแช่แข็ง (Freezer):</b> เก็บได้นาน 1 เดือน (ควรละลายในตู้เย็นก่อนดื่ม)</li>
+                    </ul>
+                    *หากเปิดขวดแล้วควรดื่มให้หมดภายในวันเดียวครับ
+                </div></div>
+            </div>
+
+             <div class="qa-category">สุขภาพและโภชนาการ</div>
+
+             <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleQA(this)">
+                    คนท้องดื่มน้ำมะพร้าวได้ไหม? <i class="fa-solid fa-chevron-down"></i>
+                </div>
+                <div class="accordion-body"><div class="qa-content">
+                    <b>ดื่มได้และดีมากครับ!</b> น้ำมะพร้าวมีอิเล็กโทรไลต์ธรรมชาติ ช่วยลดอาการอ่อนเพลีย แต่ควรเลือกดื่มแบบพาสเจอร์ไรซ์หรือจากร้านที่สะอาดมั่นใจได้ เพื่อความปลอดภัยครับ
+                </div></div>
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleQA(this)">
+                    เป็นเบาหวานทานได้ไหม? <i class="fa-solid fa-chevron-down"></i>
+                </div>
+                <div class="accordion-body"><div class="qa-content">
+                    ทานได้แต่ควรจำกัดปริมาณครับ แม้จะเป็นน้ำตาลธรรมชาติ (Low GI) แต่ก็ยังมีคาร์โบไฮเดรต แนะนำให้ปรึกษาแพทย์และดื่มวันละไม่เกิน 1 แก้วครับ
+                </div></div>
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header" onclick="toggleQA(this)">
+                    ทำไมดื่มแล้วรู้สึกสดชื่นกว่าน้ำเปล่า? <i class="fa-solid fa-chevron-down"></i>
+                </div>
+                <div class="accordion-body"><div class="qa-content">
+                    เพราะในน้ำมะพร้าวมี <b>โพแทสเซียม แมกนีเซียม และเกลือแร่</b> ที่ร่างกายดูดซึมไปใช้ได้ทันที คล้ายกับเกลือแร่ธรรมชาติ จึงช่วยกู้ร่างจากการเสียเหงื่อได้ดีเยี่ยมครับ
+                </div></div>
+            </div>
+
+        </div>
+
+        <div style="text-align:center; font-size:11px; color:#94a3b8; margin-top:10px; margin-bottom:50px;">
+            <i class="fa-solid fa-leaf"></i> หนุ่มดำเนิน - คัดสรรสิ่งที่ดีที่สุดเพื่อคุณ
         </div>
     </div>
 
-    <script>
-        // Mock DB
-        const db = {
-            '2026-01-22': 7.5, '2026-01-20': 7.1, '2026-01-19': 6.8,
-            '2026-01-17': 8.2, '2026-01-14': 7.9, '2026-01-10': 6.5
-        };
-        const toKey = (d) => d.toISOString().split('T')[0];
+    <a href="https://line.me/ti/p/~YOUR_LINE_ID" class="float-contact" target="_blank">
+        <i class="fa-brands fa-line"></i>
+    </a>
 
+    <script>
+        // Mock DB & Logic (เหมือนเดิมจากรอบที่แล้ว)
+        const db = { '2026-01-22': 7.5, '2026-01-20': 7.1, '2026-01-19': 6.8, '2026-01-17': 8.2, '2026-01-14': 7.9, '2026-01-10': 6.5 };
+        const toKey = (d) => d.toISOString().split('T')[0];
         function getDataRecursive(targetDate) {
             let d = new Date(targetDate);
             let steps = 0;
@@ -187,137 +242,79 @@
             return { val: 7.0 };
         }
 
-        // --- Chart Config ---
-        const CHART_HEIGHT = 150; 
-        const TOP_PADDING = 20;
-        const STEP_X = 50;
-        const MIN_BRIX = 6.0;
-        const MAX_BRIX = 9.0;
-
+        const CHART_HEIGHT = 150; const TOP_PADDING = 20; const STEP_X = 50; const MIN_BRIX = 6.0; const MAX_BRIX = 9.0;
         function mapY(val) {
             let percent = (val - MIN_BRIX) / (MAX_BRIX - MIN_BRIX);
-            if(percent < 0) percent = 0;
-            if(percent > 1) percent = 1;
+            if(percent < 0) percent = 0; if(percent > 1) percent = 1;
             return CHART_HEIGHT - (percent * CHART_HEIGHT) + TOP_PADDING;
         }
 
         function initChart() {
-            const daysToShow = 30;
-            const today = new Date();
-            let points = [];
-
-            // 1. Data Prep
+            const daysToShow = 30; const today = new Date(); let points = [];
             for(let i = 0; i < daysToShow; i++) {
-                let d = new Date(today);
-                d.setDate(d.getDate() - i);
-                let data = getDataRecursive(d);
-                points.push({ date: d, val: data.val });
+                let d = new Date(today); d.setDate(d.getDate() - i);
+                let data = getDataRecursive(d); points.push({ date: d, val: data.val });
             }
             points.reverse();
 
-            // 2. SVG Width
             const totalWidth = (daysToShow * STEP_X) + 60; 
-            const svg = document.getElementById('chart-svg');
-            svg.setAttribute('width', totalWidth);
-
-            // 3. Draw Axis Numbers & Grid
+            const svg = document.getElementById('chart-svg'); svg.setAttribute('width', totalWidth);
+            
             const yAxisContainer = document.getElementById('y-axis-container');
             const gridLayer = document.getElementById('grid-layer');
-            
             [6.0, 7.0, 8.0, 9.0].forEach(level => {
                 const yPos = mapY(level);
-
-                const label = document.createElement('div');
-                label.className = 'y-label';
-                label.innerText = level.toFixed(1);
-                label.style.top = yPos + 'px';
-                yAxisContainer.appendChild(label);
-
-                const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                line.setAttribute("x1", 0); line.setAttribute("y1", yPos);
-                line.setAttribute("x2", totalWidth); line.setAttribute("y2", yPos);
-                line.setAttribute("class", "h-grid-line");
-                gridLayer.appendChild(line);
+                const label = document.createElement('div'); label.className = 'y-label'; label.innerText = level.toFixed(1); label.style.top = yPos + 'px'; yAxisContainer.appendChild(label);
+                const line = document.createElementNS("http://www.w3.org/2000/svg", "line"); line.setAttribute("x1", 0); line.setAttribute("y1", yPos); line.setAttribute("x2", totalWidth); line.setAttribute("y2", yPos); line.setAttribute("class", "h-grid-line"); gridLayer.appendChild(line);
             });
 
-            // 4. Draw Graph
-            let lineD = "M";
-            let areaD = "";
-            
+            let lineD = "M"; let areaD = "";
             points.forEach((pt, index) => {
-                const x = (index * STEP_X) + 30;
-                const y = mapY(pt.val);
+                const x = (index * STEP_X) + 30; const y = mapY(pt.val);
+                if (index === 0) { lineD += `${x},${y}`; areaD += `M${x},${CHART_HEIGHT + TOP_PADDING} L${x},${y}`; } else { lineD += ` L${x},${y}`; areaD += ` L${x},${y}`; }
+                if (index === points.length - 1) { areaD += ` L${x},${CHART_HEIGHT + TOP_PADDING} Z`; }
                 
-                if (index === 0) {
-                    lineD += `${x},${y}`;
-                    areaD += `M${x},${CHART_HEIGHT + TOP_PADDING} L${x},${y}`;
-                } else {
-                    lineD += ` L${x},${y}`;
-                    areaD += ` L${x},${y}`;
-                }
-                if (index === points.length - 1) {
-                    areaD += ` L${x},${CHART_HEIGHT + TOP_PADDING} Z`;
-                }
-
-                // Dot
                 const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                dot.setAttribute("cx", x); dot.setAttribute("cy", y);
-                dot.setAttribute("r", 4); dot.setAttribute("class", "dot");
-                dot.setAttribute("data-index", index);
+                dot.setAttribute("cx", x); dot.setAttribute("cy", y); dot.setAttribute("r", 4); dot.setAttribute("class", "dot"); dot.setAttribute("data-index", index);
                 dot.addEventListener('click', () => { selectPoint(index, pt, x); });
                 document.getElementById('dots-layer').appendChild(dot);
 
-                // Date Label
                 const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                text.setAttribute("x", x); 
-                text.setAttribute("y", 200); 
-                text.setAttribute("class", "date-label");
-                text.textContent = pt.date.toLocaleDateString('th-TH', { day: 'numeric' });
-                text.setAttribute("data-index", index);
+                text.setAttribute("x", x); text.setAttribute("y", 200); text.setAttribute("class", "date-label");
+                text.textContent = pt.date.toLocaleDateString('th-TH', { day: 'numeric' }); text.setAttribute("data-index", index);
                 document.getElementById('labels-layer').appendChild(text);
             });
-
-            document.getElementById('line-layer').setAttribute('d', lineD);
-            document.getElementById('area-layer').setAttribute('d', areaD);
-
-            // Auto Select & Scroll
-            const lastIndex = points.length - 1;
-            const lastX = (lastIndex * STEP_X) + 30;
-            selectPoint(lastIndex, points[lastIndex], lastX);
-
-            setTimeout(() => {
-                const scrollArea = document.getElementById('scroll-area');
-                scrollArea.scrollLeft = scrollArea.scrollWidth;
-            }, 100);
+            document.getElementById('line-layer').setAttribute('d', lineD); document.getElementById('area-layer').setAttribute('d', areaD);
+            const lastIndex = points.length - 1; const lastX = (lastIndex * STEP_X) + 30; selectPoint(lastIndex, points[lastIndex], lastX);
+            setTimeout(() => { const scrollArea = document.getElementById('scroll-area'); scrollArea.scrollLeft = scrollArea.scrollWidth; }, 100);
         }
 
         function selectPoint(index, data, xPos) {
             document.querySelectorAll('.dot').forEach(d => d.classList.remove('active'));
             document.querySelectorAll('.date-label').forEach(t => t.classList.remove('active'));
-            
             const activeDot = document.querySelector(`.dot[data-index="${index}"]`);
             const activeText = document.querySelector(`.date-label[data-index="${index}"]`);
-            if(activeDot) activeDot.classList.add('active');
-            if(activeText) activeText.classList.add('active');
-
-            const cursor = document.getElementById('cursor-line');
-            cursor.setAttribute('x1', xPos); cursor.setAttribute('x2', xPos);
-            cursor.classList.add('show');
-
+            if(activeDot) activeDot.classList.add('active'); if(activeText) activeText.classList.add('active');
+            const cursor = document.getElementById('cursor-line'); cursor.setAttribute('x1', xPos); cursor.setAttribute('x2', xPos); cursor.classList.add('show');
             const dateStr = data.date.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: '2-digit' });
-            document.getElementById('show-date').innerText = "ประจำวันที่ " + dateStr;
-            document.getElementById('show-brix').innerText = data.val.toFixed(1);
-
-            // --- Updated Logic ---
+            document.getElementById('show-date').innerText = "ประจำวันที่ " + dateStr; document.getElementById('show-brix').innerText = data.val.toFixed(1);
             let status = "", color = "";
             if(data.val <= 6.9) { status = "หวานน้อย"; color = "#16a34a"; }
             else if(data.val <= 7.5) { status = "หวานกลาง"; color = "#ca8a04"; }
             else if(data.val <= 8.0) { status = "หวานกำลังดี"; color = "#ea580c"; }
             else { status = "หวานสุด"; color = "#dc2626"; }
-            
-            const statusEl = document.getElementById('show-status');
-            statusEl.innerText = status;
-            statusEl.style.color = color;
+            const statusEl = document.getElementById('show-status'); statusEl.innerText = status; statusEl.style.color = color;
+        }
+
+        // Q&A Toggle Function
+        function toggleQA(header) {
+            header.classList.toggle('active');
+            const body = header.nextElementSibling;
+            if (body.style.maxHeight) {
+                body.style.maxHeight = null;
+            } else {
+                body.style.maxHeight = body.scrollHeight + "px";
+            }
         }
 
         initChart();
