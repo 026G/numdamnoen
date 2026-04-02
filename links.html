@@ -626,17 +626,17 @@
         function checkShopStatus() {
             const now = new Date();
             const hour = now.getHours();
-            const openHour = 6;
-            const closeHour = 22;
+            const openHour = 10;
+            const closeHour = 20;
             const statusDot = document.getElementById('shop-status-dot');
             const statusText = document.getElementById('shop-status-text');
 
             if (hour >= openHour && hour < closeHour) {
                 statusDot.className = 'status-dot dot-green';
-                statusText.innerHTML = 'เปิดอยู่ • 06:00 - 22:00 น.';
+                statusText.innerHTML = 'เปิดอยู่ • 10:00 - 20:00 น.';
             } else {
                 statusDot.className = 'status-dot dot-red';
-                statusText.innerHTML = 'ปิดแล้ว • เปิดพรุ่งนี้ 06:00 น.';
+                statusText.innerHTML = 'ปิดแล้ว • เปิดพรุ่งนี้ 10:00 น.';
             }
         }
 
