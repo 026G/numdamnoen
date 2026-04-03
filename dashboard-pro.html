@@ -887,16 +887,24 @@
                 
                 if (row['ประเภท'] === 'GrabFood' && row['หมวดหมู่'] === 'ชำระเงิน') {
                     const rawSales = cleanVal(row, 'ยอด');
-                    if (rawSales > 0) { dailyData[dateKey].sales += rawSales; }
                     const storeDisc = Math.abs(cleanVal(row, 'ส่วนลด (ออกโดยร้าน)'));
                     const delDisc = Math.abs(cleanVal(row, 'ส่วนลดค่าจัดส่ง (ออกโดยร้าน)'));
+                    
+                    // 💡 แก้ไขตรงนี้: หักส่วนลดร้านค้าออกจากยอดขายดิบ เพื่อให้ตรงกับแอป Grab
+                    const actualGrossSales = rawSales - (storeDisc + delDisc);
+
+                    // บันทึกยอดขายที่หักส่วนลดร้านค้าแล้ว
+                    if (actualGrossSales > 0) { dailyData[dateKey].sales += actualGrossSales; }
+                    
+                    // ยังคงเก็บค่า promo_store ไว้ใน Object เผื่อใช้ดูข้อมูล แต่จะไม่เซฟลง Database แยก
                     dailyData[dateKey].promo_store += (storeDisc + delDisc); 
+                    
                     dailyData[dateKey].gp += Math.abs(cleanVal(row, 'ค่าคอมมิชชันแพลตฟอร์ม'));
                     dailyData[dateKey].promo_grab += Math.abs(cleanVal(row, 'ค่าคอมมิชชันอื่นของ GrabFood / GrabMart')); 
                     dailyData[dateKey].mkt += Math.abs(cleanVal(row, 'ค่าธรรมเนียมการตลาด'));
                     dailyData[dateKey].orders += 1;
                     const timePart = row['Updated On'].split(' ')[3];
-                    if(timePart) { let h = parseInt(timePart.split(':')[0]); h = (h + 7) % 24; if (rawSales > 0) dailyData[dateKey].hourly[h] = (dailyData[dateKey].hourly[h]||0) + rawSales; }
+                    if(timePart) { let h = parseInt(timePart.split(':')[0]); h = (h + 7) % 24; if (actualGrossSales > 0) dailyData[dateKey].hourly[h] = (dailyData[dateKey].hourly[h]||0) + actualGrossSales; }
                 }
                 if (row['หมวดหมู่'] === 'โฆษณา') { dailyData[dateKey].ads += Math.abs(cleanVal(row, 'ทั้งหมด')); }
                 if (row['หมวดหมู่'] === 'สินเชื่อ') { dailyData[dateKey].loan += Math.abs(cleanVal(row, 'ทั้งหมด')); }
@@ -905,13 +913,16 @@
             for (const [date, val] of Object.entries(dailyData)) {
                 await setDoc(doc(db, "daily_sales", date), { date: date, delivery_grab: val.sales, order_counts: { grab: val.orders }, hourly_stats: val.hourly, timestamp: Timestamp.now() }, { merge: true });
                 if (val.gp > 0) await saveExp(date, 'grab_gp', '0504-G', val.gp); 
-                if (val.promo_store > 0) await saveExp(date, 'grab_promo_store', '0118-G-STORE', val.promo_store);
+                
+                // 💡 แก้ไขตรงนี้: ปิดการบันทึกรายจ่ายส่วนลดร้านค้า (Comment ทิ้ง) เพราะเราไปลดทอนในยอดขาย (Sales) ด้านบนแล้ว 
+                // if (val.promo_store > 0) await saveExp(date, 'grab_promo_store', '0118-G-STORE', val.promo_store);
+                
                 if (val.promo_grab > 0) await saveExp(date, 'grab_promo', '0118-G', val.promo_grab);
                 if (val.ads > 0) await saveExp(date, 'grab_ads', '0408-G', val.ads); 
                 if (val.mkt > 0) await saveExp(date, 'grab_mkt', '0408-G-MKT', val.mkt); 
                 if (val.loan > 0) await saveExp(date, 'grab_loan', '0411-G', val.loan); 
             }
-            alert(`✅ Import Grab (Exact Logic: Split Discounts) สำเร็จ`); loadData();
+            alert(`✅ Import Grab (ยอดตรงแอป & หักส่วนลดร้านค้าแล้ว) สำเร็จ`); loadData();
         }
 
         async function importLinemanDetailed(data) {
