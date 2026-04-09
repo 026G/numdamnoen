@@ -694,10 +694,38 @@
             
             window.cart = []; localStorage.removeItem('shopping_cart'); window.updateCartUI(); 
             
+            // 🟢 ส่วนที่ปรับใหม่ให้เด้งปุ่มไลน์
+            const shopLineUrl = "https://line.me/ti/p/frSGc6RcyQ"; // <-- แก้ลิงก์ตรงนี้ครับ
+            
+            let successHtml = `คิวของคุณคือ <b>#${newOrder.id.slice(-4)}</b><br><br>`;
+            if (method === 'chat_pay') {
+                successHtml += `<span class="text-red-500 font-bold">กรุณากดแอดไลน์ เพื่อให้ร้านส่ง QR Code ให้นะครับ 🙏</span>`;
+            } else {
+                successHtml += `<span class="text-gray-600">รอรับเครื่องดื่มตามคิวได้เลยครับ</span>`;
+            }
+
             Swal.fire({
-                icon: 'success', title: 'ออเดอร์ถึงร้านแล้ว!', text: method==='chat_pay' ? 'รอแอดมินทักแชทนะครับ' : 'รอรับเครื่องดื่มตามคิวได้เลยครับ',
-                showCancelButton: true, confirmButtonText: '🎟 ดูคิวของฉัน', confirmButtonColor: '#111827', cancelButtonText: 'ปิด', cancelButtonColor: '#6b7280'
-            }).then((res) => { res.isConfirmed ? window.showPage('tracking') : window.showPage('menu'); });
+                icon: 'success', 
+                title: 'ออเดอร์ถึงร้านแล้ว!', 
+                html: successHtml,
+                showCancelButton: true, 
+                confirmButtonText: method === 'chat_pay' ? '<i class="fa-brands fa-line text-lg"></i> ทักไลน์ร้านเลย' : '🎟 ดูคิวของฉัน', 
+                confirmButtonColor: method === 'chat_pay' ? '#06C755' : '#111827', 
+                cancelButtonText: method === 'chat_pay' ? 'ดูคิวของฉัน' : 'ปิด', 
+                cancelButtonColor: '#6b7280'
+            }).then((res) => { 
+                if (res.isConfirmed && method === 'chat_pay') {
+                    // ถ้าเลือกจ่ายผ่านแชท และกดปุ่มสีเขียว -> เด้งเปิดหน้าไลน์ร้าน แล้วพากลับไปหน้าเช็คคิว
+                    window.open(shopLineUrl, '_blank');
+                    window.showPage('tracking');
+                } else if (res.isConfirmed) {
+                    window.showPage('tracking');
+                } else {
+                    window.showPage(method === 'chat_pay' ? 'tracking' : 'menu');
+                }
+            });
+            // 🟢 จบส่วนที่ปรับใหม่
+            
         } catch (e) { Swal.fire({ icon: 'error', text: 'Error: ' + e.message }); }
     }
 
