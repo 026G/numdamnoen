@@ -1042,25 +1042,12 @@
                 nameBadgeHtml = `<span class="ml-1 text-[9px] font-bold px-1.5 py-0.5 rounded" style="background: var(--color-accent-yellow); color: #92400E; border: 1px solid var(--color-accent-yellow-dark);">⭐ ${item.badge}</span>`;
             }
             
-            // HOT/NEW ribbon - แนวเฉียงมุมบนซ้าย ไม่บังรูปกลาง
-            let ribbonHtml = '';
-            if (item.originalPrice && !isSoldOut) {
-                ribbonHtml = `<div class="absolute top-0 left-0 z-10 overflow-hidden" style="width: 50px; height: 50px;">
-                    <div class="absolute font-display font-bold text-[9px] text-white text-center shadow-md" style="background: var(--color-hot); transform: rotate(-45deg); width: 70px; padding: 2px 0; top: 10px; left: -18px; letter-spacing: 0.5px;">HOT</div>
-                </div>`;
-            } else if (item.isNew && !isSoldOut) {
-                ribbonHtml = `<div class="absolute top-0 left-0 z-10 overflow-hidden" style="width: 50px; height: 50px;">
-                    <div class="absolute font-display font-bold text-[9px] text-white text-center shadow-md" style="background: var(--color-new); transform: rotate(-45deg); width: 70px; padding: 2px 0; top: 10px; left: -18px; letter-spacing: 0.5px;">NEW</div>
-                </div>`;
-            }
-            
             return `
             <div class="menu-card px-5 mb-3 ${isSoldOut ? 'opacity-60 grayscale pointer-events-none' : 'cursor-pointer'}" onclick="${!isSoldOut ? `openModal('${item.id}')` : ''}">
                 <div class="rounded-3xl p-3 flex gap-3" style="background: white; border: 1px solid var(--color-border-soft); box-shadow: 0 2px 8px rgba(45, 80, 22, 0.04);">
                     <div class="relative shrink-0">
                         <div class="${pastelClass} w-24 h-24 rounded-2xl overflow-hidden relative flex items-center justify-center">
                             <img src="${item.img}" class="w-full h-full object-cover" onerror="this.style.display='none'">
-                            ${ribbonHtml}
                         </div>
                         ${isSoldOut ? '<span class="absolute inset-0 flex items-center justify-center bg-black/40 text-white font-bold text-sm rounded-2xl z-10">หมด</span>' : ''}
                     </div>
