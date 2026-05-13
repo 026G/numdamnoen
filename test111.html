@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>หนุ่มดำเนิน มะพร้าวปั่น</title>
-    <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-9P4HMHGDM2"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
@@ -21,7 +20,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
     <style>
-        /* 🌴 PASTEL STUDIO THEME */
         @import url('https://fonts.googleapis.com/css2?family=Anuphan:wght@100..700&family=Mali:wght@300;400;500;600;700&family=Caveat:wght@400;500;600;700&display=swap');
 
         :root {
@@ -71,10 +69,7 @@
             border: 1.5px solid var(--color-primary);
             box-shadow: 0 2px 6px rgba(45, 80, 22, 0.15);
         }
-        .mode-toggle-inactive {
-            background: transparent;
-            border: 1.5px solid transparent;
-        }
+        .mode-toggle-inactive { background: transparent; border: 1.5px solid transparent; }
         .mode-toggle-inactive .mode-icon { opacity: 0.4; }
 
         @keyframes shimmer {
@@ -113,13 +108,20 @@
         }
         .time-slot-active .ts-num { color: white !important; }
         .time-slot-active .ts-unit { color: rgba(255,255,255,0.8) !important; }
+
+        /* Pulse animation for hint */
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
     </style>
 </head>
 <body class="pb-32"> 
 
     <div class="max-w-md mx-auto min-h-screen relative overflow-hidden sm:border-x" style="background-color: var(--color-base); border-color: var(--color-border-soft);">
         
-        <!-- ============ HEADER ============ -->
+        <!-- HEADER -->
         <header class="sticky top-0 z-30 shadow-sm" style="background-color: var(--color-base); backdrop-filter: blur(8px);">
             <div class="px-4 py-3">
                 <div class="flex items-start gap-3">
@@ -146,7 +148,6 @@
                     </div>
                 </div>
 
-                <!-- TOGGLE PICKUP / DELIVERY -->
                 <div id="mode-toggle-container" class="mt-3 grid grid-cols-2 gap-1 p-1 rounded-2xl" style="background: var(--color-base-warm);">
                     <button onclick="setMode('pickup')" id="mode-btn-pickup" class="mode-toggle-active px-3 py-2.5 rounded-xl text-center transition">
                         <div class="text-xl leading-none mode-icon">🏪</div>
@@ -156,11 +157,10 @@
                     <button onclick="setMode('delivery')" id="mode-btn-delivery" class="mode-toggle-inactive px-3 py-2.5 rounded-xl text-center transition">
                         <div class="text-xl leading-none mode-icon">🛵</div>
                         <div class="text-xs font-semibold mt-1 mode-text">เดลิเวอรี่</div>
-                        <div class="text-[9px] mt-0.5 mode-subtext">25-50 บาท</div>
+                        <div class="text-[9px] mt-0.5 mode-subtext">ลดตามยอด</div>
                     </button>
                 </div>
 
-                <!-- Delivery pin pill -->
                 <div id="delivery-pin-row" class="mt-2 hidden">
                     <button id="header-pin-btn" onclick="goToMapPage()" class="w-full flex items-center gap-2 text-xs px-3 py-2 rounded-xl transition" style="background: var(--color-accent-blue); color: var(--color-text-dark); border: 1px solid var(--color-accent-blue-dark);">
                         <i class="fa-solid fa-location-dot" style="color: var(--color-hot);"></i>
@@ -176,7 +176,7 @@
             </div>
         </header>
 
-        <!-- ============ PAGE: MENU ============ -->
+        <!-- PAGE: MENU -->
         <section id="page-menu" class="page-section active-section">
             <div class="mt-4 px-5">
                 <div id="banner-slider" class="flex overflow-x-auto snap-x snap-mandatory gap-3 no-scrollbar rounded-3xl" style="scroll-behavior: smooth;">
@@ -202,7 +202,7 @@
                     </div>
                     <div class="flex-1 text-left">
                         <div class="font-display font-semibold text-sm" style="color: var(--color-text-dark);">📍 ปักหมุดเพื่อดูค่าส่ง</div>
-                        <div class="text-[11px] mt-0.5" style="color: var(--color-text-muted);">ค่าส่งคิดตามระยะทาง · ส่งฟรีเมื่อสั่งครบยอด</div>
+                        <div class="text-[11px] mt-0.5" style="color: var(--color-text-muted);">ค่าส่งคิดตามระยะทาง · ลดตามยอดสั่ง</div>
                     </div>
                     <i class="fa-solid fa-chevron-right text-xs" style="color: var(--color-text-muted);"></i>
                 </button>
@@ -216,7 +216,7 @@
             <div id="menu-list" class="pb-4"></div>
         </section>
 
-        <!-- ============ PAGE: CART ============ -->
+        <!-- PAGE: CART -->
         <section id="page-cart" class="page-section min-h-screen" style="background-color: var(--color-base-warm);">
             <div class="px-5 py-4 shadow-sm mb-2" style="background-color: var(--color-base);">
                 <h2 class="font-display text-xl font-semibold" style="color: var(--color-primary);">ตะกร้าสินค้า</h2>
@@ -232,7 +232,7 @@
             </div>
         </section>
 
-        <!-- ============ PAGE: PICKUP ============ -->
+        <!-- PAGE: PICKUP -->
         <section id="page-pickup" class="page-section min-h-screen px-5 py-6" style="background-color: var(--color-base);">
             <div class="mb-4">
                 <div class="font-script text-base leading-none" style="color: var(--color-primary-light);">— Pickup —</div>
@@ -284,7 +284,7 @@
             </div>
         </section>
 
-        <!-- ============ PAGE: ADDRESS (DELIVERY) ============ -->
+        <!-- PAGE: ADDRESS (DELIVERY) -->
         <section id="page-address" class="page-section min-h-screen px-5 py-6" style="background-color: var(--color-base);">
             <div class="mb-4">
                 <div class="font-script text-base leading-none" style="color: var(--color-primary-light);">— Delivery —</div>
@@ -325,7 +325,7 @@
                                     <i class="fa-solid fa-motorcycle"></i>
                                 </div>
                                 <div>
-                                    <div class="text-[10px] leading-none mb-1" style="color: var(--color-text-muted);">ค่าส่งสำหรับระยะนี้</div>
+                                    <div class="text-[10px] leading-none mb-1" style="color: var(--color-text-muted);">ค่าส่งของคุณ</div>
                                     <div class="font-display font-semibold text-base" id="realtime-fee-label" style="color: var(--color-text-dark);">-</div>
                                 </div>
                             </div>
@@ -344,7 +344,7 @@
             </div>
         </section>
 
-        <!-- ============ PAGE: PAYMENT ============ -->
+        <!-- PAGE: PAYMENT -->
         <section id="page-payment" class="page-section min-h-screen" style="background-color: var(--color-base-warm);">
             <div class="p-5 shadow-sm mb-4" style="background-color: var(--color-base);">
                 <h2 class="font-display text-lg font-semibold mb-4" style="color: var(--color-primary);">สรุปยอดชำระ</h2>
@@ -371,7 +371,6 @@
             <div class="p-5 shadow-sm mb-20" style="background-color: var(--color-base);">
                  <h2 class="font-display text-lg font-semibold mb-4" style="color: var(--color-primary);">เลือกวิธีการชำระเงิน</h2>
                  
-                 <!-- COD (pickup only) -->
                  <label id="cod-label" class="block mb-3 cursor-pointer hidden">
                     <input type="radio" name="paymentMethod" value="cod" id="cod-radio" class="payment-radio hidden" onchange="togglePaymentDetail()">
                     <div class="border rounded-2xl p-4 flex items-center justify-between transition-all hover:bg-gray-50" style="border-color: var(--color-border-soft);">
@@ -486,7 +485,7 @@
             </div>
         </section>
         
-        <!-- ============ PAGE: TRACKING ============ -->
+        <!-- PAGE: TRACKING -->
         <section id="page-tracking" class="page-section min-h-screen" style="background-color: var(--color-base-warm);">
             <div class="px-5 py-4 shadow-sm mb-4 sticky top-0 z-20" style="background-color: var(--color-base);">
                 <div class="max-w-md mx-auto">
@@ -566,15 +565,13 @@
         </section>
 
 
-        <!-- ============ STICKY FOOTER ============ -->
+        <!-- STICKY FOOTER -->
         <div id="sticky-footer" class="fixed bottom-0 w-full max-w-md backdrop-blur shadow-[0_-4px_10px_rgba(0,0,0,0.05)] p-4 z-40 hidden" style="background-color: rgba(251, 250, 246, 0.95); border-top: 1px solid var(--color-border-soft);">
-            <div id="free-ship-box" class="mb-3 hidden">
-                <div class="flex items-center justify-between mb-1">
-                    <div class="text-[11px] font-semibold" id="free-ship-text" style="color: var(--color-text-dark);">ส่งฟรีเมื่อครบ 250 บาท</div>
-                    <div class="text-[11px] font-bold" id="free-ship-remaining" style="color: var(--color-primary);">เหลืออีก 250 บาท</div>
-                </div>
-                <div class="w-full h-2.5 rounded-full overflow-hidden" style="background: var(--color-base-warm);">
-                    <div id="free-ship-bar" class="h-full rounded-full" style="width:0%; background: var(--color-primary);"></div>
+            <!-- Smart Next-Step Hint (NEW) -->
+            <div id="next-step-box" class="mb-3 hidden">
+                <div class="rounded-xl p-2.5 flex items-center gap-2 text-[11px]" id="next-step-card" style="background: var(--color-accent-yellow); border: 1px solid var(--color-accent-yellow-dark);">
+                    <div class="shrink-0 text-base">💡</div>
+                    <div class="flex-1 leading-tight" id="next-step-text" style="color: var(--color-text-dark);">-</div>
                 </div>
             </div>
 
@@ -642,14 +639,22 @@
     window.CLOSE_HOUR = 22; 
     window.WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzYBSnGMUXEXdHyJ21L98xxkGbCNVlcqRBvtJti38vr95txAcemZ4wJVeO70JIttX2RHQ/exec"; 
 
-    window.SHIPPING_TIERS = [
-        { maxKm: 1.5, fee: 25, label: '≤ 1.5 กม.' },
-        { maxKm: 3.0, fee: 35, label: '1.5-3 กม.' },
-        { maxKm: 5.0, fee: 50, label: '3-5 กม.' }
+    // 🌴 ระบบค่าส่งขั้นบันได 8 ขั้น × 3 โซน (ตารางของผู้ใช้)
+    // ZONES: ใกล้ (≤1.5km) ค่าส่งจริง 30, กลาง (1.5-3km) ค่าส่งจริง 50, ไกล (3-5km) ค่าส่งจริง 75
+    // STEP TABLE: ร้านช่วยค่าส่งตามยอดอาหาร
+    window.SHIPPING_FULL_FEE = { near: 30, mid: 50, far: 75 };
+    window.SHIPPING_STEPS = [
+        { minTotal: 0,    shopHelp: 0  },  // ต่ำกว่า 125
+        { minTotal: 125,  shopHelp: 15 },  // 125+
+        { minTotal: 200,  shopHelp: 25 },  // 200+
+        { minTotal: 250,  shopHelp: 30 },  // 250+
+        { minTotal: 350,  shopHelp: 40 },  // 350+
+        { minTotal: 450,  shopHelp: 50 },  // 450+
+        { minTotal: 550,  shopHelp: 65 },  // 550+
+        { minTotal: 650,  shopHelp: 75 }   // 650+
     ];
-    window.FREE_SHIP_NEAR = 150;
-    window.FREE_SHIP_ALL = 250;
     window.NEAR_SHOP_KM = 1.5;
+    window.MID_SHOP_KM = 3.0;
 
     // ============ STATE ============
     window.menuDB = [];
@@ -670,23 +675,72 @@
     window.orderMode = 'pickup';
     window.pickupTime = null;
 
-    // ============ HELPERS ============
-    window.calculateShippingFee = function(distanceKm) {
-        if (distanceKm > window.MAX_DIST_KM) return null;
-        for (const tier of window.SHIPPING_TIERS) {
-            if (distanceKm <= tier.maxKm) return tier.fee;
-        }
-        return null;
+    // ============ SHIPPING CALCULATION ============
+    
+    // เช็คโซนตามระยะ
+    window.getZone = function(distanceKm) {
+        if (distanceKm <= window.NEAR_SHOP_KM) return 'near';
+        if (distanceKm <= window.MID_SHOP_KM) return 'mid';
+        return 'far';
     };
 
-    window.checkFreeShipping = function(foodTotal, distanceKm) {
-        if (distanceKm <= window.NEAR_SHOP_KM && foodTotal >= window.FREE_SHIP_NEAR) {
-            return { isFree: true, reason: `โปรใกล้ร้าน (≤${window.NEAR_SHOP_KM}กม.)` };
+    // หาขั้นปัจจุบันจากยอดอาหาร
+    window.getCurrentStep = function(foodTotal) {
+        let currentStep = window.SHIPPING_STEPS[0];
+        for (const step of window.SHIPPING_STEPS) {
+            if (foodTotal >= step.minTotal) currentStep = step;
         }
-        if (foodTotal >= window.FREE_SHIP_ALL) {
-            return { isFree: true, reason: `สั่งครบ ${window.FREE_SHIP_ALL} บาท` };
+        return currentStep;
+    };
+
+    // หาขั้นถัดไปจากยอดอาหาร (สำหรับแสดง hint)
+    window.getNextStep = function(foodTotal) {
+        for (const step of window.SHIPPING_STEPS) {
+            if (foodTotal < step.minTotal) return step;
         }
-        return { isFree: false, reason: null };
+        return null; // ถึงขั้นสูงสุดแล้ว
+    };
+
+    // คำนวณค่าส่งจริงที่ลูกค้าต้องจ่าย
+    window.calculateDeliveryFee = function(foodTotal, distanceKm) {
+        if (distanceKm > window.MAX_DIST_KM) return null;
+        const zone = window.getZone(distanceKm);
+        const fullFee = window.SHIPPING_FULL_FEE[zone];
+        const currentStep = window.getCurrentStep(foodTotal);
+        const customerFee = Math.max(0, fullFee - currentStep.shopHelp);
+        return {
+            fullFee: fullFee,
+            shopHelp: Math.min(currentStep.shopHelp, fullFee), // ไม่เกินค่าส่งจริง
+            customerFee: customerFee,
+            isFree: customerFee === 0,
+            zone: zone,
+            currentStep: currentStep
+        };
+    };
+
+    // คำนวณ hint สำหรับขั้นถัดไป
+    window.getNextStepHint = function(foodTotal, distanceKm) {
+        if (distanceKm > window.MAX_DIST_KM) return null;
+        const zone = window.getZone(distanceKm);
+        const fullFee = window.SHIPPING_FULL_FEE[zone];
+        const nextStep = window.getNextStep(foodTotal);
+        if (!nextStep) return null; // ถึงขั้นสูงสุดแล้ว
+        
+        const currentResult = window.calculateDeliveryFee(foodTotal, distanceKm);
+        // ค่าส่งใหม่ถ้าถึงขั้นถัดไป (cap ไว้ที่ fullFee)
+        const newCustomerFee = Math.max(0, fullFee - Math.min(nextStep.shopHelp, fullFee));
+        const savings = currentResult.customerFee - newCustomerFee;
+        const needMore = nextStep.minTotal - foodTotal;
+        
+        // ถ้าไม่ประหยัด (เพราะฟรีอยู่แล้ว) → ไม่ต้องแสดง hint
+        if (savings <= 0) return null;
+        
+        return {
+            needMore: needMore,
+            savings: savings,
+            willBeFree: newCustomerFee === 0,
+            nextTarget: nextStep.minTotal
+        };
     };
 
     function loadCartFromStorage() {
@@ -758,7 +812,7 @@
                 if(localStorage.getItem('cust_address')) document.getElementById('cust-address').value = localStorage.getItem('cust_address');
                 window.updateTrackingButtonState();
                 window.updateShopStatusUI();
-                window.updateFreeShippingProgress();
+                window.updateNextStepHint();
                 window.updatePinReminderCard();
             } else { Swal.fire('แจ้งเตือน', 'ไม่พบข้อมูลเมนูในระบบ', 'warning'); window.menuDB = []; }
         } catch (error) { console.error(error); Swal.fire('Error', 'ไม่สามารถเชื่อมต่อ Firebase ได้', 'error'); }
@@ -792,7 +846,7 @@
         }
 
         window.updateCartModeIndicator();
-        window.updateFreeShippingProgress();
+        window.updateNextStepHint();
         window.updatePinReminderCard();
     };
 
@@ -806,7 +860,7 @@
             text.parentElement.style.background = 'var(--color-accent-mint)';
         } else {
             icon.innerText = '🛵';
-            text.innerText = 'เดลิเวอรี่ · คิดค่าส่งตามระยะ';
+            text.innerText = 'เดลิเวอรี่ · ลดค่าส่งตามยอด';
             text.parentElement.style.background = 'var(--color-accent-blue)';
         }
     };
@@ -837,7 +891,7 @@
         if(pageId === 'tracking') window.initTrackingPage();
         if(pageId === 'cart') window.updateCartModeIndicator();
         window.scrollTo(0,0);
-        window.updateFreeShippingProgress();
+        window.updateNextStepHint();
         window.updatePinReminderCard();
     };
 
@@ -896,34 +950,61 @@
         }
     };
 
-    window.updateFreeShippingProgress = function() {
-        const box = document.getElementById('free-ship-box');
-        const textEl = document.getElementById('free-ship-text');
-        const remainEl = document.getElementById('free-ship-remaining');
-        const barEl = document.getElementById('free-ship-bar');
-        if (!box || !textEl || !remainEl || !barEl) return;
+    // ============ SMART NEXT-STEP HINT (Hybrid showcase) ============
+    window.updateNextStepHint = function() {
+        const box = document.getElementById('next-step-box');
+        const card = document.getElementById('next-step-card');
+        const textEl = document.getElementById('next-step-text');
+        if (!box || !textEl || !card) return;
+
+        // ซ่อนในโหมด pickup, ร้านปิด, ตะกร้าว่าง, หน้า tracking
         if (window.orderMode === 'pickup' || !window.isShopOpen() || window.cart.length === 0 || window.currentPage === 'tracking') {
             box.classList.add('hidden');
             return;
         }
+
         const total = window.cart.reduce((sum, item) => sum + item.finalPrice, 0);
-        const nearEligible = (window.hasUserLocation === true && window.distanceKm <= window.NEAR_SHOP_KM);
-        const target = nearEligible ? window.FREE_SHIP_NEAR : window.FREE_SHIP_ALL;
+
+        // กรณียังไม่ปักหมุด → ชวนปักหมุด
         if (window.hasUserLocation !== true) {
-            textEl.innerHTML = `ส่งฟรีเมื่อครบ ${window.FREE_SHIP_ALL} บาท <span style="color: #2563EB; text-decoration: underline; cursor: pointer;" onclick="goToMapPage()">📍 ปักหมุด</span>`;
-        } else {
-            textEl.innerText = nearEligible ? `🎯 ใกล้ร้าน! ส่งฟรีเมื่อครบ ${window.FREE_SHIP_NEAR} บาท` : `ส่งฟรีเมื่อครบ ${window.FREE_SHIP_ALL} บาท`;
+            card.style.background = 'var(--color-accent-blue)';
+            card.style.borderColor = 'var(--color-accent-blue-dark)';
+            textEl.innerHTML = `<span class="font-semibold">📍 ปักหมุดเพื่อดูค่าส่งของคุณ</span> <span style="color: #2563EB; text-decoration: underline; cursor: pointer; font-weight: 600;" onclick="goToMapPage()">แตะที่นี่</span>`;
+            box.classList.remove('hidden');
+            return;
         }
-        const remaining = Math.max(0, target - total);
-        if (total >= target) {
-            remainEl.innerText = 'ส่งฟรีแล้ว 🎉';
-            remainEl.style.color = 'var(--color-primary)';
-            barEl.style.width = '100%';
+
+        // กรณีนอกพื้นที่
+        if (window.distanceKm > window.MAX_DIST_KM) {
+            box.classList.add('hidden');
+            return;
+        }
+
+        const result = window.calculateDeliveryFee(total, window.distanceKm);
+        const hint = window.getNextStepHint(total, window.distanceKm);
+
+        // กรณีฟรีอยู่แล้ว
+        if (result.isFree) {
+            card.style.background = 'var(--color-accent-mint)';
+            card.style.borderColor = 'var(--color-accent-mint-dark)';
+            textEl.innerHTML = `<span class="font-semibold" style="color: var(--color-primary);">🎉 ค่าส่งฟรีแล้ว!</span> ขอบคุณที่อุดหนุนนะคะ`;
+            box.classList.remove('hidden');
+            return;
+        }
+
+        // กรณีไม่มี hint (ถึงขั้นสูงสุดแล้ว หรือไม่มีประหยัด)
+        if (!hint) {
+            box.classList.add('hidden');
+            return;
+        }
+
+        // แสดง next-step hint
+        card.style.background = 'var(--color-accent-yellow)';
+        card.style.borderColor = 'var(--color-accent-yellow-dark)';
+        if (hint.willBeFree) {
+            textEl.innerHTML = `สั่งเพิ่มอีก <b style="color: var(--color-hot);">${hint.needMore} บาท</b> → <b style="color: var(--color-primary);">ค่าส่งฟรี! 🎉</b> (ประหยัด ${hint.savings} บาท)`;
         } else {
-            remainEl.innerText = `เหลืออีก ${remaining} บาท`;
-            const pct = (total / target) * 100;
-            remainEl.style.color = pct >= 70 ? '#EA580C' : 'var(--color-hot)';
-            barEl.style.width = `${Math.max(0, Math.min(100, pct))}%`;
+            textEl.innerHTML = `สั่งเพิ่มอีก <b style="color: var(--color-hot);">${hint.needMore} บาท</b> → ค่าส่งลดอีก <b style="color: var(--color-primary);">${hint.savings} บาท</b>`;
         }
         box.classList.remove('hidden');
     };
@@ -952,7 +1033,7 @@
         else if(pageId === 'address') document.getElementById('btn-confirm-address').classList.remove('hidden');
         else if(pageId === 'payment') document.getElementById('btn-confirm-order').classList.remove('hidden');
         else if(pageId === 'tracking') footer.classList.add('hidden');
-        window.updateFreeShippingProgress();
+        window.updateNextStepHint();
     };
 
     // ============ MENU RENDER ============
@@ -1122,8 +1203,12 @@
         window.updateCartUI();
         if(document.querySelector('.active-section').id === 'page-menu') window.updateFooterState('menu');
         Swal.fire({ toast: true, position: 'top', icon: 'success', title: 'เพิ่มลงตะกร้าแล้ว', showConfirmButton: false, timer: 1000 });
-        window.updateFreeShippingProgress();
+        window.updateNextStepHint();
         window.updatePinReminderCard();
+        // Refresh realtime fee box if on address page
+        if (window.currentPage === 'address' && window.hasUserLocation) {
+            window.calculateDelivery(window.userLat, window.userLng);
+        }
     };
     
     window.updateCartUI = function() {
@@ -1134,7 +1219,7 @@
         const list = document.getElementById('cart-items');
         if(window.cart.length === 0) { 
             list.innerHTML = `<div class="text-center py-10"><i class="fa-solid fa-basket-shopping text-4xl mb-2" style="color: var(--color-border-soft);"></i><p style="color: var(--color-text-muted);">ยังไม่มีสินค้าในตะกร้า</p></div>`; 
-            window.updateFreeShippingProgress(); 
+            window.updateNextStepHint(); 
             window.updatePinReminderCard();
             return; 
         }
@@ -1161,7 +1246,7 @@
                 <span class="font-display font-bold whitespace-nowrap" style="color: var(--color-text-dark);">฿${item.finalPrice}</span>
             </div>`;
         }).join('');
-        window.updateFreeShippingProgress();
+        window.updateNextStepHint();
         window.updatePinReminderCard();
     };
 
@@ -1170,8 +1255,11 @@
         saveCartToStorage();
         window.updateCartUI();
         if(window.cart.length === 0) window.updateFooterState('menu');
-        window.updateFreeShippingProgress();
+        window.updateNextStepHint();
         window.updatePinReminderCard();
+        if (window.currentPage === 'address' && window.hasUserLocation) {
+            window.calculateDelivery(window.userLat, window.userLng);
+        }
     };
 
     // ============ TIME SLOT ============
@@ -1224,7 +1312,7 @@
             const dd = document.getElementById('distance-display');
             dd.style.background = 'var(--color-base-warm)';
             dd.style.color = 'var(--color-text-muted)';
-            window.updateFreeShippingProgress();
+            window.updateNextStepHint();
             window.updatePinReminderCard();
             return;
         }
@@ -1237,6 +1325,7 @@
         const feeLabel = document.getElementById('realtime-fee-label');
         const distLabel = document.getElementById('realtime-distance-label');
         const freeshipHint = document.getElementById('realtime-freeship-hint');
+        
         if (window.distanceKm > window.MAX_DIST_KM) {
             document.getElementById('out-of-range-msg').classList.remove('hidden');
             const dd = document.getElementById('distance-display');
@@ -1248,29 +1337,38 @@
             const dd = document.getElementById('distance-display');
             dd.style.background = 'var(--color-accent-mint)';
             dd.style.color = 'var(--color-primary)';
+            
             const foodTotal = window.cart.reduce((s, i) => s + i.finalPrice, 0);
-            const baseFee = window.calculateShippingFee(window.distanceKm);
-            const freeCheck = window.checkFreeShipping(foodTotal, window.distanceKm);
+            const result = window.calculateDeliveryFee(foodTotal, window.distanceKm);
+            const hint = window.getNextStepHint(foodTotal, window.distanceKm);
+            
             distLabel.innerText = `${window.distanceKm.toFixed(1)} กม.`;
-            if (freeCheck.isFree) {
-                feeLabel.innerHTML = `<span class="line-through mr-1" style="color: var(--color-text-muted);">${baseFee} บาท</span><span style="color: var(--color-primary);">ฟรี! 🎉</span>`;
-                freeshipHint.innerHTML = `<span class="font-bold" style="color: var(--color-primary);">✓ ${freeCheck.reason}</span>`;
+            
+            if (result.isFree) {
+                feeLabel.innerHTML = `<span class="line-through mr-1" style="color: var(--color-text-muted);">${result.fullFee} บาท</span><span style="color: var(--color-primary);">ฟรี! 🎉</span>`;
+                freeshipHint.innerHTML = `<span class="font-bold" style="color: var(--color-primary);">✨ ร้านช่วยทั้งหมด ${result.shopHelp} บาท</span>`;
+            } else if (result.shopHelp > 0) {
+                feeLabel.innerHTML = `<span class="line-through mr-1 text-xs" style="color: var(--color-text-muted);">${result.fullFee}</span><span style="color: var(--color-text-dark);">${result.customerFee} บาท</span>`;
+                if (hint) {
+                    if (hint.willBeFree) {
+                        freeshipHint.innerHTML = `💡 สั่งเพิ่ม <b style="color: var(--color-hot);">${hint.needMore} บาท</b> → <b style="color: var(--color-primary);">ส่งฟรี!</b>`;
+                    } else {
+                        freeshipHint.innerHTML = `💡 สั่งเพิ่ม <b style="color: var(--color-hot);">${hint.needMore} บาท</b> → ค่าส่งลดอีก <b style="color: var(--color-primary);">${hint.savings} บาท</b>`;
+                    }
+                } else {
+                    freeshipHint.innerHTML = `<span style="color: var(--color-primary-light);">✓ ร้านช่วย ${result.shopHelp} บาทแล้ว</span>`;
+                }
             } else {
-                feeLabel.innerHTML = `<span style="color: var(--color-text-dark);">${baseFee} บาท</span>`;
-                const isNear = window.distanceKm <= window.NEAR_SHOP_KM;
-                if (isNear && foodTotal < window.FREE_SHIP_NEAR) {
-                    const need = window.FREE_SHIP_NEAR - foodTotal;
-                    freeshipHint.innerHTML = `💡 สั่งเพิ่มอีก <b style="color: #EA580C;">${need} บาท</b> ส่งฟรี (โปรใกล้ร้าน)`;
-                } else if (foodTotal < window.FREE_SHIP_ALL) {
-                    const need = window.FREE_SHIP_ALL - foodTotal;
-                    freeshipHint.innerHTML = `💡 สั่งเพิ่มอีก <b style="color: #EA580C;">${need} บาท</b> ส่งฟรี`;
+                feeLabel.innerHTML = `<span style="color: var(--color-text-dark);">${result.customerFee} บาท</span>`;
+                if (hint) {
+                    freeshipHint.innerHTML = `💡 สั่งเพิ่ม <b style="color: var(--color-hot);">${hint.needMore} บาท</b> → ค่าส่งลด <b style="color: var(--color-primary);">${hint.savings} บาท</b>`;
                 } else {
                     freeshipHint.innerHTML = '-';
                 }
             }
             realtimeBox.classList.remove('hidden');
         }
-        window.updateFreeShippingProgress();
+        window.updateNextStepHint();
         window.updatePinReminderCard();
     };
     
@@ -1312,38 +1410,53 @@
         if(!name || !phone || !address) return Swal.fire({icon: 'warning', text: 'กรุณากรอกข้อมูลที่อยู่ให้ครบถ้วน'});
         if(!window.userLat) return Swal.fire({icon: 'warning', text: 'กรุณาปักหมุดจุดส่งบนแผนที่'});
         if(window.distanceKm > window.MAX_DIST_KM) return Swal.fire({icon: 'error', text: `อยู่นอกพื้นที่จัดส่ง (จำกัด ${window.MAX_DIST_KM} กม.)`});
+        
         const foodTotal = window.cart.reduce((s, i) => s + i.finalPrice, 0);
-        const baseFee = window.calculateShippingFee(window.distanceKm);
-        const freeCheck = window.checkFreeShipping(foodTotal, window.distanceKm);
-        window.deliveryFee = freeCheck.isFree ? 0 : baseFee;
+        const result = window.calculateDeliveryFee(foodTotal, window.distanceKm);
+        window.deliveryFee = result.customerFee;
         const grandTotal = foodTotal + window.deliveryFee;
+        
         document.getElementById('summary-order-type').innerText = `🛵 เดลิเวอรี่ (${window.distanceKm.toFixed(1)} กม.)`;
         document.getElementById('summary-food-total').innerText = `${foodTotal} บาท`;
         document.getElementById('summary-delivery-row').style.display = 'flex';
         const feeDisplay = document.getElementById('summary-delivery-fee');
         const feeDetail = document.getElementById('delivery-details');
-        if(window.deliveryFee === 0) {
+        
+        if(result.isFree) {
             feeDisplay.innerText = "ฟรี"; 
             feeDisplay.style.color = 'var(--color-primary)';
             feeDisplay.style.fontWeight = 'bold';
-            feeDetail.innerText = `(${freeCheck.reason})`;
+            feeDetail.innerText = `(ร้านช่วย ${result.shopHelp} บาท)`;
             feeDetail.className = "text-[10px]";
             feeDetail.style.color = 'var(--color-primary)';
-        } else {
-            feeDisplay.innerText = `${window.deliveryFee} บาท`; 
+        } else if(result.shopHelp > 0) {
+            feeDisplay.innerHTML = `<span class="line-through text-xs mr-1" style="color: var(--color-text-muted);">${result.fullFee}</span>${result.customerFee} บาท`;
             feeDisplay.style.color = 'var(--color-text-dark)';
-            const isNear = window.distanceKm <= window.NEAR_SHOP_KM;
-            if (isNear && foodTotal < window.FREE_SHIP_NEAR) { 
-                feeDetail.innerText = `(สั่งเพิ่ม ${window.FREE_SHIP_NEAR - foodTotal}บ. ส่งฟรี!)`; 
-                feeDetail.className = "text-xs font-bold animate-pulse";
-                feeDetail.style.color = 'var(--color-hot)';
-            } 
-            else if (foodTotal < window.FREE_SHIP_ALL) { 
-                feeDetail.innerText = `(สั่งเพิ่ม ${window.FREE_SHIP_ALL - foodTotal}บ. ส่งฟรี)`; 
+            const hint = window.getNextStepHint(foodTotal, window.distanceKm);
+            if (hint) {
+                if (hint.willBeFree) {
+                    feeDetail.innerText = `(สั่งเพิ่ม ${hint.needMore} บ. ส่งฟรี!)`;
+                    feeDetail.className = "text-xs font-bold animate-pulse";
+                    feeDetail.style.color = 'var(--color-hot)';
+                } else {
+                    feeDetail.innerText = `(สั่งเพิ่ม ${hint.needMore} บ. ลดอีก ${hint.savings})`;
+                    feeDetail.className = "text-[10px]";
+                    feeDetail.style.color = '#EA580C';
+                }
+            } else {
+                feeDetail.innerText = `(ร้านช่วย ${result.shopHelp} บาท)`;
+                feeDetail.className = "text-[10px]";
+                feeDetail.style.color = 'var(--color-primary-light)';
+            }
+        } else {
+            feeDisplay.innerText = `${result.customerFee} บาท`;
+            feeDisplay.style.color = 'var(--color-text-dark)';
+            const hint = window.getNextStepHint(foodTotal, window.distanceKm);
+            if (hint) {
+                feeDetail.innerText = `(สั่งเพิ่ม ${hint.needMore} บ. ลด ${hint.savings})`;
                 feeDetail.className = "text-[10px]";
                 feeDetail.style.color = '#EA580C';
-            } 
-            else feeDetail.innerText = "";
+            } else feeDetail.innerText = "";
         }
         document.getElementById('summary-grand-total').innerText = `${grandTotal} บาท`;
         document.getElementById('qr-image').src = `https://promptpay.io/0622467746/${grandTotal}`;
@@ -1402,6 +1515,19 @@
         if (method === 'chat_pay') initialStatus = "💬 รอแอดมินแจ้งยอด";
         if (method === 'cod') initialStatus = "🏪 รอรับที่ร้าน (จ่ายเงินสด)";
 
+        // ดึงข้อมูล shipping details เผื่อ admin ตรวจสอบ
+        let shippingDetails = null;
+        if (window.orderMode === 'delivery') {
+            const foodTotal = window.cart.reduce((s, i) => s + i.finalPrice, 0);
+            const result = window.calculateDeliveryFee(foodTotal, window.distanceKm);
+            shippingDetails = {
+                fullFee: result.fullFee,
+                shopHelp: result.shopHelp,
+                customerFee: result.customerFee,
+                zone: result.zone
+            };
+        }
+
         const newOrder = {
             id: orderId,
             timestamp: timestamp.toISOString(),
@@ -1413,6 +1539,7 @@
             pickupTime: window.orderMode === 'pickup' ? window.pickupTime : null,
             distanceKm: window.orderMode === 'delivery' ? window.distanceKm.toFixed(2) : null,
             deliveryFee: window.deliveryFee,
+            shippingDetails: shippingDetails,
             paymentMethod: method,
             slipImage: slipBase64,
             status: initialStatus
