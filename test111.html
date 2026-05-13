@@ -178,22 +178,6 @@
 
         <!-- PAGE: MENU -->
         <section id="page-menu" class="page-section active-section">
-            <div class="mt-4 px-5">
-                <div id="banner-slider" class="flex overflow-x-auto snap-x snap-mandatory gap-3 no-scrollbar rounded-3xl" style="scroll-behavior: smooth;">
-                    <div class="snap-center shrink-0 w-full h-40 relative rounded-3xl overflow-hidden shadow-md">
-                        <img src="https://lh3.googleusercontent.com/d/1Y6AcIYV84EOQNce9WsZfnPUI2jadSxm-" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
-                    </div>
-                    <div class="snap-center shrink-0 w-full h-40 relative rounded-3xl overflow-hidden shadow-md">
-                        <img src="https://lh3.googleusercontent.com/d/1Vg_h81-6DJt1TvtY95G0o72KatHTAzaU" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
-                    </div>
-                    <div class="snap-center shrink-0 w-full h-40 relative rounded-3xl overflow-hidden shadow-md">
-                        <img src="https://lh3.googleusercontent.com/d/1O0p6fyxXLCD2xCZWl4eRwsCmt1n9Sf1M" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
-                    </div>
-                </div>
-            </div>
 
             <div id="pin-reminder-card" class="mx-5 mt-4 hidden">
                 <button onclick="goToMapPage()" class="w-full shimmer-bg border-2 border-dashed rounded-2xl p-3 flex items-center gap-3 transition active:scale-[0.98]" style="border-color: var(--color-accent-yellow-dark);">
@@ -800,7 +784,6 @@
                 window.switchTab('recommend');
                 window.initMap();
                 window.updateFooterState('menu');
-                window.startBannerAutoSlide();
                 if(localStorage.getItem('cust_name')) {
                     document.getElementById('cust-name').value = localStorage.getItem('cust_name');
                     document.getElementById('pickup-name').value = localStorage.getItem('cust_name');
@@ -1052,30 +1035,38 @@
             const isSoldOut = !item.stock;
             const pastelClass = pastelBgs[idx % pastelBgs.length];
             const priceColorStyle = item.originalPrice ? 'color: var(--color-hot);' : 'color: var(--color-primary);';
-            let badgeHtml = '';
+            
+            // Custom badge (item.badge) - แสดงเป็นป้ายเล็กข้างชื่อเมนู
+            let nameBadgeHtml = '';
             if (item.badge && !isSoldOut) {
-                badgeHtml = `<div class="absolute -top-2 -left-1 z-10 badge-stamp font-display text-[9px] font-bold px-2 py-1 rounded-lg" style="background: var(--color-hot); color: white;">⭐ ${item.badge}</div>`;
+                nameBadgeHtml = `<span class="ml-1 text-[9px] font-bold px-1.5 py-0.5 rounded" style="background: var(--color-accent-yellow); color: #92400E; border: 1px solid var(--color-accent-yellow-dark);">⭐ ${item.badge}</span>`;
             }
-            let circleBadgeHtml = '';
+            
+            // HOT/NEW ribbon - แนวเฉียงมุมบนซ้าย ไม่บังรูปกลาง
+            let ribbonHtml = '';
             if (item.originalPrice && !isSoldOut) {
-                circleBadgeHtml = `<div class="absolute bottom-1 right-1 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm"><span class="text-[9px] font-bold" style="color: var(--color-hot);">HOT</span></div>`;
+                ribbonHtml = `<div class="absolute top-0 left-0 z-10 overflow-hidden" style="width: 50px; height: 50px;">
+                    <div class="absolute font-display font-bold text-[9px] text-white text-center shadow-md" style="background: var(--color-hot); transform: rotate(-45deg); width: 70px; padding: 2px 0; top: 10px; left: -18px; letter-spacing: 0.5px;">HOT</div>
+                </div>`;
             } else if (item.isNew && !isSoldOut) {
-                circleBadgeHtml = `<div class="absolute bottom-1 right-1 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm"><span class="text-[9px] font-bold" style="color: var(--color-new);">NEW</span></div>`;
+                ribbonHtml = `<div class="absolute top-0 left-0 z-10 overflow-hidden" style="width: 50px; height: 50px;">
+                    <div class="absolute font-display font-bold text-[9px] text-white text-center shadow-md" style="background: var(--color-new); transform: rotate(-45deg); width: 70px; padding: 2px 0; top: 10px; left: -18px; letter-spacing: 0.5px;">NEW</div>
+                </div>`;
             }
+            
             return `
             <div class="menu-card px-5 mb-3 ${isSoldOut ? 'opacity-60 grayscale pointer-events-none' : 'cursor-pointer'}" onclick="${!isSoldOut ? `openModal('${item.id}')` : ''}">
                 <div class="rounded-3xl p-3 flex gap-3" style="background: white; border: 1px solid var(--color-border-soft); box-shadow: 0 2px 8px rgba(45, 80, 22, 0.04);">
                     <div class="relative shrink-0">
                         <div class="${pastelClass} w-24 h-24 rounded-2xl overflow-hidden relative flex items-center justify-center">
                             <img src="${item.img}" class="w-full h-full object-cover" onerror="this.style.display='none'">
-                            ${circleBadgeHtml}
+                            ${ribbonHtml}
                         </div>
-                        ${badgeHtml}
                         ${isSoldOut ? '<span class="absolute inset-0 flex items-center justify-center bg-black/40 text-white font-bold text-sm rounded-2xl z-10">หมด</span>' : ''}
                     </div>
                     <div class="flex-1 flex flex-col justify-between py-0.5 min-w-0">
                         <div>
-                            <h3 class="font-display text-base font-semibold leading-tight" style="color: var(--color-primary);">${item.name}</h3>
+                            <h3 class="font-display text-base font-semibold leading-tight" style="color: var(--color-primary);">${item.name}${nameBadgeHtml}</h3>
                             <p class="text-xs line-clamp-2 leading-relaxed mt-1" style="color: var(--color-text-muted);">${item.desc || ''}</p>
                         </div>
                         <div class="flex items-end justify-between mt-2">
@@ -1586,23 +1577,6 @@
         reader.onload = () => resolve(reader.result); 
         reader.onerror = error => reject(error);
     });
-
-    // ============ BANNER & MISC ============
-    window.startBannerAutoSlide = function() {
-        const slider = document.getElementById('banner-slider');
-        if (!slider) return;
-        let scrollAmount = 0;
-        setInterval(() => {
-            const cardWidth = slider.offsetWidth + 12; 
-            scrollAmount += cardWidth;
-            if (scrollAmount >= slider.scrollWidth) {
-                scrollAmount = 0;
-                slider.scrollTo({ left: 0, behavior: 'auto' }); 
-            } else {
-                slider.scrollTo({ left: scrollAmount, behavior: 'smooth' }); 
-            }
-        }, 9000); 
-    };
 
     window.saveOrderToHistory = function(order) {
         let history = JSON.parse(localStorage.getItem('order_history') || "[]");
