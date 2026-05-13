@@ -887,7 +887,13 @@
             else { backBtn.style.opacity = '1'; backBtn.style.pointerEvents = 'auto'; }
         }
         window.updateFooterState(pageId);
-        if(pageId === 'address' && window.map) setTimeout(() => window.map.invalidateSize(), 200);
+        if(pageId === 'address' && window.map) {
+            setTimeout(() => window.map.invalidateSize(), 200);
+            // 🔥 FIX: refresh fee box ทุกครั้งที่เข้าหน้า address (เพราะ cart อาจเปลี่ยน)
+            if (window.hasUserLocation && window.userLat !== null) {
+                window.calculateDelivery(window.userLat, window.userLng);
+            }
+        }
         if(pageId === 'tracking') window.initTrackingPage();
         if(pageId === 'cart') window.updateCartModeIndicator();
         window.scrollTo(0,0);
