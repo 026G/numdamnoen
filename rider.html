@@ -76,11 +76,16 @@
   let riderSession = JSON.parse(localStorage.getItem('rider_session') || 'null');
   const qs = new URLSearchParams(location.search);
   const preselectJobId = qs.get('jobId') || '';
+  let loadingJobs = false;
 
   function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-  function api(params){
-    const url = WEB_APP_URL + '?' + new URLSearchParams(params).toString();
-    return fetch(url).then(r=>r.json());
+  function api(params, timeoutMs=15000){
+    const controller = new AbortController();
+    const timer = setTimeout(()=>controller.abort(), timeoutMs);
+    const url = WEB_APP_URL + '?' + new URLSearchParams({...params, _t: Date.now()}).toString();
+    return fetch(url, { cache:'no-store', signal:controller.signal })
+      .then(r=>r.json())
+      .finally(()=>clearTimeout(timer));
   }
   async function initLine(){
     const note = document.getElementById('line-profile-note');
@@ -122,33 +127,59 @@
   function logoutRider(){ localStorage.removeItem('rider_session'); riderSession=null; location.reload(); }
 
   async function loadJobs(silent=false){
-    if(!riderSession?.token) return;
+    if(!riderSession?.token || loadingJobs) return;
+    loadingJobs = true;
+    const btn = document.getElementById('btn-refresh');
+    if(btn) btn.style.opacity = '.55';
     if(!silent) Swal.fire({title:'โหลดงาน...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
     try{
       const data = await api({action:'rider_get_jobs', token:riderSession.token});
       if(!silent) Swal.close();
-      if(!data.ok) { localStorage.removeItem('rider_session'); return Swal.fire({icon:'error',title:'เซสชันหมดอายุ',text:data.error||'กรุณาเข้าใหม่'}).then(()=>location.reload()); }
-      riderSession.rider = data.rider; localStorage.setItem('rider_session', JSON.stringify(riderSession)); showApp();
-      renderMyJobs(data.myJobs||[]); renderOpenJobs(data.openJobs||[]);
-    }catch(e){ if(!silent) Swal.close(); Swal.fire({icon:'error',title:'โหลดไม่ได้',text:e.message}); }
+      if(!data.ok) {
+        localStorage.removeItem('rider_session');
+        return Swal.fire({icon:'error',title:'เซสชันหมดอายุ',text:data.error||'กรุณาเข้าใหม่'}).then(()=>location.reload());
+      }
+      riderSession.rider = data.rider;
+      localStorage.setItem('rider_session', JSON.stringify(riderSession));
+      showApp();
+      renderMyJobs(data.myJobs||[]);
+      renderOpenJobs(data.openJobs||[]);
+    }catch(e){
+      if(!silent) { Swal.close(); Swal.fire({icon:'error',title:'โหลดไม่ได้',text:e.name==='AbortError'?'หมดเวลารอเซิร์ฟเวอร์ ลองกดรีเฟรชอีกครั้ง':e.message}); }
+      else console.warn('silent load failed', e);
+    }finally{
+      loadingJobs = false;
+      if(btn) btn.style.opacity = '1';
+    }
   }
 
   function jobCard(job, mine=false){
     const full = mine;
+    const itemCountText = `${job.itemCount || '-'} รายการ / ${job.pieceCount || '-'} ชิ้น`;
+    const itemListHtml = full && job.items
+      ? `<div class="mt-3 rounded-2xl p-3 text-sm" style="background:white;border:1px solid var(--border);color:var(--text)">
+          <div class="font-bold mb-2" style="color:var(--primary)">รายการที่ต้องรับ · ${esc(itemCountText)}</div>
+          <div class="whitespace-pre-wrap text-xs leading-relaxed" style="color:var(--muted)">${esc(job.items)}</div>
+        </div>`
+      : '';
     return `<div class="card rounded-3xl p-4">
       <div class="flex items-start justify-between gap-3">
-        <div><div class="text-xs" style="color:var(--muted)">${esc(job.orderId)}</div><div class="font-display text-xl font-bold" style="color:var(--hot)">${esc(job.riderPay)} บาท</div></div>
+        <div>
+          <div class="text-xs" style="color:var(--muted)">${esc(job.orderId)}</div>
+          <div class="font-display text-xl font-bold" style="color:var(--hot)">${esc(job.riderPay)} บาท</div>
+          <div class="text-[11px] mt-0.5" style="color:var(--muted)">ค่ารอบไรเดอร์ · ไม่รวมราคาสินค้า</div>
+        </div>
         <span class="text-[11px] px-2 py-1 rounded-full" style="background:${mine?'var(--mint)':'var(--yellow)'};color:var(--primary)">${esc(job.status)}</span>
       </div>
-      <div class="mt-2 grid grid-cols-2 gap-2 text-sm">
+      <div class="mt-2 grid grid-cols-3 gap-2 text-sm">
         <div class="rounded-2xl p-2" style="background:var(--warm)">ระยะ<br><b>${esc(job.distanceKm)} กม.</b></div>
         <div class="rounded-2xl p-2" style="background:var(--warm)">ช่วง<br><b>${esc(job.riderDistanceBand)}</b></div>
+        <div class="rounded-2xl p-2" style="background:var(--warm)">ของ<br><b>${esc(itemCountText)}</b></div>
       </div>
       ${full ? `<div class="mt-3 rounded-2xl p-3 text-sm" style="background:var(--blue);color:var(--text)">
         <b>${esc(job.customerName)}</b> · <a class="underline" href="tel:${esc(job.customerPhone)}">${esc(job.customerPhone)}</a><br>
         <div class="mt-1">${esc(job.customerAddress)}</div>
-        <div class="mt-2 whitespace-pre-wrap text-xs" style="color:var(--muted)">${esc(job.items)}</div>
-      </div>` : `<div class="mt-3 text-xs" style="color:var(--muted)">ข้อมูลลูกค้าจะแสดงหลังรับงาน</div>`}
+      </div>${itemListHtml}` : `<div class="mt-3 text-xs" style="color:var(--muted)">รับงานแล้วจึงเห็นเบอร์ ที่อยู่ และรายการสินค้าแบบละเอียด</div>`}
       <div class="mt-3 grid ${full?'grid-cols-2':'grid-cols-1'} gap-2">
         ${full && job.mapLink ? `<a href="${esc(job.mapLink)}" target="_blank" class="btn text-center rounded-2xl py-3 font-bold" style="background:var(--blue);color:#113566">เปิดแผนที่</a>`:''}
         ${full ? `<button onclick="updateStatus('${esc(job.jobId)}','PICKED_UP')" class="btn rounded-2xl py-3 font-bold text-white" style="background:var(--primary)">รับของแล้ว</button>
@@ -184,7 +215,8 @@
   }
 
   (async function boot(){ await initLine(); if(riderSession?.token){ showApp(); loadJobs(false); if(preselectJobId) setTimeout(()=>acceptJob(preselectJobId),700); } })();
-  setInterval(()=>{ if(riderSession?.token) loadJobs(true); }, 20000);
+  // ลดความหน่วงและลดภาระ Apps Script: ดึงอัตโนมัติทุก 45 วินาที กดปุ่มรีเฟรชเองได้เมื่อต้องการ
+  setInterval(()=>{ if(riderSession?.token) loadJobs(true); }, 45000);
 </script>
 </body>
 </html>
