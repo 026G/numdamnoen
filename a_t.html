@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin · หนุ่มดำเนิน มะพร้าวปั่น</title>
+    <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8"> 
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Anuphan:wght@100..700&family=Mali:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --color-base: #FBFAF6;
+            --color-base-warm: #F5F0E5;
+            --color-primary: #2D5016;
+            --color-primary-light: #5B8C3C;
+            --color-text-dark: #1F3A0F;
+            --color-text-muted: #8B7355;
+            --color-border-soft: #E8E2D5;
+            --color-hot: #C84B31;
+            
+            --status-new: #F59E0B;
+            --status-cooking: #2563EB;
+            --status-delivering: #7C3AED;
+            --status-done: #16A34A;
+            --status-cancelled: #DC2626;
+            --status-pickup-wait: #0D9668;
+        }
+
+        body { 
+            font-family: 'Anuphan', sans-serif; 
+            background-color: var(--color-base); 
+            color: var(--color-text-dark); 
+            -webkit-font-smoothing: antialiased;
+        }
+        .font-display { font-family: 'Mali', sans-serif; }
+
+        .order-card {
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(45, 80, 22, 0.1);
+        }
+        .order-card:active { transform: scale(0.99); }
+
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.5); }
+            70% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        }
+        .new-pulse { animation: pulse-ring 2s infinite; }
+
+        @keyframes slideIn {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .slide-in { animation: slideIn 0.3s ease-out; }
+
+        /* Status Pills */
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 10px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .status-new { background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A; }
+        .status-cooking { background: #DBEAFE; color: #1E40AF; border: 1px solid #93C5FD; }
+        .status-delivering { background: #EDE9FE; color: #6B21A8; border: 1px solid #C4B5FD; }
+        .status-done { background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7; }
+        .status-cancelled { background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5; }
+        .status-pickup-wait { background: #D4EBE0; color: #065F46; border: 1px solid #6EE7B7; }
+
+        .mode-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        .mode-pickup { background: #D4EBE0; color: #065F46; }
+        .mode-delivery { background: #DBEAFE; color: #1E3A8A; }
+
+        /* Tab nav */
+        .tab-btn {
+            flex: 1;
+            text-align: center;
+            padding: 12px 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--color-text-muted);
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab-btn.active {
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
+        }
+
+        /* Kanban columns */
+        .kanban-col {
+            min-width: 280px;
+            max-width: 320px;
+            scroll-snap-align: start;
+        }
+        @media (min-width: 1024px) {
+            .kanban-col { min-width: 0; max-width: none; flex: 1; }
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--color-border-soft); border-radius: 3px; }
+
+        /* Login screen */
+        .login-bg {
+            background: linear-gradient(135deg, #FBFAF6 0%, #F5F0E5 100%);
+        }
+        
+        /* Modal */
+        .modal-overlay {
+            backdrop-filter: blur(8px);
+        }
+        
+        /* Action buttons in modal */
+        .action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 10px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.2s;
+            cursor: pointer;
+            text-align: center;
+        }
+        .action-btn:active { transform: scale(0.95); }
+
+        .status-btn {
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        .status-btn:active { transform: scale(0.97); }
+
+        /* New order indicator */
+        .new-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: var(--color-hot);
+            color: white;
+            font-size: 9px;
+            font-weight: 700;
+            padding: 2px 5px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(200, 75, 49, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+<!-- ============ LOGIN SCREEN ============ -->
+<div id="login-screen" class="fixed inset-0 z-50 login-bg flex items-center justify-center p-4">
+    <div class="w-full max-w-sm bg-white rounded-3xl shadow-xl p-8 slide-in">
+        <div class="text-center mb-6">
+            <div class="w-20 h-20 rounded-full bg-white mx-auto mb-3 shadow-md" style="border: 3px solid var(--color-accent-mint, #D4EBE0);">
+                <img src="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8" class="w-full h-full rounded-full object-cover">
+            </div>
+            <h1 class="font-display text-xl font-bold" style="color: var(--color-primary);">Admin Panel</h1>
+            <p class="text-sm mt-1" style="color: var(--color-text-muted);">หนุ่มดำเนิน มะพร้าวปั่น 🌴</p>
+        </div>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold mb-1.5" style="color: var(--color-text-dark);">รหัสผ่าน</label>
+                <input type="password" id="login-pass" class="w-full rounded-xl px-4 py-3 outline-none focus:ring-2 transition" 
+                       style="background: var(--color-base-warm); border: 1px solid var(--color-border-soft);" 
+                       placeholder="ใส่รหัส admin"
+                       onkeydown="if(event.key==='Enter') doLogin()">
+            </div>
+            <button onclick="doLogin()" class="w-full text-white py-3 rounded-xl font-bold transition active:scale-95 shadow-lg" style="background: var(--color-primary);">
+                <i class="fa-solid fa-lock mr-2"></i> เข้าสู่ระบบ
+            </button>
+        </div>
+        
+        <p class="text-[10px] text-center mt-6" style="color: var(--color-text-muted);">
+            🔒 รหัสจะถูกจำไว้ 7 วัน
+        </p>
+    </div>
+</div>
+
+<!-- ============ MAIN APP ============ -->
+<div id="app" class="hidden min-h-screen pb-20">
+    
+    <!-- HEADER -->
+    <header class="sticky top-0 z-30 backdrop-blur shadow-sm" style="background-color: rgba(251, 250, 246, 0.95);">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-white p-1 shadow" style="border: 2px solid #D4EBE0;">
+                        <img src="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8" class="w-full h-full rounded-full object-cover">
+                    </div>
+                    <div>
+                        <div class="font-display text-base font-bold leading-none" style="color: var(--color-primary);">Admin Panel</div>
+                        <div class="text-[10px] mt-0.5" style="color: var(--color-text-muted);" id="current-date">-</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="toggleSound()" id="sound-btn" class="w-9 h-9 rounded-full flex items-center justify-center transition" style="background: white; border: 1px solid var(--color-border-soft);" title="เปิด/ปิดเสียง">
+                        <i class="fa-solid fa-volume-high text-sm" id="sound-icon" style="color: var(--color-primary);"></i>
+                    </button>
+                    <button onclick="forceRefresh()" class="w-9 h-9 rounded-full flex items-center justify-center transition" style="background: white; border: 1px solid var(--color-border-soft);" title="รีเฟรช">
+                        <i class="fa-solid fa-rotate-right text-sm" style="color: var(--color-text-muted);"></i>
+                    </button>
+                    <button onclick="doLogout()" class="w-9 h-9 rounded-full flex items-center justify-center transition" style="background: white; border: 1px solid var(--color-border-soft);" title="ออกจากระบบ">
+                        <i class="fa-solid fa-right-from-bracket text-sm" style="color: var(--color-hot);"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- TAB NAV -->
+        <div class="max-w-7xl mx-auto flex" style="border-bottom: 1px solid var(--color-border-soft);">
+            <button onclick="switchTab('today')" id="tab-today" class="tab-btn active">
+                <i class="fa-solid fa-house mr-1"></i> วันนี้
+            </button>
+            <button onclick="switchTab('orders')" id="tab-orders" class="tab-btn">
+                <i class="fa-solid fa-list mr-1"></i> ออเดอร์ทั้งหมด
+            </button>
+        </div>
+    </header>
+
+    <!-- TAB: TODAY (DASHBOARD + KANBAN) -->
+    <section id="page-today" class="max-w-7xl mx-auto p-4">
+        
+        <!-- Dashboard Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+            <div class="rounded-2xl p-3 md:p-4 text-center" style="background: white; border: 1px solid var(--color-border-soft);">
+                <div class="text-[10px] uppercase tracking-wide" style="color: var(--color-text-muted);">ออเดอร์วันนี้</div>
+                <div class="font-display text-2xl md:text-3xl font-bold mt-1" id="stat-total" style="color: var(--color-primary);">0</div>
+            </div>
+            <div class="rounded-2xl p-3 md:p-4 text-center" style="background: white; border: 1px solid var(--color-border-soft);">
+                <div class="text-[10px] uppercase tracking-wide" style="color: var(--color-text-muted);">ที่ต้องทำ</div>
+                <div class="font-display text-2xl md:text-3xl font-bold mt-1" id="stat-pending" style="color: #F59E0B;">0</div>
+            </div>
+            <div class="rounded-2xl p-3 md:p-4 text-center" style="background: white; border: 1px solid var(--color-border-soft);">
+                <div class="text-[10px] uppercase tracking-wide" style="color: var(--color-text-muted);">สำเร็จแล้ว</div>
+                <div class="font-display text-2xl md:text-3xl font-bold mt-1" id="stat-done" style="color: #16A34A;">0</div>
+            </div>
+            <div class="rounded-2xl p-3 md:p-4 text-center" style="background: white; border: 1px solid var(--color-border-soft);">
+                <div class="text-[10px] uppercase tracking-wide" style="color: var(--color-text-muted);">รายได้วันนี้</div>
+                <div class="font-display text-xl md:text-2xl font-bold mt-1" id="stat-revenue" style="color: var(--color-primary);">฿0</div>
+            </div>
+        </div>
+
+        <!-- KANBAN -->
+        <div class="overflow-x-auto no-scrollbar -mx-4 px-4 lg:overflow-visible lg:mx-0 lg:px-0">
+            <div class="flex gap-3 lg:grid lg:grid-cols-4 lg:gap-3" style="scroll-snap-type: x mandatory;">
+                
+                <!-- Column: NEW -->
+                <div class="kanban-col">
+                    <div class="rounded-2xl overflow-hidden" style="background: var(--color-base-warm); border: 1px solid var(--color-border-soft);">
+                        <div class="px-3 py-2 flex items-center justify-between sticky top-0" style="background: var(--color-base-warm); border-bottom: 1px solid var(--color-border-soft);">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full" style="background: var(--status-new);"></span>
+                                <span class="font-bold text-xs">🆕 ใหม่ / รอทำ</span>
+                            </div>
+                            <span class="text-xs font-bold px-2 py-0.5 rounded-full" id="count-new" style="background: white; color: var(--status-new);">0</span>
+                        </div>
+                        <div id="col-new" class="p-2 space-y-2 max-h-[600px] overflow-y-auto custom-scrollbar"></div>
+                    </div>
+                </div>
+
+                <!-- Column: COOKING -->
+                <div class="kanban-col">
+                    <div class="rounded-2xl overflow-hidden" style="background: var(--color-base-warm); border: 1px solid var(--color-border-soft);">
+                        <div class="px-3 py-2 flex items-center justify-between sticky top-0" style="background: var(--color-base-warm); border-bottom: 1px solid var(--color-border-soft);">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full" style="background: var(--status-cooking);"></span>
+                                <span class="font-bold text-xs">🍳 กำลังทำ</span>
+                            </div>
+                            <span class="text-xs font-bold px-2 py-0.5 rounded-full" id="count-cooking" style="background: white; color: var(--status-cooking);">0</span>
+                        </div>
+                        <div id="col-cooking" class="p-2 space-y-2 max-h-[600px] overflow-y-auto custom-scrollbar"></div>
+                    </div>
+                </div>
+
+                <!-- Column: DELIVERING -->
+                <div class="kanban-col">
+                    <div class="rounded-2xl overflow-hidden" style="background: var(--color-base-warm); border: 1px solid var(--color-border-soft);">
+                        <div class="px-3 py-2 flex items-center justify-between sticky top-0" style="background: var(--color-base-warm); border-bottom: 1px solid var(--color-border-soft);">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full" style="background: var(--status-delivering);"></span>
+                                <span class="font-bold text-xs">🛵 ส่ง/พร้อมรับ</span>
+                            </div>
+                            <span class="text-xs font-bold px-2 py-0.5 rounded-full" id="count-delivering" style="background: white; color: var(--status-delivering);">0</span>
+                        </div>
+                        <div id="col-delivering" class="p-2 space-y-2 max-h-[600px] overflow-y-auto custom-scrollbar"></div>
+                    </div>
+                </div>
+
+                <!-- Column: DONE -->
+                <div class="kanban-col">
+                    <div class="rounded-2xl overflow-hidden" style="background: var(--color-base-warm); border: 1px solid var(--color-border-soft);">
+                        <div class="px-3 py-2 flex items-center justify-between sticky top-0" style="background: var(--color-base-warm); border-bottom: 1px solid var(--color-border-soft);">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full" style="background: var(--status-done);"></span>
+                                <span class="font-bold text-xs">✅ สำเร็จ</span>
+                            </div>
+                            <span class="text-xs font-bold px-2 py-0.5 rounded-full" id="count-done" style="background: white; color: var(--status-done);">0</span>
+                        </div>
+                        <div id="col-done" class="p-2 space-y-2 max-h-[600px] overflow-y-auto custom-scrollbar"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- TAB: ALL ORDERS -->
+    <section id="page-orders" class="max-w-7xl mx-auto p-4 hidden">
+        <div class="bg-white rounded-2xl p-4 mb-4" style="border: 1px solid var(--color-border-soft);">
+            <h2 class="font-display text-base font-bold mb-3" style="color: var(--color-primary);">🔍 กรองออเดอร์</h2>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs font-semibold block mb-1.5" style="color: var(--color-text-dark);">ค้นหา</label>
+                    <input type="text" id="search-input" class="w-full rounded-xl px-3 py-2 outline-none focus:ring-2 text-sm" 
+                           style="background: var(--color-base-warm); border: 1px solid var(--color-border-soft);" 
+                           placeholder="เลขออเดอร์ / ชื่อ / เบอร์"
+                           oninput="renderAllOrders()">
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    <select id="filter-period" class="rounded-xl px-3 py-2 text-sm outline-none" style="background: var(--color-base-warm); border: 1px solid var(--color-border-soft);" onchange="renderAllOrders()">
+                        <option value="today">วันนี้</option>
+                        <option value="7days">7 วันล่าสุด</option>
+                        <option value="30days">30 วันล่าสุด</option>
+                        <option value="all">ทั้งหมด</option>
+                    </select>
+                    <select id="filter-status" class="rounded-xl px-3 py-2 text-sm outline-none" style="background: var(--color-base-warm); border: 1px solid var(--color-border-soft);" onchange="renderAllOrders()">
+                        <option value="all">ทุกสถานะ</option>
+                        <option value="new">รอทำ</option>
+                        <option value="cooking">กำลังทำ</option>
+                        <option value="delivering">ส่ง/พร้อมรับ</option>
+                        <option value="done">สำเร็จ</option>
+                        <option value="cancelled">ยกเลิก</option>
+                    </select>
+                    <select id="filter-mode" class="rounded-xl px-3 py-2 text-sm outline-none" style="background: var(--color-base-warm); border: 1px solid var(--color-border-soft);" onchange="renderAllOrders()">
+                        <option value="all">ทุกประเภท</option>
+                        <option value="pickup">🏪 รับหน้าร้าน</option>
+                        <option value="delivery">🛵 เดลิเวอรี่</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <div id="all-orders-list" class="space-y-2"></div>
+    </section>
+
+</div>
+
+<!-- ============ ORDER DETAIL MODAL ============ -->
+<div id="order-modal" class="fixed inset-0 z-50 bg-black/60 modal-overlay hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="w-full max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[92vh] flex flex-col slide-in">
+        
+        <!-- Modal Header -->
+        <div class="p-4 flex items-center justify-between" style="border-bottom: 1px solid var(--color-border-soft);">
+            <div class="flex items-center gap-2">
+                <span class="font-display text-lg font-bold" id="modal-order-id" style="color: var(--color-primary);">#0000</span>
+                <span id="modal-mode-pill"></span>
+            </div>
+            <button onclick="closeOrderModal()" class="w-8 h-8 rounded-full flex items-center justify-center" style="background: var(--color-base-warm); color: var(--color-text-muted);">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+            
+            <!-- Customer Section -->
+            <div>
+                <div class="text-[10px] font-semibold uppercase mb-2" style="color: var(--color-text-muted);">ข้อมูลลูกค้า</div>
+                <div class="rounded-xl p-3" style="background: var(--color-base-warm);">
+                    <div class="flex items-center gap-2 mb-1">
+                        <i class="fa-solid fa-user text-xs" style="color: var(--color-text-muted);"></i>
+                        <span class="font-semibold text-sm" id="modal-customer-name">-</span>
+                    </div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <i class="fa-solid fa-phone text-xs" style="color: var(--color-text-muted);"></i>
+                        <a id="modal-customer-phone-link" href="#" class="text-sm hover:underline" style="color: #2563EB;">-</a>
+                    </div>
+                    <div class="flex items-start gap-2 mb-1" id="modal-address-row">
+                        <i class="fa-solid fa-location-dot text-xs mt-1" style="color: var(--color-text-muted);"></i>
+                        <span class="text-sm" id="modal-customer-address" style="color: var(--color-text-dark);">-</span>
+                    </div>
+                    <div class="flex items-center gap-2 hidden" id="modal-pickup-time-row">
+                        <i class="fa-solid fa-clock text-xs" style="color: var(--color-text-muted);"></i>
+                        <span class="text-sm font-bold" id="modal-pickup-time" style="color: var(--status-pickup-wait);">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Action Buttons -->
+            <div class="grid grid-cols-4 gap-2">
+                <button onclick="callCustomer()" class="action-btn" style="background: #DBEAFE; color: #1E40AF;">
+                    <i class="fa-solid fa-phone text-xl"></i>
+                    <span>โทร</span>
+                </button>
+                <button onclick="openMap()" id="action-map" class="action-btn" style="background: #FEE2E2; color: #991B1B;">
+                    <i class="fa-solid fa-map-location-dot text-xl"></i>
+                    <span>แผนที่</span>
+                </button>
+                <button onclick="copyForRider()" id="action-copy-rider" class="action-btn" style="background: #FEF3C7; color: #92400E;">
+                    <i class="fa-solid fa-copy text-xl"></i>
+                    <span>Copy ส่งไรเดอร์</span>
+                </button>
+                <button onclick="copyAddress()" class="action-btn" style="background: #D4EBE0; color: #065F46;">
+                    <i class="fa-solid fa-clipboard text-xl"></i>
+                    <span>Copy ที่อยู่</span>
+                </button>
+                <button onclick="openLalamove()" id="action-lalamove" class="action-btn" style="background: #FFEDD5; color: #9A3412;">
+                    <i class="fa-solid fa-motorcycle text-xl"></i>
+                    <span>Lalamove</span>
+                </button>
+                <button onclick="viewSlip()" id="action-slip" class="action-btn" style="background: #E5E7EB; color: #374151;">
+                    <i class="fa-solid fa-receipt text-xl"></i>
+                    <span>ดูสลิป</span>
+                </button>
+                <button onclick="openLineChat()" class="action-btn" style="background: #ECFDF5; color: #065F46;">
+                    <i class="fa-brands fa-line text-xl"></i>
+                    <span>LINE</span>
+                </button>
+                <button onclick="openCustomerTracking()" class="action-btn" style="background: #F3E8FF; color: #6B21A8;">
+                    <i class="fa-solid fa-truck-fast text-xl"></i>
+                    <span>หน้าลูกค้า</span>
+                </button>
+            </div>
+
+            <!-- Items -->
+            <div>
+                <div class="text-[10px] font-semibold uppercase mb-2" style="color: var(--color-text-muted);">รายการสั่งซื้อ</div>
+                <div class="rounded-xl p-3 space-y-2" style="background: var(--color-base-warm);" id="modal-items">
+                    <!-- items will be rendered here -->
+                </div>
+            </div>
+
+            <!-- Summary -->
+            <div class="rounded-xl p-3" style="background: #ECFDF5; border: 1px solid #6EE7B7;">
+                <div class="flex justify-between text-xs mb-1" style="color: var(--color-text-muted);" id="modal-food-row">
+                    <span>ค่าอาหาร</span>
+                    <span id="modal-food-total" style="color: var(--color-text-dark);">-</span>
+                </div>
+                <div class="flex justify-between text-xs mb-1 hidden" style="color: var(--color-text-muted);" id="modal-shipping-row">
+                    <span id="modal-shipping-label">ค่าส่ง</span>
+                    <span id="modal-shipping-fee" style="color: var(--color-text-dark);">-</span>
+                </div>
+                <div class="flex justify-between items-center pt-2 mt-2" style="border-top: 1px dashed #6EE7B7;">
+                    <span class="font-bold text-sm" style="color: #065F46;">ยอดรวมสุทธิ</span>
+                    <span class="font-display text-xl font-bold" id="modal-total" style="color: #065F46;">฿0</span>
+                </div>
+                <div class="mt-2 pt-2 text-xs" style="border-top: 1px dashed #6EE7B7;">
+                    <span id="modal-payment-method">-</span>
+                </div>
+            </div>
+
+            <!-- Change Status -->
+            <div>
+                <div class="text-[10px] font-semibold uppercase mb-2" style="color: var(--color-text-muted);">เปลี่ยนสถานะเป็น</div>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="changeStatus('🍳 กำลังทำ')" class="status-btn" style="background: #DBEAFE; color: #1E40AF; border-color: #93C5FD;">
+                        🍳 กำลังทำ
+                    </button>
+                    <button onclick="changeStatus('🛵 กำลังจัดส่ง')" id="status-btn-deliver" class="status-btn" style="background: #EDE9FE; color: #6B21A8; border-color: #C4B5FD;">
+                        🛵 กำลังจัดส่ง
+                    </button>
+                    <button onclick="changeStatus('🏪 พร้อมให้รับ')" id="status-btn-ready" class="status-btn hidden" style="background: #D4EBE0; color: #065F46; border-color: #6EE7B7;">
+                        🏪 พร้อมให้รับ
+                    </button>
+                    <button onclick="changeStatus('✅ สำเร็จแล้ว')" class="status-btn" style="background: #D1FAE5; color: #065F46; border-color: #6EE7B7;">
+                        ✅ สำเร็จแล้ว
+                    </button>
+                    <button onclick="changeStatusWithConfirm('❌ ยกเลิก')" class="status-btn" style="background: #FEE2E2; color: #991B1B; border-color: #FCA5A5;">
+                        ❌ ยกเลิก
+                    </button>
+                </div>
+            </div>
+
+            <!-- Current status display -->
+            <div class="text-center text-xs" style="color: var(--color-text-muted);">
+                สถานะปัจจุบัน: <span id="modal-current-status" class="font-bold" style="color: var(--color-text-dark);">-</span>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue, update, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBLo1JKTNOrx6vvh2a6Pl8Zxjll4eoIKAA",
+        authDomain: "linenoti-7c04f.firebaseapp.com",
+        databaseURL: "https://linenoti-7c04f-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "linenoti-7c04f",
+        storageBucket: "linenoti-7c04f.firebasestorage.app",
+        messagingSenderId: "607844945437",
+        appId: "1:607844945437:web:d5e0229b8c18522cd500f4"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // ============ CONFIG ============
+    window.ADMIN_PASSWORD = "admin1234"; // ⚠️ เปลี่ยนเป็นรหัสของคุณ
+    window.WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzYBSnGMUXEXdHyJ21L98xxkGbCNVlcqRBvtJti38vr95txAcemZ4wJVeO70JIttX2RHQ/exec";
+    window.LINE_ADMIN_URL = "https://line.me/R/oaMessage/@yourLineId/"; // ⚠️ เปลี่ยนเป็น URL chat LINE ของร้าน
+    window.CUSTOMER_TRACKING_URL = "https://026g.github.io/numdamnoen/";
+
+    // ============ STATE ============
+    window.allOrders = {};
+    window.currentTab = 'today';
+    window.selectedOrder = null;
+    window.previousOrderCount = 0;
+    window.soundEnabled = true;
+    window.isFirstLoad = true;
+
+    // ============ LOGIN ============
+    window.doLogin = function() {
+        const pass = document.getElementById('login-pass').value;
+        if (pass === window.ADMIN_PASSWORD) {
+            const sessionData = {
+                token: pass,
+                expires: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days
+            };
+            localStorage.setItem('admin_session', JSON.stringify(sessionData));
+            startApp();
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'รหัสผ่านไม่ถูกต้อง',
+                confirmButtonColor: '#2D5016'
+            });
+        }
+    };
+
+    window.doLogout = function() {
+        Swal.fire({
+            title: 'ออกจากระบบ?',
+            showCancelButton: true,
+            confirmButtonText: 'ออก',
+            cancelButtonText: 'ยกเลิก',
+            confirmButtonColor: '#C84B31'
+        }).then(r => {
+            if (r.isConfirmed) {
+                localStorage.removeItem('admin_session');
+                location.reload();
+            }
+        });
+    };
+
+    function checkSession() {
+        const session = localStorage.getItem('admin_session');
+        if (!session) return false;
+        try {
+            const data = JSON.parse(session);
+            if (data.expires < Date.now()) {
+                localStorage.removeItem('admin_session');
+                return false;
+            }
+            return data.token === window.ADMIN_PASSWORD;
+        } catch (e) { return false; }
+    }
+
+    // ============ INIT ============
+    function startApp() {
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('app').classList.remove('hidden');
+        updateDate();
+        loadSoundPreference();
+        startOrderListener();
+    }
+
+    function updateDate() {
+        const now = new Date();
+        const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+        const dateStr = `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear() + 543} · ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+        document.getElementById('current-date').innerText = dateStr;
+    }
+    setInterval(updateDate, 60000);
+
+    // ============ FIREBASE LISTENER (Real-time) ============
+    function startOrderListener() {
+        const ordersRef = ref(db, 'orders');
+        onValue(ordersRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                // Convert object to array with key
+                const ordersArray = Object.entries(data).map(([key, val]) => ({
+                    ...val,
+                    fbKey: key
+                }));
+                // Sort by timestamp desc
+                ordersArray.sort((a, b) => {
+                    const ta = new Date(a.timestamp || 0).getTime();
+                    const tb = new Date(b.timestamp || 0).getTime();
+                    return tb - ta;
+                });
+                
+                // Detect new orders
+                if (!window.isFirstLoad && ordersArray.length > window.previousOrderCount) {
+                    notifyNewOrder();
+                }
+                window.previousOrderCount = ordersArray.length;
+                window.isFirstLoad = false;
+                
+                window.allOrders = ordersArray;
+                renderDashboard();
+                renderKanban();
+                if (window.currentTab === 'orders') renderAllOrders();
+            } else {
+                window.allOrders = [];
+                renderDashboard();
+                renderKanban();
+            }
+        });
+    }
+
+    function notifyNewOrder() {
+        // Sound
+        if (window.soundEnabled) {
+            try {
+                const audio = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU' + 'A'.repeat(100));
+                audio.play().catch(()=>{});
+                // Try a beep using Web Audio API
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = ctx.createOscillator();
+                const gain = ctx.createGain();
+                oscillator.connect(gain);
+                gain.connect(ctx.destination);
+                oscillator.frequency.value = 880;
+                gain.gain.value = 0.1;
+                oscillator.start();
+                setTimeout(() => {
+                    oscillator.frequency.value = 1100;
+                }, 100);
+                setTimeout(() => oscillator.stop(), 250);
+            } catch(e) {}
+        }
+        // Toast
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'info',
+            title: '🔔 มีออเดอร์ใหม่!',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+        });
+        // Browser notification
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('ออเดอร์ใหม่!', { body: 'มีออเดอร์ใหม่เข้ามา', icon: 'https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8' });
+        }
+    }
+
+    window.toggleSound = function() {
+        window.soundEnabled = !window.soundEnabled;
+        localStorage.setItem('sound_enabled', window.soundEnabled);
+        const icon = document.getElementById('sound-icon');
+        icon.className = window.soundEnabled ? 'fa-solid fa-volume-high text-sm' : 'fa-solid fa-volume-xmark text-sm';
+        icon.style.color = window.soundEnabled ? 'var(--color-primary)' : 'var(--color-text-muted)';
+    };
+
+    function loadSoundPreference() {
+        const saved = localStorage.getItem('sound_enabled');
+        if (saved !== null) window.soundEnabled = saved === 'true';
+        const icon = document.getElementById('sound-icon');
+        icon.className = window.soundEnabled ? 'fa-solid fa-volume-high text-sm' : 'fa-solid fa-volume-xmark text-sm';
+        icon.style.color = window.soundEnabled ? 'var(--color-primary)' : 'var(--color-text-muted)';
+        // Request notification permission
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+    }
+
+    window.forceRefresh = function() {
+        Swal.fire({ title: 'กำลังโหลด...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        setTimeout(() => Swal.close(), 800);
+    };
+
+    // ============ STATUS CLASSIFIER ============
+    function getStatusGroup(statusText) {
+        const s = String(statusText || '').toLowerCase();
+        if (s.includes('ยกเลิก')) return 'cancelled';
+        if (s.includes('สำเร็จ') || s.includes('เสร็จ') || s.includes('ส่งแล้ว')) return 'done';
+        if (s.includes('กำลังจัดส่ง') || s.includes('ส่ง') || s.includes('ไรเดอร์') || s.includes('พร้อม')) return 'delivering';
+        if (s.includes('กำลังทำ') || s.includes('ปรุง')) return 'cooking';
+        return 'new';
+    }
+
+    function getStatusBadgeClass(group) {
+        return `status-${group}`;
+    }
+
+    function isToday(dateStr) {
+        if (!dateStr) return false;
+        const d = new Date(dateStr);
+        const today = new Date();
+        return d.getFullYear() === today.getFullYear() &&
+               d.getMonth() === today.getMonth() &&
+               d.getDate() === today.getDate();
+    }
+
+    // ============ DASHBOARD ============
+    function renderDashboard() {
+        const todayOrders = window.allOrders.filter(o => isToday(o.timestamp));
+        const total = todayOrders.length;
+        const pending = todayOrders.filter(o => ['new','cooking'].includes(getStatusGroup(o.status))).length;
+        const done = todayOrders.filter(o => getStatusGroup(o.status) === 'done').length;
+        const revenue = todayOrders
+            .filter(o => getStatusGroup(o.status) !== 'cancelled')
+            .reduce((sum, o) => {
+                const t = parseFloat(String(o.total || '0').replace(/[^\d.]/g, '')) || 0;
+                return sum + t;
+            }, 0);
+        
+        document.getElementById('stat-total').innerText = total;
+        document.getElementById('stat-pending').innerText = pending;
+        document.getElementById('stat-done').innerText = done;
+        document.getElementById('stat-revenue').innerText = `฿${revenue.toLocaleString()}`;
+    }
+
+    // ============ KANBAN ============
+    function renderKanban() {
+        const todayOrders = window.allOrders.filter(o => isToday(o.timestamp));
+        
+        const groups = { new: [], cooking: [], delivering: [], done: [] };
+        todayOrders.forEach(o => {
+            const g = getStatusGroup(o.status);
+            if (g === 'cancelled') return; // hide cancelled from kanban
+            if (groups[g]) groups[g].push(o);
+        });
+
+        ['new','cooking','delivering','done'].forEach(group => {
+            const container = document.getElementById(`col-${group}`);
+            const count = groups[group].length;
+            document.getElementById(`count-${group}`).innerText = count;
+            
+            if (count === 0) {
+                container.innerHTML = `<div class="text-center text-xs py-6" style="color: var(--color-text-muted);">ไม่มีออเดอร์</div>`;
+                return;
+            }
+            
+            container.innerHTML = groups[group].map(order => renderOrderCard(order, group === 'new')).join('');
+        });
+    }
+
+    function renderOrderCard(order, isNew) {
+        const shortId = order.id ? order.id.replace('ORD-','#') : '#----';
+        const orderMode = order.orderMode || 'delivery';
+        const isPickup = orderMode === 'pickup';
+        const modeIcon = isPickup ? '🏪' : '🛵';
+        const modePillClass = isPickup ? 'mode-pickup' : 'mode-delivery';
+        const modeLabel = isPickup ? 'รับหน้าร้าน' : 'เดลิเวอรี่';
+        
+        const customerName = order.customer?.name || '-';
+        const customerPhone = order.customer?.phone || '';
+        
+        // Time
+        let timeStr = '-';
+        let minsAgo = 0;
+        if (order.timestamp) {
+            const orderTime = new Date(order.timestamp);
+            timeStr = `${String(orderTime.getHours()).padStart(2,'0')}:${String(orderTime.getMinutes()).padStart(2,'0')}`;
+            minsAgo = Math.round((Date.now() - orderTime.getTime()) / 60000);
+        }
+        
+        // Items summary
+        let itemSummary = '';
+        if (Array.isArray(order.items)) {
+            const totalItems = order.items.reduce((s, i) => s + (i.qty || 1), 0);
+            const firstName = order.items[0]?.name || '';
+            itemSummary = `${totalItems} แก้ว · ${firstName}${order.items.length > 1 ? ` +${order.items.length - 1}` : ''}`;
+        }
+        
+        // Total
+        const totalStr = String(order.total || '0').replace(/[^\d.]/g, '');
+        
+        // Payment icon
+        const pm = order.paymentMethod;
+        let payIcon = '💳';
+        if (pm === 'cod') payIcon = '💵';
+        else if (pm === 'transfer') payIcon = '📱';
+        else if (pm === 'chat_pay') payIcon = '💬';
+        
+        const pulseClass = isNew && minsAgo < 5 ? 'new-pulse' : '';
+        
+        // Pickup time hint
+        let pickupHint = '';
+        if (isPickup && order.pickupTime) {
+            pickupHint = `<div class="text-[10px] font-bold mt-1" style="color: var(--status-pickup-wait);">⏰ มารับใน ${order.pickupTime} นาที</div>`;
+        }
+        
+        // Distance hint
+        let distHint = '';
+        if (!isPickup && order.distanceKm) {
+            distHint = `<span class="text-[10px]" style="color: var(--color-text-muted);">· ${order.distanceKm}km</span>`;
+        }
+
+        return `
+            <div class="order-card rounded-xl p-3 ${pulseClass}" style="background: white; border: 1px solid var(--color-border-soft);" onclick="openOrderModal('${order.fbKey}')">
+                <div class="flex items-start justify-between mb-1.5">
+                    <div class="flex items-center gap-1.5">
+                        <span class="font-display font-bold text-sm" style="color: var(--color-primary);">${shortId}</span>
+                        <span class="mode-pill ${modePillClass}">${modeIcon} ${modeLabel}</span>
+                    </div>
+                    <span class="text-[10px]" style="color: var(--color-text-muted);">${timeStr}</span>
+                </div>
+                <div class="text-sm font-semibold mb-0.5" style="color: var(--color-text-dark);">${customerName}</div>
+                <div class="text-[11px] mb-1.5" style="color: var(--color-text-muted);">📞 ${customerPhone} ${distHint}</div>
+                <div class="text-xs mb-2" style="color: var(--color-text-dark);">${itemSummary}</div>
+                ${pickupHint}
+                <div class="flex items-center justify-between pt-2" style="border-top: 1px dashed var(--color-border-soft);">
+                    <span class="text-[11px]">${payIcon}</span>
+                    <span class="font-display font-bold text-sm" style="color: var(--color-text-dark);">฿${totalStr}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    // ============ ALL ORDERS TAB ============
+    window.renderAllOrders = function() {
+        const period = document.getElementById('filter-period').value;
+        const status = document.getElementById('filter-status').value;
+        const mode = document.getElementById('filter-mode').value;
+        const search = document.getElementById('search-input').value.trim().toLowerCase();
+        
+        let filtered = [...window.allOrders];
+        
+        // Period
+        const now = Date.now();
+        if (period === 'today') {
+            filtered = filtered.filter(o => isToday(o.timestamp));
+        } else if (period === '7days') {
+            filtered = filtered.filter(o => {
+                const t = new Date(o.timestamp).getTime();
+                return now - t < 7 * 24 * 3600 * 1000;
+            });
+        } else if (period === '30days') {
+            filtered = filtered.filter(o => {
+                const t = new Date(o.timestamp).getTime();
+                return now - t < 30 * 24 * 3600 * 1000;
+            });
+        }
+        
+        // Status
+        if (status !== 'all') {
+            filtered = filtered.filter(o => getStatusGroup(o.status) === status);
+        }
+        
+        // Mode
+        if (mode !== 'all') {
+            filtered = filtered.filter(o => (o.orderMode || 'delivery') === mode);
+        }
+        
+        // Search
+        if (search) {
+            filtered = filtered.filter(o => {
+                const idMatch = String(o.id || '').toLowerCase().includes(search);
+                const nameMatch = String(o.customer?.name || '').toLowerCase().includes(search);
+                const phoneMatch = String(o.customer?.phone || '').replace(/-/g,'').includes(search.replace(/-/g,''));
+                return idMatch || nameMatch || phoneMatch;
+            });
+        }
+        
+        const container = document.getElementById('all-orders-list');
+        if (filtered.length === 0) {
+            container.innerHTML = `<div class="rounded-2xl p-8 text-center" style="background: white; border: 1px solid var(--color-border-soft); color: var(--color-text-muted);">
+                <i class="fa-solid fa-box-open text-3xl mb-2"></i>
+                <div class="text-sm">ไม่พบออเดอร์ตามเงื่อนไข</div>
+            </div>`;
+            return;
+        }
+        
+        container.innerHTML = filtered.map(order => renderListItem(order)).join('');
+    };
+
+    function renderListItem(order) {
+        const shortId = order.id ? order.id.replace('ORD-','#') : '#----';
+        const orderMode = order.orderMode || 'delivery';
+        const isPickup = orderMode === 'pickup';
+        const modeIcon = isPickup ? '🏪' : '🛵';
+        const customerName = order.customer?.name || '-';
+        const statusGroup = getStatusGroup(order.status);
+        const statusClass = getStatusBadgeClass(statusGroup);
+        const statusLabel = order.status || 'รอทำ';
+        
+        let dateStr = '-';
+        if (order.timestamp) {
+            const d = new Date(order.timestamp);
+            const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+            dateStr = `${d.getDate()} ${months[d.getMonth()]} · ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+        }
+        
+        const totalStr = String(order.total || '0').replace(/[^\d.]/g, '');
+
+        return `
+            <div class="order-card rounded-xl p-3" style="background: white; border: 1px solid var(--color-border-soft);" onclick="openOrderModal('${order.fbKey}')">
+                <div class="flex items-center justify-between mb-1">
+                    <div class="flex items-center gap-2">
+                        <span class="font-display font-bold text-sm" style="color: var(--color-primary);">${shortId}</span>
+                        <span class="text-[11px]" style="color: var(--color-text-muted);">${dateStr}</span>
+                    </div>
+                    <span class="status-pill ${statusClass}">${statusLabel}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="text-sm font-semibold" style="color: var(--color-text-dark);">${modeIcon} ${customerName}</div>
+                        <div class="text-[11px]" style="color: var(--color-text-muted);">📞 ${order.customer?.phone || '-'}</div>
+                    </div>
+                    <span class="font-display font-bold" style="color: var(--color-text-dark);">฿${totalStr}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    // ============ TAB SWITCHING ============
+    window.switchTab = function(tab) {
+        window.currentTab = tab;
+        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.getElementById(`tab-${tab}`).classList.add('active');
+        document.getElementById('page-today').classList.toggle('hidden', tab !== 'today');
+        document.getElementById('page-orders').classList.toggle('hidden', tab !== 'orders');
+        if (tab === 'orders') renderAllOrders();
+    };
+
+    // ============ ORDER MODAL ============
+    window.openOrderModal = function(fbKey) {
+        const order = window.allOrders.find(o => o.fbKey === fbKey);
+        if (!order) return;
+        window.selectedOrder = order;
+        
+        const shortId = order.id ? order.id.replace('ORD-','#') : '#----';
+        const orderMode = order.orderMode || 'delivery';
+        const isPickup = orderMode === 'pickup';
+        
+        document.getElementById('modal-order-id').innerText = shortId;
+        
+        // Mode pill
+        const modePill = document.getElementById('modal-mode-pill');
+        modePill.className = `mode-pill ${isPickup ? 'mode-pickup' : 'mode-delivery'}`;
+        modePill.innerText = isPickup ? '🏪 รับหน้าร้าน' : '🛵 เดลิเวอรี่';
+        
+        // Customer
+        document.getElementById('modal-customer-name').innerText = order.customer?.name || '-';
+        const phoneLink = document.getElementById('modal-customer-phone-link');
+        phoneLink.innerText = order.customer?.phone || '-';
+        phoneLink.href = `tel:${(order.customer?.phone || '').replace(/-/g,'')}`;
+        
+        // Address vs Pickup time
+        const addrRow = document.getElementById('modal-address-row');
+        const pickupRow = document.getElementById('modal-pickup-time-row');
+        if (isPickup) {
+            addrRow.classList.add('hidden');
+            pickupRow.classList.remove('hidden');
+            document.getElementById('modal-pickup-time').innerText = `รับใน ${order.pickupTime || '-'} นาที`;
+        } else {
+            addrRow.classList.remove('hidden');
+            pickupRow.classList.add('hidden');
+            let addrText = order.customer?.address || '-';
+            if (order.customer?.landmark && order.customer.landmark !== '-') {
+                addrText += `\n📌 ${order.customer.landmark}`;
+            }
+            if (order.distanceKm) {
+                addrText += ` (${order.distanceKm} กม.)`;
+            }
+            document.getElementById('modal-customer-address').innerText = addrText;
+        }
+        
+        // Hide map/lalamove for pickup
+        document.getElementById('action-map').style.display = isPickup ? 'none' : '';
+        document.getElementById('action-lalamove').style.display = isPickup ? 'none' : '';
+        document.getElementById('action-copy-rider').style.display = isPickup ? 'none' : '';
+        
+        // Hide slip button if no slip
+        const slipBtn = document.getElementById('action-slip');
+        if (order.slipImage && order.slipImage.length > 50) {
+            slipBtn.style.display = '';
+        } else {
+            slipBtn.style.display = 'none';
+        }
+        
+        // Toggle delivery vs pickup ready button
+        document.getElementById('status-btn-deliver').classList.toggle('hidden', isPickup);
+        document.getElementById('status-btn-ready').classList.toggle('hidden', !isPickup);
+        
+        // Items
+        const itemsContainer = document.getElementById('modal-items');
+        if (Array.isArray(order.items)) {
+            itemsContainer.innerHTML = order.items.map((item, i) => {
+                let optsHtml = '';
+                if (item.selectedOptions && item.selectedOptions.length > 0) {
+                    optsHtml = item.selectedOptions.map(o => 
+                        `<div class="text-[10px] pl-3" style="color: var(--color-text-muted);">• ${o}</div>`
+                    ).join('');
+                }
+                return `
+                    <div class="${i > 0 ? 'pt-2 mt-2' : ''}" ${i > 0 ? 'style="border-top: 1px dashed var(--color-border-soft);"' : ''}>
+                        <div class="flex justify-between">
+                            <div class="flex-1 pr-2">
+                                <div class="text-sm font-semibold" style="color: var(--color-text-dark);">
+                                    <span style="color: var(--color-primary);">×${item.qty || 1}</span> ${item.name || '-'}
+                                </div>
+                                ${optsHtml}
+                            </div>
+                            <span class="text-sm font-bold whitespace-nowrap" style="color: var(--color-text-dark);">฿${item.finalPrice || 0}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } else {
+            itemsContainer.innerHTML = `<div class="text-xs" style="color: var(--color-text-muted);">${order.items || '-'}</div>`;
+        }
+        
+        // Summary
+        const totalNum = parseFloat(String(order.total || '0').replace(/[^\d.]/g, '')) || 0;
+        const deliveryFee = parseFloat(order.deliveryFee) || 0;
+        const foodTotal = totalNum - deliveryFee;
+        
+        document.getElementById('modal-food-total').innerText = `฿${foodTotal}`;
+        const shippingRow = document.getElementById('modal-shipping-row');
+        if (!isPickup) {
+            shippingRow.classList.remove('hidden');
+            const ship = order.shippingDetails;
+            if (ship) {
+                if (ship.shopHelp > 0) {
+                    document.getElementById('modal-shipping-label').innerText = `ค่าส่ง (ลด ${ship.shopHelp})`;
+                } else {
+                    document.getElementById('modal-shipping-label').innerText = `ค่าส่ง`;
+                }
+            }
+            document.getElementById('modal-shipping-fee').innerText = `฿${deliveryFee}`;
+        } else {
+            shippingRow.classList.add('hidden');
+        }
+        document.getElementById('modal-total').innerText = `฿${totalNum}`;
+        
+        // Payment method
+        const pmText = {
+            'cod': '💵 เก็บเงินสดที่ร้าน',
+            'transfer': '📱 โอน/สแกนจ่าย',
+            'chat_pay': '💬 รอโอนในไลน์'
+        }[order.paymentMethod] || '❓ ไม่ระบุ';
+        document.getElementById('modal-payment-method').innerText = pmText;
+        
+        // Current status
+        document.getElementById('modal-current-status').innerText = order.status || 'รอทำ';
+        
+        document.getElementById('order-modal').classList.remove('hidden');
+    };
+
+    window.closeOrderModal = function() {
+        document.getElementById('order-modal').classList.add('hidden');
+        window.selectedOrder = null;
+    };
+
+    // ============ ACTIONS ============
+    window.callCustomer = function() {
+        if (!window.selectedOrder) return;
+        const phone = (window.selectedOrder.customer?.phone || '').replace(/-/g,'');
+        if (!phone) return;
+        window.location.href = `tel:${phone}`;
+    };
+
+    window.openMap = function() {
+        if (!window.selectedOrder) return;
+        const loc = window.selectedOrder.customer?.location;
+        if (!loc) {
+            Swal.fire({ icon: 'warning', text: 'ไม่มีพิกัด' });
+            return;
+        }
+        window.open(`https://maps.google.com/?q=${loc}`, '_blank');
+    };
+
+    window.copyAddress = function() {
+        if (!window.selectedOrder) return;
+        const c = window.selectedOrder.customer;
+        let text = c?.address || '';
+        if (c?.landmark && c.landmark !== '-') text += ` (จุดสังเกต: ${c.landmark})`;
+        if (c?.location) text += `\nพิกัด: https://maps.google.com/?q=${c.location}`;
+        navigator.clipboard.writeText(text).then(() => {
+            Swal.fire({ toast: true, position: 'top', icon: 'success', title: 'Copy แล้ว!', showConfirmButton: false, timer: 1200 });
+        });
+    };
+
+    window.copyForRider = function() {
+        if (!window.selectedOrder) return;
+        const o = window.selectedOrder;
+        const c = o.customer;
+        const shortId = o.id ? o.id.replace('ORD-','#') : '#----';
+        
+        let itemsText = '';
+        if (Array.isArray(o.items)) {
+            itemsText = o.items.map(i => `• ${i.qty}× ${i.name}`).join('\n');
+        }
+        
+        const totalNum = parseFloat(String(o.total || '0').replace(/[^\d.]/g, '')) || 0;
+        
+        // ค่าที่ไรเดอร์ต้องเก็บ (ถ้า COD)
+        let collectText = '';
+        if (o.paymentMethod === 'cod') {
+            collectText = `\n💵 เก็บเงินสด: ${totalNum} บาท`;
+        } else {
+            collectText = `\n✅ ชำระเงินแล้ว (${o.paymentMethod === 'transfer' ? 'โอน' : 'แชท'})`;
+        }
+        
+        const text = 
+`📦 งานส่ง ${shortId}
+━━━━━━━━━━━━
+👤 ${c?.name || '-'}
+📞 ${c?.phone || '-'}
+📍 ${c?.address || '-'}${c?.landmark && c.landmark !== '-' ? `\n📌 จุดสังเกต: ${c.landmark}` : ''}
+🗺️ https://maps.google.com/?q=${c?.location || ''}
+━━━━━━━━━━━━
+${itemsText}${collectText}`;
+        
+        navigator.clipboard.writeText(text).then(() => {
+            Swal.fire({ toast: true, position: 'top', icon: 'success', title: 'Copy สำหรับไรเดอร์แล้ว!', showConfirmButton: false, timer: 1500 });
+        });
+    };
+
+    window.openLalamove = function() {
+        if (!window.selectedOrder) return;
+        const o = window.selectedOrder;
+        const loc = o.customer?.location;
+        if (!loc) {
+            Swal.fire({ icon: 'warning', text: 'ไม่มีพิกัด' });
+            return;
+        }
+        const locParts = loc.split(',');
+        const url = `https://026g.github.io/numdamnoen/lalamove.html?lat=${locParts[0].trim()}&lng=${locParts[1].trim()}&addr=${encodeURIComponent(o.customer?.address || '')}&note=${encodeURIComponent(o.customer?.landmark || '')}&name=${encodeURIComponent(o.customer?.name || '')}&phone=${encodeURIComponent(o.customer?.phone || '')}&orderId=${encodeURIComponent(o.id || '')}&secret=25342534`;
+        window.open(url, '_blank');
+    };
+
+    window.viewSlip = function() {
+        if (!window.selectedOrder?.slipImage) return;
+        Swal.fire({
+            imageUrl: window.selectedOrder.slipImage,
+            imageAlt: 'สลิป',
+            width: 400,
+            confirmButtonText: 'ปิด',
+            confirmButtonColor: '#2D5016'
+        });
+    };
+
+    window.openLineChat = function() {
+        window.open(window.LINE_ADMIN_URL, '_blank');
+    };
+
+    window.openCustomerTracking = function() {
+        if (!window.selectedOrder) return;
+        window.open(window.CUSTOMER_TRACKING_URL, '_blank');
+    };
+
+    // ============ CHANGE STATUS ============
+    window.changeStatus = async function(newStatus) {
+        if (!window.selectedOrder) return;
+        const order = window.selectedOrder;
+        const fbKey = order.fbKey;
+        
+        try {
+            // 1. Update Firebase
+            const orderRef = ref(db, `orders/${fbKey}`);
+            await update(orderRef, { status: newStatus });
+            
+            // 2. Update Google Sheet (via Apps Script)
+            try {
+                await fetch(window.WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'admin_update_status',
+                        id: order.id,
+                        status: newStatus
+                    })
+                });
+            } catch(e) {
+                console.warn('Sheet sync failed:', e);
+            }
+            
+            Swal.fire({ toast: true, position: 'top', icon: 'success', title: `เปลี่ยนเป็น ${newStatus}`, showConfirmButton: false, timer: 1500 });
+            
+            // Update modal
+            document.getElementById('modal-current-status').innerText = newStatus;
+            window.selectedOrder.status = newStatus;
+            
+            // Auto-close modal if "successful" or "cancelled"
+            if (newStatus.includes('สำเร็จ') || newStatus.includes('ยกเลิก')) {
+                setTimeout(() => closeOrderModal(), 800);
+            }
+        } catch (e) {
+            Swal.fire({ icon: 'error', title: 'อัปเดตไม่สำเร็จ', text: e.message });
+        }
+    };
+
+    window.changeStatusWithConfirm = function(newStatus) {
+        Swal.fire({
+            title: `ยืนยัน${newStatus}?`,
+            text: 'การยกเลิกจะไม่สามารถย้อนกลับได้',
+            showCancelButton: true,
+            confirmButtonText: 'ยืนยัน',
+            cancelButtonText: 'ไม่',
+            confirmButtonColor: '#C84B31'
+        }).then(r => {
+            if (r.isConfirmed) changeStatus(newStatus);
+        });
+    };
+
+    // ============ AUTO-LOGIN ============
+    if (checkSession()) {
+        startApp();
+    }
+</script>
+</body>
+</html>
