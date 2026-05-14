@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Rider Job Board | หนุ่มดำเนิน</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Anuphan:wght@100..700&family=Mali:wght@300;400;500;600;700&family=Caveat:wght@600;700&display=swap');
+    :root{--base:#FBFAF6;--warm:#F5F0E5;--primary:#2D5016;--light:#5B8C3C;--mint:#D4EBE0;--blue:#D6E9F5;--yellow:#F9F0D3;--pink:#F5D5CD;--text:#1F3A0F;--muted:#8B7355;--border:#E8E2D5;--hot:#C84B31}
+    body{font-family:'Anuphan',sans-serif;background:var(--base);color:var(--text)}
+    .font-display{font-family:'Mali',sans-serif}.font-script{font-family:'Caveat',cursive}
+    .card{background:white;border:1px solid var(--border);box-shadow:0 8px 24px rgba(45,80,22,.06)}
+    .btn{transition:.16s}.btn:active{transform:scale(.98)}
+  </style>
+</head>
+<body class="pb-24">
+  <div class="max-w-md mx-auto min-h-screen px-4 py-4">
+    <header class="sticky top-0 z-20 -mx-4 px-4 py-3" style="background:rgba(251,250,246,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style="background:var(--mint)">🛵</div>
+        <div class="flex-1">
+          <div class="font-script text-lg leading-none" style="color:var(--light)">Rider Board</div>
+          <h1 class="font-display font-bold text-lg leading-tight" style="color:var(--primary)">หนุ่มดำเนิน มะพร้าวปั่น</h1>
+        </div>
+        <button id="btn-refresh" onclick="loadJobs(true)" class="btn w-10 h-10 rounded-xl flex items-center justify-center" style="background:white;border:1px solid var(--border);color:var(--primary)"><i class="fa-solid fa-rotate"></i></button>
+      </div>
+    </header>
+
+    <section id="login-section" class="mt-5">
+      <div class="card rounded-3xl p-5">
+        <div class="font-display text-xl font-bold mb-1" style="color:var(--primary)">เข้าสู่ระบบไรเดอร์</div>
+        <p class="text-sm mb-4" style="color:var(--muted)">ครั้งแรกให้ใส่เบอร์ + PIN ที่ร้านตั้งไว้ ระบบจะผูกบัญชีนี้ไว้กับ LINE ถ้าเปิดผ่าน LINE</p>
+        <label class="text-xs font-bold">เบอร์โทร</label>
+        <input id="login-phone" inputmode="numeric" maxlength="10" class="w-full mt-1 mb-3 rounded-2xl px-4 py-3 outline-none" style="background:var(--warm);border:1px solid var(--border)" placeholder="08xxxxxxxx">
+        <label class="text-xs font-bold">PIN ไรเดอร์</label>
+        <input id="login-pin" inputmode="numeric" maxlength="6" type="password" class="w-full mt-1 mb-4 rounded-2xl px-4 py-3 outline-none" style="background:var(--warm);border:1px solid var(--border)" placeholder="เช่น 4268">
+        <button onclick="loginRider()" class="btn w-full rounded-2xl py-3.5 font-bold text-white" style="background:var(--primary)">เข้าสู่ระบบ</button>
+        <div id="line-profile-note" class="mt-3 text-[11px]" style="color:var(--muted)">กำลังตรวจ LINE...</div>
+      </div>
+    </section>
+
+    <section id="app-section" class="mt-5 hidden">
+      <div class="card rounded-3xl p-4 mb-4">
+        <div class="flex items-center gap-3">
+          <img id="rider-pic" class="w-12 h-12 rounded-2xl object-cover hidden" />
+          <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl" id="rider-pic-fallback" style="background:var(--mint)">👤</div>
+          <div class="flex-1">
+            <div class="font-display font-bold" id="rider-name" style="color:var(--primary)">-</div>
+            <div class="text-xs" id="rider-stat" style="color:var(--muted)">-</div>
+          </div>
+          <button onclick="logoutRider()" class="text-xs px-3 py-2 rounded-xl" style="background:var(--warm);color:var(--muted)">ออก</button>
+        </div>
+      </div>
+
+      <div id="my-job-box" class="mb-5"></div>
+
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="font-display text-lg font-bold" style="color:var(--primary)">งานเปิดรับ</h2>
+        <span class="text-xs" style="color:var(--muted)">กดก่อนรับก่อน</span>
+      </div>
+      <div id="open-jobs" class="space-y-3"></div>
+    </section>
+  </div>
+
+<script>
+  // ✅ เปลี่ยนเป็น URL Web App ตัวล่าสุดหลัง Deploy Apps Script
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwIix4qNyES7KRUxOzY0AL_AdYsJhMkzSN17oItBFrN1ITwEYrTCISntFZsnfUAVpQd/exec";
+  // ✅ ถ้าสร้าง LIFF แล้ว ใส่ LIFF ID ตรงนี้ เช่น "200xxxxxxx-xxxxxxxx"
+  const LIFF_ID = "";
+
+  let lineProfile = { lineUserId:"", lineDisplayName:"", pictureUrl:"" };
+  let riderSession = JSON.parse(localStorage.getItem('rider_session') || 'null');
+  const qs = new URLSearchParams(location.search);
+  const preselectJobId = qs.get('jobId') || '';
+
+  function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+  function api(params){
+    const url = WEB_APP_URL + '?' + new URLSearchParams(params).toString();
+    return fetch(url).then(r=>r.json());
+  }
+  async function initLine(){
+    const note = document.getElementById('line-profile-note');
+    try{
+      if(!LIFF_ID){ note.textContent = 'โหมด PIN พร้อมใช้งาน · ถ้าต้องการผูก LINE ให้ใส่ LIFF_ID ในไฟล์นี้'; return; }
+      await liff.init({liffId:LIFF_ID});
+      if(!liff.isLoggedIn()){ liff.login({redirectUri:location.href}); return; }
+      const profile = await liff.getProfile();
+      lineProfile = { lineUserId:profile.userId || '', lineDisplayName:profile.displayName || '', pictureUrl:profile.pictureUrl || '' };
+      note.textContent = 'เชื่อมต่อ LINE แล้ว: ' + (lineProfile.lineDisplayName || '-');
+    }catch(e){ console.warn(e); note.textContent = 'อ่าน LINE ไม่สำเร็จ ใช้ PIN เข้าระบบได้'; }
+  }
+
+  async function loginRider(){
+    const phone = document.getElementById('login-phone').value.trim();
+    const pin = document.getElementById('login-pin').value.trim();
+    if(!phone || !pin) return Swal.fire({icon:'warning',text:'กรุณาใส่เบอร์และ PIN'});
+    Swal.fire({title:'กำลังเข้าสู่ระบบ...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+    try{
+      const data = await api({action:'rider_login_bind', phone, pin, ...lineProfile});
+      Swal.close();
+      if(!data.ok) return Swal.fire({icon:'error',title:'เข้าไม่ได้',text:data.error||'ไม่สำเร็จ'});
+      riderSession = { token:data.token, rider:data.rider };
+      localStorage.setItem('rider_session', JSON.stringify(riderSession));
+      showApp();
+      await loadJobs(false);
+      if(preselectJobId) setTimeout(()=>acceptJob(preselectJobId), 400);
+    }catch(e){ Swal.close(); Swal.fire({icon:'error',title:'เชื่อมต่อไม่ได้',text:e.message}); }
+  }
+
+  function showApp(){
+    document.getElementById('login-section').classList.add('hidden');
+    document.getElementById('app-section').classList.remove('hidden');
+    const r = riderSession?.rider || {};
+    document.getElementById('rider-name').textContent = r.name || '-';
+    document.getElementById('rider-stat').textContent = `วันนี้ ${r.todayJobs||0} รอบ · รายได้ ${r.todayEarning||0} บาท`;
+    if(r.pictureUrl){ document.getElementById('rider-pic').src = r.pictureUrl; document.getElementById('rider-pic').classList.remove('hidden'); document.getElementById('rider-pic-fallback').classList.add('hidden'); }
+  }
+  function logoutRider(){ localStorage.removeItem('rider_session'); riderSession=null; location.reload(); }
+
+  async function loadJobs(silent=false){
+    if(!riderSession?.token) return;
+    if(!silent) Swal.fire({title:'โหลดงาน...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+    try{
+      const data = await api({action:'rider_get_jobs', token:riderSession.token});
+      if(!silent) Swal.close();
+      if(!data.ok) { localStorage.removeItem('rider_session'); return Swal.fire({icon:'error',title:'เซสชันหมดอายุ',text:data.error||'กรุณาเข้าใหม่'}).then(()=>location.reload()); }
+      riderSession.rider = data.rider; localStorage.setItem('rider_session', JSON.stringify(riderSession)); showApp();
+      renderMyJobs(data.myJobs||[]); renderOpenJobs(data.openJobs||[]);
+    }catch(e){ if(!silent) Swal.close(); Swal.fire({icon:'error',title:'โหลดไม่ได้',text:e.message}); }
+  }
+
+  function jobCard(job, mine=false){
+    const full = mine;
+    return `<div class="card rounded-3xl p-4">
+      <div class="flex items-start justify-between gap-3">
+        <div><div class="text-xs" style="color:var(--muted)">${esc(job.orderId)}</div><div class="font-display text-xl font-bold" style="color:var(--hot)">${esc(job.riderPay)} บาท</div></div>
+        <span class="text-[11px] px-2 py-1 rounded-full" style="background:${mine?'var(--mint)':'var(--yellow)'};color:var(--primary)">${esc(job.status)}</span>
+      </div>
+      <div class="mt-2 grid grid-cols-2 gap-2 text-sm">
+        <div class="rounded-2xl p-2" style="background:var(--warm)">ระยะ<br><b>${esc(job.distanceKm)} กม.</b></div>
+        <div class="rounded-2xl p-2" style="background:var(--warm)">ช่วง<br><b>${esc(job.riderDistanceBand)}</b></div>
+      </div>
+      ${full ? `<div class="mt-3 rounded-2xl p-3 text-sm" style="background:var(--blue);color:var(--text)">
+        <b>${esc(job.customerName)}</b> · <a class="underline" href="tel:${esc(job.customerPhone)}">${esc(job.customerPhone)}</a><br>
+        <div class="mt-1">${esc(job.customerAddress)}</div>
+        <div class="mt-2 whitespace-pre-wrap text-xs" style="color:var(--muted)">${esc(job.items)}</div>
+      </div>` : `<div class="mt-3 text-xs" style="color:var(--muted)">ข้อมูลลูกค้าจะแสดงหลังรับงาน</div>`}
+      <div class="mt-3 grid ${full?'grid-cols-2':'grid-cols-1'} gap-2">
+        ${full && job.mapLink ? `<a href="${esc(job.mapLink)}" target="_blank" class="btn text-center rounded-2xl py-3 font-bold" style="background:var(--blue);color:#113566">เปิดแผนที่</a>`:''}
+        ${full ? `<button onclick="updateStatus('${esc(job.jobId)}','PICKED_UP')" class="btn rounded-2xl py-3 font-bold text-white" style="background:var(--primary)">รับของแล้ว</button>
+        <button onclick="updateStatus('${esc(job.jobId)}','DELIVERED')" class="btn rounded-2xl py-3 font-bold text-white col-span-2" style="background:#16a34a">ส่งสำเร็จ</button>
+        <button onclick="reportIssue('${esc(job.jobId)}')" class="btn rounded-2xl py-3 font-bold col-span-2" style="background:var(--pink);color:var(--hot)">แจ้งปัญหา</button>` : `<button onclick="acceptJob('${esc(job.jobId)}')" class="btn rounded-2xl py-3 font-bold text-white" style="background:var(--primary)">กดรับงานนี้</button>`}
+      </div>
+    </div>`;
+  }
+  function renderMyJobs(jobs){ document.getElementById('my-job-box').innerHTML = jobs.length ? `<h2 class="font-display text-lg font-bold mb-2" style="color:var(--primary)">งานของฉัน</h2><div class="space-y-3">${jobs.map(j=>jobCard(j,true)).join('')}</div>` : ''; }
+  function renderOpenJobs(jobs){ document.getElementById('open-jobs').innerHTML = jobs.length ? jobs.map(j=>jobCard(j,false)).join('') : `<div class="card rounded-3xl p-8 text-center" style="color:var(--muted)">ยังไม่มีงานเปิดรับ</div>`; }
+
+  async function acceptJob(jobId){
+    const ok = await Swal.fire({icon:'question',title:'รับงานนี้?',text:'ถ้ารับแล้วต้องไปรับของตามเวลาร้าน',showCancelButton:true,confirmButtonText:'รับงาน',cancelButtonText:'ยกเลิก',confirmButtonColor:'#2D5016'});
+    if(!ok.isConfirmed) return;
+    Swal.fire({title:'กำลังล็อกงาน...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+    const data = await api({action:'rider_accept_job', token:riderSession.token, jobId});
+    Swal.close();
+    if(!data.ok) return Swal.fire({icon:'error',title:'รับไม่ได้',text:data.error||'มีคนรับไปแล้ว'}).then(()=>loadJobs(true));
+    Swal.fire({icon:'success',title:'รับงานสำเร็จ',timer:1000,showConfirmButton:false});
+    loadJobs(true);
+  }
+  async function updateStatus(jobId,status){
+    const data = await api({action:'rider_update_job_status', token:riderSession.token, jobId, status});
+    if(!data.ok) return Swal.fire({icon:'error',text:data.error||'อัปเดตไม่ได้'});
+    Swal.fire({icon:'success',title:data.message||'อัปเดตแล้ว',timer:900,showConfirmButton:false}); loadJobs(true);
+  }
+  async function reportIssue(jobId){
+    const r = await Swal.fire({title:'แจ้งปัญหา',input:'textarea',inputPlaceholder:'เช่น ลูกค้าไม่รับสาย / หาหมุดไม่เจอ',showCancelButton:true,confirmButtonText:'ส่งแจ้งร้าน'});
+    if(!r.isConfirmed) return;
+    const data = await api({action:'rider_update_job_status', token:riderSession.token, jobId, status:'ISSUE', issueNote:r.value||'-'});
+    if(!data.ok) return Swal.fire({icon:'error',text:data.error||'แจ้งไม่ได้'});
+    Swal.fire({icon:'success',title:'แจ้งร้านแล้ว'}); loadJobs(true);
+  }
+
+  (async function boot(){ await initLine(); if(riderSession?.token){ showApp(); loadJobs(false); if(preselectJobId) setTimeout(()=>acceptJob(preselectJobId),700); } })();
+  setInterval(()=>{ if(riderSession?.token) loadJobs(true); }, 20000);
+</script>
+</body>
+</html>

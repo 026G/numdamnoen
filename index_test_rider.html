@@ -1,0 +1,1851 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>หนุ่มดำเนิน มะพร้าวปั่น</title>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-9P4HMHGDM2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-9P4HMHGDM2');
+    </script>
+    <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8"> 
+    <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Anuphan:wght@100..700&family=Mali:wght@300;400;500;600;700&family=Caveat:wght@400;500;600;700&display=swap');
+
+        :root {
+            --color-base: #FBFAF6;
+            --color-base-warm: #F5F0E5;
+            --color-primary: #2D5016;
+            --color-primary-light: #5B8C3C;
+            --color-accent-mint: #D4EBE0;
+            --color-accent-mint-dark: #B8DCC8;
+            --color-accent-blue: #D6E9F5;
+            --color-accent-blue-dark: #C4DDF0;
+            --color-accent-yellow: #F9F0D3;
+            --color-accent-yellow-dark: #F5E5A8;
+            --color-accent-pink: #F5D5CD;
+            --color-accent-pink-dark: #E8B5A8;
+            --color-text-dark: #1F3A0F;
+            --color-text-muted: #8B7355;
+            --color-border-soft: #E8E2D5;
+            --color-hot: #C84B31;
+            --color-new: #2563EB;
+        }
+
+        body { 
+            font-family: 'Anuphan', sans-serif; 
+            background-color: var(--color-base); 
+            color: var(--color-text-dark); 
+            -webkit-font-smoothing: antialiased; 
+        }
+
+        .font-display { font-family: 'Mali', sans-serif; }
+        .font-script { font-family: 'Caveat', cursive; }
+
+        .page-section { display: none; }
+        .active-section { display: block; animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        #map { height: 300px; width: 100%; border-radius: 20px; z-index: 0; box-shadow: 0 4px 12px rgba(45, 80, 22, 0.1); }
+        
+        .payment-radio:checked + div { border-color: var(--color-primary); background-color: var(--color-accent-mint); }
+        .payment-radio:checked + div .radio-indicator { border-color: var(--color-primary); background-color: var(--color-primary); box-shadow: inset 0 0 0 3px white; }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .mode-toggle-active {
+            background: white;
+            border: 1.5px solid var(--color-primary);
+            box-shadow: 0 2px 6px rgba(45, 80, 22, 0.15);
+        }
+        .mode-toggle-inactive { background: transparent; border: 1.5px solid transparent; }
+        .mode-toggle-inactive .mode-icon { opacity: 0.4; }
+
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .shimmer-bg {
+            background: linear-gradient(90deg, #F9F0D3 0%, #FFFDF0 50%, #F9F0D3 100%);
+            background-size: 200% 100%;
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        .bg-pastel-blue { background: linear-gradient(135deg, var(--color-accent-blue), var(--color-accent-blue-dark)); }
+        .bg-pastel-mint { background: linear-gradient(135deg, var(--color-accent-mint), var(--color-accent-mint-dark)); }
+        .bg-pastel-yellow { background: linear-gradient(135deg, var(--color-accent-yellow), var(--color-accent-yellow-dark)); }
+        .bg-pastel-pink { background: linear-gradient(135deg, var(--color-accent-pink), var(--color-accent-pink-dark)); }
+
+        .badge-stamp {
+            transform: rotate(-8deg);
+            box-shadow: 0 2px 6px rgba(200, 75, 49, 0.25);
+        }
+
+        .menu-card { transition: transform 0.2s, box-shadow 0.2s; }
+        .menu-card:active { transform: scale(0.98); }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--color-border-soft); border-radius: 2px; }
+
+        .time-slot-btn { transition: all 0.2s; }
+        .time-slot-active {
+            background: var(--color-primary) !important;
+            color: white !important;
+            border-color: var(--color-primary) !important;
+            transform: scale(1.02);
+        }
+        .time-slot-active .ts-num { color: white !important; }
+        .time-slot-active .ts-unit { color: rgba(255,255,255,0.8) !important; }
+
+        /* Pulse animation for hint */
+        @keyframes pulse-soft {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        .pulse-soft { animation: pulse-soft 2s ease-in-out infinite; }
+    </style>
+</head>
+<body class="pb-32"> 
+
+    <div class="max-w-md mx-auto min-h-screen relative overflow-hidden sm:border-x" style="background-color: var(--color-base); border-color: var(--color-border-soft);">
+        
+        <!-- HEADER -->
+        <header class="sticky top-0 z-30 shadow-sm" style="background-color: var(--color-base); backdrop-filter: blur(8px);">
+            <div class="px-4 py-3">
+                <div class="flex items-start gap-3">
+                    <button onclick="goBack()" class="mt-1 w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition" style="background: white; color: var(--color-text-muted); border: 1px solid var(--color-border-soft);">
+                        <i class="fa-solid fa-arrow-left text-sm"></i>
+                    </button>
+                    <div class="flex-1 min-w-0 flex gap-3"> 
+                        <div class="shrink-0 relative">
+                            <div class="w-16 h-16 rounded-full bg-white p-1 shadow-sm" style="border: 2px solid var(--color-accent-mint);">
+                                <img src="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8" class="w-full h-full rounded-full object-cover">
+                            </div>
+                            <span id="shop-status-badge" class="absolute -bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 text-[9px] font-bold text-white rounded-full shadow-sm whitespace-nowrap hidden"></span>
+                        </div>
+                        <div class="flex-1 min-w-0 flex flex-col justify-center gap-1">
+                            <h1 class="font-display text-lg font-semibold leading-tight" style="color: var(--color-primary);">หนุ่มดำเนิน</h1>
+                            <div class="font-script text-base leading-none" style="color: var(--color-primary-light);">มะพร้าวปั่น 🌴</div>
+                            <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px]" style="color: var(--color-text-muted);">
+                                <span><i class="fa-regular fa-clock"></i> 09:00-20:00</span>
+                                <span>·</span>
+                                <a href="tel:0622467746" class="hover:underline"><i class="fa-solid fa-phone"></i> 062-246-7746</a>
+                            </div>
+                        </div>
+                        <button id="header-tracking-btn" onclick="handleTrackingClick()" class="shrink-0 text-[10px] px-2.5 py-1.5 rounded-xl transition font-medium flex items-center gap-1 self-start" style="background: white; color: var(--color-text-dark); border: 1px solid var(--color-border-soft);"></button>
+                    </div>
+                </div>
+
+                <div id="mode-toggle-container" class="mt-3 grid grid-cols-2 gap-1 p-1 rounded-2xl" style="background: var(--color-base-warm);">
+                    <button onclick="setMode('pickup')" id="mode-btn-pickup" class="mode-toggle-active px-3 py-2.5 rounded-xl text-center transition">
+                        <div class="text-xl leading-none mode-icon">🏪</div>
+                        <div class="text-xs font-semibold mt-1 mode-text">รับหน้าร้าน</div>
+                        <div class="text-[9px] mt-0.5 mode-subtext">ไม่มีค่าส่ง</div>
+                    </button>
+                    <button onclick="setMode('delivery')" id="mode-btn-delivery" class="mode-toggle-inactive px-3 py-2.5 rounded-xl text-center transition">
+                        <div class="text-xl leading-none mode-icon">🛵</div>
+                        <div class="text-xs font-semibold mt-1 mode-text">เดลิเวอรี่</div>
+                        <div class="text-[9px] mt-0.5 mode-subtext">ลดตามยอด</div>
+                    </button>
+                </div>
+
+                <div id="delivery-pin-row" class="mt-2 hidden">
+                    <button id="header-pin-btn" onclick="goToMapPage()" class="w-full flex items-center gap-2 text-xs px-3 py-2 rounded-xl transition" style="background: var(--color-accent-blue); color: var(--color-text-dark); border: 1px solid var(--color-accent-blue-dark);">
+                        <i class="fa-solid fa-location-dot" style="color: var(--color-hot);"></i>
+                        <span id="header-distance" class="font-medium flex-1 text-left">แตะเพื่อปักหมุดและคำนวณค่าส่ง</span>
+                        <i class="fa-solid fa-chevron-right text-[10px] opacity-50"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="category-tabs" class="flex px-4 gap-4" style="border-bottom: 1px solid var(--color-border-soft);">
+                <div onclick="switchTab('recommend')" id="tab-recommend" class="flex-1 text-center py-3 text-sm font-bold cursor-pointer transition-all border-b-2" style="border-color: var(--color-primary); color: var(--color-primary);">ดูเมนู</div>
+                <div onclick="switchTab('promotion')" id="tab-promotion" class="flex-1 text-center py-3 text-sm font-medium cursor-pointer transition-all border-b-2 border-transparent" style="color: var(--color-text-muted);">โปรโมชั่น</div>
+            </div>
+        </header>
+
+        <!-- PAGE: MENU -->
+        <section id="page-menu" class="page-section active-section">
+
+            <div id="pin-reminder-card" class="mx-5 mt-4 hidden">
+                <button onclick="goToMapPage()" class="w-full shimmer-bg border-2 border-dashed rounded-2xl p-3 flex items-center gap-3 transition active:scale-[0.98]" style="border-color: var(--color-accent-yellow-dark);">
+                    <div class="shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white shadow" style="background: #E8B86B;">
+                        <i class="fa-solid fa-location-dot text-lg"></i>
+                    </div>
+                    <div class="flex-1 text-left">
+                        <div class="font-display font-semibold text-sm" style="color: var(--color-text-dark);">📍 ปักหมุดเพื่อดูค่าส่ง</div>
+                        <div class="text-[11px] mt-0.5" style="color: var(--color-text-muted);">ค่าส่งคิดตามระยะทาง · ลดตามยอดสั่ง</div>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-xs" style="color: var(--color-text-muted);"></i>
+                </button>
+            </div>
+
+            <div class="px-5 mt-4 mb-2">
+                <div class="font-script text-base font-semibold leading-none" style="color: var(--color-primary-light);">— Signature Menu —</div>
+                <h2 class="font-display text-xl font-semibold mt-1" style="color: var(--color-primary);">เมนูแนะนำ</h2>
+            </div>
+
+            <div id="menu-list" class="pb-4"></div>
+        </section>
+
+        <!-- PAGE: CART -->
+        <section id="page-cart" class="page-section min-h-screen" style="background-color: var(--color-base-warm);">
+            <div class="px-5 py-4 shadow-sm mb-2" style="background-color: var(--color-base);">
+                <h2 class="font-display text-xl font-semibold" style="color: var(--color-primary);">ตะกร้าสินค้า</h2>
+                <div id="cart-mode-indicator" class="mt-2 text-xs px-3 py-1.5 rounded-lg inline-flex items-center gap-2" style="background: var(--color-accent-mint); color: var(--color-text-dark);">
+                    <span id="cart-mode-icon">🏪</span>
+                    <span id="cart-mode-text">รับหน้าร้าน · ไม่มีค่าส่ง</span>
+                </div>
+            </div>
+            <div id="cart-items" class="p-5 mb-3 space-y-4" style="background-color: var(--color-base);"></div>
+            <div class="p-5 space-y-3" style="background-color: var(--color-base);">
+                <div class="flex justify-between font-display font-semibold text-xl" style="color: var(--color-primary);"><span>ค่าสินค้า</span><span id="total-price-cart">0 บาท</span></div>
+                <p class="text-xs" style="color: var(--color-text-muted);">*ค่าจัดส่งจะคำนวณในขั้นตอนถัดไป (กรณีเลือกเดลิเวอรี่)</p>
+            </div>
+        </section>
+
+        <!-- PAGE: PICKUP -->
+        <section id="page-pickup" class="page-section min-h-screen px-5 py-6" style="background-color: var(--color-base);">
+            <div class="mb-4">
+                <div class="font-script text-base leading-none" style="color: var(--color-primary-light);">— Pickup —</div>
+                <h2 class="font-display text-xl font-semibold mt-1" style="color: var(--color-primary);">🏪 มารับที่ร้าน</h2>
+                <p class="text-sm mt-1" style="color: var(--color-text-muted);">กรอกข้อมูลเพื่อให้ร้านเตรียมของ</p>
+            </div>
+
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold mb-1.5" style="color: var(--color-text-dark);">ชื่อผู้รับ</label>
+                        <input type="text" id="pickup-name" class="w-full rounded-xl px-4 py-3 outline-none transition focus:ring-2" style="background: var(--color-base-warm); border: 1px solid var(--color-border-soft);" placeholder="ชื่อเล่น">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1.5" style="color: var(--color-text-dark);">เบอร์โทร</label>
+                        <input type="tel" id="pickup-phone" class="w-full rounded-xl px-4 py-3 outline-none transition focus:ring-2" style="background: var(--color-base-warm); border: 1px solid var(--color-border-soft);" placeholder="08x-xxx-xxxx">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold mb-2" style="color: var(--color-text-dark);">⏱ เลือกเวลาที่จะมารับ</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button type="button" onclick="selectTimeSlot(10)" id="time-slot-10" class="time-slot-btn rounded-xl py-3 px-2 text-center transition" style="background: var(--color-base-warm); border: 1.5px solid var(--color-border-soft);">
+                            <div class="font-display text-lg font-semibold ts-num" style="color: var(--color-primary);">10</div>
+                            <div class="text-[10px] ts-unit" style="color: var(--color-text-muted);">นาที</div>
+                        </button>
+                        <button type="button" onclick="selectTimeSlot(20)" id="time-slot-20" class="time-slot-btn rounded-xl py-3 px-2 text-center transition" style="background: var(--color-base-warm); border: 1.5px solid var(--color-border-soft);">
+                            <div class="font-display text-lg font-semibold ts-num" style="color: var(--color-primary);">20</div>
+                            <div class="text-[10px] ts-unit" style="color: var(--color-text-muted);">นาที</div>
+                        </button>
+                        <button type="button" onclick="selectTimeSlot(30)" id="time-slot-30" class="time-slot-btn rounded-xl py-3 px-2 text-center transition" style="background: var(--color-base-warm); border: 1.5px solid var(--color-border-soft);">
+                            <div class="font-display text-lg font-semibold ts-num" style="color: var(--color-primary);">30</div>
+                            <div class="text-[10px] ts-unit" style="color: var(--color-text-muted);">นาที</div>
+                        </button>
+                    </div>
+                    <p class="text-[10px] mt-2" style="color: var(--color-text-muted);">⚠️ ต้องสั่งล่วงหน้าอย่างน้อย 10 นาที</p>
+                </div>
+
+                <div class="rounded-2xl p-4" style="background: var(--color-accent-mint); border: 1px solid var(--color-accent-mint-dark);">
+                    <div class="flex items-start gap-3">
+                        <div class="text-2xl">📍</div>
+                        <div class="flex-1 text-xs" style="color: var(--color-text-dark);">
+                            <div class="font-semibold mb-1">ที่อยู่ร้าน</div>
+                            <div style="color: var(--color-text-muted);">ร้านหนุ่มดำเนิน · โทร 062-246-7746</div>
+                            <div class="mt-2 font-medium">เปิด 09:00 - 20:00 น.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE: ADDRESS (DELIVERY) -->
+        <section id="page-address" class="page-section min-h-screen px-5 py-6" style="background-color: var(--color-base);">
+            <div class="mb-4">
+                <div class="font-script text-base leading-none" style="color: var(--color-primary-light);">— Delivery —</div>
+                <h2 class="font-display text-xl font-semibold mt-1" style="color: var(--color-primary);">🛵 ที่อยู่จัดส่ง</h2>
+                <p class="text-sm mt-1" style="color: var(--color-text-muted);">กรุณาระบุตำแหน่งเพื่อคำนวณค่าส่ง</p>
+            </div>
+
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold mb-1.5" style="color: var(--color-text-dark);">ชื่อผู้รับ</label>
+                        <input type="text" id="cust-name" class="w-full rounded-xl px-4 py-3 outline-none focus:ring-2" style="background: var(--color-base-warm); border: 1px solid var(--color-border-soft);" placeholder="ชื่อเล่น">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1.5" style="color: var(--color-text-dark);">เบอร์โทร</label>
+                        <input type="tel" id="cust-phone" class="w-full rounded-xl px-4 py-3 outline-none focus:ring-2" style="background: var(--color-base-warm); border: 1px solid var(--color-border-soft);" placeholder="08x-xxx-xxxx">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1.5" style="color: var(--color-text-dark);">ที่อยู่ (บ้านเลขที่/ซอย)</label>
+                    <textarea id="cust-address" class="w-full rounded-xl px-4 py-3 outline-none focus:ring-2" style="background: var(--color-base-warm); border: 1px solid var(--color-border-soft);" rows="2" placeholder="เช่น 123/4 หมู่บ้าน..."></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1.5" style="color: var(--color-text-dark);">จุดสังเกต (Optional)</label>
+                    <input type="text" id="cust-landmark" class="w-full rounded-xl px-4 py-3 outline-none focus:ring-2" style="background: var(--color-base-warm); border: 1px solid var(--color-border-soft);" placeholder="เช่น รั้วสีขาว, ตรงข้ามเซเว่น">
+                </div>
+                <div class="pt-2">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-sm font-semibold" style="color: var(--color-text-dark);">📍 ปักหมุดจุดส่ง</label>
+                        <span id="distance-display" class="text-xs font-bold px-2 py-1 rounded-lg" style="background: var(--color-base-warm); color: var(--color-text-muted);">แตะแผนที่เพื่อคำนวณ</span>
+                    </div>
+                    <div id="map"></div>
+
+                    <div id="realtime-fee-box" class="mt-3 hidden rounded-2xl p-4" style="background: var(--color-accent-mint); border: 1px solid var(--color-accent-mint-dark);">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center text-white shadow" style="background: var(--color-primary);">
+                                    <i class="fa-solid fa-motorcycle"></i>
+                                </div>
+                                <div>
+                                    <div class="text-[10px] leading-none mb-1" style="color: var(--color-text-muted);">ค่าส่งของคุณ</div>
+                                    <div class="font-display font-semibold text-base" id="realtime-fee-label" style="color: var(--color-text-dark);">-</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-[10px] leading-none mb-1" style="color: var(--color-text-muted);">ระยะทาง</div>
+                                <div class="font-display font-bold text-base" id="realtime-distance-label" style="color: var(--color-primary);">-</div>
+                            </div>
+                        </div>
+                        <div class="mt-3 pt-3 text-xs text-center" id="realtime-freeship-hint" style="border-top: 1px solid var(--color-accent-mint-dark); color: var(--color-text-dark);">-</div>
+                    </div>
+
+                    <p class="text-xs mt-2 hidden" id="out-of-range-msg" style="color: var(--color-hot);">
+                        <i class="fa-solid fa-circle-exclamation"></i> ขออภัย อยู่นอกพื้นที่จัดส่ง (เกิน 5 กม.)
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE: PAYMENT -->
+        <section id="page-payment" class="page-section min-h-screen" style="background-color: var(--color-base-warm);">
+            <div class="p-5 shadow-sm mb-4" style="background-color: var(--color-base);">
+                <h2 class="font-display text-lg font-semibold mb-4" style="color: var(--color-primary);">สรุปยอดชำระ</h2>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between" style="color: var(--color-text-muted);">
+                        <span>ประเภท</span>
+                        <span id="summary-order-type" class="font-medium" style="color: var(--color-text-dark);">-</span>
+                    </div>
+                    <div class="flex justify-between" style="color: var(--color-text-muted);">
+                        <span>ค่าอาหาร</span>
+                        <span id="summary-food-total" style="color: var(--color-text-dark);">0 บาท</span>
+                    </div>
+                    <div class="flex justify-between" id="summary-delivery-row" style="color: var(--color-text-muted);">
+                        <span>ค่าจัดส่ง <span id="delivery-details" class="ml-2"></span></span>
+                        <span id="summary-delivery-fee" style="color: var(--color-text-dark);">0 บาท</span>
+                    </div>
+                    <div class="border-t border-dashed pt-2 mt-2 flex justify-between text-lg font-display font-bold" style="color: var(--color-text-dark);">
+                        <span>ยอดรวมสุทธิ</span>
+                        <span id="summary-grand-total" style="color: var(--color-primary);">0 บาท</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="p-5 shadow-sm mb-20" style="background-color: var(--color-base);">
+                 <h2 class="font-display text-lg font-semibold mb-4" style="color: var(--color-primary);">เลือกวิธีการชำระเงิน</h2>
+                 
+                 <label id="cod-label" class="block mb-3 cursor-pointer hidden">
+                    <input type="radio" name="paymentMethod" value="cod" id="cod-radio" class="payment-radio hidden" onchange="togglePaymentDetail()">
+                    <div class="border rounded-2xl p-4 flex items-center justify-between transition-all hover:bg-gray-50" style="border-color: var(--color-border-soft);">
+                        <div class="flex items-center gap-3">
+                            <div class="w-5 h-5 rounded-full radio-indicator flex items-center justify-center" style="border: 2px solid var(--color-border-soft);"></div>
+                            <span class="font-medium" style="color: var(--color-text-dark);">💵 จ่ายเงินสดที่ร้าน</span>
+                        </div>
+                        <i class="fa-solid fa-money-bill-wave text-xl" style="color: var(--color-primary-light);"></i>
+                    </div>
+                </label>
+
+                 <label class="block mb-3 cursor-pointer">
+                    <input type="radio" name="paymentMethod" value="transfer" class="payment-radio hidden" checked onchange="togglePaymentDetail()">
+                    <div class="border rounded-2xl p-4 flex items-center justify-between transition-all hover:bg-gray-50" style="border-color: var(--color-border-soft);">
+                        <div class="flex items-center gap-3">
+                            <div class="w-5 h-5 rounded-full radio-indicator flex items-center justify-center" style="border: 2px solid var(--color-border-soft);"></div>
+                            <span class="font-medium" style="color: var(--color-text-dark);">📱 โอนเงิน / สแกนจ่าย</span>
+                        </div>
+                        <i class="fa-solid fa-qrcode text-xl" style="color: var(--color-text-muted);"></i>
+                    </div>
+                </label>
+                
+                <div id="payment-cod-detail" class="hidden ml-2 pl-6 mb-6" style="border-left: 2px solid var(--color-border-soft);">
+                    <div class="rounded-2xl p-4 text-sm flex items-start gap-3" style="background: var(--color-accent-yellow); color: var(--color-text-dark); border: 1px solid var(--color-accent-yellow-dark);">
+                        <i class="fa-solid fa-circle-info mt-1 shrink-0 text-lg"></i>
+                        <div>
+                            <p class="font-semibold mb-1">ชำระเงินที่ร้าน</p>
+                            <p class="text-xs">กรุณาเตรียมเงินสด <b id="cod-amount-display">0</b> บาท มาชำระตอนรับสินค้านะครับ</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="payment-transfer-detail" class="ml-2 pl-6 mb-6 space-y-4" style="border-left: 2px solid var(--color-border-soft);">
+                     <div class="max-w-[280px] mx-auto rounded-2xl shadow-md overflow-hidden relative" style="background: white; border: 1px solid var(--color-border-soft);">
+                        <div class="p-3 flex justify-between items-center" style="background: #113566;">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/c/c5/PromptPay-logo.png" class="h-6 bg-white rounded px-1">
+                            <div class="text-right"><p class="text-white text-[10px] font-light">Thai QR Payment</p></div>
+                        </div>
+                        <div class="p-5 text-center relative" style="background: white;">
+                            <p class="text-xs mb-2" style="color: var(--color-text-muted);">สแกน QR เพื่อชำระเงิน</p>
+                            <div class="border-2 rounded-lg p-1 inline-block mb-2" style="border-color: #113566;">
+                                <img id="qr-image" src="" class="w-40 h-40 object-contain">
+                            </div>
+                            <div class="mt-1 mb-3">
+                                <p class="text-xs" style="color: var(--color-text-muted);">ยอดชำระรวม</p>
+                                <p class="font-display text-2xl font-bold" id="qr-amount-display" style="color: #113566;">0 บาท</p>
+                            </div>
+                            <div class="border-t-2 border-dashed my-3 w-full" style="border-color: var(--color-border-soft);"></div>
+                            <div class="text-left space-y-2">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-6 h-6 rounded-full flex items-center justify-center text-xs" style="background: var(--color-base-warm); color: var(--color-text-muted);">
+                                        <i class="fa-solid fa-user"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] leading-none" style="color: var(--color-text-muted);">ชื่อบัญชี</p>
+                                        <p class="text-sm font-semibold line-clamp-1" style="color: var(--color-text-dark);">นายวิวัฒน์ชัย พันธ์วิชัย</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="flex-1">
+                                        <p class="text-[10px] leading-none" style="color: var(--color-text-muted);">เลขพร้อมเพย์ (KBank)</p>
+                                        <div class="flex items-center justify-between">
+                                            <span id="bank-acc-no" class="text-sm font-bold font-mono tracking-wide" style="color: #113566;">062-246-7746</span>
+                                            <button onclick="copyToClipboard('0622467746')" class="text-[10px] px-2 py-0.5 rounded transition flex items-center gap-1" style="background: var(--color-accent-blue); color: #113566;">
+                                                <i class="fa-regular fa-copy"></i> คัดลอก
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button onclick="downloadQR()" class="mt-4 w-full text-xs text-white py-2.5 rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-bold" style="background: #113566;">
+                                <i class="fa-solid fa-download"></i> บันทึกรูป QR Code
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mt-4 pt-4" style="border-top: 1px solid var(--color-border-soft);">
+                        <label class="block text-xs font-bold mb-2 flex items-center gap-1" style="color: var(--color-text-dark);">
+                            <i class="fa-solid fa-receipt" style="color: var(--color-primary);"></i> แนบหลักฐานการโอนเงิน
+                        </label>
+                        <input type="file" id="slip-file" accept="image/*" class="block w-full text-sm rounded-lg cursor-pointer shadow-sm transition" style="background: white; color: var(--color-text-muted); border: 1px solid var(--color-border-soft);">
+                        <p class="text-[10px] mt-1 flex items-center gap-1" style="color: var(--color-text-muted);">
+                            <i class="fa-solid fa-circle-exclamation"></i> กรุณาแนบสลิปเพื่อยืนยันการสั่งซื้อ
+                        </p>
+                    </div>
+                </div>
+
+                <label id="chat-pay-label" class="cursor-pointer relative"> 
+                    <input type="radio" name="paymentMethod" value="chat_pay" id="chat-pay-radio" class="payment-radio hidden" onchange="togglePaymentDetail()">
+                    <div class="border rounded-2xl p-4 flex items-center justify-between transition-all hover:bg-gray-50" style="border-color: var(--color-border-soft);">
+                        <div class="flex items-center gap-3">
+                            <div class="w-5 h-5 rounded-full radio-indicator flex items-center justify-center" style="border: 2px solid var(--color-border-soft);"></div>
+                            <div><span class="font-medium" style="color: var(--color-text-dark);">💬 โอนจ่ายในไลน์ (ทักแชท + ส่งสลิป)</span></div>
+                        </div>
+                        <i class="fa-brands fa-line text-xl" style="color: var(--color-primary-light);"></i>
+                    </div>
+                </label>
+
+                <div id="payment-chat-pay-detail" class="hidden ml-2 pl-6 mt-3 space-y-3" style="border-left: 2px solid var(--color-border-soft);">
+                    <div class="rounded-2xl p-4 text-sm flex items-start gap-3" style="background: var(--color-accent-blue); color: var(--color-text-dark); border: 1px solid var(--color-accent-blue-dark);">
+                        <i class="fa-solid fa-circle-info mt-1 shrink-0 text-lg"></i>
+                        <div>
+                            <p class="font-semibold mb-1">ขั้นตอนการสั่งซื้อ:</p>
+                            <ol class="list-decimal pl-4 space-y-1 text-xs">
+                                <li>กดปุ่ม <b>"ยืนยันการสั่งซื้อ"</b> ด้านล่าง</li>
+                                <li>รอแอดมินทักแชท / หรือทักหาแอดมิน</li>
+                                <li>แอดมินจะส่ง <b>QR Code (ถุงเงิน)</b> ให้ทางแชท</li>
+                                <li>ชำระเงินตามยอดจริงที่แอดมินแจ้ง</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- PAGE: TRACKING -->
+        <section id="page-tracking" class="page-section min-h-screen" style="background-color: var(--color-base-warm);">
+            <div class="px-5 py-4 shadow-sm mb-4 sticky top-0 z-20" style="background-color: var(--color-base);">
+                <div class="max-w-md mx-auto">
+                    <h2 class="font-display text-xl font-semibold flex items-center gap-2" style="color: var(--color-primary);">
+                        <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl" style="background: var(--color-accent-mint); color: var(--color-primary);">
+                            <i class="fa-solid fa-truck-fast"></i>
+                        </span>
+                        ติดตามสถานะ
+                    </h2>
+                    <p class="text-xs mt-1" style="color: var(--color-text-muted);">ใส่เบอร์เดียวกับตอนสั่งซื้อ เพื่อดูประวัติ 5 รายการล่าสุด</p>
+                </div>
+            </div>
+
+            <div class="px-5">
+                <div class="max-w-md mx-auto">
+                    <div id="tracking-search-box" class="p-5 rounded-2xl shadow-sm mb-4" style="background: var(--color-base); border: 1px solid var(--color-border-soft);">
+                        <div class="flex items-start justify-between gap-3 mb-3">
+                            <div>
+                                <div class="text-sm font-bold" style="color: var(--color-text-dark);">ค้นหาด้วยเบอร์โทรศัพท์</div>
+                                <div class="text-xs mt-1" style="color: var(--color-text-muted);">ระบบจะแสดงสถานะล่าสุดที่ร้านอัปเดต</div>
+                            </div>
+                            <span class="text-[10px] font-bold px-2 py-1 rounded-full" style="background: var(--color-accent-mint); color: var(--color-primary); border: 1px solid var(--color-accent-mint-dark);">ปลอดภัย</span>
+                        </div>
+
+                        <label class="block font-semibold mb-2" style="color: var(--color-text-dark);">เบอร์โทรศัพท์</label>
+
+                        <div class="flex gap-2">
+                            <div class="flex-1 relative">
+                                <input type="tel" id="track-phone" placeholder="เช่น 0812345678"
+                                    class="w-full text-lg rounded-xl block p-3 pr-10 transition focus:ring-2"
+                                    style="background: var(--color-base-warm); border: 1px solid var(--color-border-soft); color: var(--color-text-dark);"
+                                    maxlength="10" inputmode="numeric" autocomplete="tel"
+                                    onkeydown="if(event.key==='Enter'){ searchOrder(); }"/>
+                                <button type="button" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg transition" style="color: var(--color-text-muted);"
+                                    onclick="(function(){ const el=document.getElementById('track-phone'); el.value=''; el.focus(); })()"
+                                    aria-label="ล้างเบอร์" title="ล้างเบอร์">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                            <button onclick="searchOrder()" class="text-white rounded-xl px-6 font-bold transition shadow-lg active:scale-95 flex items-center gap-2" style="background: var(--color-primary);">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <span class="hidden sm:inline">ค้นหา</span>
+                            </button>
+                        </div>
+
+                        <div class="mt-3 flex gap-2 flex-wrap">
+                            <button type="button" class="text-xs font-bold px-3 py-2 rounded-xl transition active:scale-95" style="background: var(--color-base-warm); color: var(--color-text-dark);"
+                                onclick="(function(){ 
+                                    const last = localStorage.getItem('cust_phone') || '';
+                                    if(!last){ Swal.fire({icon:'info', title:'ยังไม่มีเบอร์ล่าสุด', text:'ลองค้นหาสักครั้ง ระบบจะจำเบอร์ให้'}); return; }
+                                    document.getElementById('track-phone').value = last;
+                                    searchOrder(true); 
+                                })()">
+                                <i class="fa-solid fa-clock-rotate-left mr-1"></i> ใช้เบอร์ล่าสุด
+                            </button>
+                            <button type="button" class="text-xs font-bold px-3 py-2 rounded-xl transition active:scale-95" style="background: var(--color-accent-blue); color: #113566;"
+                                onclick="(function(){ 
+                                    Swal.fire({icon:'question', title:'ทิปเล็ก ๆ',
+                                        html:'<div style=&quot;text-align:left&quot;>✅ ใส่เบอร์เดียวกับตอนสั่ง<br>✅ ไม่ต้องใส่ขีด (-)<br>✅ ถ้าเพิ่งสั่ง รอสักครู่ให้ระบบอัปเดต</div>'});
+                                })()">
+                                <i class="fa-solid fa-circle-info mr-1"></i> วิธีใช้
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="tracking-result" class="space-y-3 pb-24">
+                        <div class="rounded-2xl shadow-sm p-6 text-center" style="background: var(--color-base); border: 1px solid var(--color-border-soft); color: var(--color-text-muted);">
+                            <div class="w-14 h-14 rounded-2xl mx-auto flex items-center justify-center mb-3" style="background: var(--color-base-warm);">
+                                <i class="fa-solid fa-box-open text-2xl"></i>
+                            </div>
+                            <div class="font-bold" style="color: var(--color-text-dark);">กรุณากรอกเบอร์โทรเพื่อค้นหา</div>
+                            <div class="text-xs mt-1">ระบบจะแสดงออเดอร์ล่าสุดของคุณที่นี่</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- STICKY FOOTER -->
+        <div id="sticky-footer" class="fixed bottom-0 w-full max-w-md backdrop-blur shadow-[0_-4px_10px_rgba(0,0,0,0.05)] p-4 z-40 hidden" style="background-color: rgba(251, 250, 246, 0.95); border-top: 1px solid var(--color-border-soft);">
+            <!-- Smart Next-Step Hint (NEW) -->
+            <div id="next-step-box" class="mb-3 hidden">
+                <div class="rounded-xl p-2.5 flex items-center gap-2 text-[11px]" id="next-step-card" style="background: var(--color-accent-yellow); border: 1px solid var(--color-accent-yellow-dark);">
+                    <div class="shrink-0 text-base">💡</div>
+                    <div class="flex-1 leading-tight" id="next-step-text" style="color: var(--color-text-dark);">-</div>
+                </div>
+            </div>
+
+            <button id="btn-view-cart" onclick="showPage('cart')" class="w-full text-white rounded-2xl p-3.5 flex justify-between items-center shadow-lg transition transform active:scale-[0.98]" style="background: var(--color-primary);">
+                <div class="flex items-center gap-3">
+                    <div class="font-bold w-8 h-8 rounded-xl flex items-center justify-center text-sm" id="footer-count" style="background: rgba(255,255,255,0.2);">0</div>
+                    <span class="font-semibold">ดูตะกร้าสินค้า</span>
+                </div>
+                <span class="font-display font-bold text-lg" id="footer-total">฿0</span>
+            </button>
+
+            <div id="btn-go-next" class="hidden w-full flex gap-3">
+                <button onclick="showPage('menu')" class="shrink-0 w-28 rounded-2xl font-bold text-sm transition shadow-sm flex items-center justify-center gap-2" style="background: var(--color-base-warm); color: var(--color-text-dark); border: 1px solid var(--color-border-soft);">
+                    <i class="fa-solid fa-cart-plus"></i> สั่งเพิ่ม
+                </button>
+                <button onclick="goToNextStep()" class="flex-1 text-white rounded-2xl p-3.5 font-bold shadow-lg transition flex items-center justify-center gap-2" style="background: var(--color-primary);">
+                    <span id="btn-go-next-text">ดำเนินการต่อ</span> <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <button id="btn-confirm-pickup" onclick="validateAndGoToPaymentPickup()" class="hidden w-full text-white rounded-2xl p-3.5 font-bold shadow-lg transition" style="background: var(--color-primary);">ยืนยันข้อมูล & ไปชำระเงิน</button>
+            <button id="btn-confirm-address" onclick="validateAndGoToPayment()" class="hidden w-full text-white rounded-2xl p-3.5 font-bold shadow-lg transition" style="background: var(--color-primary);">ยืนยันที่อยู่ & ไปชำระเงิน</button>
+            <button id="btn-confirm-order" onclick="confirmOrder()" class="hidden w-full text-white rounded-2xl p-3.5 font-bold shadow-lg transition" style="background: var(--color-primary);">ยืนยันการสั่งซื้อ</button>
+        </div>
+    </div>
+
+    <!-- Option Modal -->
+    <div id="option-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex justify-center items-end sm:items-center z-50 transition-opacity">
+        <div class="w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl max-h-[85vh] flex flex-col" style="background: var(--color-base);">
+            <div class="flex justify-between items-start mb-4 pb-2" style="border-bottom: 1px solid var(--color-border-soft);">
+                <h3 id="modal-item-name" class="font-display text-xl font-semibold" style="color: var(--color-primary);">ชื่อเมนู</h3>
+                <button onclick="closeModal()" class="text-2xl" style="color: var(--color-text-muted);">×</button>
+            </div>
+            <div id="modal-options" class="flex-1 overflow-y-auto mb-4 pr-1 space-y-5 custom-scrollbar"></div>
+            <div class="pt-2">
+                <button onclick="confirmAddToCart()" class="w-full text-white py-3.5 rounded-2xl font-bold flex justify-between px-6" style="background: var(--color-primary);">
+                    <span>เพิ่มลงตะกร้า</span>
+                    <span class="font-display" id="modal-total-price">0 บาท</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, get, push, set, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBLo1JKTNOrx6vvh2a6Pl8Zxjll4eoIKAA",
+        authDomain: "linenoti-7c04f.firebaseapp.com",
+        databaseURL: "https://linenoti-7c04f-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "linenoti-7c04f",
+        storageBucket: "linenoti-7c04f.firebasestorage.app",
+        messagingSenderId: "607844945437",
+        appId: "1:607844945437:web:d5e0229b8c18522cd500f4"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // ============ CONFIG ============
+    window.SHOP_LOC = [13.639417, 100.499580]; 
+    window.MAX_DIST_KM = 5.0; 
+    window.OPEN_HOUR = 6;    
+    window.CLOSE_HOUR = 5; 
+    window.WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwIix4qNyES7KRUxOzY0AL_AdYsJhMkzSN17oItBFrN1ITwEYrTCISntFZsnfUAVpQd/exec"; 
+
+    // 🌴 ระบบค่าส่งขั้นบันได 8 ขั้น × 3 โซน (ตารางของผู้ใช้)
+    // ZONES: ใกล้ (≤1.5km) ค่าส่งจริง 30, กลาง (1.5-3km) ค่าส่งจริง 50, ไกล (3-5km) ค่าส่งจริง 75
+    // STEP TABLE: ร้านช่วยค่าส่งตามยอดอาหาร
+    window.SHIPPING_FULL_FEE = { near: 30, mid: 50, far: 75 };
+    window.SHIPPING_STEPS = [
+        { minTotal: 0,    shopHelp: 0  },  // ต่ำกว่า 125
+        { minTotal: 125,  shopHelp: 15 },  // 125+
+        { minTotal: 200,  shopHelp: 25 },  // 200+
+        { minTotal: 250,  shopHelp: 30 },  // 250+
+        { minTotal: 350,  shopHelp: 40 },  // 350+
+        { minTotal: 450,  shopHelp: 50 },  // 450+
+        { minTotal: 550,  shopHelp: 65 },  // 550+
+        { minTotal: 650,  shopHelp: 75 }   // 650+
+    ];
+    window.NEAR_SHOP_KM = 1.5;
+    window.MID_SHOP_KM = 3.0;
+
+    // 🛵 ตารางค่ารอบไรเดอร์ประจำร้านแบบละเอียด
+    // ใช้สำหรับหลังบ้าน/แจ้งเตือน LINE เท่านั้น ลูกค้าจะเห็นเฉพาะค่าส่งที่ต้องจ่าย
+    // หลักคิด: ค่าส่งลูกค้ายังเป็น 30/50/75 ตามโซน แต่ค่ารอบไรเดอร์ไล่ละเอียดตามระยะจริง
+    window.RIDER_PAY_STEPS = [
+        { maxKm: 1.5, pay: 30, label: '0 - 1.5 กม.', zoneLabel: 'ใกล้' },
+        { maxKm: 2.0, pay: 40, label: '1.6 - 2.0 กม.', zoneLabel: 'กลางต้น' },
+        { maxKm: 2.5, pay: 45, label: '2.1 - 2.5 กม.', zoneLabel: 'กลาง' },
+        { maxKm: 3.0, pay: 50, label: '2.6 - 3.0 กม.', zoneLabel: 'กลางปลาย' },
+        { maxKm: 3.5, pay: 65, label: '3.1 - 3.5 กม.', zoneLabel: 'ไกลต้น' },
+        { maxKm: 4.0, pay: 70, label: '3.6 - 4.0 กม.', zoneLabel: 'ไกลกลาง' },
+        { maxKm: 5.0, pay: 75, label: '4.1 - 5.0 กม.', zoneLabel: 'ไกลปลาย' }
+    ];
+
+    // ============ STATE ============
+    window.menuDB = [];
+    window.cart = [];
+    window.map = null;
+    window.marker = null;
+    window.userLat = null;
+    window.userLng = null;
+    window.distanceKm = 0;
+    window.deliveryFee = 0;
+    window.activeTab = 'recommend';
+    window.currentQty = 1;
+    window.trackingInterval = null;
+    window.currentItem = null;
+    window.currentBasePrice = 0;
+    window.hasUserLocation = false;
+    window.currentPage = 'menu';
+    window.orderMode = 'pickup';
+    window.pickupTime = null;
+
+    // ============ SHIPPING CALCULATION ============
+    
+    // เช็คโซนตามระยะ
+    window.getZone = function(distanceKm) {
+        if (distanceKm <= window.NEAR_SHOP_KM) return 'near';
+        if (distanceKm <= window.MID_SHOP_KM) return 'mid';
+        return 'far';
+    };
+
+    window.getCustomerZoneLabel = function(zone) {
+        if (zone === 'near') return 'ใกล้';
+        if (zone === 'mid') return 'กลาง';
+        return 'ไกล';
+    };
+
+    window.getRiderPayInfo = function(distanceKm) {
+        const dist = parseFloat(distanceKm || 0);
+        if (!dist || dist > window.MAX_DIST_KM) return null;
+        const step = window.RIDER_PAY_STEPS.find(s => dist <= s.maxKm);
+        if (!step) return null;
+        return {
+            pay: step.pay,
+            label: step.label,
+            zoneLabel: step.zoneLabel,
+            distanceText: `${dist.toFixed(1)} กม.`
+        };
+    };
+
+    // หาขั้นปัจจุบันจากยอดอาหาร
+    window.getCurrentStep = function(foodTotal) {
+        let currentStep = window.SHIPPING_STEPS[0];
+        for (const step of window.SHIPPING_STEPS) {
+            if (foodTotal >= step.minTotal) currentStep = step;
+        }
+        return currentStep;
+    };
+
+    // หาขั้นถัดไปจากยอดอาหาร (สำหรับแสดง hint)
+    window.getNextStep = function(foodTotal) {
+        for (const step of window.SHIPPING_STEPS) {
+            if (foodTotal < step.minTotal) return step;
+        }
+        return null; // ถึงขั้นสูงสุดแล้ว
+    };
+
+    // คำนวณค่าส่งจริงที่ลูกค้าต้องจ่าย + ค่ารอบไรเดอร์สำหรับหลังบ้าน
+    window.calculateDeliveryFee = function(foodTotal, distanceKm) {
+        if (distanceKm > window.MAX_DIST_KM) return null;
+        const zone = window.getZone(distanceKm);
+        const fullFee = window.SHIPPING_FULL_FEE[zone];
+        const currentStep = window.getCurrentStep(foodTotal);
+        const customerFee = Math.max(0, fullFee - currentStep.shopHelp);
+        const cappedShopHelp = Math.min(currentStep.shopHelp, fullFee);
+        const riderPayInfo = window.getRiderPayInfo(distanceKm);
+        const riderPay = riderPayInfo ? riderPayInfo.pay : fullFee;
+        const shopSupportForRider = Math.max(0, riderPay - customerFee);
+        const supportPercent = foodTotal > 0 ? Number(((shopSupportForRider / foodTotal) * 100).toFixed(1)) : 0;
+        return {
+            fullFee: fullFee,
+            shopHelp: cappedShopHelp, // ส่วนลดค่าส่งที่ลูกค้าได้รับ ไม่เกินค่าส่งเต็ม
+            customerFee: customerFee,
+            isFree: customerFee === 0,
+            zone: zone,
+            zoneLabel: window.getCustomerZoneLabel(zone),
+            currentStep: currentStep,
+            riderPay: riderPay,
+            riderDistanceBand: riderPayInfo ? riderPayInfo.label : '-',
+            riderZoneLabel: riderPayInfo ? riderPayInfo.zoneLabel : window.getCustomerZoneLabel(zone),
+            shopSupportForRider: shopSupportForRider,
+            shopSupportPercent: supportPercent
+        };
+    };
+
+    // คำนวณ hint สำหรับขั้นถัดไป
+    window.getNextStepHint = function(foodTotal, distanceKm) {
+        if (distanceKm > window.MAX_DIST_KM) return null;
+        const zone = window.getZone(distanceKm);
+        const fullFee = window.SHIPPING_FULL_FEE[zone];
+        const nextStep = window.getNextStep(foodTotal);
+        if (!nextStep) return null; // ถึงขั้นสูงสุดแล้ว
+        
+        const currentResult = window.calculateDeliveryFee(foodTotal, distanceKm);
+        // ค่าส่งใหม่ถ้าถึงขั้นถัดไป (cap ไว้ที่ fullFee)
+        const newCustomerFee = Math.max(0, fullFee - Math.min(nextStep.shopHelp, fullFee));
+        const savings = currentResult.customerFee - newCustomerFee;
+        const needMore = nextStep.minTotal - foodTotal;
+        
+        // ถ้าไม่ประหยัด (เพราะฟรีอยู่แล้ว) → ไม่ต้องแสดง hint
+        if (savings <= 0) return null;
+        
+        return {
+            needMore: needMore,
+            savings: savings,
+            willBeFree: newCustomerFee === 0,
+            nextTarget: nextStep.minTotal
+        };
+    };
+
+    function loadCartFromStorage() {
+        const savedData = localStorage.getItem('shopping_cart');
+        if (savedData) {
+            try {
+                const parsed = JSON.parse(savedData);
+                const oneHour = 60 * 60 * 1000; 
+                if (Date.now() - parsed.timestamp < oneHour) {
+                    window.cart = parsed.cart || [];
+                } else {
+                    localStorage.removeItem('shopping_cart'); 
+                }
+            } catch (e) { console.error("Error loading cart", e); }
+        }
+    }
+
+    function saveCartToStorage() {
+        const data = { cart: window.cart, timestamp: Date.now() };
+        localStorage.setItem('shopping_cart', JSON.stringify(data));
+    }
+
+    function loadModeFromStorage() {
+        const savedMode = localStorage.getItem('order_mode');
+        if (savedMode === 'delivery' || savedMode === 'pickup') {
+            window.orderMode = savedMode;
+        }
+    }
+
+    function saveModeToStorage() {
+        localStorage.setItem('order_mode', window.orderMode);
+    }
+
+    // ============ INIT ============
+    document.addEventListener("DOMContentLoaded", async () => {
+        Swal.fire({ title: 'กำลังโหลดเมนู...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+        loadCartFromStorage();
+        loadModeFromStorage();
+        try {
+            const menuRef = ref(db, 'menu');
+            const snapshot = await get(menuRef);
+            if (snapshot.exists()) {
+                const rawData = snapshot.val();
+                window.menuDB = Object.entries(rawData).map(([key, val]) => {
+                    if(!val) return null;
+                    return { ...val, id: key }; 
+                }).filter(item => item !== null); 
+                window.menuDB.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
+                Swal.close();
+                
+                window.setMode(window.orderMode, true);
+                
+                if (window.cart.length > 0) {
+                    window.updateCartUI();
+                    window.updateFooterState('menu');
+                }
+                window.switchTab('recommend');
+                window.initMap();
+                window.updateFooterState('menu');
+                if(localStorage.getItem('cust_name')) {
+                    document.getElementById('cust-name').value = localStorage.getItem('cust_name');
+                    document.getElementById('pickup-name').value = localStorage.getItem('cust_name');
+                }
+                if(localStorage.getItem('cust_phone')) {
+                    document.getElementById('cust-phone').value = localStorage.getItem('cust_phone');
+                    document.getElementById('pickup-phone').value = localStorage.getItem('cust_phone');
+                }
+                if(localStorage.getItem('cust_address')) document.getElementById('cust-address').value = localStorage.getItem('cust_address');
+                window.updateTrackingButtonState();
+                window.updateShopStatusUI();
+                window.updateNextStepHint();
+                window.updatePinReminderCard();
+            } else { Swal.fire('แจ้งเตือน', 'ไม่พบข้อมูลเมนูในระบบ', 'warning'); window.menuDB = []; }
+        } catch (error) { console.error(error); Swal.fire('Error', 'ไม่สามารถเชื่อมต่อ Firebase ได้', 'error'); }
+    });
+
+    // ============ MODE TOGGLE ============
+    window.setMode = function(mode, skipSave) {
+        window.orderMode = mode;
+        if (!skipSave) saveModeToStorage();
+        
+        const btnPickup = document.getElementById('mode-btn-pickup');
+        const btnDelivery = document.getElementById('mode-btn-delivery');
+        const deliveryPinRow = document.getElementById('delivery-pin-row');
+
+        if (mode === 'pickup') {
+            btnPickup.className = 'mode-toggle-active px-3 py-2.5 rounded-xl text-center transition';
+            btnDelivery.className = 'mode-toggle-inactive px-3 py-2.5 rounded-xl text-center transition';
+            btnPickup.querySelector('.mode-text').style.color = 'var(--color-primary)';
+            btnPickup.querySelector('.mode-subtext').style.color = 'var(--color-primary-light)';
+            btnDelivery.querySelector('.mode-text').style.color = 'var(--color-text-muted)';
+            btnDelivery.querySelector('.mode-subtext').style.color = '#A89878';
+            deliveryPinRow.classList.add('hidden');
+        } else {
+            btnPickup.className = 'mode-toggle-inactive px-3 py-2.5 rounded-xl text-center transition';
+            btnDelivery.className = 'mode-toggle-active px-3 py-2.5 rounded-xl text-center transition';
+            btnDelivery.querySelector('.mode-text').style.color = 'var(--color-primary)';
+            btnDelivery.querySelector('.mode-subtext').style.color = 'var(--color-primary-light)';
+            btnPickup.querySelector('.mode-text').style.color = 'var(--color-text-muted)';
+            btnPickup.querySelector('.mode-subtext').style.color = '#A89878';
+            if (window.currentPage === 'menu') deliveryPinRow.classList.remove('hidden');
+        }
+
+        window.updateCartModeIndicator();
+        window.updateNextStepHint();
+        window.updatePinReminderCard();
+    };
+
+    window.updateCartModeIndicator = function() {
+        const icon = document.getElementById('cart-mode-icon');
+        const text = document.getElementById('cart-mode-text');
+        if (!icon || !text) return;
+        if (window.orderMode === 'pickup') {
+            icon.innerText = '🏪';
+            text.innerText = 'รับหน้าร้าน · ไม่มีค่าส่ง';
+            text.parentElement.style.background = 'var(--color-accent-mint)';
+        } else {
+            icon.innerText = '🛵';
+            text.innerText = 'เดลิเวอรี่ · ลดค่าส่งตามยอด';
+            text.parentElement.style.background = 'var(--color-accent-blue)';
+        }
+    };
+
+    // ============ PAGE NAVIGATION ============
+    window.showPage = function(pageId) {
+        window.currentPage = pageId;
+        if (pageId !== 'tracking' && window.trackingInterval) { clearInterval(window.trackingInterval); window.trackingInterval = null; }
+        document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active-section'));
+        document.getElementById('page-' + pageId).classList.add('active-section');
+        document.getElementById('category-tabs').style.display = (pageId === 'menu') ? 'flex' : 'none';
+        document.getElementById('mode-toggle-container').style.display = (pageId === 'menu') ? 'grid' : 'none';
+        
+        const deliveryPinRow = document.getElementById('delivery-pin-row');
+        if (pageId === 'menu' && window.orderMode === 'delivery') {
+            deliveryPinRow.classList.remove('hidden');
+        } else {
+            deliveryPinRow.classList.add('hidden');
+        }
+
+        const backBtn = document.querySelector('header button i.fa-arrow-left')?.parentElement;
+        if(backBtn) {
+            if(pageId === 'menu') { backBtn.style.opacity = '0'; backBtn.style.pointerEvents = 'none'; } 
+            else { backBtn.style.opacity = '1'; backBtn.style.pointerEvents = 'auto'; }
+        }
+        window.updateFooterState(pageId);
+        if(pageId === 'address' && window.map) {
+            setTimeout(() => window.map.invalidateSize(), 200);
+            // 🔥 FIX: refresh fee box ทุกครั้งที่เข้าหน้า address (เพราะ cart อาจเปลี่ยน)
+            if (window.hasUserLocation && window.userLat !== null) {
+                window.calculateDelivery(window.userLat, window.userLng);
+            }
+        }
+        if(pageId === 'tracking') window.initTrackingPage();
+        if(pageId === 'cart') window.updateCartModeIndicator();
+        window.scrollTo(0,0);
+        window.updateNextStepHint();
+        window.updatePinReminderCard();
+    };
+
+    window.goToMapPage = function() {
+        if (window.orderMode !== 'delivery') window.setMode('delivery');
+        window.showPage('address');
+    };
+
+    window.goToNextStep = function() {
+        if (window.orderMode === 'pickup') window.showPage('pickup');
+        else window.showPage('address');
+    };
+
+    window.goBack = function() {
+        const current = document.querySelector('.active-section').id;
+        if(current === 'page-cart') window.showPage('menu');
+        else if(current === 'page-pickup') window.cart.length === 0 ? window.showPage('menu') : window.showPage('cart');
+        else if(current === 'page-address') window.cart.length === 0 ? window.showPage('menu') : window.showPage('cart');
+        else if(current === 'page-payment') {
+            if (window.orderMode === 'pickup') window.showPage('pickup');
+            else window.showPage('address');
+        }
+        else if(current === 'page-tracking') window.showPage('menu');
+    };
+
+    window.switchTab = function(cat) {
+        window.activeTab = cat;
+        ['recommend', 'promotion'].forEach(tabName => {
+            const element = document.getElementById(`tab-${tabName}`);
+            if (cat === tabName) {
+                element.style.borderColor = 'var(--color-primary)';
+                element.style.color = 'var(--color-primary)';
+                element.className = 'flex-1 text-center py-3 text-sm font-bold cursor-pointer transition-all border-b-2';
+            } else {
+                element.style.borderColor = 'transparent';
+                element.style.color = 'var(--color-text-muted)';
+                element.className = 'flex-1 text-center py-3 text-sm font-medium cursor-pointer transition-all border-b-2';
+            }
+        });
+        window.renderMenu(cat);
+    };
+
+    window.isShopOpen = function() {
+        const now = new Date();
+        const hour = now.getHours();
+        return hour >= window.OPEN_HOUR && hour < window.CLOSE_HOUR;
+    };
+
+    window.updatePinReminderCard = function() {
+        const card = document.getElementById('pin-reminder-card');
+        if (!card) return;
+        if (window.currentPage === 'menu' && window.isShopOpen() && window.orderMode === 'delivery' && !window.hasUserLocation && window.cart.length > 0) {
+            card.classList.remove('hidden');
+        } else {
+            card.classList.add('hidden');
+        }
+    };
+
+    // ============ SMART NEXT-STEP HINT (Hybrid showcase) ============
+    window.updateNextStepHint = function() {
+        const box = document.getElementById('next-step-box');
+        const card = document.getElementById('next-step-card');
+        const textEl = document.getElementById('next-step-text');
+        if (!box || !textEl || !card) return;
+
+        // ซ่อนในโหมด pickup, ร้านปิด, ตะกร้าว่าง, หน้า tracking
+        if (window.orderMode === 'pickup' || !window.isShopOpen() || window.cart.length === 0 || window.currentPage === 'tracking') {
+            box.classList.add('hidden');
+            return;
+        }
+
+        const total = window.cart.reduce((sum, item) => sum + item.finalPrice, 0);
+
+        // กรณียังไม่ปักหมุด → ชวนปักหมุด
+        if (window.hasUserLocation !== true) {
+            card.style.background = 'var(--color-accent-blue)';
+            card.style.borderColor = 'var(--color-accent-blue-dark)';
+            textEl.innerHTML = `<span class="font-semibold">📍 ปักหมุดเพื่อดูค่าส่งของคุณ</span> <span style="color: #2563EB; text-decoration: underline; cursor: pointer; font-weight: 600;" onclick="goToMapPage()">แตะที่นี่</span>`;
+            box.classList.remove('hidden');
+            return;
+        }
+
+        // กรณีนอกพื้นที่
+        if (window.distanceKm > window.MAX_DIST_KM) {
+            box.classList.add('hidden');
+            return;
+        }
+
+        const result = window.calculateDeliveryFee(total, window.distanceKm);
+        const hint = window.getNextStepHint(total, window.distanceKm);
+
+        // กรณีฟรีอยู่แล้ว
+        if (result.isFree) {
+            card.style.background = 'var(--color-accent-mint)';
+            card.style.borderColor = 'var(--color-accent-mint-dark)';
+            textEl.innerHTML = `<span class="font-semibold" style="color: var(--color-primary);">🎉 ค่าส่งฟรีแล้ว!</span> ขอบคุณที่อุดหนุนนะคะ`;
+            box.classList.remove('hidden');
+            return;
+        }
+
+        // กรณีไม่มี hint (ถึงขั้นสูงสุดแล้ว หรือไม่มีประหยัด)
+        if (!hint) {
+            box.classList.add('hidden');
+            return;
+        }
+
+        // แสดง next-step hint
+        card.style.background = 'var(--color-accent-yellow)';
+        card.style.borderColor = 'var(--color-accent-yellow-dark)';
+        if (hint.willBeFree) {
+            textEl.innerHTML = `สั่งเพิ่มอีก <b style="color: var(--color-hot);">${hint.needMore} บาท</b> → <b style="color: var(--color-primary);">ค่าส่งฟรี! 🎉</b> (ประหยัด ${hint.savings} บาท)`;
+        } else {
+            textEl.innerHTML = `สั่งเพิ่มอีก <b style="color: var(--color-hot);">${hint.needMore} บาท</b> → ค่าส่งลดอีก <b style="color: var(--color-primary);">${hint.savings} บาท</b>`;
+        }
+        box.classList.remove('hidden');
+    };
+
+    window.updateFooterState = function(pageId) {
+        const footer = document.getElementById('sticky-footer');
+        if (!window.isShopOpen()) {
+            footer.classList.remove('hidden');
+            footer.innerHTML = `<div class="w-full rounded-2xl p-3.5 text-center font-bold shadow-lg" style="background: #9CA3AF; color: white;">⛔ ร้านปิด (เปิด ${String(window.OPEN_HOUR).padStart(2,'0')}:00 - ${String(window.CLOSE_HOUR).padStart(2,'0')}:00 น.)</div>`;
+            return;
+        }
+        if(footer.innerHTML.includes('ร้านปิด')) location.reload(); 
+        footer.classList.remove('hidden');
+        ['btn-view-cart', 'btn-go-next', 'btn-confirm-pickup', 'btn-confirm-address', 'btn-confirm-order'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('hidden');
+        });
+        if(pageId === 'menu') {
+            window.cart.length > 0 ? document.getElementById('btn-view-cart').classList.remove('hidden') : footer.classList.add('hidden');
+        }
+        else if(pageId === 'cart') {
+            document.getElementById('btn-go-next').classList.remove('hidden');
+            document.getElementById('btn-go-next-text').innerText = window.orderMode === 'pickup' ? 'กรอกข้อมูลรับของ' : 'ยืนยันรายการ';
+        }
+        else if(pageId === 'pickup') document.getElementById('btn-confirm-pickup').classList.remove('hidden');
+        else if(pageId === 'address') document.getElementById('btn-confirm-address').classList.remove('hidden');
+        else if(pageId === 'payment') document.getElementById('btn-confirm-order').classList.remove('hidden');
+        else if(pageId === 'tracking') footer.classList.add('hidden');
+        window.updateNextStepHint();
+    };
+
+    // ============ MENU RENDER ============
+    window.renderMenu = function(cat) {
+        const list = document.getElementById('menu-list');
+        const items = window.menuDB.filter(i => i.category === cat && i.hidden !== true);
+        const pastelBgs = ['bg-pastel-blue', 'bg-pastel-mint', 'bg-pastel-yellow', 'bg-pastel-pink'];
+        
+        const createCard = (item, idx) => {
+            const isSoldOut = !item.stock;
+            const pastelClass = pastelBgs[idx % pastelBgs.length];
+            const priceColorStyle = item.originalPrice ? 'color: var(--color-hot);' : 'color: var(--color-primary);';
+            
+            // Custom badge (item.badge) - แสดงเป็นป้ายเด่น "ใต้รูป" แบบ pill กว้างเต็ม
+            let underImageBadgeHtml = '';
+            if (item.badge && !isSoldOut) {
+                underImageBadgeHtml = `<div class="mt-1.5 w-24 text-center font-display text-[10px] font-bold py-1 rounded-lg shadow-sm" style="background: var(--color-accent-yellow); color: #92400E; border: 1px solid var(--color-accent-yellow-dark);">⭐ ${item.badge}</div>`;
+            }
+            
+            return `
+            <div class="menu-card px-5 mb-3 ${isSoldOut ? 'opacity-60 grayscale pointer-events-none' : 'cursor-pointer'}" onclick="${!isSoldOut ? `openModal('${item.id}')` : ''}">
+                <div class="rounded-3xl p-3 flex gap-3" style="background: white; border: 1px solid var(--color-border-soft); box-shadow: 0 2px 8px rgba(45, 80, 22, 0.04);">
+                    <div class="relative shrink-0 flex flex-col items-center">
+                        <div class="${pastelClass} w-24 h-24 rounded-2xl overflow-hidden relative flex items-center justify-center">
+                            <img src="${item.img}" class="w-full h-full object-cover" onerror="this.style.display='none'">
+                            ${isSoldOut ? '<span class="absolute inset-0 flex items-center justify-center bg-black/40 text-white font-bold text-sm rounded-2xl z-10">หมด</span>' : ''}
+                        </div>
+                        ${underImageBadgeHtml}
+                    </div>
+                    <div class="flex-1 flex flex-col justify-between py-0.5 min-w-0">
+                        <div>
+                            <h3 class="font-display text-base font-semibold leading-tight" style="color: var(--color-primary);">${item.name}</h3>
+                            <p class="text-xs line-clamp-2 leading-relaxed mt-1" style="color: var(--color-text-muted);">${item.desc || ''}</p>
+                        </div>
+                        <div class="flex items-end justify-between mt-2">
+                            <div class="flex flex-col leading-none">
+                                ${item.originalPrice ? `<span class="text-[10px] line-through" style="color: var(--color-text-muted);">฿${item.originalPrice}</span>` : ''}
+                                <span class="font-display font-bold text-xl" style="${priceColorStyle}">฿${item.price}</span>
+                            </div>
+                            ${!isSoldOut ? `<button class="text-white w-9 h-9 rounded-full flex items-center justify-center shadow-md transition active:scale-90" style="background: var(--color-primary);"><i class="fa-solid fa-plus text-sm"></i></button>` : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        };
+        
+        if (cat === 'promotion') {
+            if(items.length === 0) list.innerHTML = `<div class="text-center py-10" style="color: var(--color-text-muted);">ไม่มีรายการโปรโมชั่น</div>`;
+            else list.innerHTML = items.map((item, idx) => createCard(item, idx)).join('');
+            return;
+        }
+        
+        const subCats = [...new Set(items.map(i => i.subCategory || 'ราคาพิเศษ'))];
+        let finalHTML = '';
+        let globalIdx = 0;
+        subCats.forEach(subCatName => {
+            const subItems = items.filter(i => (i.subCategory || 'ราคาพิเศษ') === subCatName);
+            if (subItems.length > 0) {
+                finalHTML += `<div class="px-5 py-3 mt-2 mb-1"><div class="font-script text-sm font-semibold leading-none" style="color: var(--color-primary-light);">— ${subCatName} —</div></div>`;
+                finalHTML += subItems.map(item => {
+                    const html = createCard(item, globalIdx);
+                    globalIdx++;
+                    return html;
+                }).join('');
+            }
+        });
+        list.innerHTML = finalHTML;
+    };
+
+    // ============ OPTION MODAL ============
+    window.openModal = function(id) {
+        const item = window.menuDB.find(i=>i.id===id);
+        window.currentQty = 1;
+        window.currentItem = item; 
+        window.currentBasePrice = item.price;
+        document.getElementById('modal-item-name').innerText = item.name;
+        const container = document.getElementById('modal-options'); 
+        container.innerHTML = '';
+        if(item.options && item.options.length > 0) {
+            item.options.forEach((opt, idx) => {
+                let html = `<div class="rounded-2xl p-4 mb-3" style="background: var(--color-base-warm); border: 1px solid var(--color-border-soft);"><p class="font-display font-semibold mb-3 text-sm flex items-center gap-2" style="color: var(--color-primary);">${opt.name}</p><div class="space-y-3">`;
+                opt.choices.forEach((choice, cIdx) => {
+                    if (opt.type === 'radio') {
+                        const isChecked = cIdx === 0 ? 'checked' : ''; 
+                        html += `<label class="flex items-center justify-between cursor-pointer group">
+                            <div class="flex items-center">
+                                <input type="radio" name="opt-${idx}" value="${choice.label}" data-price="${choice.price}" ${isChecked} class="option-input w-4 h-4" style="accent-color: var(--color-primary);" onchange="calculateModalTotal()">
+                                <span class="ml-3 text-sm" style="color: var(--color-text-dark);">${choice.label}</span>
+                            </div>
+                            ${choice.price > 0 ? `<span class="text-xs" style="color: var(--color-text-muted);">+${choice.price}</span>` : ''}
+                        </label>`;
+                    } else {
+                        html += `<label class="flex items-center justify-between cursor-pointer group">
+                            <div class="flex items-center">
+                                <input type="checkbox" name="opt-${idx}" value="${choice.label}" data-price="${choice.price}" class="option-input rounded w-4 h-4" style="accent-color: var(--color-primary);" onchange="checkLimit(this, ${opt.max}); calculateModalTotal()">
+                                <span class="ml-3 text-sm" style="color: var(--color-text-dark);">${choice.label}</span>
+                            </div>
+                            ${choice.price > 0 ? `<span class="text-xs" style="color: var(--color-text-muted);">+${choice.price}</span>` : ''}
+                        </label>`;
+                    }
+                });
+                html += `</div></div>`; 
+                container.innerHTML += html;
+            });
+        } else container.innerHTML = `<div class="text-center text-sm py-2" style="color: var(--color-text-muted);"></div>`;
+        
+        const qtyHtml = `<div class="flex items-center justify-between mt-4 pt-4" style="border-top: 1px solid var(--color-border-soft);">
+            <span class="font-display font-bold" style="color: var(--color-primary);">จำนวน</span>
+            <div class="flex items-center gap-3 rounded-full p-1" style="background: var(--color-base-warm);">
+                <button onclick="adjustQty(-1)" class="w-8 h-8 rounded-full bg-white shadow font-bold flex items-center justify-center transition" style="color: var(--color-primary);"><i class="fa-solid fa-minus"></i></button>
+                <span id="qty-display" class="font-display font-bold w-8 text-center text-lg" style="color: var(--color-text-dark);">1</span>
+                <button onclick="adjustQty(1)" class="w-8 h-8 rounded-full bg-white shadow font-bold flex items-center justify-center transition" style="color: var(--color-primary);"><i class="fa-solid fa-plus"></i></button>
+            </div>
+        </div>`;
+        container.insertAdjacentHTML('beforeend', qtyHtml);
+        window.calculateModalTotal(); 
+        document.getElementById('option-modal').classList.remove('hidden');
+    };
+
+    window.adjustQty = function(change) {
+        const newQty = window.currentQty + change;
+        if(newQty < 1) return;
+        window.currentQty = newQty;
+        document.getElementById('qty-display').innerText = window.currentQty;
+        window.calculateModalTotal();
+    };
+    
+    window.calculateModalTotal = function() {
+        let pricePerItem = window.currentBasePrice;
+        document.querySelectorAll('.option-input:checked').forEach(input => { 
+            pricePerItem += parseInt(input.getAttribute('data-price') || 0); 
+        });
+        const totalPrice = pricePerItem * window.currentQty;
+        document.getElementById('modal-total-price').innerText = `฿${totalPrice}`;
+    };
+    
+    window.checkLimit = function(checkbox, max) {
+        if (!max) return;
+        const name = checkbox.name;
+        if (document.querySelectorAll(`input[name="${name}"]:checked`).length > max) { 
+            checkbox.checked = false; 
+            Swal.fire({ toast: true, position: 'top', icon: 'info', title: `เลือกได้สูงสุด ${max} อย่าง`, showConfirmButton: false, timer: 1500 }); 
+        }
+    };
+    
+    window.closeModal = function() { document.getElementById('option-modal').classList.add('hidden'); };
+    
+    window.confirmAddToCart = function() {
+        const selectedOptions = []; 
+        let pricePerItem = window.currentBasePrice;
+        document.querySelectorAll('.option-input:checked').forEach(input => { 
+            selectedOptions.push(input.value); 
+            pricePerItem += parseInt(input.getAttribute('data-price') || 0); 
+        });
+        const finalTotalPrice = pricePerItem * window.currentQty;
+        window.addToCart(window.currentItem, selectedOptions, finalTotalPrice, window.currentQty); 
+        window.closeModal();
+    };
+    
+    window.addToCart = function(item, opts, price, qty) {
+        window.cart.push({ ...item, selectedOptions: opts, finalPrice: price, qty: qty });
+        saveCartToStorage(); 
+        window.updateCartUI();
+        if(document.querySelector('.active-section').id === 'page-menu') window.updateFooterState('menu');
+        Swal.fire({ toast: true, position: 'top', icon: 'success', title: 'เพิ่มลงตะกร้าแล้ว', showConfirmButton: false, timer: 1000 });
+        window.updateNextStepHint();
+        window.updatePinReminderCard();
+        // Refresh realtime fee box if on address page
+        if (window.currentPage === 'address' && window.hasUserLocation) {
+            window.calculateDelivery(window.userLat, window.userLng);
+        }
+    };
+    
+    window.updateCartUI = function() {
+        document.getElementById('footer-count').innerText = window.cart.length;
+        const total = window.cart.reduce((sum, item) => sum + item.finalPrice, 0);
+        document.getElementById('footer-total').innerText = `฿${total}`;
+        document.getElementById('total-price-cart').innerText = `฿${total}`;
+        const list = document.getElementById('cart-items');
+        if(window.cart.length === 0) { 
+            list.innerHTML = `<div class="text-center py-10"><i class="fa-solid fa-basket-shopping text-4xl mb-2" style="color: var(--color-border-soft);"></i><p style="color: var(--color-text-muted);">ยังไม่มีสินค้าในตะกร้า</p></div>`; 
+            window.updateNextStepHint(); 
+            window.updatePinReminderCard();
+            return; 
+        }
+        list.innerHTML = window.cart.map((item, idx) => {
+            let optionsHtml = item.selectedOptions && item.selectedOptions.length > 0 
+                ? item.selectedOptions.map(opt => `<div class="text-xs pl-2 flex items-center gap-1" style="color: var(--color-text-muted);"><span class="w-1 h-1 rounded-full" style="background: var(--color-text-muted);"></span> ${opt}</div>`).join('') 
+                : '';
+            return `<div class="flex justify-between items-start pb-4 last:border-0" style="border-bottom: 1px solid var(--color-border-soft);">
+                <div class="flex gap-3 flex-1 pr-2">
+                    <img src="${item.img}" class="w-14 h-14 rounded-xl object-cover shrink-0" style="background: var(--color-base-warm);" onerror="this.style.opacity=0.3">
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="font-bold text-sm rounded text-[10px] h-fit px-1.5" style="background: var(--color-base-warm); color: var(--color-text-dark);">${idx + 1}</span>
+                            <span class="font-semibold" style="color: var(--color-text-dark);">${item.qty}x ${item.name}</span>
+                        </div>
+                        <div class="space-y-0.5 mt-1 ml-1 pl-1" style="border-left: 2px solid var(--color-border-soft);">${optionsHtml}</div>
+                        <div class="mt-2">
+                            <span class="text-xs font-medium cursor-pointer hover:underline flex items-center gap-1 w-fit" style="color: var(--color-hot);" onclick="window.removeCartItem(${idx})">
+                                <i class="fa-solid fa-trash-can"></i> ลบรายการ
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <span class="font-display font-bold whitespace-nowrap" style="color: var(--color-text-dark);">฿${item.finalPrice}</span>
+            </div>`;
+        }).join('');
+        window.updateNextStepHint();
+        window.updatePinReminderCard();
+    };
+
+    window.removeCartItem = function(index) {
+        window.cart.splice(index, 1);
+        saveCartToStorage();
+        window.updateCartUI();
+        if(window.cart.length === 0) window.updateFooterState('menu');
+        window.updateNextStepHint();
+        window.updatePinReminderCard();
+        if (window.currentPage === 'address' && window.hasUserLocation) {
+            window.calculateDelivery(window.userLat, window.userLng);
+        }
+    };
+
+    // ============ TIME SLOT ============
+    window.selectTimeSlot = function(minutes) {
+        window.pickupTime = minutes;
+        [10, 20, 30].forEach(m => {
+            const btn = document.getElementById(`time-slot-${m}`);
+            if (m === minutes) btn.classList.add('time-slot-active');
+            else btn.classList.remove('time-slot-active');
+        });
+    };
+
+    // ============ MAP ============
+    window.initMap = function() {
+        window.map = L.map('map', { zoomControl: false });
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(window.map);
+        var shopIcon = L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/273/273177.png', iconSize: [50, 50], iconAnchor: [25, 50], popupAnchor: [0, -50] });
+        var customerIcon = L.icon({ iconUrl: 'https://cdn-icons-png.flaticon.com/512/2776/2776067.png', iconSize: [40, 40], iconAnchor: [20, 40], popupAnchor: [0, -40], shadowUrl: null });
+        L.marker(window.SHOP_LOC, { icon: shopIcon }).addTo(window.map).bindPopup("<b>ร้านหนุ่มดำเนิน</b><br>ส่งความอร่อยจากตรงนี้").openPopup();
+        const savedLat = localStorage.getItem('cust_lat');
+        const savedLng = localStorage.getItem('cust_lng');
+        window.hasUserLocation = !!(savedLat && savedLng);
+        let startLoc = savedLat && savedLng ? [parseFloat(savedLat), parseFloat(savedLng)] : window.SHOP_LOC;
+        let startZoom = savedLat && savedLng ? 16 : 14;
+        window.map.setView(startLoc, startZoom);
+        window.marker = L.marker(startLoc, { draggable: true, icon: customerIcon }).addTo(window.map);
+        window.calculateDelivery(startLoc[0], startLoc[1]);
+        window.map.on('click', function(e) {
+            window.hasUserLocation = true;
+            window.marker.setLatLng(e.latlng);
+            window.calculateDelivery(e.latlng.lat, e.latlng.lng);
+        });
+        window.marker.on('dragend', function(e) {
+            window.hasUserLocation = true;
+            const pos = window.marker.getLatLng();
+            window.calculateDelivery(pos.lat, pos.lng);
+            window.map.panTo(pos);
+        });
+    };
+
+    window.calculateDelivery = function(lat, lng) {
+        if (window.hasUserLocation !== true) {
+            window.userLat = null;
+            window.userLng = null;
+            window.distanceKm = 0;
+            document.getElementById('header-distance').innerText = `แตะเพื่อปักหมุดและคำนวณค่าส่ง`;
+            document.getElementById('distance-display').innerText = `แตะแผนที่เพื่อคำนวณ`;
+            document.getElementById('out-of-range-msg').classList.add('hidden');
+            document.getElementById('realtime-fee-box').classList.add('hidden');
+            const dd = document.getElementById('distance-display');
+            dd.style.background = 'var(--color-base-warm)';
+            dd.style.color = 'var(--color-text-muted)';
+            window.updateNextStepHint();
+            window.updatePinReminderCard();
+            return;
+        }
+        window.userLat = lat; 
+        window.userLng = lng;
+        window.distanceKm = window.getDistanceFromLatLonInKm(window.SHOP_LOC[0], window.SHOP_LOC[1], lat, lng);
+        document.getElementById('header-distance').innerText = `ห่าง ${window.distanceKm.toFixed(1)} กม. จากร้าน`;
+        document.getElementById('distance-display').innerText = `${window.distanceKm.toFixed(1)} กม.`;
+        const realtimeBox = document.getElementById('realtime-fee-box');
+        const feeLabel = document.getElementById('realtime-fee-label');
+        const distLabel = document.getElementById('realtime-distance-label');
+        const freeshipHint = document.getElementById('realtime-freeship-hint');
+        
+        if (window.distanceKm > window.MAX_DIST_KM) {
+            document.getElementById('out-of-range-msg').classList.remove('hidden');
+            const dd = document.getElementById('distance-display');
+            dd.style.background = '#FEE2E2';
+            dd.style.color = 'var(--color-hot)';
+            realtimeBox.classList.add('hidden');
+        } else {
+            document.getElementById('out-of-range-msg').classList.add('hidden');
+            const dd = document.getElementById('distance-display');
+            dd.style.background = 'var(--color-accent-mint)';
+            dd.style.color = 'var(--color-primary)';
+            
+            const foodTotal = window.cart.reduce((s, i) => s + i.finalPrice, 0);
+            const result = window.calculateDeliveryFee(foodTotal, window.distanceKm);
+            const hint = window.getNextStepHint(foodTotal, window.distanceKm);
+            
+            distLabel.innerText = `${window.distanceKm.toFixed(1)} กม.`;
+            
+            if (result.isFree) {
+                feeLabel.innerHTML = `<span class="line-through mr-1" style="color: var(--color-text-muted);">${result.fullFee} บาท</span><span style="color: var(--color-primary);">ฟรี! 🎉</span>`;
+                freeshipHint.innerHTML = `<span class="font-bold" style="color: var(--color-primary);">✨ ร้านช่วยทั้งหมด ${result.shopHelp} บาท</span>`;
+            } else if (result.shopHelp > 0) {
+                feeLabel.innerHTML = `<span class="line-through mr-1 text-xs" style="color: var(--color-text-muted);">${result.fullFee}</span><span style="color: var(--color-text-dark);">${result.customerFee} บาท</span>`;
+                if (hint) {
+                    if (hint.willBeFree) {
+                        freeshipHint.innerHTML = `💡 สั่งเพิ่ม <b style="color: var(--color-hot);">${hint.needMore} บาท</b> → <b style="color: var(--color-primary);">ส่งฟรี!</b>`;
+                    } else {
+                        freeshipHint.innerHTML = `💡 สั่งเพิ่ม <b style="color: var(--color-hot);">${hint.needMore} บาท</b> → ค่าส่งลดอีก <b style="color: var(--color-primary);">${hint.savings} บาท</b>`;
+                    }
+                } else {
+                    freeshipHint.innerHTML = `<span style="color: var(--color-primary-light);">✓ ร้านช่วย ${result.shopHelp} บาทแล้ว</span>`;
+                }
+            } else {
+                feeLabel.innerHTML = `<span style="color: var(--color-text-dark);">${result.customerFee} บาท</span>`;
+                if (hint) {
+                    freeshipHint.innerHTML = `💡 สั่งเพิ่ม <b style="color: var(--color-hot);">${hint.needMore} บาท</b> → ค่าส่งลด <b style="color: var(--color-primary);">${hint.savings} บาท</b>`;
+                } else {
+                    freeshipHint.innerHTML = '-';
+                }
+            }
+            realtimeBox.classList.remove('hidden');
+        }
+        window.updateNextStepHint();
+        window.updatePinReminderCard();
+    };
+    
+    window.getDistanceFromLatLonInKm = function(lat1,lon1,lat2,lon2) { 
+        var R = 6371; 
+        var dLat = window.deg2rad(lat2-lat1); 
+        var dLon = window.deg2rad(lon2-lon1); 
+        var a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(window.deg2rad(lat1)) * Math.cos(window.deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); 
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+        return R * c; 
+    };
+    
+    window.deg2rad = function(deg) { return deg * (Math.PI/180); };
+
+    // ============ VALIDATE & GO TO PAYMENT ============
+    window.validateAndGoToPaymentPickup = function() {
+        const name = document.getElementById('pickup-name').value;
+        const phone = document.getElementById('pickup-phone').value;
+        if(!name || !phone) return Swal.fire({icon: 'warning', text: 'กรุณากรอกชื่อและเบอร์โทรให้ครบถ้วน'});
+        if(!window.pickupTime) return Swal.fire({icon: 'warning', text: 'กรุณาเลือกเวลาที่จะมารับ'});
+        const foodTotal = window.cart.reduce((s, i) => s + i.finalPrice, 0);
+        window.deliveryFee = 0;
+        const grandTotal = foodTotal;
+        document.getElementById('summary-order-type').innerText = `🏪 รับหน้าร้าน (${window.pickupTime} นาที)`;
+        document.getElementById('summary-food-total').innerText = `${foodTotal} บาท`;
+        document.getElementById('summary-delivery-row').style.display = 'none';
+        document.getElementById('summary-grand-total').innerText = `${grandTotal} บาท`;
+        document.getElementById('qr-image').src = `https://promptpay.io/0622467746/${grandTotal}`;
+        document.getElementById('qr-amount-display').innerText = `${grandTotal} บาท`;
+        document.getElementById('cod-amount-display').innerText = `${grandTotal}`;
+        document.getElementById('cod-label').classList.remove('hidden');
+        window.showPage('payment');
+    };
+
+    window.validateAndGoToPayment = function() {
+        const name = document.getElementById('cust-name').value;
+        const phone = document.getElementById('cust-phone').value;
+        const address = document.getElementById('cust-address').value;
+        if(!name || !phone || !address) return Swal.fire({icon: 'warning', text: 'กรุณากรอกข้อมูลที่อยู่ให้ครบถ้วน'});
+        if(!window.userLat) return Swal.fire({icon: 'warning', text: 'กรุณาปักหมุดจุดส่งบนแผนที่'});
+        if(window.distanceKm > window.MAX_DIST_KM) return Swal.fire({icon: 'error', text: `อยู่นอกพื้นที่จัดส่ง (จำกัด ${window.MAX_DIST_KM} กม.)`});
+        
+        const foodTotal = window.cart.reduce((s, i) => s + i.finalPrice, 0);
+        const result = window.calculateDeliveryFee(foodTotal, window.distanceKm);
+        window.deliveryFee = result.customerFee;
+        const grandTotal = foodTotal + window.deliveryFee;
+        
+        document.getElementById('summary-order-type').innerText = `🛵 เดลิเวอรี่ (${window.distanceKm.toFixed(1)} กม.)`;
+        document.getElementById('summary-food-total').innerText = `${foodTotal} บาท`;
+        document.getElementById('summary-delivery-row').style.display = 'flex';
+        const feeDisplay = document.getElementById('summary-delivery-fee');
+        const feeDetail = document.getElementById('delivery-details');
+        
+        if(result.isFree) {
+            feeDisplay.innerText = "ฟรี"; 
+            feeDisplay.style.color = 'var(--color-primary)';
+            feeDisplay.style.fontWeight = 'bold';
+            feeDetail.innerText = `(ร้านช่วย ${result.shopHelp} บาท)`;
+            feeDetail.className = "text-[10px]";
+            feeDetail.style.color = 'var(--color-primary)';
+        } else if(result.shopHelp > 0) {
+            feeDisplay.innerHTML = `<span class="line-through text-xs mr-1" style="color: var(--color-text-muted);">${result.fullFee}</span>${result.customerFee} บาท`;
+            feeDisplay.style.color = 'var(--color-text-dark)';
+            const hint = window.getNextStepHint(foodTotal, window.distanceKm);
+            if (hint) {
+                if (hint.willBeFree) {
+                    feeDetail.innerText = `(สั่งเพิ่ม ${hint.needMore} บ. ส่งฟรี!)`;
+                    feeDetail.className = "text-xs font-bold animate-pulse";
+                    feeDetail.style.color = 'var(--color-hot)';
+                } else {
+                    feeDetail.innerText = `(สั่งเพิ่ม ${hint.needMore} บ. ลดอีก ${hint.savings})`;
+                    feeDetail.className = "text-[10px]";
+                    feeDetail.style.color = '#EA580C';
+                }
+            } else {
+                feeDetail.innerText = `(ร้านช่วย ${result.shopHelp} บาท)`;
+                feeDetail.className = "text-[10px]";
+                feeDetail.style.color = 'var(--color-primary-light)';
+            }
+        } else {
+            feeDisplay.innerText = `${result.customerFee} บาท`;
+            feeDisplay.style.color = 'var(--color-text-dark)';
+            const hint = window.getNextStepHint(foodTotal, window.distanceKm);
+            if (hint) {
+                feeDetail.innerText = `(สั่งเพิ่ม ${hint.needMore} บ. ลด ${hint.savings})`;
+                feeDetail.className = "text-[10px]";
+                feeDetail.style.color = '#EA580C';
+            } else feeDetail.innerText = "";
+        }
+        document.getElementById('summary-grand-total').innerText = `${grandTotal} บาท`;
+        document.getElementById('qr-image').src = `https://promptpay.io/0622467746/${grandTotal}`;
+        document.getElementById('qr-amount-display').innerText = `${grandTotal} บาท`;
+        document.getElementById('cod-label').classList.add('hidden');
+        document.querySelector('input[name="paymentMethod"][value="transfer"]').checked = true;
+        window.togglePaymentDetail();
+        window.showPage('payment');
+    };
+
+    window.togglePaymentDetail = function() {
+        const method = document.querySelector('input[name="paymentMethod"]:checked').value;
+        document.getElementById('payment-transfer-detail').classList.toggle('hidden', method !== 'transfer');
+        document.getElementById('payment-cod-detail').classList.toggle('hidden', method !== 'cod');
+        document.getElementById('payment-chat-pay-detail').classList.toggle('hidden', method !== 'chat_pay');
+    };
+
+    // ============ CONFIRM ORDER ============
+    window.confirmOrder = async function() {
+        const method = document.querySelector('input[name="paymentMethod"]:checked').value;
+        const total = document.getElementById('summary-grand-total').innerText;
+        let slipBase64 = "-";
+        let name, phone, address = '-', landmark = '-', location = '-';
+        
+        if (window.orderMode === 'pickup') {
+            name = document.getElementById('pickup-name').value;
+            phone = document.getElementById('pickup-phone').value;
+            address = `[รับหน้าร้าน] รับใน ${window.pickupTime} นาที`;
+        } else {
+            name = document.getElementById('cust-name').value;
+            phone = document.getElementById('cust-phone').value;
+            address = document.getElementById('cust-address').value;
+            landmark = document.getElementById('cust-landmark').value;
+            location = `${window.userLat},${window.userLng}`;
+        }
+        
+        localStorage.setItem('cust_name', name);
+        localStorage.setItem('cust_phone', phone);
+        if (window.orderMode === 'delivery') {
+            localStorage.setItem('cust_address', address);
+            localStorage.setItem('cust_lat', window.userLat);
+            localStorage.setItem('cust_lng', window.userLng);
+        }
+        
+        if(method === 'transfer') {
+            const fileInput = document.getElementById('slip-file');
+            if(fileInput.files.length === 0) return Swal.fire({icon: 'warning', text: 'กรุณาแนบสลิปการโอนเงิน'});
+            slipBase64 = await window.toBase64(fileInput.files[0]);
+        }
+
+        Swal.fire({ title: 'กำลังส่งออเดอร์...', text: 'กรุณารอสักครู่', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        const timestamp = new Date();
+        const shortId = timestamp.getTime().toString().slice(-4);
+        const orderId = `ORD-${shortId}`;
+        let initialStatus = "🕒 รอร้านรับยอด";
+        if (method === 'chat_pay') initialStatus = "💬 รอแอดมินแจ้งยอด";
+        if (method === 'cod') initialStatus = "🏪 รอรับที่ร้าน (จ่ายเงินสด)";
+
+        // ดึงข้อมูล shipping details เผื่อ admin ตรวจสอบ
+        let shippingDetails = null;
+        if (window.orderMode === 'delivery') {
+            const foodTotal = window.cart.reduce((s, i) => s + i.finalPrice, 0);
+            const result = window.calculateDeliveryFee(foodTotal, window.distanceKm);
+            shippingDetails = {
+                fullFee: result.fullFee,
+                shopHelp: result.shopHelp,
+                customerFee: result.customerFee,
+                zone: result.zone,
+                zoneLabel: result.zoneLabel,
+                riderPay: result.riderPay,
+                riderDistanceBand: result.riderDistanceBand,
+                riderZoneLabel: result.riderZoneLabel,
+                shopSupportForRider: result.shopSupportForRider,
+                shopSupportPercent: result.shopSupportPercent
+            };
+        }
+
+        const newOrder = {
+            id: orderId,
+            timestamp: timestamp.toISOString(),
+            date: timestamp.toLocaleDateString('th-TH', {day: 'numeric', month: 'short', hour:'2-digit', minute:'2-digit'}),
+            customer: { name, phone, address, landmark, location },
+            items: window.cart,
+            total: total,
+            orderMode: window.orderMode,
+            pickupTime: window.orderMode === 'pickup' ? window.pickupTime : null,
+            distanceKm: window.orderMode === 'delivery' ? window.distanceKm.toFixed(2) : null,
+            deliveryFee: window.deliveryFee,
+            shippingDetails: shippingDetails,
+            paymentMethod: method,
+            slipImage: slipBase64,
+            status: initialStatus
+        };
+        try {
+            const ordersRef = ref(db, 'orders');
+            await push(ordersRef, newOrder);
+            fetch(window.WEB_APP_URL, {
+                method: 'POST', mode: 'no-cors', 
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newOrder)
+            }).catch(err => console.error("LINE Error", err));
+            window.saveOrderToHistory(newOrder);
+            window.cart = [];
+            localStorage.removeItem('shopping_cart'); 
+            window.updateCartUI(); 
+            window.updateTrackingButtonState();
+            let successMsg = 'ทางร้านได้รับออเดอร์แล้วครับ';
+            if (method === 'chat_pay') successMsg = 'กรุณารอแอดมินทักแชท/แจ้งยอดนะครับ';
+            if (method === 'cod') successMsg = `เตรียมเงินสด ${total} มารับที่ร้านได้เลยครับ`;
+            Swal.fire({
+                icon: 'success', title: 'สั่งซื้อสำเร็จ!', text: successMsg,
+                showCancelButton: true, confirmButtonText: '📦 ติดตามสถานะ', 
+                confirmButtonColor: '#2D5016', cancelButtonText: 'สั่งเพิ่ม', cancelButtonColor: '#8B7355'
+            }).then((result) => {
+                if (result.isConfirmed) window.openTrackingPage(); 
+                else window.showPage('menu'); 
+            });
+        } catch (error) {
+            console.error(error);
+            Swal.fire({ icon: 'error', text: 'เกิดข้อผิดพลาดในการส่งข้อมูล: ' + error.message });
+        }
+    };
+
+    window.toBase64 = file => new Promise((resolve, reject) => {
+        const reader = new FileReader(); 
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result); 
+        reader.onerror = error => reject(error);
+    });
+
+    window.saveOrderToHistory = function(order) {
+        let history = JSON.parse(localStorage.getItem('order_history') || "[]");
+        const itemsStr = order.items.map(i => `<div><span class="font-bold mr-2" style="color: var(--color-primary);">x${i.qty}</span>${i.name}</div>`).join('');
+        const newHistoryItem = { id: order.id, date: order.date, items: itemsStr, total: order.total, status: order.status };
+        history.unshift(newHistoryItem); 
+        localStorage.setItem('order_history', JSON.stringify(history));
+    };
+
+    window.updateTrackingButtonState = function() {
+        const history = JSON.parse(localStorage.getItem('order_history') || "[]");
+        const btn = document.getElementById('header-tracking-btn');
+        if (history.length > 0) btn.innerHTML = '<i class="fa-solid fa-clock-rotate-left"></i> ประวัติ';
+        else btn.innerHTML = '<i class="fa-solid fa-truck-fast"></i> ติดตาม';
+    };
+
+    window.handleTrackingClick = function() { window.showPage('tracking'); };
+    window.openTrackingPage = function() { window.showPage('tracking'); };
+
+    window.initTrackingPage = function() {
+        const savedPhone = localStorage.getItem('cust_phone');
+        document.getElementById('tracking-search-box').classList.remove('hidden');
+        if (savedPhone) {
+            document.getElementById('track-phone').value = savedPhone;
+            window.searchOrder(false); 
+            if (window.trackingInterval) clearInterval(window.trackingInterval);
+            window.trackingInterval = setInterval(() => { window.searchOrder(true); }, 10000); 
+        } else {
+            document.getElementById('tracking-result').innerHTML = `<div class="text-center py-10" style="color: var(--color-text-muted);"><i class="fa-solid fa-magnifying-glass text-4xl mb-2"></i><p>กรุณากรอกเบอร์โทรเพื่อค้นหา</p></div>`;
+        }
+    };
+
+    window.searchOrder = function(isSilent = false) { 
+        const phoneInput = document.getElementById('track-phone');
+        if (!phoneInput) return;
+        const phone = phoneInput.value.trim();
+        const searchBtn = document.querySelector('button[onclick="searchOrder()"]') || document.querySelector('.fa-search')?.parentElement;
+        let originalBtnContent = '';
+        if(phone.length < 9) { 
+            if(!isSilent) Swal.fire({icon:'warning', title:'กรุณากรอกเบอร์โทรให้ถูกต้อง'}); 
+            return; 
+        }
+        const resultDiv = document.getElementById('tracking-result');
+        if(searchBtn && !isSilent) {
+            originalBtnContent = searchBtn.innerHTML;
+            searchBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i>`;
+            searchBtn.disabled = true;
+        }
+        const apiUrl = window.WEB_APP_URL + `?action=get_customer_orders&phone=${phone}`;
+        fetch(apiUrl, { method: 'GET' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.orders && data.orders.length > 0) {
+                if (typeof window.renderHistoryFromAdminData === 'function') {
+                    window.renderHistoryFromAdminData(data.orders);
+                }
+                localStorage.setItem('cust_phone', phone);
+            } else {
+                if (!isSilent || resultDiv.innerHTML === '') {
+                    resultDiv.innerHTML = '<div class="text-center py-10" style="color: var(--color-text-muted);">ไม่พบประวัติการสั่งซื้อ</div>';
+                }
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            if(!isSilent) Swal.fire({icon:'error', title:'เกิดข้อผิดพลาดในการโหลด'});
+        })
+        .finally(() => {
+            if(searchBtn && !isSilent && originalBtnContent) {
+                searchBtn.innerHTML = originalBtnContent;
+                searchBtn.disabled = false;
+            }
+        });
+    };
+
+    window.renderHistoryFromAdminData = function(serverOrders) {
+        const container = document.getElementById('tracking-result');
+        const orders = Array.isArray(serverOrders) ? serverOrders : [];
+        const escapeHtml = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        const normalizeTotal = (val) => {
+            if (val === null || val === undefined || val === '') return "-";
+            let cleanVal = String(val).replace(/฿|บาท/g, '').trim();
+            return cleanVal ? `${cleanVal} บาท` : "-";
+        };
+        const getStatusMeta = (statusTextRaw) => {
+            const s = String(statusTextRaw || "รอร้านรับยอด");
+            if (s.includes("ปรุง") || s.includes("ทำ")) return { color: "background:#DBEAFE;color:#1E40AF;border:1px solid #93C5FD", icon: "fa-fire-burner", label: "กำลังปรุง" };
+            if (s.includes("ส่ง") || s.includes("ไรเดอร์")) return { color: "background:#F3E8FF;color:#6B21A8;border:1px solid #C4B5FD", icon: "fa-motorcycle", label: "กำลังส่ง" };
+            if (s.includes("สำเร็จ") || s.includes("เสร็จ")) return { color: "background:#D4EBE0;color:#2D5016;border:1px solid #B8DCC8", icon: "fa-check-circle", label: "สำเร็จ" };
+            if (s.includes("ยกเลิก")) return { color: "background:#FEE2E2;color:#C84B31;border:1px solid #FECACA", icon: "fa-times-circle", label: "ยกเลิก" };
+            return { color: "background:#FEF3C7;color:#92400E;border:1px solid #FDE68A", icon: "fa-hourglass-half", label: "รอรับยอด" };
+        };
+        const parseItems = (rawText) => {
+            if (!rawText) return [];
+            const lines = String(rawText).split('\n').map(l => l.trim()).filter(l => l);
+            const groups = [];
+            let currentGroup = null;
+            lines.forEach((line) => {
+                const isMainItem = /^\d+[.)x]/.test(line) || (!line.startsWith('L') && !line.startsWith('+') && !line.startsWith('•') && groups.length === 0);
+                if (isMainItem) {
+                    let price = "";
+                    let name = line;
+                    let qty = 1; 
+                    const priceMatch = line.match(/(\d+)(\.|-|\s*บาท)$/); 
+                    if(priceMatch) {
+                        price = "฿" + priceMatch[1];
+                        name = line.replace(priceMatch[0], "").trim();
+                    }
+                    const qtyMatch = name.match(/^(\d+)[xX]\s*/);
+                    if (qtyMatch) {
+                        qty = parseInt(qtyMatch[1]); 
+                        name = name.replace(/^(\d+)[xX]\s*/, "");
+                    } else {
+                        name = name.replace(/^\d+[.)]\s*/, "");
+                    }
+                    name = name.replace(/^\(x\d+\)\s*[-]?\s*/i, "");
+                    name = name.replace(/^[-]\s*/, "");
+                    name = name.trim();
+                    currentGroup = { name: name, price: price, qty: qty, options: [] };
+                    groups.push(currentGroup);
+                } else {
+                    let optName = line.replace(/^[L\-+•]\s*/, ""); 
+                    if (currentGroup) currentGroup.options.push(optName);
+                    else {
+                        groups.push({ name: optName, price: "", qty: 1, options: [] });
+                        currentGroup = groups[0];
+                    }
+                }
+            });
+            return groups;
+        };
+        if (!orders.length) {
+            const emptyHtml = `<div class="text-center py-10" style="color: var(--color-text-muted);">ไม่พบประวัติการสั่งซื้อ</div>`;
+            if (container.innerHTML !== emptyHtml) container.innerHTML = emptyHtml;
+            return;
+        }
+        const newHtmlContent = orders.map((order) => {
+            const meta = getStatusMeta(order.status);
+            const items = parseItems(order.items);
+            const itemsHtml = items.map((item, i) => `
+                <div class="flex gap-3 mb-4 last:mb-0 items-start relative">
+                    <div class="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg font-bold text-sm" style="background: var(--color-base-warm); color: var(--color-text-muted);">${i + 1}</div>
+                    <div class="flex-grow min-w-0">
+                        <div class="flex justify-between items-start gap-2">
+                            <div class="font-display font-semibold text-[15px] leading-tight" style="color: var(--color-text-dark);">
+                                <span class="mr-1 text-sm" style="color: var(--color-primary);">${item.qty}x</span> ${escapeHtml(item.name)}
+                            </div>
+                            ${item.price ? `<div class="font-display font-bold text-sm whitespace-nowrap" style="color: var(--color-text-dark);">${item.price}</div>` : ''}
+                        </div>
+                        ${item.options.length > 0 ? `
+                            <div class="mt-1.5 ml-1 pl-3 space-y-1" style="border-left: 2px solid var(--color-border-soft);">
+                                ${item.options.map(opt => `
+                                    <div class="text-sm flex items-start gap-2" style="color: var(--color-text-muted);">
+                                        <span class="mt-1.5 w-1 h-1 rounded-full shrink-0" style="background: var(--color-text-muted);"></span>
+                                        <span>${escapeHtml(opt)}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+            return `
+                <div class="rounded-2xl shadow-sm overflow-hidden mb-5 transition-shadow" style="background: var(--color-base); border: 1px solid var(--color-border-soft);">
+                    <div class="px-5 py-3 flex justify-between items-center" style="border-bottom: 1px solid var(--color-border-soft); background: rgba(245, 240, 229, 0.3);">
+                        <div class="flex items-center gap-2">
+                            <span class="font-display font-bold text-lg" style="color: var(--color-text-dark);">#${order.shortId || (order.id ? order.id.slice(-4) : 'xxxx')}</span>
+                            <span class="text-xs pl-2" style="color: var(--color-text-muted); border-left: 1px solid var(--color-border-soft);">${order.time || '-'}</span>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1.5" style="${meta.color}">
+                            <i class="fa-solid ${meta.icon}"></i> ${meta.label}
+                        </span>
+                    </div>
+                    <div class="p-5">${itemsHtml}</div>
+                    <div class="px-5 py-3 flex justify-between items-center" style="background: var(--color-base-warm); border-top: 1px solid var(--color-border-soft);">
+                        <span class="text-sm" style="color: var(--color-text-muted);">ยอดสุทธิ</span>
+                        <span class="font-display text-xl font-bold" style="color: var(--color-text-dark);">${normalizeTotal(order.total)}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        if (container.innerHTML === newHtmlContent) return;
+        container.innerHTML = newHtmlContent;
+    };
+
+    window.copyToClipboard = function(text) { 
+        navigator.clipboard.writeText(text).then(() => { 
+            Swal.fire({ toast: true, position: 'top', icon: 'success', title: 'คัดลอกแล้ว', showConfirmButton: false, timer: 1000 }); 
+        }); 
+    };
+    
+    window.downloadQR = async function() {
+        const imgSrc = document.getElementById('qr-image').src;
+        if(!imgSrc) return;
+        Swal.fire({ title: 'กำลังบันทึกรูป...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        try {
+            const response = await fetch(imgSrc, { mode: 'cors', cache: 'no-cache' });
+            if (!response.ok) throw new Error('Network response was not ok');
+            const blob = await response.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = 'PromptPay-QR-' + new Date().getTime() + '.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(blobUrl);
+            Swal.close();
+            Swal.fire({ icon: 'success', title: 'บันทึกรูปสำเร็จ', toast: true, position: 'top', showConfirmButton: false, timer: 2000 });
+        } catch (e) {
+            console.error("Save failed:", e);
+            Swal.close();
+            Swal.fire({
+                icon: 'info', title: 'ไม่สามารถบันทึกไฟล์ได้',
+                html: 'ระบบความปลอดภัยของเครื่องป้องกันการดาวน์โหลด<br><b>กรุณา "แคปหน้าจอ" (Screenshot) เพื่อบันทึก QR Code ครับ</b>',
+                confirmButtonText: 'ตกลง', confirmButtonColor: '#2D5016'
+            });
+        }
+    };
+    
+    window.updateShopStatusUI = function() { 
+        const badge = document.getElementById('shop-status-badge'); 
+        if (window.isShopOpen()) { 
+            badge.classList.remove('hidden'); 
+            badge.style.background = 'var(--color-primary)';
+            badge.innerText = "เปิดร้าน"; 
+        } else { 
+            badge.classList.remove('hidden'); 
+            badge.style.background = 'var(--color-hot)';
+            badge.innerText = "ปิดร้าน"; 
+        } 
+    };
+</script>
+</body>
+</html>

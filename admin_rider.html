@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Rider Admin | หนุ่มดำเนิน</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Anuphan:wght@100..700&family=Mali:wght@500;600;700&display=swap');
+    :root{--base:#FBFAF6;--warm:#F5F0E5;--primary:#2D5016;--mint:#D4EBE0;--blue:#D6E9F5;--yellow:#F9F0D3;--text:#1F3A0F;--muted:#8B7355;--border:#E8E2D5;--hot:#C84B31}
+    body{font-family:'Anuphan',sans-serif;background:var(--base);color:var(--text)}.font-display{font-family:'Mali',sans-serif}.card{background:white;border:1px solid var(--border);box-shadow:0 8px 24px rgba(45,80,22,.06)}
+  </style>
+</head>
+<body class="p-4">
+  <div class="max-w-5xl mx-auto">
+    <h1 class="font-display text-2xl font-bold" style="color:var(--primary)">🛵 Rider Admin</h1>
+    <p class="text-sm mb-4" style="color:var(--muted)">เพิ่มไรเดอร์ ดูงาน และประกาศงานเข้ากลุ่ม LINE</p>
+
+    <div class="card rounded-3xl p-4 mb-4">
+      <label class="text-xs font-bold">Admin Password</label>
+      <input id="pass" type="password" class="w-full mt-1 rounded-2xl px-4 py-3" style="background:var(--warm);border:1px solid var(--border)" placeholder="รหัสหลังบ้าน">
+      <button onclick="loadAll()" class="mt-3 rounded-2xl px-5 py-3 text-white font-bold" style="background:var(--primary)">โหลดข้อมูล</button>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-4">
+      <div class="card rounded-3xl p-4">
+        <h2 class="font-display font-bold mb-3" style="color:var(--primary)">เพิ่ม/แก้ไขไรเดอร์</h2>
+        <input id="r-name" class="w-full mb-2 rounded-xl px-3 py-2" style="background:var(--warm);border:1px solid var(--border)" placeholder="ชื่อไรเดอร์">
+        <input id="r-phone" class="w-full mb-2 rounded-xl px-3 py-2" style="background:var(--warm);border:1px solid var(--border)" placeholder="เบอร์โทร">
+        <input id="r-pin" class="w-full mb-2 rounded-xl px-3 py-2" style="background:var(--warm);border:1px solid var(--border)" placeholder="PIN เช่น 4268">
+        <input id="r-note" class="w-full mb-3 rounded-xl px-3 py-2" style="background:var(--warm);border:1px solid var(--border)" placeholder="หมายเหตุ">
+        <button onclick="addRider()" class="w-full rounded-2xl py-3 text-white font-bold" style="background:var(--primary)">บันทึกไรเดอร์</button>
+      </div>
+      <div class="md:col-span-2 card rounded-3xl p-4">
+        <h2 class="font-display font-bold mb-3" style="color:var(--primary)">ไรเดอร์</h2>
+        <div id="rider-list" class="space-y-2 text-sm"></div>
+      </div>
+    </div>
+
+    <div class="card rounded-3xl p-4 mt-4">
+      <h2 class="font-display font-bold mb-3" style="color:var(--primary)">งานไรเดอร์ล่าสุด</h2>
+      <div id="job-list" class="space-y-3"></div>
+    </div>
+  </div>
+<script>
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwIix4qNyES7KRUxOzY0AL_AdYsJhMkzSN17oItBFrN1ITwEYrTCISntFZsnfUAVpQd/exec";
+  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const pass=()=>document.getElementById('pass').value.trim();
+  function api(p){ return fetch(WEB_APP_URL+'?'+new URLSearchParams(p)).then(r=>r.json()); }
+  async function addRider(){
+    const data = await api({action:'admin_rider_add', pass:pass(), name:val('r-name'), phone:val('r-phone'), pin:val('r-pin'), note:val('r-note')});
+    if(!data.ok) return Swal.fire({icon:'error',text:data.error||'ไม่สำเร็จ'});
+    Swal.fire({icon:'success',title:data.message||'บันทึกแล้ว',timer:1000,showConfirmButton:false}); loadAll();
+  }
+  const val=id=>document.getElementById(id).value.trim();
+  async function loadAll(){
+    const data = await api({action:'admin_rider_list', pass:pass()});
+    if(!data.ok) return Swal.fire({icon:'error',text:data.error||'โหลดไม่ได้'});
+    document.getElementById('rider-list').innerHTML = (data.riders||[]).map(r=>`<div class="rounded-2xl p-3" style="background:var(--warm)"><b>${esc(r.name)}</b> · ${esc(r.phone)}<br><span style="color:var(--muted)">วันนี้ ${esc(r.todayJobs)} รอบ / ${esc(r.todayEarning)} บาท · งานค้าง ${esc(r.currentJobId||'-')}</span></div>`).join('') || 'ยังไม่มีไรเดอร์';
+    document.getElementById('job-list').innerHTML = (data.jobs||[]).map(j=>`<div class="rounded-2xl p-3" style="background:var(--warm)"><div class="flex justify-between gap-3"><b>${esc(j.jobId)}</b><span>${esc(j.status)}</span></div><div class="text-sm" style="color:var(--muted)">${esc(j.orderId)} · ${esc(j.distanceKm)} กม. · ค่ารอบ ${esc(j.riderPay)} บาท · ${esc(j.assignedRiderName||'ยังไม่มีคนรับ')}</div><div class="mt-2 flex gap-2"><button onclick="broadcastJob('${esc(j.jobId)}')" class="rounded-xl px-3 py-2 text-xs text-white" style="background:var(--primary)">ประกาศเข้ากลุ่ม</button></div></div>`).join('') || 'ยังไม่มีงาน';
+  }
+  async function broadcastJob(jobId){
+    const data = await api({action:'admin_rider_broadcast_job', pass:pass(), jobId});
+    if(!data.ok) return Swal.fire({icon:'error',text:data.error||'ประกาศไม่ได้'});
+    Swal.fire({icon:'success',title:'ประกาศงานแล้ว'});
+  }
+</script>
+</body>
+</html>
