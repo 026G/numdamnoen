@@ -1699,12 +1699,78 @@
             return cleanVal ? `${cleanVal} บาท` : "-";
         };
         const getStatusMeta = (statusTextRaw) => {
-            const s = String(statusTextRaw || "รอร้านรับยอด");
-            if (s.includes("ปรุง") || s.includes("ทำ")) return { color: "background:#DBEAFE;color:#1E40AF;border:1px solid #93C5FD", icon: "fa-fire-burner", label: "กำลังปรุง" };
-            if (s.includes("ส่ง") || s.includes("ไรเดอร์")) return { color: "background:#F3E8FF;color:#6B21A8;border:1px solid #C4B5FD", icon: "fa-motorcycle", label: "กำลังส่ง" };
-            if (s.includes("สำเร็จ") || s.includes("เสร็จ")) return { color: "background:#D4EBE0;color:#2D5016;border:1px solid #B8DCC8", icon: "fa-check-circle", label: "สำเร็จ" };
-            if (s.includes("ยกเลิก")) return { color: "background:#FEE2E2;color:#C84B31;border:1px solid #FECACA", icon: "fa-times-circle", label: "ยกเลิก" };
-            return { color: "background:#FEF3C7;color:#92400E;border:1px solid #FDE68A", icon: "fa-hourglass-half", label: "รอรับยอด" };
+            const s = String(statusTextRaw || "รอร้านรับยอด").trim().toUpperCase();
+        
+            // ✅ สำคัญ: เช็กสถานะจบงานก่อนคำว่า "ส่ง"
+            if (
+                s.includes("DELIVERED") ||
+                s.includes("สำเร็จ") ||
+                s.includes("เสร็จ") ||
+                s.includes("ส่งแล้ว") ||
+                s.includes("ส่งเรียบร้อย")
+            ) {
+                return {
+                    color: "background:#D4EBE0;color:#2D5016;border:1px solid #B8DCC8",
+                    icon: "fa-check-circle",
+                    label: "สำเร็จ"
+                };
+            }
+        
+            if (
+                s.includes("CANCEL") ||
+                s.includes("ยกเลิก")
+            ) {
+                return {
+                    color: "background:#FEE2E2;color:#C84B31;border:1px solid #FECACA",
+                    icon: "fa-times-circle",
+                    label: "ยกเลิก"
+                };
+            }
+        
+            if (
+                s.includes("ISSUE") ||
+                s.includes("ปัญหา") ||
+                s.includes("แจ้งปัญหา")
+            ) {
+                return {
+                    color: "background:#FEF3C7;color:#92400E;border:1px solid #FDE68A",
+                    icon: "fa-triangle-exclamation",
+                    label: "มีปัญหา"
+                };
+            }
+        
+            if (
+                s.includes("PICKED_UP") ||
+                s.includes("ASSIGNED") ||
+                s.includes("กำลังส่ง") ||
+                s.includes("รับของแล้ว") ||
+                s.includes("ไรเดอร์") ||
+                s.includes("ส่ง")
+            ) {
+                return {
+                    color: "background:#F3E8FF;color:#6B21A8;border:1px solid #C4B5FD",
+                    icon: "fa-motorcycle",
+                    label: "กำลังส่ง"
+                };
+            }
+        
+            if (
+                s.includes("PREPARING") ||
+                s.includes("ปรุง") ||
+                s.includes("ทำ")
+            ) {
+                return {
+                    color: "background:#DBEAFE;color:#1E40AF;border:1px solid #93C5FD",
+                    icon: "fa-fire-burner",
+                    label: "กำลังปรุง"
+                };
+            }
+        
+            return {
+                color: "background:#FEF3C7;color:#92400E;border:1px solid #FDE68A",
+                icon: "fa-hourglass-half",
+                label: "รอรับยอด"
+            };
         };
         const parseItems = (rawText) => {
             if (!rawText) return [];
