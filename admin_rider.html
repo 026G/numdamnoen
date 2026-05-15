@@ -78,6 +78,9 @@
       <button onclick="doUnlock()" class="btn w-full mt-4 rounded-2xl py-4 font-bold text-white text-lg" style="background:var(--primary)">
         เข้าใช้งาน
       </button>
+      <button onclick="diagnoseConnection()" class="btn w-full mt-2 rounded-2xl py-2.5 font-bold text-xs" style="background:var(--warm);color:var(--muted)">
+        <i class="fa-solid fa-stethoscope mr-1"></i>ทดสอบการเชื่อมต่อ
+      </button>
       <div id="lock-msg" class="text-xs mt-3 text-center" style="color:var(--hot)"></div>
     </div>
     <div class="mt-auto text-center text-[11px] pb-6" style="color:var(--muted)">
@@ -339,25 +342,61 @@ function vibrate(ms=30){ if(settings.vibrate && navigator.vibrate) navigator.vib
 function saveSetting(key,val){ settings[key] = val; localStorage.setItem(LS_SETTINGS, JSON.stringify(settings)); }
 
 /* ============================================================
-   API — ใช้ POST (text/plain) เพื่อกัน CORS preflight + ไม่ติดรหัสใน URL
+   API — ลองทั้ง GET และ POST เพื่อให้แน่ใจว่าเข้าได้ทุกกรณี
+   GET: ส่ง pass ใน query string (เหมือนหน้า admin เดิมที่ใช้งานได้อยู่)
+   POST: เป็น fallback ถ้า GET ล้มเหลว
    ============================================================ */
+const DEBUG = false; // เปลี่ยนเป็น true เพื่อดู log ใน console
+
 async function api(payload, {timeout=20000}={}){
-  const controller = new AbortController();
-  const timer = setTimeout(()=>controller.abort(), timeout);
-  try{
-    const body = JSON.stringify({...payload, pass: ADMIN_PASS});
-    const res = await fetch(WEB_APP_URL, {
-      method: 'POST',
-      // ใช้ text/plain เพื่อเลี่ยง CORS preflight ของ Apps Script
-      headers: {'Content-Type': 'text/plain;charset=utf-8'},
-      body,
-      cache: 'no-store',
-      redirect: 'follow',
-      signal: controller.signal
+  const fullPayload = {...payload, pass: ADMIN_PASS};
+
+  // วิธีที่ 1: GET (ใช้ได้แน่นอน เพราะหน้า admin เดิมก็ใช้แบบนี้)
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(()=>controller.abort(), timeout);
+    const params = new URLSearchParams();
+    Object.entries(fullPayload).forEach(([k,v]) => {
+      if(v !== undefined && v !== null) params.append(k, String(v));
     });
+    params.append('_t', Date.now());
+    const url = WEB_APP_URL + '?' + params.toString();
+    if(DEBUG) console.log('[API GET]', payload.action, url.substring(0, 200));
+    const res = await fetch(url, { method: 'GET', cache: 'no-store', redirect: 'follow', signal: controller.signal });
+    clearTimeout(timer);
     const text = await res.text();
-    try{ return JSON.parse(text); }catch(e){ return {ok:false, error:'Server response not JSON: '+text.slice(0,180)}; }
-  } finally { clearTimeout(timer); }
+    if(DEBUG) console.log('[API GET response]', payload.action, res.status, text.substring(0, 300));
+    try {
+      const json = JSON.parse(text);
+      return json;
+    } catch(e) {
+      if(DEBUG) console.warn('[API GET] response not JSON, will try POST');
+      throw new Error('Non-JSON response: ' + text.substring(0, 100));
+    }
+  } catch(getErr) {
+    if(DEBUG) console.warn('[API GET failed]', getErr.message, 'trying POST...');
+
+    // วิธีที่ 2: POST text/plain (fallback)
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(()=>controller.abort(), timeout);
+      const res = await fetch(WEB_APP_URL, {
+        method: 'POST',
+        headers: {'Content-Type': 'text/plain;charset=utf-8'},
+        body: JSON.stringify(fullPayload),
+        cache: 'no-store',
+        redirect: 'follow',
+        signal: controller.signal
+      });
+      clearTimeout(timer);
+      const text = await res.text();
+      if(DEBUG) console.log('[API POST response]', payload.action, res.status, text.substring(0, 300));
+      try { return JSON.parse(text); }
+      catch(e) { return {ok:false, error:'Server ตอบกลับไม่ใช่ JSON: ' + text.substring(0, 180)}; }
+    } catch(postErr) {
+      return {ok:false, error:'เชื่อมต่อไม่ได้ทั้ง GET และ POST: ' + postErr.message};
+    }
+  }
 }
 
 /* ============================================================
@@ -386,23 +425,84 @@ function togglePass(){
 async function doUnlock(){
   const pass = $('lock-pass').value.trim();
   if(!pass) return ($('lock-msg').textContent = 'กรุณาใส่รหัส');
-  $('lock-msg').textContent = 'กำลังตรวจสอบ...';
+  $('lock-msg').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังตรวจสอบ...';
   ADMIN_PASS = pass;
-  const data = await api({action:'admin_rider_list'});
-  if(!data || !data.ok){
+  try {
+    const data = await api({action:'admin_rider_list'});
+    if(!data){
+      ADMIN_PASS = '';
+      return ($('lock-msg').textContent = 'ไม่มีข้อมูลตอบกลับจาก server');
+    }
+    if(!data.ok){
+      ADMIN_PASS = '';
+      const err = data.error || 'รหัสไม่ถูกต้อง';
+      // ถ้าเป็น error เรื่อง action ไม่รู้จัก = ยังไม่ได้ deploy Code.gs ใหม่
+      if(/unknown.*action/i.test(err) || /not\s*found/i.test(err)){
+        $('lock-msg').innerHTML = '⚠️ ยังไม่ได้ Deploy Code.gs เวอร์ชันใหม่<br><span style="font-size:10px">action: admin_rider_list ไม่ถูกรองรับใน Web App URL ปัจจุบัน</span>';
+      } else if(/non-json/i.test(err) || /<html/i.test(err) || /<!doctype/i.test(err)){
+        $('lock-msg').innerHTML = '⚠️ Web App URL ผิดหรือสิทธิ์ไม่ถูก<br><span style="font-size:10px">ตรวจ Deploy > New deployment > Who has access = Anyone</span>';
+      } else {
+        $('lock-msg').textContent = err;
+      }
+      return;
+    }
+    if($('lock-remember').checked){
+      localStorage.setItem(LS_PASS, btoa(unescape(encodeURIComponent(pass))));
+    } else {
+      localStorage.removeItem(LS_PASS);
+    }
+    cache = { riders: data.riders||[], jobs: data.jobs||[] };
+    lastSyncTs = Date.now();
+    showApp();
+    render();
+  } catch(e) {
     ADMIN_PASS = '';
-    return ($('lock-msg').textContent = data?.error || 'รหัสไม่ถูกต้องหรือเชื่อมต่อไม่ได้');
+    $('lock-msg').innerHTML = 'เชื่อมต่อไม่ได้: ' + (e.message || e) + '<br><span style="font-size:10px">กดปุ่ม "ทดสอบการเชื่อมต่อ" ด้านล่าง</span>';
   }
-  if($('lock-remember').checked){
-    // เก็บแบบ obfuscate เล็กน้อย (ไม่ใช่ encrypt จริง แต่กันคนเปิด devtools เร็วๆ)
-    localStorage.setItem(LS_PASS, btoa(unescape(encodeURIComponent(pass))));
-  } else {
-    localStorage.removeItem(LS_PASS);
+}
+
+async function diagnoseConnection(){
+  Swal.fire({title:'กำลังตรวจสอบ...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+  const results = [];
+
+  // Test 1: GET ping
+  try {
+    const url = WEB_APP_URL + '?action=rider_health&_t=' + Date.now();
+    const res = await fetch(url, {method:'GET', cache:'no-store', redirect:'follow'});
+    const text = await res.text();
+    let parsed = null;
+    try{ parsed = JSON.parse(text); }catch(e){}
+    results.push({test:'GET rider_health', ok: !!parsed?.ok, status: res.status, body: text.substring(0, 200)});
+  } catch(e) {
+    results.push({test:'GET rider_health', ok:false, error: e.message});
   }
-  cache = { riders: data.riders||[], jobs: data.jobs||[] };
-  lastSyncTs = Date.now();
-  showApp();
-  render();
+
+  // Test 2: GET admin_rider_list (ถ้ามีรหัสใส่)
+  const pwd = $('lock-pass').value.trim();
+  if(pwd){
+    try {
+      const url = WEB_APP_URL + '?action=admin_rider_list&pass=' + encodeURIComponent(pwd) + '&_t=' + Date.now();
+      const res = await fetch(url, {method:'GET', cache:'no-store', redirect:'follow'});
+      const text = await res.text();
+      let parsed = null;
+      try{ parsed = JSON.parse(text); }catch(e){}
+      results.push({test:'GET admin_rider_list', ok: !!parsed?.ok, status: res.status, body: text.substring(0, 200), err: parsed?.error});
+    } catch(e) {
+      results.push({test:'GET admin_rider_list', ok:false, error: e.message});
+    }
+  }
+
+  Swal.close();
+  const html = results.map(r=>`
+    <div style="text-align:left;padding:8px;border-radius:8px;background:${r.ok?'#d4edda':'#f8d7da'};margin-bottom:6px;font-size:11px">
+      <b>${r.ok?'✅':'❌'} ${r.test}</b><br>
+      ${r.status ? 'HTTP: ' + r.status + '<br>' : ''}
+      ${r.err ? 'Error: ' + r.err + '<br>' : ''}
+      ${r.error ? 'Exception: ' + r.error + '<br>' : ''}
+      ${r.body ? '<code style="word-break:break-all">' + (r.body||'').replace(/</g,'&lt;') + '</code>' : ''}
+    </div>
+  `).join('');
+  Swal.fire({title:'ผลตรวจสอบ',html:html||'no results',width:'95%',confirmButtonText:'ปิด',confirmButtonColor:'#2D5016'});
 }
 function lockNow(){
   ADMIN_PASS = '';
