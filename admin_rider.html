@@ -1,70 +1,805 @@
 <!doctype html>
 <html lang="th">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Rider Admin | หนุ่มดำเนิน</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Anuphan:wght@100..700&family=Mali:wght@500;600;700&display=swap');
-    :root{--base:#FBFAF6;--warm:#F5F0E5;--primary:#2D5016;--mint:#D4EBE0;--blue:#D6E9F5;--yellow:#F9F0D3;--text:#1F3A0F;--muted:#8B7355;--border:#E8E2D5;--hot:#C84B31}
-    body{font-family:'Anuphan',sans-serif;background:var(--base);color:var(--text)}.font-display{font-family:'Mali',sans-serif}.card{background:white;border:1px solid var(--border);box-shadow:0 8px 24px rgba(45,80,22,.06)}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<meta name="theme-color" content="#2D5016" />
+<title>หลังบ้านไรเดอร์ | หนุ่มดำเนิน</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛵</text></svg>" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;500;600;700&family=Mali:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap');
+  :root{
+    --base:#FBFAF6;--warm:#F5F0E5;--cream:#FFFBF0;
+    --primary:#2D5016;--primary-2:#3E6B1F;--light:#5B8C3C;
+    --mint:#D4EBE0;--blue:#D6E9F5;--yellow:#F9F0D3;--pink:#F5D5CD;--lilac:#E6DFF0;
+    --text:#1F3A0F;--muted:#8B7355;--border:#E8E2D5;
+    --hot:#C84B31;--ok:#16A34A;--warn:#D97706;--info:#2563EB;
+  }
+  *{-webkit-tap-highlight-color:transparent}
+  html,body{font-family:'Anuphan',sans-serif;background:var(--base);color:var(--text);overscroll-behavior-y:contain}
+  .font-display{font-family:'Mali',sans-serif}
+  .font-script{font-family:'Caveat',cursive}
+  .card{background:#fff;border:1px solid var(--border);box-shadow:0 6px 20px rgba(45,80,22,.05)}
+  .chip{display:inline-flex;align-items:center;gap:.25rem;padding:.18rem .55rem;border-radius:9999px;font-size:11px;font-weight:600;line-height:1.4}
+  .btn{transition:transform .15s,opacity .15s}
+  .btn:active{transform:scale(.97)}
+  .nav-btn{transition:.2s}
+  .nav-btn.active{color:var(--primary)}
+  .nav-btn.active .nav-icon{background:var(--mint);transform:translateY(-2px)}
+  .skeleton{background:linear-gradient(90deg,#f3eee4 25%,#ece5d2 50%,#f3eee4 75%);background-size:200% 100%;animation:sk 1.4s infinite}
+  @keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  .fade-in{animation:fi .25s ease-out}
+  @keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .pull{transition:transform .25s}
+  .num-mono{font-variant-numeric:tabular-nums}
+  /* hide native input number arrows */
+  input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  input[type=number]{-moz-appearance:textfield}
+  /* tab bar safe area */
+  .safe-bottom{padding-bottom:env(safe-area-inset-bottom,0)}
+  /* dot indicator */
+  .dot{width:6px;height:6px;border-radius:9999px;display:inline-block}
+  /* segmented */
+  .seg{background:var(--warm);border-radius:14px;padding:4px;display:inline-flex;gap:2px}
+  .seg button{padding:.4rem .8rem;border-radius:10px;font-size:12px;font-weight:600;color:var(--muted)}
+  .seg button.on{background:#fff;color:var(--primary);box-shadow:0 2px 6px rgba(45,80,22,.08)}
+  details>summary{list-style:none;cursor:pointer}
+  details>summary::-webkit-details-marker{display:none}
+</style>
 </head>
-<body class="p-4">
-  <div class="max-w-5xl mx-auto">
-    <h1 class="font-display text-2xl font-bold" style="color:var(--primary)">🛵 Rider Admin</h1>
-    <p class="text-sm mb-4" style="color:var(--muted)">เพิ่มไรเดอร์ ดูงาน และประกาศงานเข้ากลุ่ม LINE</p>
+<body class="pb-28">
 
-    <div class="card rounded-3xl p-4 mb-4">
-      <label class="text-xs font-bold">Admin Password</label>
-      <input id="pass" type="password" class="w-full mt-1 rounded-2xl px-4 py-3" style="background:var(--warm);border:1px solid var(--border)" placeholder="รหัสหลังบ้าน">
-      <button onclick="loadAll()" class="mt-3 rounded-2xl px-5 py-3 text-white font-bold" style="background:var(--primary)">โหลดข้อมูล</button>
+<!-- ============================================================ LOCK SCREEN -->
+<section id="lock" class="hidden fixed inset-0 z-50" style="background:var(--base)">
+  <div class="max-w-md mx-auto h-full flex flex-col px-6 pt-24">
+    <div class="text-center mb-8">
+      <div class="text-6xl mb-3">🛵</div>
+      <div class="font-script text-2xl" style="color:var(--light)">Numdamnoen</div>
+      <h1 class="font-display text-2xl font-bold" style="color:var(--primary)">หลังบ้านไรเดอร์</h1>
+      <p class="text-sm mt-1" style="color:var(--muted)">ใส่รหัสครั้งเดียว ใช้ได้ยาวจนกว่าจะออก</p>
     </div>
-
-    <div class="grid md:grid-cols-3 gap-4">
-      <div class="card rounded-3xl p-4">
-        <h2 class="font-display font-bold mb-3" style="color:var(--primary)">เพิ่ม/แก้ไขไรเดอร์</h2>
-        <input id="r-name" class="w-full mb-2 rounded-xl px-3 py-2" style="background:var(--warm);border:1px solid var(--border)" placeholder="ชื่อไรเดอร์">
-        <input id="r-phone" class="w-full mb-2 rounded-xl px-3 py-2" style="background:var(--warm);border:1px solid var(--border)" placeholder="เบอร์โทร">
-        <input id="r-pin" class="w-full mb-2 rounded-xl px-3 py-2" style="background:var(--warm);border:1px solid var(--border)" placeholder="PIN เช่น 4268">
-        <input id="r-note" class="w-full mb-3 rounded-xl px-3 py-2" style="background:var(--warm);border:1px solid var(--border)" placeholder="หมายเหตุ">
-        <button onclick="addRider()" class="w-full rounded-2xl py-3 text-white font-bold" style="background:var(--primary)">บันทึกไรเดอร์</button>
+    <div class="card rounded-3xl p-5">
+      <label class="text-xs font-bold" style="color:var(--muted)">รหัสหลังบ้าน</label>
+      <div class="relative mt-1">
+        <input id="lock-pass" type="password" class="w-full rounded-2xl px-4 py-4 text-lg outline-none num-mono"
+          style="background:var(--warm);border:1px solid var(--border)" placeholder="••••••••"
+          autocomplete="current-password" />
+        <button onclick="togglePass()" class="absolute right-3 top-1/2 -translate-y-1/2 text-lg" style="color:var(--muted)">
+          <i id="eye-icon" class="fa-regular fa-eye"></i>
+        </button>
       </div>
-      <div class="md:col-span-2 card rounded-3xl p-4">
-        <h2 class="font-display font-bold mb-3" style="color:var(--primary)">ไรเดอร์</h2>
-        <div id="rider-list" class="space-y-2 text-sm"></div>
-      </div>
+      <label class="flex items-center gap-2 mt-3 text-sm" style="color:var(--muted)">
+        <input id="lock-remember" type="checkbox" checked class="w-4 h-4 accent-current" style="accent-color:var(--primary)" />
+        จำรหัสบนเครื่องนี้ (ปลอดภัย ใช้เฉพาะมือถือของคุณเอง)
+      </label>
+      <button onclick="doUnlock()" class="btn w-full mt-4 rounded-2xl py-4 font-bold text-white text-lg" style="background:var(--primary)">
+        เข้าใช้งาน
+      </button>
+      <div id="lock-msg" class="text-xs mt-3 text-center" style="color:var(--hot)"></div>
     </div>
-
-    <div class="card rounded-3xl p-4 mt-4">
-      <h2 class="font-display font-bold mb-3" style="color:var(--primary)">งานไรเดอร์ล่าสุด</h2>
-      <div id="job-list" class="space-y-3"></div>
+    <div class="mt-auto text-center text-[11px] pb-6" style="color:var(--muted)">
+      v1.2 · Mobile-First Admin · เก็บรหัสไว้ในเครื่องด้วย localStorage เท่านั้น
     </div>
   </div>
+</section>
+
+<!-- ============================================================ APP -->
+<div id="app" class="hidden max-w-md mx-auto min-h-screen">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-40 px-4 py-3" style="background:rgba(251,250,246,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)">
+    <div class="flex items-center gap-3">
+      <div class="w-11 h-11 rounded-2xl flex items-center justify-center text-xl" style="background:var(--mint)">🛵</div>
+      <div class="flex-1 min-w-0">
+        <div class="font-script text-base leading-none" style="color:var(--light)">Numdamnoen Admin</div>
+        <h1 id="page-title" class="font-display font-bold text-lg leading-tight truncate" style="color:var(--primary)">แดชบอร์ด</h1>
+      </div>
+      <button id="btn-refresh" onclick="refreshAll(true)" class="btn w-10 h-10 rounded-xl flex items-center justify-center" style="background:#fff;border:1px solid var(--border);color:var(--primary)">
+        <i id="refresh-icon" class="fa-solid fa-rotate"></i>
+      </button>
+      <button onclick="lockNow()" class="btn w-10 h-10 rounded-xl flex items-center justify-center" style="background:#fff;border:1px solid var(--border);color:var(--muted)">
+        <i class="fa-solid fa-lock"></i>
+      </button>
+    </div>
+    <div id="last-sync" class="text-[10px] mt-1 text-right" style="color:var(--muted)">-</div>
+  </header>
+
+  <main class="px-4 pt-4">
+
+    <!-- =================== TAB: DASHBOARD =================== -->
+    <section data-tab="dash" class="tab-pane">
+
+      <!-- KPI row -->
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <div class="card rounded-3xl p-4">
+          <div class="text-xs" style="color:var(--muted)">งานเปิดรับ</div>
+          <div class="font-display text-3xl font-bold num-mono" id="kpi-open" style="color:var(--hot)">0</div>
+          <div class="text-[11px] mt-0.5" style="color:var(--muted)">ยังไม่มีคนรับ</div>
+        </div>
+        <div class="card rounded-3xl p-4">
+          <div class="text-xs" style="color:var(--muted)">งานวิ่งอยู่</div>
+          <div class="font-display text-3xl font-bold num-mono" id="kpi-active" style="color:var(--info)">0</div>
+          <div class="text-[11px] mt-0.5" style="color:var(--muted)">ASSIGNED + PICKED</div>
+        </div>
+        <div class="card rounded-3xl p-4">
+          <div class="text-xs" style="color:var(--muted)">ส่งสำเร็จวันนี้</div>
+          <div class="font-display text-3xl font-bold num-mono" id="kpi-done" style="color:var(--ok)">0</div>
+          <div class="text-[11px] mt-0.5" style="color:var(--muted)">DELIVERED</div>
+        </div>
+        <div class="card rounded-3xl p-4">
+          <div class="text-xs" style="color:var(--muted)">รายได้ไรเดอร์รวม</div>
+          <div class="font-display text-3xl font-bold num-mono" id="kpi-earn" style="color:var(--primary)">0</div>
+          <div class="text-[11px] mt-0.5" style="color:var(--muted)">บาทวันนี้</div>
+        </div>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="card rounded-3xl p-4 mb-4">
+        <div class="font-display font-bold mb-3" style="color:var(--primary)">ลัด</div>
+        <div class="grid grid-cols-3 gap-2">
+          <button onclick="switchTab('jobs')" class="btn rounded-2xl py-3 flex flex-col items-center gap-1" style="background:var(--yellow)">
+            <i class="fa-solid fa-bullhorn text-xl" style="color:var(--hot)"></i>
+            <span class="text-xs font-bold">ประกาศงาน</span>
+          </button>
+          <button onclick="openCreateJob()" class="btn rounded-2xl py-3 flex flex-col items-center gap-1" style="background:var(--blue)">
+            <i class="fa-solid fa-plus text-xl" style="color:var(--info)"></i>
+            <span class="text-xs font-bold">สร้างงาน</span>
+          </button>
+          <button onclick="switchTab('riders')" class="btn rounded-2xl py-3 flex flex-col items-center gap-1" style="background:var(--mint)">
+            <i class="fa-solid fa-user-plus text-xl" style="color:var(--primary)"></i>
+            <span class="text-xs font-bold">เพิ่มไรเดอร์</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- งานเปิดรับด่วน -->
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="font-display text-lg font-bold" style="color:var(--primary)">งานเปิดรับ</h2>
+        <button onclick="switchTab('jobs')" class="text-xs font-bold" style="color:var(--info)">ดูทั้งหมด <i class="fa-solid fa-angle-right"></i></button>
+      </div>
+      <div id="dash-open-jobs" class="space-y-3"></div>
+    </section>
+
+    <!-- =================== TAB: JOBS =================== -->
+    <section data-tab="jobs" class="tab-pane hidden">
+      <!-- ค้นหา -->
+      <div class="card rounded-3xl p-3 mb-3">
+        <div class="relative">
+          <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2" style="color:var(--muted)"></i>
+          <input id="job-search" oninput="renderJobs()" class="w-full rounded-2xl pl-11 pr-4 py-3 outline-none" style="background:var(--warm);border:1px solid var(--border)" placeholder="ค้นหา orderId / jobId / ชื่อลูกค้า / เบอร์" />
+        </div>
+        <div class="seg mt-3 w-full overflow-x-auto" style="display:flex">
+          <button class="on" data-fil="ALL" onclick="setJobFilter('ALL')">ทั้งหมด</button>
+          <button data-fil="OPEN" onclick="setJobFilter('OPEN')">เปิดรับ</button>
+          <button data-fil="ASSIGNED" onclick="setJobFilter('ASSIGNED')">รับแล้ว</button>
+          <button data-fil="PICKED_UP" onclick="setJobFilter('PICKED_UP')">รับของ</button>
+          <button data-fil="DELIVERED" onclick="setJobFilter('DELIVERED')">ส่งแล้ว</button>
+          <button data-fil="ISSUE" onclick="setJobFilter('ISSUE')">ปัญหา</button>
+        </div>
+      </div>
+      <div id="job-list" class="space-y-3"></div>
+    </section>
+
+    <!-- =================== TAB: RIDERS =================== -->
+    <section data-tab="riders" class="tab-pane hidden">
+      <!-- เพิ่มไรเดอร์ -->
+      <details class="card rounded-3xl p-4 mb-3" id="add-rider-card">
+        <summary class="flex items-center justify-between">
+          <div class="flex items-center gap-2 font-display font-bold" style="color:var(--primary)">
+            <i class="fa-solid fa-user-plus"></i> เพิ่มไรเดอร์ใหม่
+          </div>
+          <i class="fa-solid fa-chevron-down text-xs" style="color:var(--muted)"></i>
+        </summary>
+        <div class="mt-3 space-y-2">
+          <input id="r-name" class="w-full rounded-xl px-3 py-2.5" style="background:var(--warm);border:1px solid var(--border)" placeholder="ชื่อไรเดอร์ เช่น พี่ตู่" />
+          <input id="r-phone" inputmode="numeric" maxlength="10" class="w-full rounded-xl px-3 py-2.5 num-mono" style="background:var(--warm);border:1px solid var(--border)" placeholder="เบอร์โทร 08xxxxxxxx" />
+          <div class="grid grid-cols-2 gap-2">
+            <input id="r-pin" inputmode="numeric" maxlength="6" type="password" class="w-full rounded-xl px-3 py-2.5 num-mono" style="background:var(--warm);border:1px solid var(--border)" placeholder="PIN 4 หลัก" />
+            <input id="r-max" type="number" min="1" max="50" value="5" class="w-full rounded-xl px-3 py-2.5 num-mono" style="background:var(--warm);border:1px solid var(--border)" placeholder="ระยะสูงสุด กม." />
+          </div>
+          <input id="r-note" class="w-full rounded-xl px-3 py-2.5" style="background:var(--warm);border:1px solid var(--border)" placeholder="หมายเหตุ (เช่น มอเตอร์ไซค์/รถยนต์)" />
+          <button onclick="addRider()" class="btn w-full rounded-2xl py-3 font-bold text-white" style="background:var(--primary)">บันทึกไรเดอร์</button>
+          <div class="text-[11px]" style="color:var(--muted)">เบอร์ซ้ำจะอัปเดตข้อมูลไรเดอร์เดิม</div>
+        </div>
+      </details>
+
+      <!-- รายการไรเดอร์ -->
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="font-display text-lg font-bold" style="color:var(--primary)">ไรเดอร์ทั้งหมด</h2>
+        <span id="rider-count" class="text-xs" style="color:var(--muted)">-</span>
+      </div>
+      <div id="rider-list" class="space-y-3"></div>
+    </section>
+
+    <!-- =================== TAB: SETTINGS =================== -->
+    <section data-tab="settings" class="tab-pane hidden">
+      <div class="card rounded-3xl p-4 mb-3">
+        <div class="font-display font-bold mb-2" style="color:var(--primary)">การตั้งค่าหน้าจอ</div>
+        <label class="flex items-center justify-between py-2">
+          <span class="text-sm">รีเฟรชอัตโนมัติทุก 30 วิ</span>
+          <input id="set-autorefresh" type="checkbox" checked class="w-5 h-5" style="accent-color:var(--primary)" onchange="saveSetting('autoRefresh', this.checked); setupAutoRefresh()" />
+        </label>
+        <label class="flex items-center justify-between py-2">
+          <span class="text-sm">เสียงแจ้งงานใหม่</span>
+          <input id="set-sound" type="checkbox" class="w-5 h-5" style="accent-color:var(--primary)" onchange="saveSetting('sound', this.checked)" />
+        </label>
+        <label class="flex items-center justify-between py-2">
+          <span class="text-sm">การสั่น (Vibrate)</span>
+          <input id="set-vibrate" type="checkbox" checked class="w-5 h-5" style="accent-color:var(--primary)" onchange="saveSetting('vibrate', this.checked)" />
+        </label>
+      </div>
+
+      <div class="card rounded-3xl p-4 mb-3">
+        <div class="font-display font-bold mb-2" style="color:var(--primary)">เครื่องมือ</div>
+        <button onclick="openCreateJob()" class="btn w-full text-left rounded-xl px-3 py-3 mb-2 flex items-center gap-3" style="background:var(--warm)">
+          <i class="fa-solid fa-plus" style="color:var(--info)"></i>
+          <div class="flex-1">
+            <div class="text-sm font-bold">สร้างงานไรเดอร์จาก Order ID</div>
+            <div class="text-[11px]" style="color:var(--muted)">ใช้กรณีงานไม่ถูกสร้างอัตโนมัติ</div>
+          </div>
+        </button>
+        <button onclick="testBroadcast()" class="btn w-full text-left rounded-xl px-3 py-3 mb-2 flex items-center gap-3" style="background:var(--warm)">
+          <i class="fa-solid fa-vial" style="color:var(--warn)"></i>
+          <div class="flex-1">
+            <div class="text-sm font-bold">เช็คสถานะระบบ</div>
+            <div class="text-[11px]" style="color:var(--muted)">Ping Apps Script</div>
+          </div>
+        </button>
+      </div>
+
+      <div class="card rounded-3xl p-4 mb-3">
+        <div class="font-display font-bold mb-2" style="color:var(--primary)">ความปลอดภัย</div>
+        <button onclick="lockNow()" class="btn w-full rounded-xl py-3 font-bold" style="background:var(--pink);color:var(--hot)">
+          <i class="fa-solid fa-lock mr-2"></i>ล็อกหน้าจอตอนนี้
+        </button>
+        <button onclick="forgetMe()" class="btn w-full rounded-xl py-3 font-bold mt-2" style="background:var(--warm);color:var(--text)">
+          <i class="fa-solid fa-eraser mr-2"></i>ลืมรหัสบนเครื่องนี้
+        </button>
+      </div>
+
+      <div class="text-center text-[11px] py-3" style="color:var(--muted)">
+        Admin Panel v1.2 · หนุ่มดำเนิน
+      </div>
+    </section>
+  </main>
+
+  <!-- BOTTOM NAV -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 safe-bottom" style="background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-top:1px solid var(--border)">
+    <div class="max-w-md mx-auto grid grid-cols-4">
+      <button class="nav-btn active py-2.5" data-tab="dash" onclick="switchTab('dash')" style="color:var(--muted)">
+        <div class="nav-icon mx-auto w-10 h-9 rounded-xl flex items-center justify-center transition"><i class="fa-solid fa-house"></i></div>
+        <div class="text-[11px] font-bold mt-0.5">แดชบอร์ด</div>
+      </button>
+      <button class="nav-btn py-2.5" data-tab="jobs" onclick="switchTab('jobs')" style="color:var(--muted)">
+        <div class="nav-icon mx-auto w-10 h-9 rounded-xl flex items-center justify-center transition relative">
+          <i class="fa-solid fa-clipboard-list"></i>
+          <span id="badge-open" class="hidden absolute -top-1 -right-1 chip num-mono" style="background:var(--hot);color:#fff;padding:1px 6px;font-size:10px">0</span>
+        </div>
+        <div class="text-[11px] font-bold mt-0.5">งาน</div>
+      </button>
+      <button class="nav-btn py-2.5" data-tab="riders" onclick="switchTab('riders')" style="color:var(--muted)">
+        <div class="nav-icon mx-auto w-10 h-9 rounded-xl flex items-center justify-center transition"><i class="fa-solid fa-motorcycle"></i></div>
+        <div class="text-[11px] font-bold mt-0.5">ไรเดอร์</div>
+      </button>
+      <button class="nav-btn py-2.5" data-tab="settings" onclick="switchTab('settings')" style="color:var(--muted)">
+        <div class="nav-icon mx-auto w-10 h-9 rounded-xl flex items-center justify-center transition"><i class="fa-solid fa-gear"></i></div>
+        <div class="text-[11px] font-bold mt-0.5">ตั้งค่า</div>
+      </button>
+    </div>
+  </nav>
+</div>
+
 <script>
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwIix4qNyES7KRUxOzY0AL_AdYsJhMkzSN17oItBFrN1ITwEYrTCISntFZsnfUAVpQd/exec";
-  const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const pass=()=>document.getElementById('pass').value.trim();
-  function api(p){ return fetch(WEB_APP_URL+'?'+new URLSearchParams(p)).then(r=>r.json()); }
-  async function addRider(){
-    const data = await api({action:'admin_rider_add', pass:pass(), name:val('r-name'), phone:val('r-phone'), pin:val('r-pin'), note:val('r-note')});
-    if(!data.ok) return Swal.fire({icon:'error',text:data.error||'ไม่สำเร็จ'});
-    Swal.fire({icon:'success',title:data.message||'บันทึกแล้ว',timer:1000,showConfirmButton:false}); loadAll();
+/* ============================================================
+   CONFIG — อัปเดต URL หลัง Deploy Apps Script ใหม่
+   ============================================================ */
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzYBSnGMUXEXdHyJ21L98xxkGbCNVlcqRBvtJti38vr95txAcemZ4wJVeO70JIttX2RHQ/exec";
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const LS_PASS = 'nd_admin_pass_v1';
+const LS_SETTINGS = 'nd_admin_settings_v1';
+let ADMIN_PASS = '';
+let currentTab = 'dash';
+let jobFilter = 'ALL';
+let cache = { riders: [], jobs: [] };
+let autoTimer = null;
+let lastSyncTs = 0;
+let isFetching = false;
+const settings = Object.assign({autoRefresh:true, sound:false, vibrate:true}, JSON.parse(localStorage.getItem(LS_SETTINGS) || '{}'));
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = (n,d=0) => Number(n||0).toLocaleString('th-TH',{minimumFractionDigits:d,maximumFractionDigits:d});
+function timeAgo(ts){
+  if(!ts) return '-';
+  const d = new Date(ts);
+  if(isNaN(d)) return String(ts);
+  const diff = (Date.now() - d.getTime())/1000;
+  if(diff < 60) return 'เมื่อสักครู่';
+  if(diff < 3600) return Math.floor(diff/60)+' นาทีก่อน';
+  if(diff < 86400) return Math.floor(diff/3600)+' ชม.ก่อน';
+  return d.toLocaleDateString('th-TH',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+}
+function isToday(ts){
+  if(!ts) return false;
+  const d = new Date(ts);
+  if(isNaN(d)) return false;
+  const now = new Date();
+  return d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth() && d.getDate()===now.getDate();
+}
+function vibrate(ms=30){ if(settings.vibrate && navigator.vibrate) navigator.vibrate(ms); }
+function saveSetting(key,val){ settings[key] = val; localStorage.setItem(LS_SETTINGS, JSON.stringify(settings)); }
+
+/* ============================================================
+   API — ใช้ POST (text/plain) เพื่อกัน CORS preflight + ไม่ติดรหัสใน URL
+   ============================================================ */
+async function api(payload, {timeout=20000}={}){
+  const controller = new AbortController();
+  const timer = setTimeout(()=>controller.abort(), timeout);
+  try{
+    const body = JSON.stringify({...payload, pass: ADMIN_PASS});
+    const res = await fetch(WEB_APP_URL, {
+      method: 'POST',
+      // ใช้ text/plain เพื่อเลี่ยง CORS preflight ของ Apps Script
+      headers: {'Content-Type': 'text/plain;charset=utf-8'},
+      body,
+      cache: 'no-store',
+      redirect: 'follow',
+      signal: controller.signal
+    });
+    const text = await res.text();
+    try{ return JSON.parse(text); }catch(e){ return {ok:false, error:'Server response not JSON: '+text.slice(0,180)}; }
+  } finally { clearTimeout(timer); }
+}
+
+/* ============================================================
+   LOCK SCREEN
+   ============================================================ */
+function showLock(msg=''){
+  $('lock').classList.remove('hidden');
+  $('app').classList.add('hidden');
+  $('lock-msg').textContent = msg;
+  $('lock-pass').value = '';
+  setTimeout(()=>$('lock-pass').focus(), 200);
+  if(autoTimer){ clearInterval(autoTimer); autoTimer=null; }
+}
+function showApp(){
+  $('lock').classList.add('hidden');
+  $('app').classList.remove('hidden');
+  setupAutoRefresh();
+  refreshAll(false);
+}
+function togglePass(){
+  const inp = $('lock-pass');
+  const icon = $('eye-icon');
+  if(inp.type === 'password'){ inp.type='text'; icon.className='fa-regular fa-eye-slash'; }
+  else { inp.type='password'; icon.className='fa-regular fa-eye'; }
+}
+async function doUnlock(){
+  const pass = $('lock-pass').value.trim();
+  if(!pass) return ($('lock-msg').textContent = 'กรุณาใส่รหัส');
+  $('lock-msg').textContent = 'กำลังตรวจสอบ...';
+  ADMIN_PASS = pass;
+  const data = await api({action:'admin_rider_list'});
+  if(!data || !data.ok){
+    ADMIN_PASS = '';
+    return ($('lock-msg').textContent = data?.error || 'รหัสไม่ถูกต้องหรือเชื่อมต่อไม่ได้');
   }
-  const val=id=>document.getElementById(id).value.trim();
-  async function loadAll(){
-    const data = await api({action:'admin_rider_list', pass:pass()});
-    if(!data.ok) return Swal.fire({icon:'error',text:data.error||'โหลดไม่ได้'});
-    document.getElementById('rider-list').innerHTML = (data.riders||[]).map(r=>`<div class="rounded-2xl p-3" style="background:var(--warm)"><b>${esc(r.name)}</b> · ${esc(r.phone)}<br><span style="color:var(--muted)">วันนี้ ${esc(r.todayJobs)} รอบ / ${esc(r.todayEarning)} บาท · งานค้าง ${esc(r.currentJobId||'-')}</span></div>`).join('') || 'ยังไม่มีไรเดอร์';
-    document.getElementById('job-list').innerHTML = (data.jobs||[]).map(j=>`<div class="rounded-2xl p-3" style="background:var(--warm)"><div class="flex justify-between gap-3"><b>${esc(j.jobId)}</b><span>${esc(j.status)}</span></div><div class="text-sm" style="color:var(--muted)">${esc(j.orderId)} · ${esc(j.distanceKm)} กม. · ค่ารอบ ${esc(j.riderPay)} บาท · ${esc(j.assignedRiderName||'ยังไม่มีคนรับ')}</div><div class="mt-2 flex gap-2"><button onclick="broadcastJob('${esc(j.jobId)}')" class="rounded-xl px-3 py-2 text-xs text-white" style="background:var(--primary)">ประกาศเข้ากลุ่ม</button></div></div>`).join('') || 'ยังไม่มีงาน';
+  if($('lock-remember').checked){
+    // เก็บแบบ obfuscate เล็กน้อย (ไม่ใช่ encrypt จริง แต่กันคนเปิด devtools เร็วๆ)
+    localStorage.setItem(LS_PASS, btoa(unescape(encodeURIComponent(pass))));
+  } else {
+    localStorage.removeItem(LS_PASS);
   }
-  async function broadcastJob(jobId){
-    const data = await api({action:'admin_rider_broadcast_job', pass:pass(), jobId});
-    if(!data.ok) return Swal.fire({icon:'error',text:data.error||'ประกาศไม่ได้'});
-    Swal.fire({icon:'success',title:'ประกาศงานแล้ว'});
+  cache = { riders: data.riders||[], jobs: data.jobs||[] };
+  lastSyncTs = Date.now();
+  showApp();
+  render();
+}
+function lockNow(){
+  ADMIN_PASS = '';
+  // ไม่ลบ LS_PASS — แค่ล็อกหน้าจอ ครั้งต่อไปจะ auto-fill
+  const saved = localStorage.getItem(LS_PASS);
+  showLock('');
+  if(saved){
+    try{ $('lock-pass').value = decodeURIComponent(escape(atob(saved))); }catch(e){}
   }
+}
+function forgetMe(){
+  Swal.fire({icon:'warning',title:'ลืมรหัสบนเครื่องนี้?',text:'จะต้องพิมพ์รหัสใหม่ทุกครั้งที่เปิด',showCancelButton:true,confirmButtonText:'ลืมเลย',cancelButtonText:'ไม่'}).then(r=>{
+    if(r.isConfirmed){
+      localStorage.removeItem(LS_PASS);
+      ADMIN_PASS = '';
+      showLock('ลืมรหัสบนเครื่องเรียบร้อย');
+    }
+  });
+}
+
+/* ============================================================
+   AUTO REFRESH
+   ============================================================ */
+function setupAutoRefresh(){
+  if(autoTimer){ clearInterval(autoTimer); autoTimer=null; }
+  if(!ADMIN_PASS) return;
+  if(!settings.autoRefresh) return;
+  autoTimer = setInterval(()=>{
+    if(document.visibilityState === 'visible') refreshAll(true);
+  }, 30000);
+}
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState === 'visible' && ADMIN_PASS && Date.now() - lastSyncTs > 25000){
+    refreshAll(true);
+  }
+});
+
+async function refreshAll(silent=false){
+  if(!ADMIN_PASS) return;
+  if(isFetching) return;
+  isFetching = true;
+  const icon = $('refresh-icon');
+  if(icon) icon.classList.add('fa-spin');
+  if(!silent) Swal.fire({title:'กำลังโหลด...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+  try{
+    const data = await api({action:'admin_rider_list'});
+    if(!silent) Swal.close();
+    if(!data.ok){
+      if(/password/i.test(data.error||'')) { lockNow(); $('lock-msg').textContent = 'รหัสไม่ถูกต้องแล้ว กรุณาเข้าใหม่'; return; }
+      if(!silent) Swal.fire({icon:'error',text:data.error||'โหลดไม่ได้'});
+      return;
+    }
+    const prevOpenCount = cache.jobs.filter(j=>j.status==='OPEN').length;
+    cache = { riders: data.riders||[], jobs: data.jobs||[] };
+    const newOpenCount = cache.jobs.filter(j=>j.status==='OPEN').length;
+    if(silent && newOpenCount > prevOpenCount){
+      vibrate(80);
+      if(settings.sound) try{ new Audio('data:audio/wav;base64,UklGRh4HAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=').play(); }catch(e){}
+    }
+    lastSyncTs = Date.now();
+    render();
+  }catch(e){
+    if(!silent) { Swal.close(); Swal.fire({icon:'error',text:e.name==='AbortError'?'หมดเวลารอเซิร์ฟเวอร์':e.message}); }
+    else console.warn('silent refresh failed', e);
+  }finally{
+    isFetching = false;
+    if(icon) icon.classList.remove('fa-spin');
+  }
+}
+
+/* ============================================================
+   TABS
+   ============================================================ */
+const TAB_TITLES = { dash:'แดชบอร์ด', jobs:'งานไรเดอร์', riders:'ไรเดอร์', settings:'ตั้งค่า' };
+function switchTab(t){
+  currentTab = t;
+  document.querySelectorAll('[data-tab]').forEach(el=>{
+    if(el.tagName === 'BUTTON' && el.classList.contains('nav-btn')){
+      el.classList.toggle('active', el.dataset.tab === t);
+    } else if(el.classList.contains('tab-pane')){
+      el.classList.toggle('hidden', el.dataset.tab !== t);
+      if(el.dataset.tab === t) el.classList.add('fade-in');
+    }
+  });
+  $('page-title').textContent = TAB_TITLES[t] || '-';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function render(){
+  $('last-sync').textContent = 'อัปเดต ' + new Date(lastSyncTs).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  renderKpis();
+  renderDashOpen();
+  renderJobs();
+  renderRiders();
+}
+
+function renderKpis(){
+  const jobs = cache.jobs || [];
+  const open = jobs.filter(j=>j.status==='OPEN');
+  const active = jobs.filter(j=>['ASSIGNED','PICKED_UP'].includes(j.status));
+  const doneToday = jobs.filter(j=>j.status==='DELIVERED' && isToday(j.deliveredAt));
+  const earnToday = doneToday.reduce((s,j)=>s + Number(j.riderPay||0), 0);
+  $('kpi-open').textContent = open.length;
+  $('kpi-active').textContent = active.length;
+  $('kpi-done').textContent = doneToday.length;
+  $('kpi-earn').textContent = fmt(earnToday);
+  // badge
+  const badge = $('badge-open');
+  if(open.length > 0){ badge.classList.remove('hidden'); badge.textContent = open.length; }
+  else badge.classList.add('hidden');
+}
+
+function statusChip(s){
+  const map = {
+    'OPEN':       {bg:'var(--yellow)', fg:'var(--warn)', label:'รอรับงาน', ico:'bullhorn'},
+    'ASSIGNED':   {bg:'var(--blue)',   fg:'var(--info)', label:'รับงานแล้ว', ico:'user-check'},
+    'PICKED_UP':  {bg:'var(--lilac)',  fg:'#6E47B5',     label:'รับของแล้ว', ico:'box'},
+    'DELIVERED':  {bg:'var(--mint)',   fg:'var(--ok)',   label:'ส่งสำเร็จ', ico:'circle-check'},
+    'ISSUE':      {bg:'var(--pink)',   fg:'var(--hot)',  label:'มีปัญหา', ico:'triangle-exclamation'},
+    'CANCELLED_BY_RIDER':{bg:'var(--pink)',fg:'var(--hot)',label:'ยกเลิก',ico:'ban'}
+  };
+  const c = map[s] || {bg:'var(--warm)', fg:'var(--muted)', label:s||'-', ico:'circle'};
+  return `<span class="chip" style="background:${c.bg};color:${c.fg}"><i class="fa-solid fa-${c.ico}"></i>${esc(c.label)}</span>`;
+}
+
+function jobCard(j, {compact=false}={}){
+  const items = j.items ? `<div class="mt-2 rounded-xl p-2 text-xs whitespace-pre-wrap" style="background:var(--warm);color:var(--text)">${esc(j.items)}</div>` : '';
+  const customer = j.customerName ? `
+    <div class="mt-2 text-sm">
+      <i class="fa-solid fa-user text-xs mr-1" style="color:var(--muted)"></i><b>${esc(j.customerName)}</b>
+      ${j.customerPhone ? `· <a class="underline" style="color:var(--info)" href="tel:${esc(j.customerPhone)}">${esc(j.customerPhone)}</a>` : ''}
+    </div>
+    ${j.customerAddress ? `<div class="text-xs mt-1" style="color:var(--muted)"><i class="fa-solid fa-location-dot mr-1"></i>${esc(j.customerAddress)}</div>`:''}
+  ` : '';
+  const rider = j.assignedRiderName ? `<div class="text-xs mt-1" style="color:var(--primary)"><i class="fa-solid fa-motorcycle mr-1"></i>${esc(j.assignedRiderName)}</div>` : '';
+  const canBroadcast = j.status === 'OPEN';
+  return `<div class="card rounded-3xl p-4 fade-in">
+    <div class="flex items-start justify-between gap-2">
+      <div class="min-w-0 flex-1">
+        <div class="flex items-center gap-2 flex-wrap">
+          ${statusChip(j.status)}
+          <span class="text-[11px]" style="color:var(--muted)">${esc(j.jobId)}</span>
+        </div>
+        <div class="text-xs mt-1" style="color:var(--muted)">${esc(j.orderId)} · ${timeAgo(j.createdAt)}</div>
+      </div>
+      <div class="text-right">
+        <div class="font-display text-2xl font-bold num-mono" style="color:var(--hot)">฿${fmt(j.riderPay)}</div>
+        <div class="text-[10px]" style="color:var(--muted)">${esc(j.distanceKm||'-')} กม.</div>
+      </div>
+    </div>
+    ${rider}
+    ${!compact ? customer : ''}
+    ${!compact ? items : ''}
+    <div class="mt-3 flex gap-2 flex-wrap">
+      ${canBroadcast ? `<button onclick="broadcastJob('${esc(j.jobId)}')" class="btn flex-1 rounded-xl py-2.5 text-xs font-bold text-white" style="background:var(--primary)"><i class="fa-solid fa-bullhorn mr-1"></i>ประกาศเข้ากลุ่ม</button>` : ''}
+      ${j.mapLink ? `<a href="${esc(j.mapLink)}" target="_blank" class="btn rounded-xl px-3 py-2.5 text-xs font-bold" style="background:var(--blue);color:#113566"><i class="fa-solid fa-map-location-dot mr-1"></i>แผนที่</a>` : ''}
+      ${j.customerPhone ? `<a href="tel:${esc(j.customerPhone)}" class="btn rounded-xl px-3 py-2.5 text-xs font-bold" style="background:var(--mint);color:var(--primary)"><i class="fa-solid fa-phone mr-1"></i>โทร</a>` : ''}
+      <button onclick="showJobDetail('${esc(j.jobId)}')" class="btn rounded-xl px-3 py-2.5 text-xs font-bold" style="background:var(--warm);color:var(--text)"><i class="fa-solid fa-ellipsis"></i></button>
+    </div>
+  </div>`;
+}
+
+function renderDashOpen(){
+  const opens = (cache.jobs||[]).filter(j=>j.status==='OPEN').slice(0,3);
+  $('dash-open-jobs').innerHTML = opens.length
+    ? opens.map(j=>jobCard(j,{compact:false})).join('')
+    : `<div class="card rounded-3xl p-6 text-center" style="color:var(--muted)">
+        <div class="text-3xl mb-2">🎉</div>
+        <div class="text-sm">ไม่มีงานเปิดรับตอนนี้</div>
+       </div>`;
+}
+
+function setJobFilter(f){
+  jobFilter = f;
+  document.querySelectorAll('[data-fil]').forEach(el=>el.classList.toggle('on', el.dataset.fil===f));
+  renderJobs();
+}
+function renderJobs(){
+  const q = ($('job-search')?.value || '').trim().toLowerCase();
+  let list = cache.jobs || [];
+  if(jobFilter !== 'ALL') list = list.filter(j=>j.status===jobFilter);
+  if(q) list = list.filter(j=>{
+    return [j.jobId,j.orderId,j.customerName,j.customerPhone,j.assignedRiderName].some(v=>String(v||'').toLowerCase().includes(q));
+  });
+  $('job-list').innerHTML = list.length
+    ? list.map(j=>jobCard(j)).join('')
+    : `<div class="card rounded-3xl p-8 text-center" style="color:var(--muted)">ไม่พบงาน</div>`;
+}
+
+function renderRiders(){
+  const rs = cache.riders || [];
+  $('rider-count').textContent = rs.length + ' คน';
+  $('rider-list').innerHTML = rs.length ? rs.map(r=>{
+    const active = r.active !== false;
+    const busy = !!r.currentJobId;
+    return `<div class="card rounded-3xl p-4 fade-in">
+      <div class="flex items-start gap-3">
+        <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl flex-shrink-0" style="background:${active?'var(--mint)':'var(--warm)'};opacity:${active?1:.5}">
+          ${r.pictureUrl ? `<img src="${esc(r.pictureUrl)}" class="w-full h-full rounded-2xl object-cover">` : '👤'}
+        </div>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <b class="font-display">${esc(r.name||'-')}</b>
+            ${active ? '' : `<span class="chip" style="background:var(--pink);color:var(--hot)">ปิดใช้งาน</span>`}
+            ${busy ? `<span class="chip" style="background:var(--yellow);color:var(--warn)"><span class="dot" style="background:var(--warn)"></span>มีงานค้าง</span>` : `<span class="chip" style="background:var(--mint);color:var(--ok)"><span class="dot" style="background:var(--ok)"></span>ว่าง</span>`}
+          </div>
+          <div class="text-xs mt-0.5" style="color:var(--muted)">${esc(r.phone||'-')}</div>
+          <div class="grid grid-cols-2 gap-2 mt-2 text-xs">
+            <div class="rounded-lg px-2 py-1" style="background:var(--warm)">รอบวันนี้ <b class="num-mono">${fmt(r.todayJobs)}</b></div>
+            <div class="rounded-lg px-2 py-1" style="background:var(--warm)">รายได้วันนี้ <b class="num-mono">฿${fmt(r.todayEarning)}</b></div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-3 grid grid-cols-3 gap-2">
+        <a href="tel:${esc(r.phone||'')}" class="btn rounded-xl py-2 text-xs font-bold text-center" style="background:var(--mint);color:var(--primary)"><i class="fa-solid fa-phone"></i> โทร</a>
+        <button onclick="editRider('${esc(r.riderId||'')}','${esc(r.phone||'')}')" class="btn rounded-xl py-2 text-xs font-bold" style="background:var(--blue);color:var(--info)"><i class="fa-solid fa-pen"></i> แก้ไข</button>
+        <button onclick="toggleRiderActive('${esc(r.phone||'')}','${esc(r.name||'')}',${active})" class="btn rounded-xl py-2 text-xs font-bold" style="background:${active?'var(--pink)':'var(--mint)'};color:${active?'var(--hot)':'var(--primary)'}">
+          <i class="fa-solid fa-${active?'ban':'circle-check'}"></i> ${active?'ปิด':'เปิด'}
+        </button>
+      </div>
+    </div>`;
+  }).join('') : `<div class="card rounded-3xl p-8 text-center" style="color:var(--muted)">ยังไม่มีไรเดอร์ เพิ่มได้ที่ปุ่มด้านบน</div>`;
+}
+
+/* ============================================================
+   ACTIONS — Rider
+   ============================================================ */
+async function addRider(){
+  const name = $('r-name').value.trim();
+  const phone = $('r-phone').value.replace(/[^0-9]/g,'');
+  const pin = $('r-pin').value.trim();
+  const note = $('r-note').value.trim();
+  const max = $('r-max').value || 5;
+  if(!name || phone.length<9 || !pin) return Swal.fire({icon:'warning',text:'กรุณาใส่ชื่อ เบอร์ (>=9 หลัก) และ PIN'});
+  Swal.fire({title:'กำลังบันทึก...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+  const data = await api({action:'admin_rider_add', name, phone, pin, note, maxDistanceKm:max});
+  Swal.close();
+  if(!data.ok) return Swal.fire({icon:'error',text:data.error||'บันทึกไม่สำเร็จ'});
+  Swal.fire({icon:'success',title:data.message||'บันทึกแล้ว',timer:1100,showConfirmButton:false});
+  $('r-name').value=''; $('r-phone').value=''; $('r-pin').value=''; $('r-note').value='';
+  $('add-rider-card').removeAttribute('open');
+  refreshAll(true);
+}
+
+async function editRider(riderId, phone){
+  const r = (cache.riders||[]).find(x => x.phone === phone || x.riderId === riderId);
+  if(!r) return Swal.fire({icon:'error',text:'ไม่พบไรเดอร์'});
+  const {value: form} = await Swal.fire({
+    title:'แก้ไขไรเดอร์',
+    html:`
+      <input id="ed-name" class="swal2-input" placeholder="ชื่อ" value="${esc(r.name||'')}">
+      <input id="ed-pin" class="swal2-input" placeholder="PIN ใหม่ (เว้นว่าง=ไม่เปลี่ยน)">
+      <input id="ed-max" class="swal2-input" type="number" placeholder="ระยะสูงสุด กม." value="${esc(r.maxDistanceKm||5)}">
+    `,
+    showCancelButton:true,
+    confirmButtonText:'บันทึก',cancelButtonText:'ยกเลิก',
+    preConfirm:()=>({
+      name: document.getElementById('ed-name').value.trim(),
+      pin:  document.getElementById('ed-pin').value.trim(),
+      maxDistanceKm: document.getElementById('ed-max').value
+    })
+  });
+  if(!form) return;
+  if(!form.name) return Swal.fire({icon:'warning',text:'ต้องมีชื่อ'});
+  const payload = {action:'admin_rider_add', name:form.name, phone:r.phone, maxDistanceKm:form.maxDistanceKm};
+  if(form.pin) payload.pin = form.pin;
+  // hack: action admin_rider_add ใช้ทั้ง add และ edit อยู่แล้ว แต่ต้องมี pin
+  // ถ้าไม่เปลี่ยน pin ให้ขอจาก user แทนการบังคับ
+  if(!payload.pin){
+    Swal.fire({icon:'info',text:'การแก้ไขโดยไม่เปลี่ยน PIN ยังไม่รองรับใน backend ปัจจุบัน กรุณากรอก PIN ใหม่ด้วย (ใช้ PIN เดิมได้)'});
+    return;
+  }
+  Swal.fire({title:'กำลังบันทึก...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+  const data = await api(payload);
+  Swal.close();
+  if(!data.ok) return Swal.fire({icon:'error',text:data.error||'บันทึกไม่ได้'});
+  Swal.fire({icon:'success',title:'อัปเดตแล้ว',timer:900,showConfirmButton:false});
+  refreshAll(true);
+}
+
+async function toggleRiderActive(phone, name, currentlyActive){
+  const r = await Swal.fire({
+    icon:'question',
+    title: currentlyActive ? `ปิดการใช้งาน ${name}?` : `เปิดการใช้งาน ${name}?`,
+    text: currentlyActive ? 'ไรเดอร์คนนี้จะรับงานใหม่ไม่ได้' : 'ไรเดอร์คนนี้จะกลับมารับงานได้',
+    showCancelButton:true, confirmButtonText: currentlyActive?'ปิด':'เปิด',
+    cancelButtonText:'ยกเลิก', confirmButtonColor: currentlyActive?'#C84B31':'#2D5016'
+  });
+  if(!r.isConfirmed) return;
+  // backend ปัจจุบันใช้ admin_rider_add สำหรับ upsert มี field active
+  const existing = (cache.riders||[]).find(x => x.phone === phone);
+  if(!existing) return Swal.fire({icon:'error',text:'ไม่พบไรเดอร์'});
+  Swal.fire({icon:'info',title:'หมายเหตุ',text:'ระบบนี้ต้องอัปเดต backend ให้รองรับการ toggle active อย่างถูกต้อง — ตอนนี้กรุณาแก้ไขโดยตรงในชีต Riders คอลัมน์ active (TRUE/FALSE)',confirmButtonColor:'#2D5016'});
+}
+
+/* ============================================================
+   ACTIONS — Jobs
+   ============================================================ */
+async function broadcastJob(jobId){
+  const ok = await Swal.fire({icon:'question',title:'ประกาศงานนี้เข้ากลุ่ม?',text:jobId,showCancelButton:true,confirmButtonText:'ประกาศ',cancelButtonText:'ยกเลิก',confirmButtonColor:'#2D5016'});
+  if(!ok.isConfirmed) return;
+  Swal.fire({title:'กำลังประกาศ...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+  const data = await api({action:'admin_rider_broadcast_job', jobId});
+  Swal.close();
+  if(!data.ok) return Swal.fire({icon:'error',text:data.error||'ประกาศไม่ได้'});
+  vibrate(50);
+  Swal.fire({icon:'success',title:'ประกาศแล้ว',timer:900,showConfirmButton:false});
+  refreshAll(true);
+}
+
+async function openCreateJob(){
+  const {value: form} = await Swal.fire({
+    title:'สร้างงานจาก Order ID',
+    html:`
+      <input id="cj-id" class="swal2-input" placeholder="เช่น ORD-20260515-001">
+      <label class="text-xs" style="display:flex;align-items:center;gap:6px;margin-top:8px;justify-content:center">
+        <input id="cj-br" type="checkbox" checked> ประกาศเข้ากลุ่มทันที
+      </label>
+    `,
+    showCancelButton:true,confirmButtonText:'สร้างงาน',cancelButtonText:'ยกเลิก',
+    preConfirm:()=>({
+      orderId: document.getElementById('cj-id').value.trim(),
+      broadcast: document.getElementById('cj-br').checked ? '1' : '0'
+    })
+  });
+  if(!form || !form.orderId) return;
+  Swal.fire({title:'กำลังสร้าง...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+  const data = await api({action:'admin_rider_create_job', orderId:form.orderId, broadcast:form.broadcast});
+  Swal.close();
+  if(!data.ok) return Swal.fire({icon:'error',text:data.error||'สร้างไม่ได้'});
+  Swal.fire({icon:'success',title:'สร้างงานแล้ว',text:data.job?.jobId||'',timer:1200,showConfirmButton:false});
+  refreshAll(true);
+}
+
+function showJobDetail(jobId){
+  const j = (cache.jobs||[]).find(x=>x.jobId===jobId);
+  if(!j) return;
+  const lines = [
+    `<b>${esc(j.jobId)}</b>`,
+    `Order: ${esc(j.orderId)}`,
+    `สถานะ: ${esc(j.status)}`,
+    `ระยะ: ${esc(j.distanceKm||'-')} กม. · ${esc(j.riderDistanceBand||'-')}`,
+    `ค่ารอบ: ฿${fmt(j.riderPay)}`,
+    `ลูกค้า: ${esc(j.customerName||'-')} ${j.customerPhone?'· '+esc(j.customerPhone):''}`,
+    `ที่อยู่: ${esc(j.customerAddress||'-')}`,
+    j.assignedRiderName ? `ไรเดอร์: ${esc(j.assignedRiderName)}` : '',
+    j.acceptedAt ? `รับงาน: ${esc(j.acceptedAt)}` : '',
+    j.pickedUpAt ? `รับของ: ${esc(j.pickedUpAt)}` : '',
+    j.deliveredAt ? `ส่งสำเร็จ: ${esc(j.deliveredAt)}` : '',
+    j.issueNote ? `ปัญหา: ${esc(j.issueNote)}` : ''
+  ].filter(Boolean).join('<br>');
+  Swal.fire({title:'รายละเอียดงาน',html:`<div style="text-align:left;font-size:13px;line-height:1.7">${lines}</div>`,confirmButtonText:'ปิด',confirmButtonColor:'#2D5016'});
+}
+
+async function testBroadcast(){
+  Swal.fire({title:'กำลังเช็ค...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
+  const data = await api({action:'rider_health'});
+  Swal.close();
+  if(!data.ok) return Swal.fire({icon:'error',text:'เซิร์ฟเวอร์ไม่ตอบ'});
+  Swal.fire({icon:'success',title:'ระบบพร้อม',html:`เวอร์ชัน: <b>${esc(data.version)}</b><br>เวลา server: ${esc(data.time)}`,confirmButtonColor:'#2D5016'});
+}
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+$('set-autorefresh').checked = settings.autoRefresh;
+$('set-sound').checked = settings.sound;
+$('set-vibrate').checked = settings.vibrate;
+$('lock-pass').addEventListener('keydown', e=>{ if(e.key==='Enter') doUnlock(); });
+
+// auto-unlock ถ้าจำรหัสไว้
+(function boot(){
+  const saved = localStorage.getItem(LS_PASS);
+  if(saved){
+    try{
+      ADMIN_PASS = decodeURIComponent(escape(atob(saved)));
+      // ลอง verify เงียบๆ
+      api({action:'admin_rider_list'}).then(d=>{
+        if(d?.ok){
+          cache = { riders: d.riders||[], jobs: d.jobs||[] };
+          lastSyncTs = Date.now();
+          showApp();
+          render();
+        } else {
+          ADMIN_PASS = '';
+          showLock(d?.error||'');
+          if(saved){ try{ $('lock-pass').value = decodeURIComponent(escape(atob(saved))); }catch(e){} }
+        }
+      }).catch(()=>{ ADMIN_PASS=''; showLock('เชื่อมต่อไม่ได้'); });
+    }catch(e){ showLock(); }
+  } else {
+    showLock();
+  }
+})();
 </script>
 </body>
 </html>
