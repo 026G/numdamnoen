@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>หลังบ้าน หนุ่มดำเนิน</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;500;600;700&family=Mali:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --base:#FBFAF6; --warm:#F5F0E5; --green:#2D5016; --green2:#5B8C3C;
+      --mint:#D4EBE0; --border:#E8E2D5; --hot:#C84B31; --blue:#2563EB;
+      --text:#1F3A0F; --muted:#8B7355;
+    }
+    body { font-family:'Anuphan',sans-serif; background:var(--base); color:var(--text); }
+    .font-display { font-family:'Mali',sans-serif; }
+    .tab-active { background:var(--green); color:#fff; }
+    .card { background:white; border:1px solid var(--border); box-shadow:0 3px 10px rgba(45,80,22,.06); }
+    .pill { border:1px solid var(--border); }
+    .input { width:100%; border:1px solid var(--border); background:var(--warm); border-radius:14px; padding:12px; outline:none; }
+    .btn { border-radius:14px; padding:10px 14px; font-weight:700; transition:.15s; }
+    .btn:active { transform:scale(.98); }
+    .btn-green { background:var(--green); color:white; }
+    .btn-soft { background:var(--warm); color:var(--text); border:1px solid var(--border); }
+    .btn-red { background:#FEE2E2; color:#991B1B; border:1px solid #FECACA; }
+    .btn-blue { background:#DBEAFE; color:#1D4ED8; border:1px solid #BFDBFE; }
+    .hidden-section { display:none; }
+  </style>
+</head>
+<body>
+  <div id="login-screen" class="min-h-screen flex items-center justify-center p-5">
+    <div class="card rounded-3xl p-6 max-w-sm w-full text-center">
+      <div class="w-20 h-20 mx-auto rounded-full bg-white p-1 mb-4" style="border:2px solid var(--mint);">
+        <img src="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8" class="w-full h-full object-cover rounded-full">
+      </div>
+      <h1 class="font-display text-2xl font-bold" style="color:var(--green)">หลังบ้านหนุ่มดำเนิน</h1>
+      <p class="text-sm mt-2" style="color:var(--muted)">ล็อกอินด้วย Google เฉพาะแอดมิน</p>
+      <button id="login-btn" class="btn btn-green w-full mt-5">เข้าสู่ระบบด้วย Google</button>
+      <p class="text-xs mt-4" style="color:var(--muted)">อนุญาตเฉพาะ: <b>numdamnoen@gmail.com</b></p>
+    </div>
+  </div>
+
+  <div id="app" class="hidden max-w-5xl mx-auto min-h-screen pb-24">
+    <header class="sticky top-0 z-30 backdrop-blur p-4 border-b" style="background:rgba(251,250,246,.92); border-color:var(--border)">
+      <div class="flex items-center gap-3">
+        <div class="flex-1">
+          <h1 class="font-display text-xl font-bold" style="color:var(--green)">หลังบ้านหนุ่มดำเนิน</h1>
+          <div class="text-xs" style="color:var(--muted)">
+            <span id="admin-email">-</span>
+            <span class="mx-1">·</span>
+            <span id="last-sync">โหลดข้อมูล...</span>
+          </div>
+        </div>
+        <button id="logout-btn" class="btn btn-soft text-sm">ออก</button>
+      </div>
+
+      <nav class="grid grid-cols-4 gap-2 mt-4">
+        <button data-tab="orders" class="tab-btn btn tab-active text-sm">ออเดอร์</button>
+        <button data-tab="menu" class="tab-btn btn btn-soft text-sm">เมนู</button>
+        <button data-tab="settings" class="tab-btn btn btn-soft text-sm">ตั้งค่า</button>
+        <button data-tab="help" class="tab-btn btn btn-soft text-sm">คู่มือ</button>
+      </nav>
+    </header>
+
+    <main class="p-4">
+      <section id="section-orders">
+        <div class="grid md:grid-cols-4 gap-3 mb-4">
+          <div class="card rounded-2xl p-4"><div class="text-xs" style="color:var(--muted)">ออเดอร์วันนี้</div><div id="stat-orders" class="font-display text-2xl font-bold">0</div></div>
+          <div class="card rounded-2xl p-4"><div class="text-xs" style="color:var(--muted)">ยอดรวม</div><div id="stat-sales" class="font-display text-2xl font-bold">฿0</div></div>
+          <div class="card rounded-2xl p-4"><div class="text-xs" style="color:var(--muted)">รอรับยอด</div><div id="stat-pending" class="font-display text-2xl font-bold">0</div></div>
+          <div class="card rounded-2xl p-4"><div class="text-xs" style="color:var(--muted)">กำลังทำ/ส่ง</div><div id="stat-active" class="font-display text-2xl font-bold">0</div></div>
+        </div>
+
+        <div class="card rounded-3xl p-4 mb-4">
+          <div class="flex flex-wrap gap-2 items-center">
+            <button class="order-filter btn btn-green text-sm" data-filter="today">วันนี้</button>
+            <button class="order-filter btn btn-soft text-sm" data-filter="pending">รอรับยอด</button>
+            <button class="order-filter btn btn-soft text-sm" data-filter="active">กำลังทำ/กำลังส่ง</button>
+            <button class="order-filter btn btn-soft text-sm" data-filter="done">สำเร็จ</button>
+            <button class="order-filter btn btn-soft text-sm" data-filter="all">ทั้งหมด</button>
+            <input id="order-search" class="input flex-1 min-w-[180px] text-sm" placeholder="ค้นหาเบอร์ / ชื่อ / ORD">
+          </div>
+        </div>
+
+        <div id="orders-list" class="space-y-3"></div>
+      </section>
+
+      <section id="section-menu" class="hidden-section">
+        <div class="card rounded-3xl p-4 mb-4">
+          <div class="flex items-center gap-2 mb-3">
+            <h2 class="font-display font-bold text-lg flex-1" style="color:var(--green)">เพิ่ม / แก้ไขเมนู</h2>
+            <button id="new-menu-btn" class="btn btn-soft text-sm">ล้างฟอร์ม</button>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-3">
+            <input id="menu-id" type="hidden">
+            <div><label class="text-xs font-bold">ชื่อเมนู</label><input id="menu-name" class="input" placeholder="มะพร้าวปั่น (นมสด)"></div>
+            <div><label class="text-xs font-bold">ราคา</label><input id="menu-price" type="number" class="input" placeholder="40"></div>
+            <div>
+              <label class="text-xs font-bold">หมวดหมู่</label>
+              <select id="menu-category" class="input">
+                <option value="recommend">recommend / ดูเมนู</option>
+                <option value="promotion">promotion / โปรโมชั่น</option>
+              </select>
+            </div>
+            <div><label class="text-xs font-bold">ลำดับ</label><input id="menu-sort" type="number" class="input" placeholder="1"></div>
+            <div><label class="text-xs font-bold">ป้ายพิเศษ</label><input id="menu-badge" class="input" placeholder="ขายดี / ใหม่ / คุ้ม"></div>
+            <div><label class="text-xs font-bold">ราคาเดิม (ถ้ามี)</label><input id="menu-original-price" type="number" class="input" placeholder="เว้นว่างได้"></div>
+            <div class="md:col-span-2"><label class="text-xs font-bold">รูปภาพ URL</label><input id="menu-img" class="input" placeholder="https://..."></div>
+            <div class="flex gap-2 items-center">
+              <label class="flex items-center gap-2 text-sm"><input id="menu-stock" type="checkbox" checked> เปิดขาย / มีสินค้า</label>
+              <label class="flex items-center gap-2 text-sm"><input id="menu-hidden" type="checkbox"> ซ่อนจากหน้าลูกค้า</label>
+            </div>
+          </div>
+
+          <div class="flex gap-2 mt-4">
+            <button id="save-menu-btn" class="btn btn-green flex-1">บันทึกเมนู</button>
+            <button id="delete-menu-btn" class="btn btn-red hidden">ลบเมนู</button>
+          </div>
+        </div>
+
+        <div class="card rounded-3xl p-4 mb-4">
+          <div class="flex gap-2 items-center">
+            <input id="menu-search" class="input flex-1 text-sm" placeholder="ค้นหาเมนู">
+            <select id="menu-filter" class="input w-36 text-sm">
+              <option value="all">ทั้งหมด</option>
+              <option value="stock">เปิดขาย</option>
+              <option value="soldout">หมด</option>
+              <option value="hidden">ซ่อน</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="menu-list-admin" class="space-y-3"></div>
+      </section>
+
+      <section id="section-settings" class="hidden-section">
+        <div class="card rounded-3xl p-4">
+          <h2 class="font-display font-bold text-lg mb-3" style="color:var(--green)">ตั้งค่าร้าน</h2>
+          <div class="grid md:grid-cols-2 gap-3">
+            <label class="flex items-center gap-2"><input id="set-shop-open" type="checkbox" checked> เปิดรับออเดอร์</label>
+            <label class="flex items-center gap-2"><input id="set-pickup" type="checkbox" checked> เปิดรับหน้าร้าน</label>
+            <label class="flex items-center gap-2"><input id="set-delivery" type="checkbox" checked> เปิดเดลิเวอรี่</label>
+            <div><label class="text-xs font-bold">ประกาศหน้าเว็บ</label><input id="set-announcement" class="input" placeholder="วันนี้มะพร้าวอ่อนเข้าใหม่"></div>
+            <div><label class="text-xs font-bold">เวลาเปิด</label><input id="set-open-hour" type="number" class="input" placeholder="9"></div>
+            <div><label class="text-xs font-bold">เวลาปิด</label><input id="set-close-hour" type="number" class="input" placeholder="20"></div>
+          </div>
+          <button id="save-settings-btn" class="btn btn-green w-full mt-4">บันทึกตั้งค่า</button>
+          <p class="text-xs mt-3" style="color:var(--muted)">หมายเหตุ: หน้าเว็บลูกค้าต้องเพิ่ม patch อ่าน settings จาก Firebase ก่อน ค่านี้จึงจะมีผลกับหน้าลูกค้า</p>
+        </div>
+      </section>
+
+      <section id="section-help" class="hidden-section">
+        <div class="card rounded-3xl p-5 space-y-3">
+          <h2 class="font-display font-bold text-xl" style="color:var(--green)">วิธีใช้งานเร็ว</h2>
+          <p>1) เปิดหน้าแอดมิน แล้วล็อกอินด้วย <b>numdamnoen@gmail.com</b></p>
+          <p>2) หน้าออเดอร์: กดรับยอด → กำลังทำ → พร้อมส่ง/พร้อมรับ → สำเร็จ</p>
+          <p>3) หน้าเมนู: กด “หมด” เพื่อปิดเมนูทันที ลูกค้าจะกดสั่งไม่ได้</p>
+          <p>4) เพิ่มเมนูใหม่: กรอกชื่อ ราคา หมวด รูป แล้วกดบันทึก</p>
+          <p>5) ต้องตั้ง Firebase Rules ให้ตรงกับไฟล์ rules ที่ให้มา ไม่อย่างนั้นหน้า admin อาจเปิดไม่ได้หรือไม่ปลอดภัย</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+  getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {
+  getDatabase, ref, onValue, get, set, update, remove, push
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const ADMIN_EMAIL = "numdamnoen@gmail.com";
+const firebaseConfig = {
+  apiKey: "AIzaSyBLo1JKTNOrx6vvh2a6Pl8Zxjll4eoIKAA",
+  authDomain: "linenoti-7c04f.firebaseapp.com",
+  databaseURL: "https://linenoti-7c04f-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "linenoti-7c04f",
+  storageBucket: "linenoti-7c04f.firebasestorage.app",
+  messagingSenderId: "607844945437",
+  appId: "1:607844945437:web:d5e0229b8c18522cd500f4"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+const provider = new GoogleAuthProvider();
+
+let currentUser = null;
+let orders = [];
+let menuItems = [];
+let settings = {};
+let orderFilter = "today";
+
+const $ = (id) => document.getElementById(id);
+const money = (n) => "฿" + (Number(n || 0)).toLocaleString("th-TH");
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const nowText = () => new Date().toLocaleString("th-TH", { hour:"2-digit", minute:"2-digit", second:"2-digit" });
+
+function normalizeTotal(v) {
+  if (typeof v === "number") return v;
+  const m = String(v || "").replace(/,/g,"").match(/\d+(\.\d+)?/);
+  return m ? Number(m[0]) : 0;
+}
+
+function orderTimeMs(o) {
+  if (o.createdAt) return Number(o.createdAt);
+  if (o.timestamp) {
+    const t = new Date(o.timestamp).getTime();
+    if (!Number.isNaN(t)) return t;
+  }
+  return 0;
+}
+
+function isToday(o) {
+  const t = orderTimeMs(o);
+  if (!t) return false;
+  const d = new Date(t);
+  const n = new Date();
+  return d.getFullYear()===n.getFullYear() && d.getMonth()===n.getMonth() && d.getDate()===n.getDate();
+}
+
+function statusKey(status) {
+  const s = String(status || "");
+  if (s.includes("สำเร็จ") || s.includes("เสร็จ") || s === "delivered") return "done";
+  if (s.includes("ยกเลิก") || s === "cancelled") return "cancelled";
+  if (s.includes("ปรุง") || s.includes("ทำ") || s.includes("พร้อม") || s.includes("ส่ง") || s.includes("ไรเดอร์") || s === "confirmed" || s === "preparing" || s === "ready" || s === "delivering") return "active";
+  return "pending";
+}
+
+function statusBadge(status) {
+  const k = statusKey(status);
+  if (k === "done") return "background:#D4EBE0;color:#2D5016;border:1px solid #B8DCC8";
+  if (k === "cancelled") return "background:#FEE2E2;color:#991B1B;border:1px solid #FECACA";
+  if (k === "active") return "background:#DBEAFE;color:#1D4ED8;border:1px solid #BFDBFE";
+  return "background:#FEF3C7;color:#92400E;border:1px solid #FDE68A";
+}
+
+function ensureAdmin(user) {
+  return user && user.email === ADMIN_EMAIL;
+}
+
+$("login-btn").onclick = async () => {
+  try {
+    await signInWithPopup(auth, provider);
+  } catch (e) {
+    Swal.fire("ล็อกอินไม่สำเร็จ", e.message, "error");
+  }
+};
+
+$("logout-btn").onclick = () => signOut(auth);
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    currentUser = null;
+    $("login-screen").classList.remove("hidden");
+    $("app").classList.add("hidden");
+    return;
+  }
+  if (!ensureAdmin(user)) {
+    await signOut(auth);
+    Swal.fire("ไม่ได้รับอนุญาต", `ระบบนี้ให้เฉพาะ ${ADMIN_EMAIL}`, "error");
+    return;
+  }
+  currentUser = user;
+  $("admin-email").textContent = user.email;
+  $("login-screen").classList.add("hidden");
+  $("app").classList.remove("hidden");
+  startListeners();
+});
+
+function startListeners() {
+  onValue(ref(db, "orders"), (snap) => {
+    const raw = snap.val() || {};
+    orders = Object.entries(raw).map(([key, val]) => ({ key, ...val })).sort((a,b) => orderTimeMs(b) - orderTimeMs(a));
+    renderOrders();
+    $("last-sync").textContent = "ซิงก์ล่าสุด " + nowText();
+  });
+
+  onValue(ref(db, "menu"), (snap) => {
+    const raw = snap.val() || {};
+    menuItems = Object.entries(raw).map(([key, val]) => ({ id:key, ...val })).sort((a,b) => (a.sortOrder||0)-(b.sortOrder||0));
+    renderMenuAdmin();
+  });
+
+  onValue(ref(db, "settings"), (snap) => {
+    settings = snap.val() || {};
+    $("set-shop-open").checked = settings.shopOpen !== false;
+    $("set-pickup").checked = settings.pickupEnabled !== false;
+    $("set-delivery").checked = settings.deliveryEnabled !== false;
+    $("set-announcement").value = settings.announcement || "";
+    $("set-open-hour").value = settings.openHour ?? 9;
+    $("set-close-hour").value = settings.closeHour ?? 20;
+  });
+}
+
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll(".tab-btn").forEach(b => { b.classList.remove("tab-active"); b.classList.add("btn-soft"); });
+    btn.classList.add("tab-active"); btn.classList.remove("btn-soft");
+    const tab = btn.dataset.tab;
+    ["orders","menu","settings","help"].forEach(name => {
+      $("section-" + name).classList.toggle("hidden-section", name !== tab);
+    });
+  };
+});
+
+document.querySelectorAll(".order-filter").forEach(btn => {
+  btn.onclick = () => {
+    orderFilter = btn.dataset.filter;
+    document.querySelectorAll(".order-filter").forEach(b => { b.classList.remove("btn-green"); b.classList.add("btn-soft"); });
+    btn.classList.add("btn-green"); btn.classList.remove("btn-soft");
+    renderOrders();
+  };
+});
+$("order-search").oninput = renderOrders;
+
+function renderOrders() {
+  const q = $("order-search").value.trim().toLowerCase();
+  let list = orders.filter(o => {
+    if (orderFilter === "today" && !isToday(o)) return false;
+    if (orderFilter === "pending" && statusKey(o.status) !== "pending") return false;
+    if (orderFilter === "active" && statusKey(o.status) !== "active") return false;
+    if (orderFilter === "done" && statusKey(o.status) !== "done") return false;
+    if (!q) return true;
+    return JSON.stringify(o).toLowerCase().includes(q);
+  });
+
+  const todayOrders = orders.filter(isToday);
+  $("stat-orders").textContent = todayOrders.length;
+  $("stat-sales").textContent = money(todayOrders.filter(o => statusKey(o.status) !== "cancelled").reduce((s,o)=>s+normalizeTotal(o.total || o.grandTotal),0));
+  $("stat-pending").textContent = todayOrders.filter(o => statusKey(o.status)==="pending").length;
+  $("stat-active").textContent = todayOrders.filter(o => statusKey(o.status)==="active").length;
+
+  if (!list.length) {
+    $("orders-list").innerHTML = `<div class="card rounded-3xl p-8 text-center" style="color:var(--muted)">ยังไม่มีออเดอร์ในตัวกรองนี้</div>`;
+    return;
+  }
+
+  $("orders-list").innerHTML = list.map(o => {
+    const customer = o.customer || {};
+    const items = Array.isArray(o.items) ? o.items : [];
+    const itemsHtml = items.map(i => `
+      <div class="flex justify-between gap-2 py-1 border-b border-dashed" style="border-color:var(--border)">
+        <div><b>${esc(i.qty || 1)}x</b> ${esc(i.name || i.title || "-")}</div>
+        <div class="font-bold">${money(i.finalPrice || i.price || 0)}</div>
+      </div>
+    `).join("");
+    const phone = customer.phone || o.phone || "";
+    const location = customer.location || "";
+    const mapUrl = location && location.includes(",") ? `https://www.google.com/maps?q=${encodeURIComponent(location)}` : "";
+    return `
+      <div class="card rounded-3xl overflow-hidden">
+        <div class="p-4 flex items-start gap-3" style="background:var(--warm); border-bottom:1px solid var(--border)">
+          <div class="flex-1">
+            <div class="font-display text-lg font-bold">#${esc(o.id || o.orderId || o.key)}</div>
+            <div class="text-xs" style="color:var(--muted)">${esc(o.date || o.timestamp || "-")} · ${esc(o.orderMode || "-")}</div>
+          </div>
+          <span class="text-xs font-bold px-3 py-1 rounded-full" style="${statusBadge(o.status)}">${esc(o.status || "รอรับยอด")}</span>
+        </div>
+        <div class="p-4 grid md:grid-cols-2 gap-4">
+          <div>
+            <div class="font-bold">${esc(customer.name || o.name || "ไม่ระบุชื่อ")}</div>
+            <div class="text-sm" style="color:var(--muted)">โทร: ${esc(phone || "-")}</div>
+            <div class="text-sm mt-1">${esc(customer.address || o.address || "-")}</div>
+            ${customer.landmark ? `<div class="text-xs mt-1" style="color:var(--muted)">จุดสังเกต: ${esc(customer.landmark)}</div>` : ""}
+          </div>
+          <div>
+            <div class="text-sm">${itemsHtml || "<span style='color:var(--muted)'>ไม่มีรายการสินค้า</span>"}</div>
+            <div class="flex justify-between pt-2 mt-2 font-display text-lg font-bold">
+              <span>รวม</span><span style="color:var(--green)">${esc(o.total || o.grandTotal || "-")}</span>
+            </div>
+          </div>
+        </div>
+        <div class="p-4 flex flex-wrap gap-2" style="border-top:1px solid var(--border)">
+          <button class="btn btn-blue text-sm" onclick="setOrderStatus('${o.key}','✅ ร้านรับออเดอร์แล้ว')">รับยอด</button>
+          <button class="btn btn-blue text-sm" onclick="setOrderStatus('${o.key}','🔥 กำลังทำ')">กำลังทำ</button>
+          <button class="btn btn-blue text-sm" onclick="setOrderStatus('${o.key}','🛍️ พร้อมรับ/พร้อมส่ง')">พร้อมแล้ว</button>
+          <button class="btn btn-green text-sm" onclick="setOrderStatus('${o.key}','✅ สำเร็จ')">สำเร็จ</button>
+          <button class="btn btn-red text-sm" onclick="setOrderStatus('${o.key}','❌ ยกเลิก')">ยกเลิก</button>
+          ${phone ? `<a class="btn btn-soft text-sm" href="tel:${esc(phone)}">โทร</a>` : ""}
+          ${mapUrl ? `<a class="btn btn-soft text-sm" target="_blank" href="${mapUrl}">แผนที่</a>` : ""}
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+window.setOrderStatus = async (key, status) => {
+  try {
+    await update(ref(db, `orders/${key}`), {
+      status,
+      updatedAt: new Date().toISOString(),
+      updatedBy: currentUser.email
+    });
+    await push(ref(db, "adminLogs"), {
+      action:"order_status",
+      target:key,
+      status,
+      by:currentUser.email,
+      at:new Date().toISOString()
+    });
+    Swal.fire({toast:true, position:"top", icon:"success", title:"อัปเดตแล้ว", showConfirmButton:false, timer:900});
+  } catch(e) {
+    Swal.fire("อัปเดตไม่สำเร็จ", e.message, "error");
+  }
+};
+
+$("menu-search").oninput = renderMenuAdmin;
+$("menu-filter").onchange = renderMenuAdmin;
+
+function renderMenuAdmin() {
+  const q = $("menu-search").value.trim().toLowerCase();
+  const filter = $("menu-filter").value;
+  let list = menuItems.filter(i => {
+    if (filter === "stock" && i.stock === false) return false;
+    if (filter === "soldout" && i.stock !== false) return false;
+    if (filter === "hidden" && i.hidden !== true) return false;
+    if (!q) return true;
+    return String(i.name || "").toLowerCase().includes(q);
+  });
+
+  if (!list.length) {
+    $("menu-list-admin").innerHTML = `<div class="card rounded-3xl p-8 text-center" style="color:var(--muted)">ไม่พบเมนู</div>`;
+    return;
+  }
+
+  $("menu-list-admin").innerHTML = list.map(i => `
+    <div class="card rounded-3xl p-3 flex gap-3 items-center">
+      <img src="${esc(i.img || "")}" onerror="this.src=''; this.style.background='#F5F0E5';" class="w-20 h-20 rounded-2xl object-cover" />
+      <div class="flex-1 min-w-0">
+        <div class="font-display font-bold truncate">${esc(i.name || "-")}</div>
+        <div class="text-sm" style="color:var(--muted)">฿${esc(i.price ?? "-")} · ${esc(i.category || "-")} · ลำดับ ${esc(i.sortOrder ?? "-")}</div>
+        <div class="flex gap-1 mt-1 flex-wrap">
+          <span class="text-xs px-2 py-1 rounded-full pill">${i.stock === false ? "❌ หมด" : "✅ เปิดขาย"}</span>
+          ${i.hidden === true ? `<span class="text-xs px-2 py-1 rounded-full pill">ซ่อน</span>` : ""}
+          ${i.badge ? `<span class="text-xs px-2 py-1 rounded-full pill">⭐ ${esc(i.badge)}</span>` : ""}
+        </div>
+      </div>
+      <div class="flex flex-col gap-2">
+        <button class="btn ${i.stock === false ? "btn-green" : "btn-red"} text-xs" onclick="toggleStock('${i.id}', ${i.stock === false ? "true" : "false"})">${i.stock === false ? "เปิดขาย" : "หมด"}</button>
+        <button class="btn btn-soft text-xs" onclick="editMenu('${i.id}')">แก้ไข</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+window.toggleStock = async (id, nextStock) => {
+  const item = menuItems.find(i => i.id === id);
+  try {
+    await update(ref(db, `menu/${id}`), {
+      stock: nextStock,
+      updatedAt: new Date().toISOString(),
+      updatedBy: currentUser.email
+    });
+    await push(ref(db, "adminLogs"), {
+      action:"toggle_stock",
+      target:id,
+      itemName:item?.name || "",
+      stock:nextStock,
+      by:currentUser.email,
+      at:new Date().toISOString()
+    });
+    Swal.fire({toast:true, position:"top", icon:"success", title:nextStock ? "เปิดขายแล้ว" : "ปิดเป็นสินค้าหมดแล้ว", showConfirmButton:false, timer:1000});
+  } catch(e) {
+    Swal.fire("แก้ไขไม่สำเร็จ", e.message, "error");
+  }
+};
+
+window.editMenu = (id) => {
+  const i = menuItems.find(x => x.id === id);
+  if (!i) return;
+  $("menu-id").value = id;
+  $("menu-name").value = i.name || "";
+  $("menu-price").value = i.price ?? "";
+  $("menu-category").value = i.category || "recommend";
+  $("menu-sort").value = i.sortOrder ?? "";
+  $("menu-badge").value = i.badge || "";
+  $("menu-original-price").value = i.originalPrice ?? "";
+  $("menu-img").value = i.img || "";
+  $("menu-stock").checked = i.stock !== false;
+  $("menu-hidden").checked = i.hidden === true;
+  $("delete-menu-btn").classList.remove("hidden");
+  window.scrollTo({top:0, behavior:"smooth"});
+};
+
+function clearMenuForm() {
+  $("menu-id").value = "";
+  $("menu-name").value = "";
+  $("menu-price").value = "";
+  $("menu-category").value = "recommend";
+  $("menu-sort").value = "";
+  $("menu-badge").value = "";
+  $("menu-original-price").value = "";
+  $("menu-img").value = "";
+  $("menu-stock").checked = true;
+  $("menu-hidden").checked = false;
+  $("delete-menu-btn").classList.add("hidden");
+}
+$("new-menu-btn").onclick = clearMenuForm;
+
+$("save-menu-btn").onclick = async () => {
+  const id = $("menu-id").value || push(ref(db, "menu")).key;
+  const name = $("menu-name").value.trim();
+  const price = Number($("menu-price").value);
+  if (!name) return Swal.fire("ข้อมูลไม่ครบ", "กรุณากรอกชื่อเมนู", "warning");
+  if (!price || price < 0) return Swal.fire("ข้อมูลไม่ครบ", "กรุณากรอกราคาให้ถูกต้อง", "warning");
+
+  const originalPrice = $("menu-original-price").value ? Number($("menu-original-price").value) : null;
+  const data = {
+    name,
+    price,
+    category: $("menu-category").value,
+    img: $("menu-img").value.trim(),
+    sortOrder: Number($("menu-sort").value || 999),
+    badge: $("menu-badge").value.trim(),
+    stock: $("menu-stock").checked,
+    hidden: $("menu-hidden").checked,
+    updatedAt: new Date().toISOString(),
+    updatedBy: currentUser.email
+  };
+  if (originalPrice) data.originalPrice = originalPrice;
+
+  try {
+    await update(ref(db, `menu/${id}`), data);
+    await push(ref(db, "adminLogs"), {
+      action:"save_menu",
+      target:id,
+      itemName:name,
+      by:currentUser.email,
+      at:new Date().toISOString()
+    });
+    clearMenuForm();
+    Swal.fire({toast:true, position:"top", icon:"success", title:"บันทึกเมนูแล้ว", showConfirmButton:false, timer:1000});
+  } catch(e) {
+    Swal.fire("บันทึกไม่สำเร็จ", e.message, "error");
+  }
+};
+
+$("delete-menu-btn").onclick = async () => {
+  const id = $("menu-id").value;
+  if (!id) return;
+  const ok = await Swal.fire({
+    icon:"warning",
+    title:"ลบเมนูนี้?",
+    text:"แนะนำให้ใช้ 'ซ่อนเมนู' มากกว่าการลบ ถ้าไม่แน่ใจ",
+    showCancelButton:true,
+    confirmButtonText:"ลบ",
+    cancelButtonText:"ยกเลิก"
+  });
+  if (!ok.isConfirmed) return;
+  try {
+    await remove(ref(db, `menu/${id}`));
+    await push(ref(db, "adminLogs"), {
+      action:"delete_menu",
+      target:id,
+      by:currentUser.email,
+      at:new Date().toISOString()
+    });
+    clearMenuForm();
+    Swal.fire("ลบแล้ว", "", "success");
+  } catch(e) {
+    Swal.fire("ลบไม่สำเร็จ", e.message, "error");
+  }
+};
+
+$("save-settings-btn").onclick = async () => {
+  try {
+    await update(ref(db, "settings"), {
+      shopOpen: $("set-shop-open").checked,
+      pickupEnabled: $("set-pickup").checked,
+      deliveryEnabled: $("set-delivery").checked,
+      announcement: $("set-announcement").value.trim(),
+      openHour: Number($("set-open-hour").value || 9),
+      closeHour: Number($("set-close-hour").value || 20),
+      updatedAt: new Date().toISOString(),
+      updatedBy: currentUser.email
+    });
+    await push(ref(db, "adminLogs"), {
+      action:"save_settings",
+      by:currentUser.email,
+      at:new Date().toISOString()
+    });
+    Swal.fire({toast:true, position:"top", icon:"success", title:"บันทึกตั้งค่าแล้ว", showConfirmButton:false, timer:1000});
+  } catch(e) {
+    Swal.fire("บันทึกไม่สำเร็จ", e.message, "error");
+  }
+};
+</script>
+</body>
+</html>
