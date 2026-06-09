@@ -63,6 +63,7 @@
         
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .category-tab { flex: 0 0 auto; min-width: max-content; }
 
         .mode-toggle-active {
             background: white;
@@ -139,7 +140,7 @@
                             <h1 class="font-display text-lg font-semibold leading-tight" style="color: var(--color-primary);">หนุ่มดำเนิน</h1>
                             <div class="font-script text-base leading-none" style="color: var(--color-primary-light);">มะพร้าวปั่น 🌴</div>
                             <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px]" style="color: var(--color-text-muted);">
-                                <span><i class="fa-regular fa-clock"></i> 09:00-20:00</span>
+                                <span id="shop-hours-label"><i class="fa-regular fa-clock"></i> 09:00-20:00</span>
                                 <span>·</span>
                                 <a href="tel:0622467746" class="hover:underline"><i class="fa-solid fa-phone"></i> 062-246-7746</a>
                             </div>
@@ -170,9 +171,8 @@
                 </div>
             </div>
 
-            <div id="category-tabs" class="flex px-4 gap-4" style="border-bottom: 1px solid var(--color-border-soft);">
-                <div onclick="switchTab('recommend')" id="tab-recommend" class="flex-1 text-center py-3 text-sm font-bold cursor-pointer transition-all border-b-2" style="border-color: var(--color-primary); color: var(--color-primary);">ดูเมนู</div>
-                <div onclick="switchTab('promotion')" id="tab-promotion" class="flex-1 text-center py-3 text-sm font-medium cursor-pointer transition-all border-b-2 border-transparent" style="color: var(--color-text-muted);">โปรโมชั่น</div>
+            <div id="category-tabs" class="flex px-4 gap-2 overflow-x-auto no-scrollbar whitespace-nowrap" style="border-bottom: 1px solid var(--color-border-soft);">
+                <!-- หมวดหมู่จะถูกสร้างอัตโนมัติจากข้อมูล menu.category ใน Firebase -->
             </div>
         </header>
 
@@ -261,7 +261,7 @@
                         <div class="flex-1 text-xs" style="color: var(--color-text-dark);">
                             <div class="font-semibold mb-1">ที่อยู่ร้าน</div>
                             <div style="color: var(--color-text-muted);">ร้านหนุ่มดำเนิน · โทร 062-246-7746</div>
-                            <div class="mt-2 font-medium">เปิด 09:00 - 20:00 น.</div>
+                            <div id="pickup-shop-hours-label" class="mt-2 font-medium">เปิด 09:00 - 20:00 น.</div>
                         </div>
                     </div>
                 </div>
@@ -658,6 +658,22 @@
     window.currentPage = 'menu';
     window.orderMode = 'pickup';
     window.pickupTime = null;
+    window.shopSettings = {};
+
+    // หมวดหมู่หลัก: เพิ่มชื่อหมวดใหม่ได้จากหลังบ้านโดยพิมพ์ category ใหม่ในสินค้า
+    // ถ้า category ไม่อยู่ในรายการนี้ ระบบจะแสดงชื่อ category ตรง ๆ
+    window.CATEGORY_LABELS = {
+        all: 'ทั้งหมด',
+        recommend: 'ดูเมนู',
+        promotion: 'โปรโมชั่น',
+        coconut_smoothie: 'มะพร้าวปั่น',
+        coconut_water: 'น้ำมะพร้าว',
+        fruit_smoothie: 'ผลไม้ปั่น',
+        milk_smoothie: 'นมสดปั่น',
+        special: 'เมนูพิเศษ',
+        snack: 'ขนม'
+    };
+    window.CATEGORY_ORDER = ['all', 'recommend', 'coconut_smoothie', 'coconut_water', 'fruit_smoothie', 'milk_smoothie', 'special', 'snack', 'promotion'];
 
     // ============ SHIPPING CALCULATION ============
     
@@ -758,12 +774,59 @@
         localStorage.setItem('order_mode', window.orderMode);
     }
 
+    // ============ SETTINGS FROM ADMIN ============
+    window.loadShopSettings = async function() {
+        try {
+            const settingsSnap = await get(ref(db, 'settings'));
+            window.shopSettings = settingsSnap.exists() ? (settingsSnap.val() || {}) : {};
+
+            if (typeof window.shopSettings.openHour === 'number') window.OPEN_HOUR = window.shopSettings.openHour;
+            if (typeof window.shopSettings.closeHour === 'number') window.CLOSE_HOUR = window.shopSettings.closeHour;
+            if (typeof window.shopSettings.maxDistanceKm === 'number') window.MAX_DIST_KM = window.shopSettings.maxDistanceKm;
+
+            window.applyShopSettingsUI();
+        } catch (error) {
+            console.warn('โหลด settings ไม่สำเร็จ ใช้ค่าเริ่มต้นแทน', error);
+            window.shopSettings = {};
+            window.applyShopSettingsUI();
+        }
+    };
+
+    window.applyShopSettingsUI = function() {
+        const openText = `${String(window.OPEN_HOUR).padStart(2,'0')}:00-${String(window.CLOSE_HOUR).padStart(2,'0')}:00`;
+        const topHours = document.getElementById('shop-hours-label');
+        if (topHours) topHours.innerHTML = `<i class="fa-regular fa-clock"></i> ${openText}`;
+
+        const pickupHours = document.getElementById('pickup-shop-hours-label');
+        if (pickupHours) pickupHours.innerText = `เปิด ${String(window.OPEN_HOUR).padStart(2,'0')}:00 - ${String(window.CLOSE_HOUR).padStart(2,'0')}:00 น.`;
+
+        const announcement = String(window.shopSettings.announcement || '').trim();
+        let annBox = document.getElementById('shop-announcement-box');
+        if (announcement && !annBox) {
+            const menuSection = document.getElementById('page-menu');
+            if (menuSection) {
+                annBox = document.createElement('div');
+                annBox.id = 'shop-announcement-box';
+                annBox.className = 'mx-5 mt-4 rounded-2xl p-3 text-sm';
+                annBox.style.background = 'var(--color-accent-yellow)';
+                annBox.style.border = '1px solid var(--color-accent-yellow-dark)';
+                annBox.style.color = 'var(--color-text-dark)';
+                menuSection.prepend(annBox);
+            }
+        }
+        if (annBox) {
+            annBox.innerHTML = announcement ? `📣 ${announcement}` : '';
+            annBox.classList.toggle('hidden', !announcement);
+        }
+    };
+
     // ============ INIT ============
     document.addEventListener("DOMContentLoaded", async () => {
         Swal.fire({ title: 'กำลังโหลดเมนู...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
         loadCartFromStorage();
         loadModeFromStorage();
         try {
+            await window.loadShopSettings();
             const menuRef = ref(db, 'menu');
             const snapshot = await get(menuRef);
             if (snapshot.exists()) {
@@ -781,7 +844,8 @@
                     window.updateCartUI();
                     window.updateFooterState('menu');
                 }
-                window.switchTab('recommend');
+                window.renderCategoryTabs();
+                window.switchTab(window.getDefaultCategory());
                 window.initMap();
                 window.updateFooterState('menu');
                 if(localStorage.getItem('cust_name')) {
@@ -803,6 +867,14 @@
 
     // ============ MODE TOGGLE ============
     window.setMode = function(mode, skipSave) {
+        if (mode === 'pickup' && window.shopSettings && window.shopSettings.pickupEnabled === false) {
+            Swal.fire({icon:'info', title:'ปิดรับหน้าร้านชั่วคราว', text:'กรุณาเลือกเดลิเวอรี่แทน'});
+            mode = 'delivery';
+        }
+        if (mode === 'delivery' && window.shopSettings && window.shopSettings.deliveryEnabled === false) {
+            Swal.fire({icon:'info', title:'ปิดเดลิเวอรี่ชั่วคราว', text:'กรุณาเลือกรับหน้าร้านแทน'});
+            mode = 'pickup';
+        }
         window.orderMode = mode;
         if (!skipSave) saveModeToStorage();
         
@@ -906,24 +978,60 @@
         else if(current === 'page-tracking') window.showPage('menu');
     };
 
+    window.getAvailableCategories = function() {
+        const set = new Set();
+        (window.menuDB || []).forEach(item => {
+            if (item && item.hidden !== true && item.category) set.add(item.category);
+        });
+        const cats = Array.from(set);
+        if (cats.length > 1) cats.unshift('all');
+        return cats.sort((a, b) => {
+            const ai = window.CATEGORY_ORDER.indexOf(a);
+            const bi = window.CATEGORY_ORDER.indexOf(b);
+            return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi) || a.localeCompare(b, 'th');
+        });
+    };
+
+    window.getDefaultCategory = function() {
+        const cats = window.getAvailableCategories();
+        if (cats.includes('all')) return 'all';
+        if (cats.includes('recommend')) return 'recommend';
+        return cats[0] || 'recommend';
+    };
+
+    window.renderCategoryTabs = function() {
+        const container = document.getElementById('category-tabs');
+        if (!container) return;
+        const cats = window.getAvailableCategories();
+        if (cats.length === 0) {
+            container.innerHTML = '';
+            return;
+        }
+        container.innerHTML = cats.map(cat => {
+            const label = window.CATEGORY_LABELS[cat] || cat;
+            return `<button onclick="switchTab('${cat}')" id="tab-${cat}" data-cat="${cat}" class="category-tab text-center py-3 px-2 text-sm font-medium cursor-pointer transition-all border-b-2 border-transparent" style="color: var(--color-text-muted);">${label}</button>`;
+        }).join('');
+    };
+
     window.switchTab = function(cat) {
         window.activeTab = cat;
-        ['recommend', 'promotion'].forEach(tabName => {
-            const element = document.getElementById(`tab-${tabName}`);
-            if (cat === tabName) {
+        document.querySelectorAll('#category-tabs [data-cat]').forEach(element => {
+            const isActive = element.dataset.cat === cat;
+            if (isActive) {
                 element.style.borderColor = 'var(--color-primary)';
                 element.style.color = 'var(--color-primary)';
-                element.className = 'flex-1 text-center py-3 text-sm font-bold cursor-pointer transition-all border-b-2';
+                element.className = 'category-tab text-center py-3 px-2 text-sm font-bold cursor-pointer transition-all border-b-2';
             } else {
                 element.style.borderColor = 'transparent';
                 element.style.color = 'var(--color-text-muted)';
-                element.className = 'flex-1 text-center py-3 text-sm font-medium cursor-pointer transition-all border-b-2';
+                element.className = 'category-tab text-center py-3 px-2 text-sm font-medium cursor-pointer transition-all border-b-2 border-transparent';
             }
         });
         window.renderMenu(cat);
     };
 
     window.isShopOpen = function() {
+        if (window.shopSettings && window.shopSettings.shopOpen === false) return false;
         const now = new Date();
         const hour = now.getHours();
         return hour >= window.OPEN_HOUR && hour < window.CLOSE_HOUR;
@@ -1028,8 +1136,14 @@
     // ============ MENU RENDER ============
     window.renderMenu = function(cat) {
         const list = document.getElementById('menu-list');
-        const items = window.menuDB.filter(i => i.category === cat && i.hidden !== true);
+        const items = window.menuDB.filter(i => (cat === 'all' || i.category === cat) && i.hidden !== true);
         const pastelBgs = ['bg-pastel-blue', 'bg-pastel-mint', 'bg-pastel-yellow', 'bg-pastel-pink'];
+        const titleEl = document.querySelector('#page-menu h2');
+        if (titleEl) titleEl.innerText = window.CATEGORY_LABELS[cat] || cat || 'เมนู';
+        if (items.length === 0) {
+            list.innerHTML = `<div class="mx-5 mt-4 rounded-2xl p-8 text-center" style="background:white;border:1px solid var(--color-border-soft);color:var(--color-text-muted);">ยังไม่มีเมนูในหมวดนี้</div>`;
+            return;
+        }
         
         const createCard = (item, idx) => {
             const isSoldOut = !item.stock;
@@ -1459,8 +1573,61 @@
         document.getElementById('payment-chat-pay-detail').classList.toggle('hidden', method !== 'chat_pay');
     };
 
+    // ============ STOCK CHECK BEFORE SUBMIT ============
+    window.checkCartStockBeforeSubmit = async function() {
+        try {
+            const menuSnap = await get(ref(db, 'menu'));
+            const latestMenu = menuSnap.val() || {};
+            const soldOutItems = [];
+
+            for (const cartItem of window.cart || []) {
+                const itemId = cartItem.id;
+                const latest = latestMenu[itemId];
+
+                if (!latest || latest.hidden === true || latest.stock === false) {
+                    soldOutItems.push(cartItem.name || itemId);
+                }
+            }
+
+            if (soldOutItems.length > 0) {
+                await Swal.fire({
+                    icon: 'warning',
+                    title: 'มีบางเมนูหมดแล้ว',
+                    html: `<div style="text-align:left">
+                        ${soldOutItems.map(x => `• ${x}`).join('<br>')}
+                        <br><br>กรุณาลบเมนูที่หมดออกจากตะกร้าก่อนสั่งซื้อ
+                    </div>`,
+                    confirmButtonColor: '#2D5016'
+                });
+                return false;
+            }
+            return true;
+        } catch (error) {
+            console.error('Stock check failed:', error);
+            await Swal.fire({
+                icon: 'error',
+                title: 'เช็กสินค้าไม่สำเร็จ',
+                text: 'กรุณาลองใหม่อีกครั้ง เพื่อป้องกันการสั่งเมนูที่หมดแล้ว',
+                confirmButtonColor: '#2D5016'
+            });
+            return false;
+        }
+    };
+
     // ============ CONFIRM ORDER ============
     window.confirmOrder = async function() {
+        const stockOk = await window.checkCartStockBeforeSubmit();
+        if (!stockOk) return;
+
+        if (window.orderMode === 'pickup' && window.shopSettings && window.shopSettings.pickupEnabled === false) {
+            Swal.fire({icon:'warning', title:'ตอนนี้ปิดรับหน้าร้านชั่วคราว'});
+            return;
+        }
+        if (window.orderMode === 'delivery' && window.shopSettings && window.shopSettings.deliveryEnabled === false) {
+            Swal.fire({icon:'warning', title:'ตอนนี้ปิดเดลิเวอรี่ชั่วคราว'});
+            return;
+        }
+
         const method = document.querySelector('input[name="paymentMethod"]:checked').value;
         const total = document.getElementById('summary-grand-total').innerText;
         let slipBase64 = "-";
