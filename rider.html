@@ -2,221 +2,739 @@
 <html lang="th">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Rider Job Board | หนุ่มดำเนิน</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <meta name="theme-color" content="#176B32" />
+  <title>ไรเดอร์รับงาน | หนุ่มดำเนิน</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Anuphan:wght@100..700&family=Mali:wght@300;400;500;600;700&family=Caveat:wght@600;700&display=swap');
-    :root{--base:#FBFAF6;--warm:#F5F0E5;--primary:#2D5016;--light:#5B8C3C;--mint:#D4EBE0;--blue:#D6E9F5;--yellow:#F9F0D3;--pink:#F5D5CD;--text:#1F3A0F;--muted:#8B7355;--border:#E8E2D5;--hot:#C84B31}
-    body{font-family:'Anuphan',sans-serif;background:var(--base);color:var(--text)}
-    .font-display{font-family:'Mali',sans-serif}.font-script{font-family:'Caveat',cursive}
-    .card{background:white;border:1px solid var(--border);box-shadow:0 8px 24px rgba(45,80,22,.06)}
-    .btn{transition:.16s}.btn:active{transform:scale(.98)}
+    @import url('https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;500;600;700;800&family=Mali:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap');
+
+    :root {
+      --base: #F6FBF6;
+      --surface: #FFFFFF;
+      --soft: #EEF8EF;
+      --primary: #176B32;
+      --primary-deep: #0D4720;
+      --primary-light: #55A768;
+      --mint: #E5F7E9;
+      --mint-border: #BCE4C4;
+      --blue: #EDF8F3;
+      --blue-border: #D8EEE1;
+      --yellow: #FFF9E8;
+      --yellow-border: #F0DFA8;
+      --red: #D74C32;
+      --text: #12351F;
+      --muted: #657468;
+      --border: #DDEBDD;
+      --shadow: 0 10px 28px rgba(18,53,31,.08);
+      --shadow-strong: 0 20px 60px rgba(18,53,31,.16);
+    }
+
+    * { -webkit-tap-highlight-color: transparent; }
+    html { background: #EFF8F0; scroll-behavior: smooth; }
+    body {
+      font-family: 'Anuphan', sans-serif;
+      background: #EFF8F0;
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: calc(92px + env(safe-area-inset-bottom));
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .font-display { font-family: 'Mali', sans-serif; }
+    .font-script { font-family: 'Caveat', cursive; }
+    .app-shell {
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: var(--surface);
+      box-shadow: 0 24px 70px rgba(18,53,31,.10);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .btn {
+      transition: transform .14s ease, opacity .14s ease, box-shadow .14s ease;
+      user-select: none;
+    }
+    .btn:active { transform: scale(.97); }
+
+    .green-grad {
+      background: linear-gradient(135deg, #176B32 0%, #0D4720 100%);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      border-radius: 999px;
+      padding: .35rem .7rem;
+      font-size: .74rem;
+      font-weight: 800;
+      line-height: 1;
+      border: 1px solid transparent;
+    }
+
+    .tab-btn {
+      color: var(--muted);
+      transition: .18s ease;
+    }
+    .tab-btn.active {
+      color: var(--primary);
+    }
+    .tab-btn.active .tab-icon {
+      background: var(--mint);
+      border-color: var(--mint-border);
+      transform: translateY(-2px);
+    }
+
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    .job-card {
+      animation: fadeUp .22s ease-out both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+
+    .skeleton {
+      background: linear-gradient(90deg, #EEF8EF 0%, #FFFFFF 50%, #EEF8EF 100%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    input, textarea {
+      background: #FFFFFF;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      color: var(--text);
+      outline: none;
+      transition: border-color .16s ease, box-shadow .16s ease;
+    }
+    input:focus, textarea:focus {
+      border-color: rgba(23,107,50,.55);
+      box-shadow: 0 0 0 4px rgba(23,107,50,.08);
+    }
   </style>
 </head>
-<body class="pb-24">
-  <div class="max-w-md mx-auto min-h-screen px-4 py-4">
-    <header class="sticky top-0 z-20 -mx-4 px-4 py-3" style="background:rgba(251,250,246,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)">
-      <div class="flex items-center gap-3">
-        <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style="background:var(--mint)">🛵</div>
-        <div class="flex-1">
-          <div class="font-script text-lg leading-none" style="color:var(--light)">Rider Board</div>
-          <h1 class="font-display font-bold text-lg leading-tight" style="color:var(--primary)">หนุ่มดำเนิน มะพร้าวปั่น</h1>
+
+<body>
+  <div class="app-shell">
+    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur border-b" style="border-color:var(--border)">
+      <div class="px-4 pt-4 pb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-sm" style="background:var(--mint);border:1px solid var(--mint-border)">🛵</div>
+          <div class="flex-1 min-w-0">
+            <div class="font-script text-lg leading-none" style="color:var(--primary-light)">Numdamnoen Rider</div>
+            <h1 class="font-display font-bold text-lg leading-tight truncate" style="color:var(--primary-deep)">รับงานส่งมะพร้าว</h1>
+          </div>
+          <button id="btn-refresh" class="btn w-11 h-11 rounded-2xl bg-white border flex items-center justify-center" style="border-color:var(--border);color:var(--primary)" onclick="refreshAll(true)">
+            <i id="refresh-icon" class="fa-solid fa-rotate"></i>
+          </button>
         </div>
-        <button id="btn-refresh" onclick="loadJobs(true)" class="btn w-10 h-10 rounded-xl flex items-center justify-center" style="background:white;border:1px solid var(--border);color:var(--primary)"><i class="fa-solid fa-rotate"></i></button>
+        <div id="connection-line" class="mt-2 text-[11px] text-right" style="color:var(--muted)">กำลังเชื่อมต่อ...</div>
       </div>
     </header>
 
-    <section id="login-section" class="mt-5">
-      <div class="card rounded-3xl p-5">
-        <div class="font-display text-xl font-bold mb-1" style="color:var(--primary)">เข้าสู่ระบบไรเดอร์</div>
-        <p class="text-sm mb-4" style="color:var(--muted)">ครั้งแรกให้ใส่เบอร์ + PIN ที่ร้านตั้งไว้ ระบบจะผูกบัญชีนี้ไว้กับ LINE ถ้าเปิดผ่าน LINE</p>
-        <label class="text-xs font-bold">เบอร์โทร</label>
-        <input id="login-phone" inputmode="numeric" maxlength="10" class="w-full mt-1 mb-3 rounded-2xl px-4 py-3 outline-none" style="background:var(--warm);border:1px solid var(--border)" placeholder="08xxxxxxxx">
-        <label class="text-xs font-bold">PIN ไรเดอร์</label>
-        <input id="login-pin" inputmode="numeric" maxlength="6" type="password" class="w-full mt-1 mb-4 rounded-2xl px-4 py-3 outline-none" style="background:var(--warm);border:1px solid var(--border)" placeholder="เช่น 4268">
-        <button onclick="loginRider()" class="btn w-full rounded-2xl py-3.5 font-bold text-white" style="background:var(--primary)">เข้าสู่ระบบ</button>
-        <div id="line-profile-note" class="mt-3 text-[11px]" style="color:var(--muted)">กำลังตรวจ LINE...</div>
-      </div>
-    </section>
-
-    <section id="app-section" class="mt-5 hidden">
-      <div class="card rounded-3xl p-4 mb-4">
-        <div class="flex items-center gap-3">
-          <img id="rider-pic" class="w-12 h-12 rounded-2xl object-cover hidden" />
-          <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl" id="rider-pic-fallback" style="background:var(--mint)">👤</div>
-          <div class="flex-1">
-            <div class="font-display font-bold" id="rider-name" style="color:var(--primary)">-</div>
-            <div class="text-xs" id="rider-stat" style="color:var(--muted)">-</div>
+    <main class="px-4 pt-4">
+      <section id="login-page">
+        <div class="green-grad rounded-[28px] p-5 text-white shadow-xl overflow-hidden relative">
+          <div class="absolute -right-12 -top-14 w-40 h-40 bg-white/10 rounded-full"></div>
+          <div class="absolute -left-10 -bottom-16 w-40 h-40 bg-white/10 rounded-full"></div>
+          <div class="relative">
+            <div class="text-5xl mb-3">🛵</div>
+            <h2 class="font-display text-2xl font-bold">เข้าสู่ระบบไรเดอร์</h2>
+            <p class="text-sm text-white/80 mt-1 leading-relaxed">ใส่ชื่อและเบอร์โทรครั้งเดียว ระบบจะจำไว้ในเครื่องนี้ แล้วกดรับงานจากกลุ่ม LINE ได้เลย</p>
           </div>
-          <button onclick="logoutRider()" class="text-xs px-3 py-2 rounded-xl" style="background:var(--warm);color:var(--muted)">ออก</button>
         </div>
-      </div>
 
-      <div id="my-job-box" class="mb-5"></div>
+        <div class="card p-5 mt-4">
+          <label class="block text-xs font-bold mb-1" style="color:var(--muted)">ชื่อไรเดอร์</label>
+          <input id="rider-name-input" class="w-full px-4 py-3 mb-3" placeholder="เช่น พี่ตู่" autocomplete="name" />
 
-      <div class="flex items-center justify-between mb-2">
-        <h2 class="font-display text-lg font-bold" style="color:var(--primary)">งานเปิดรับ</h2>
-        <span class="text-xs" style="color:var(--muted)">กดก่อนรับก่อน</span>
+          <label class="block text-xs font-bold mb-1" style="color:var(--muted)">เบอร์โทร</label>
+          <input id="rider-phone-input" class="w-full px-4 py-3 mb-4" placeholder="เช่น 0885996519" inputmode="tel" autocomplete="tel" maxlength="14" />
+
+          <button class="btn w-full green-grad text-white rounded-2xl py-3.5 font-bold shadow-lg" onclick="saveRiderProfile()">
+            <i class="fa-solid fa-right-to-bracket mr-1"></i> เริ่มรับงาน
+          </button>
+
+          <div class="mt-4 rounded-2xl p-3 text-xs leading-6" style="background:var(--yellow);border:1px solid var(--yellow-border);color:#7A4B08">
+            <b>วิธีใช้งาน:</b><br>
+            1) ร้านโพสต์งานในกลุ่ม LINE<br>
+            2) ไรเดอร์กดลิงก์ หรือเปิดหน้านี้<br>
+            3) ใครกดรับก่อน งานจะล็อกให้คนนั้นก่อน
+          </div>
+        </div>
+      </section>
+
+      <section id="app-page" class="hidden">
+        <div class="card p-4 mb-4">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style="background:var(--mint);border:1px solid var(--mint-border)">👤</div>
+            <div class="flex-1 min-w-0">
+              <div class="font-display font-bold truncate" id="profile-name" style="color:var(--primary-deep)">-</div>
+              <div class="text-xs mt-0.5" id="profile-phone" style="color:var(--muted)">-</div>
+            </div>
+            <button class="btn text-xs font-bold rounded-xl px-3 py-2" style="background:var(--soft);color:var(--muted)" onclick="logoutRider()">
+              ออก
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 mb-4">
+          <div class="card p-3 text-center rounded-2xl">
+            <div class="text-xs" style="color:var(--muted)">งานเปิด</div>
+            <div class="font-display text-2xl font-bold" id="kpi-open" style="color:var(--red)">0</div>
+          </div>
+          <div class="card p-3 text-center rounded-2xl">
+            <div class="text-xs" style="color:var(--muted)">งานของฉัน</div>
+            <div class="font-display text-2xl font-bold" id="kpi-mine" style="color:var(--primary)">0</div>
+          </div>
+          <div class="card p-3 text-center rounded-2xl">
+            <div class="text-xs" style="color:var(--muted)">รายได้วันนี้</div>
+            <div class="font-display text-2xl font-bold" id="kpi-earn" style="color:#7c3aed">0</div>
+          </div>
+        </div>
+
+        <div id="preselect-alert" class="hidden mb-4 rounded-3xl p-4 border" style="background:var(--yellow);border-color:var(--yellow-border);color:#7A4B08">
+          <div class="font-bold"><i class="fa-solid fa-link mr-1"></i> เปิดจากลิงก์งาน</div>
+          <div class="text-xs mt-1">ระบบจะเน้นงานที่เปิดจากลิงก์ให้ ถ้ายังว่างให้กดรับได้ทันที</div>
+        </div>
+
+        <section data-view="mine" class="view-pane">
+          <div class="flex items-center justify-between mb-2">
+            <h2 class="font-display text-lg font-bold" style="color:var(--primary-deep)">งานของฉัน</h2>
+            <button class="text-xs font-bold" style="color:var(--primary)" onclick="refreshAll(true)"><i class="fa-solid fa-rotate mr-1"></i>รีเฟรช</button>
+          </div>
+          <div id="my-jobs-list" class="space-y-3"></div>
+        </section>
+
+        <section data-view="open" class="view-pane hidden">
+          <div class="flex items-center justify-between mb-2">
+            <h2 class="font-display text-lg font-bold" style="color:var(--primary-deep)">งานเปิดรับ</h2>
+            <span class="text-xs font-bold" style="color:var(--muted)">กดก่อนรับก่อน</span>
+          </div>
+          <div id="open-jobs-list" class="space-y-3"></div>
+        </section>
+
+        <section data-view="history" class="view-pane hidden">
+          <div class="flex items-center justify-between mb-2">
+            <h2 class="font-display text-lg font-bold" style="color:var(--primary-deep)">ประวัติวันนี้</h2>
+            <span class="text-xs" style="color:var(--muted)">เฉพาะเครื่องนี้/เบอร์นี้</span>
+          </div>
+          <div id="history-jobs-list" class="space-y-3"></div>
+        </section>
+      </section>
+    </main>
+
+    <nav id="bottom-nav" class="hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur border-t safe-bottom" style="border-color:var(--border)">
+      <div class="max-w-[480px] mx-auto grid grid-cols-3">
+        <button class="tab-btn active py-2.5" data-tab="mine" onclick="switchView('mine')">
+          <div class="tab-icon mx-auto w-11 h-10 rounded-2xl border flex items-center justify-center transition" style="border-color:transparent"><i class="fa-solid fa-motorcycle"></i></div>
+          <div class="text-[11px] font-bold mt-0.5">งานฉัน</div>
+        </button>
+        <button class="tab-btn py-2.5" data-tab="open" onclick="switchView('open')">
+          <div class="tab-icon mx-auto w-11 h-10 rounded-2xl border flex items-center justify-center transition relative" style="border-color:transparent">
+            <i class="fa-solid fa-bullhorn"></i>
+            <span id="open-badge" class="hidden absolute -top-1 -right-1 text-[10px] text-white rounded-full px-1.5" style="background:var(--red)">0</span>
+          </div>
+          <div class="text-[11px] font-bold mt-0.5">งานเปิด</div>
+        </button>
+        <button class="tab-btn py-2.5" data-tab="history" onclick="switchView('history')">
+          <div class="tab-icon mx-auto w-11 h-10 rounded-2xl border flex items-center justify-center transition" style="border-color:transparent"><i class="fa-solid fa-clock-rotate-left"></i></div>
+          <div class="text-[11px] font-bold mt-0.5">ประวัติ</div>
+        </button>
       </div>
-      <div id="open-jobs" class="space-y-3"></div>
-    </section>
+    </nav>
   </div>
 
-<script>
-  // ✅ เปลี่ยนเป็น URL Web App ตัวล่าสุดหลัง Deploy Apps Script
-  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwIix4qNyES7KRUxOzY0AL_AdYsJhMkzSN17oItBFrN1ITwEYrTCISntFZsnfUAVpQd/exec";
-  // ✅ ถ้าสร้าง LIFF แล้ว ใส่ LIFF ID ตรงนี้ เช่น "200xxxxxxx-xxxxxxxx"
-  const LIFF_ID = "";
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, onValue, query, orderByChild, equalTo, runTransaction, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-  let lineProfile = { lineUserId:"", lineDisplayName:"", pictureUrl:"" };
-  let riderSession = JSON.parse(localStorage.getItem('rider_session') || 'null');
-  const qs = new URLSearchParams(location.search);
-  const preselectJobId = qs.get('jobId') || '';
-  let loadingJobs = false;
+  const firebaseConfig = {
+    apiKey: "AIzaSyBLo1JKTNOrx6vvh2a6Pl8Zxjll4eoIKAA",
+    authDomain: "linenoti-7c04f.firebaseapp.com",
+    databaseURL: "https://linenoti-7c04f-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "linenoti-7c04f",
+    storageBucket: "linenoti-7c04f.firebasestorage.app",
+    messagingSenderId: "607844945437",
+    appId: "1:607844945437:web:d5e0229b8c18522cd500f4"
+  };
 
-  function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-  function api(params, timeoutMs=15000){
-    const controller = new AbortController();
-    const timer = setTimeout(()=>controller.abort(), timeoutMs);
-    const url = WEB_APP_URL + '?' + new URLSearchParams({...params, _t: Date.now()}).toString();
-    return fetch(url, { cache:'no-store', signal:controller.signal })
-      .then(r=>r.json())
-      .finally(()=>clearTimeout(timer));
-  }
-  async function initLine(){
-    const note = document.getElementById('line-profile-note');
-    try{
-      if(!LIFF_ID){ note.textContent = 'โหมด PIN พร้อมใช้งาน · ถ้าต้องการผูก LINE ให้ใส่ LIFF_ID ในไฟล์นี้'; return; }
-      await liff.init({liffId:LIFF_ID});
-      if(!liff.isLoggedIn()){ liff.login({redirectUri:location.href}); return; }
-      const profile = await liff.getProfile();
-      lineProfile = { lineUserId:profile.userId || '', lineDisplayName:profile.displayName || '', pictureUrl:profile.pictureUrl || '' };
-      note.textContent = 'เชื่อมต่อ LINE แล้ว: ' + (lineProfile.lineDisplayName || '-');
-    }catch(e){ console.warn(e); note.textContent = 'อ่าน LINE ไม่สำเร็จ ใช้ PIN เข้าระบบได้'; }
-  }
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const auth = getAuth(app);
 
-  async function loginRider(){
-    const phone = document.getElementById('login-phone').value.trim();
-    const pin = document.getElementById('login-pin').value.trim();
-    if(!phone || !pin) return Swal.fire({icon:'warning',text:'กรุณาใส่เบอร์และ PIN'});
-    Swal.fire({title:'กำลังเข้าสู่ระบบ...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
-    try{
-      const data = await api({action:'rider_login_bind', phone, pin, ...lineProfile});
-      Swal.close();
-      if(!data.ok) return Swal.fire({icon:'error',title:'เข้าไม่ได้',text:data.error||'ไม่สำเร็จ'});
-      riderSession = { token:data.token, rider:data.rider };
-      localStorage.setItem('rider_session', JSON.stringify(riderSession));
-      showApp();
-      await loadJobs(false);
-      if(preselectJobId) setTimeout(()=>acceptJob(preselectJobId), 400);
-    }catch(e){ Swal.close(); Swal.fire({icon:'error',title:'เชื่อมต่อไม่ได้',text:e.message}); }
+  const RIDER_PROFILE_KEY = 'numdamnoen_rider_profile_v2';
+  const urlParams = new URLSearchParams(location.search);
+  const preselectJobId = (urlParams.get('jobId') || '').trim();
+
+  window.currentUid = '';
+  window.riderProfile = null;
+  window.openJobs = [];
+  window.myJobs = [];
+  window.currentView = 'mine';
+  window.openUnsub = null;
+  window.myUnsub = null;
+
+  function escapeHtml(text) {
+    return String(text ?? '').replace(/[&<>"']/g, (m) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[m]));
   }
 
-  function showApp(){
-    document.getElementById('login-section').classList.add('hidden');
-    document.getElementById('app-section').classList.remove('hidden');
-    const r = riderSession?.rider || {};
-    document.getElementById('rider-name').textContent = r.name || '-';
-    document.getElementById('rider-stat').textContent = `วันนี้ ${r.todayJobs||0} รอบ · รายได้ ${r.todayEarning||0} บาท`;
-    if(r.pictureUrl){ document.getElementById('rider-pic').src = r.pictureUrl; document.getElementById('rider-pic').classList.remove('hidden'); document.getElementById('rider-pic-fallback').classList.add('hidden'); }
+  function normalizePhone(phone) {
+    return String(phone || '').replace(/\D/g, '');
   }
-  function logoutRider(){ localStorage.removeItem('rider_session'); riderSession=null; location.reload(); }
 
-  async function loadJobs(silent=false){
-    if(!riderSession?.token || loadingJobs) return;
-    loadingJobs = true;
-    const btn = document.getElementById('btn-refresh');
-    if(btn) btn.style.opacity = '.55';
-    if(!silent) Swal.fire({title:'โหลดงาน...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
-    try{
-      const data = await api({action:'rider_get_jobs', token:riderSession.token});
-      if(!silent) Swal.close();
-      if(!data.ok) {
-        localStorage.removeItem('rider_session');
-        return Swal.fire({icon:'error',title:'เซสชันหมดอายุ',text:data.error||'กรุณาเข้าใหม่'}).then(()=>location.reload());
-      }
-      riderSession.rider = data.rider;
-      localStorage.setItem('rider_session', JSON.stringify(riderSession));
-      showApp();
-      renderMyJobs(data.myJobs||[]);
-      renderOpenJobs(data.openJobs||[]);
-    }catch(e){
-      if(!silent) { Swal.close(); Swal.fire({icon:'error',title:'โหลดไม่ได้',text:e.name==='AbortError'?'หมดเวลารอเซิร์ฟเวอร์ ลองกดรีเฟรชอีกครั้ง':e.message}); }
-      else console.warn('silent load failed', e);
-    }finally{
-      loadingJobs = false;
-      if(btn) btn.style.opacity = '1';
+  function formatNumber(n) {
+    const num = Number(String(n ?? 0).replace(/[^0-9.\-]/g, '')) || 0;
+    return num.toLocaleString('th-TH', { maximumFractionDigits: 0 });
+  }
+
+  function formatDateTime(iso) {
+    if (!iso) return '-';
+    const date = new Date(iso);
+    if (isNaN(date.getTime())) return String(iso);
+    return date.toLocaleString('th-TH', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
+  }
+
+  function isToday(iso) {
+    if (!iso) return false;
+    const date = new Date(iso);
+    if (isNaN(date.getTime())) return false;
+    const now = new Date();
+    return date.getFullYear() === now.getFullYear() && date.getMonth() === now.getMonth() && date.getDate() === now.getDate();
+  }
+
+  function vibrate(ms = 50) {
+    try { if (navigator.vibrate) navigator.vibrate(ms); } catch (err) {}
+  }
+
+  function getStoredProfile() {
+    try { return JSON.parse(localStorage.getItem(RIDER_PROFILE_KEY) || 'null'); }
+    catch (err) { return null; }
+  }
+
+  function storeProfile(profile) {
+    localStorage.setItem(RIDER_PROFILE_KEY, JSON.stringify(profile));
+    window.riderProfile = profile;
+  }
+
+  function clearProfile() {
+    localStorage.removeItem(RIDER_PROFILE_KEY);
+    window.riderProfile = null;
+  }
+
+  function setConnection(text, ok = true) {
+    const el = document.getElementById('connection-line');
+    if (!el) return;
+    el.innerHTML = `${ok ? '🟢' : '🔴'} ${escapeHtml(text)}`;
+  }
+
+  function showLogin() {
+    document.getElementById('login-page').classList.remove('hidden');
+    document.getElementById('app-page').classList.add('hidden');
+    document.getElementById('bottom-nav').classList.add('hidden');
+    const old = getStoredProfile();
+    if (old) {
+      document.getElementById('rider-name-input').value = old.name || '';
+      document.getElementById('rider-phone-input').value = old.phone || '';
     }
   }
 
-  function jobCard(job, mine=false){
-    const full = mine;
-    const itemCountText = `${job.itemCount || '-'} รายการ / ${job.pieceCount || '-'} ชิ้น`;
-    const itemListHtml = full && job.items
-      ? `<div class="mt-3 rounded-2xl p-3 text-sm" style="background:white;border:1px solid var(--border);color:var(--text)">
-          <div class="font-bold mb-2" style="color:var(--primary)">รายการที่ต้องรับ · ${esc(itemCountText)}</div>
-          <div class="whitespace-pre-wrap text-xs leading-relaxed" style="color:var(--muted)">${esc(job.items)}</div>
-        </div>`
-      : '';
-    return `<div class="card rounded-3xl p-4">
-      <div class="flex items-start justify-between gap-3">
-        <div>
-          <div class="text-xs" style="color:var(--muted)">${esc(job.orderId)}</div>
-          <div class="font-display text-xl font-bold" style="color:var(--hot)">${esc(job.riderPay)} บาท</div>
-          <div class="text-[11px] mt-0.5" style="color:var(--muted)">ค่ารอบไรเดอร์ · ไม่รวมราคาสินค้า</div>
-        </div>
-        <span class="text-[11px] px-2 py-1 rounded-full" style="background:${mine?'var(--mint)':'var(--yellow)'};color:var(--primary)">${esc(job.status)}</span>
-      </div>
-      <div class="mt-2 grid grid-cols-3 gap-2 text-sm">
-        <div class="rounded-2xl p-2" style="background:var(--warm)">ระยะ<br><b>${esc(job.distanceKm)} กม.</b></div>
-        <div class="rounded-2xl p-2" style="background:var(--warm)">ช่วง<br><b>${esc(job.riderDistanceBand)}</b></div>
-        <div class="rounded-2xl p-2" style="background:var(--warm)">ของ<br><b>${esc(itemCountText)}</b></div>
-      </div>
-      ${full ? `<div class="mt-3 rounded-2xl p-3 text-sm" style="background:var(--blue);color:var(--text)">
-        <b>${esc(job.customerName)}</b> · <a class="underline" href="tel:${esc(job.customerPhone)}">${esc(job.customerPhone)}</a><br>
-        <div class="mt-1">${esc(job.customerAddress)}</div>
-      </div>${itemListHtml}` : `<div class="mt-3 text-xs" style="color:var(--muted)">รับงานแล้วจึงเห็นเบอร์ ที่อยู่ และรายการสินค้าแบบละเอียด</div>`}
-      <div class="mt-3 grid ${full?'grid-cols-2':'grid-cols-1'} gap-2">
-        ${full && job.mapLink ? `<a href="${esc(job.mapLink)}" target="_blank" class="btn text-center rounded-2xl py-3 font-bold" style="background:var(--blue);color:#113566">เปิดแผนที่</a>`:''}
-        ${full ? `<button onclick="updateStatus('${esc(job.jobId)}','PICKED_UP')" class="btn rounded-2xl py-3 font-bold text-white" style="background:var(--primary)">รับของแล้ว</button>
-        <button onclick="updateStatus('${esc(job.jobId)}','DELIVERED')" class="btn rounded-2xl py-3 font-bold text-white col-span-2" style="background:#16a34a">ส่งสำเร็จ</button>
-        <button onclick="reportIssue('${esc(job.jobId)}')" class="btn rounded-2xl py-3 font-bold col-span-2" style="background:var(--pink);color:var(--hot)">แจ้งปัญหา</button>` : `<button onclick="acceptJob('${esc(job.jobId)}')" class="btn rounded-2xl py-3 font-bold text-white" style="background:var(--primary)">กดรับงานนี้</button>`}
-      </div>
+  function showApp() {
+    document.getElementById('login-page').classList.add('hidden');
+    document.getElementById('app-page').classList.remove('hidden');
+    document.getElementById('bottom-nav').classList.remove('hidden');
+    document.getElementById('profile-name').textContent = window.riderProfile?.name || '-';
+    document.getElementById('profile-phone').textContent = window.riderProfile?.phone || '-';
+    if (preselectJobId) document.getElementById('preselect-alert').classList.remove('hidden');
+    startListeningJobs();
+    switchView('mine');
+  }
+
+  window.saveRiderProfile = function() {
+    const name = document.getElementById('rider-name-input').value.trim();
+    const phone = normalizePhone(document.getElementById('rider-phone-input').value);
+    if (!name) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณาใส่ชื่อไรเดอร์', 'warning');
+    if (!/^0[0-9]{8,9}$/.test(phone)) return Swal.fire('เบอร์ไม่ถูกต้อง', 'กรุณาใส่เบอร์ 9-10 หลัก เช่น 0885996519', 'warning');
+    storeProfile({ name, phone, savedAt: new Date().toISOString() });
+    showApp();
+  };
+
+  window.logoutRider = function() {
+    Swal.fire({ icon:'question', title:'ออกจากระบบ?', text:'ระบบจะลบชื่อและเบอร์ที่จำไว้ในเครื่องนี้', showCancelButton:true, confirmButtonText:'ออก', cancelButtonText:'ยกเลิก', confirmButtonColor:'#D74C32' }).then((result) => {
+      if (!result.isConfirmed) return;
+      clearProfile();
+      location.reload();
+    });
+  };
+
+  window.switchView = function(view) {
+    window.currentView = view;
+    document.querySelectorAll('.view-pane').forEach((pane) => {
+      pane.classList.toggle('hidden', pane.dataset.view !== view);
+    });
+    document.querySelectorAll('.tab-btn').forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.tab === view);
+    });
+    renderAll();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  window.refreshAll = function(showToast = false) {
+    const icon = document.getElementById('refresh-icon');
+    if (icon) icon.classList.add('fa-spin');
+    startListeningJobs(true);
+    setTimeout(() => { if (icon) icon.classList.remove('fa-spin'); }, 500);
+    if (showToast) Swal.fire({ toast:true, position:'top', icon:'success', title:'รีเฟรชแล้ว', timer:900, showConfirmButton:false });
+  };
+
+  function startListeningJobs(force = false) {
+    if (!window.riderProfile || !window.currentUid) return;
+    if (window.openUnsub && force) { window.openUnsub(); window.openUnsub = null; }
+    if (window.myUnsub && force) { window.myUnsub(); window.myUnsub = null; }
+
+    if (!window.openUnsub) {
+      const openQuery = query(ref(db, 'riderJobs'), orderByChild('status'), equalTo('OPEN'));
+      window.openUnsub = onValue(openQuery, (snapshot) => {
+        const data = snapshot.exists() ? snapshot.val() : {};
+        window.openJobs = Object.entries(data).map(([key, job]) => ({ key, ...job })).sort((a, b) => new Date(a.createdAt || 0) - new Date(b.createdAt || 0));
+        setConnection('ออนไลน์ · งานเปิด ' + window.openJobs.length + ' งาน', true);
+        renderAll();
+      }, (err) => {
+        setConnection('อ่านงานเปิดไม่ได้: ' + err.message, false);
+        renderPermissionError('open-jobs-list', err.message);
+      });
+    }
+
+    if (!window.myUnsub) {
+      const myQuery = query(ref(db, 'riderJobs'), orderByChild('assignedRiderPhone'), equalTo(window.riderProfile.phone));
+      window.myUnsub = onValue(myQuery, (snapshot) => {
+        const data = snapshot.exists() ? snapshot.val() : {};
+        window.myJobs = Object.entries(data).map(([key, job]) => ({ key, ...job })).sort((a, b) => new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0));
+        renderAll();
+      }, (err) => {
+        setConnection('อ่านงานของฉันไม่ได้: ' + err.message, false);
+        renderPermissionError('my-jobs-list', err.message);
+      });
+    }
+  }
+
+  function renderAll() {
+    renderKpi();
+    renderMyJobs();
+    renderOpenJobs();
+    renderHistoryJobs();
+  }
+
+  function renderKpi() {
+    const open = window.openJobs || [];
+    const mine = (window.myJobs || []).filter((j) => ['ASSIGNED','PICKED_UP','ISSUE'].includes(j.status));
+    const doneToday = (window.myJobs || []).filter((j) => j.status === 'DELIVERED' && isToday(j.deliveredAt || j.updatedAt));
+    const earnToday = doneToday.reduce((sum, j) => sum + (Number(j.riderPay) || 0), 0);
+    document.getElementById('kpi-open').textContent = open.length;
+    document.getElementById('kpi-mine').textContent = mine.length;
+    document.getElementById('kpi-earn').textContent = formatNumber(earnToday);
+    const badge = document.getElementById('open-badge');
+    if (open.length) { badge.classList.remove('hidden'); badge.textContent = open.length; }
+    else { badge.classList.add('hidden'); }
+  }
+
+  function emptyCard(icon, title, text) {
+    return `<div class="card rounded-3xl p-8 text-center" style="color:var(--muted)">
+      <div class="text-4xl mb-3">${icon}</div>
+      <div class="font-display font-bold" style="color:var(--primary-deep)">${title}</div>
+      <div class="text-xs mt-1 leading-relaxed">${text}</div>
     </div>`;
   }
-  function renderMyJobs(jobs){ document.getElementById('my-job-box').innerHTML = jobs.length ? `<h2 class="font-display text-lg font-bold mb-2" style="color:var(--primary)">งานของฉัน</h2><div class="space-y-3">${jobs.map(j=>jobCard(j,true)).join('')}</div>` : ''; }
-  function renderOpenJobs(jobs){ document.getElementById('open-jobs').innerHTML = jobs.length ? jobs.map(j=>jobCard(j,false)).join('') : `<div class="card rounded-3xl p-8 text-center" style="color:var(--muted)">ยังไม่มีงานเปิดรับ</div>`; }
 
-  async function acceptJob(jobId){
-    const ok = await Swal.fire({icon:'question',title:'รับงานนี้?',text:'ถ้ารับแล้วต้องไปรับของตามเวลาร้าน',showCancelButton:true,confirmButtonText:'รับงาน',cancelButtonText:'ยกเลิก',confirmButtonColor:'#2D5016'});
-    if(!ok.isConfirmed) return;
-    Swal.fire({title:'กำลังล็อกงาน...',allowOutsideClick:false,didOpen:()=>Swal.showLoading()});
-    const data = await api({action:'rider_accept_job', token:riderSession.token, jobId});
-    Swal.close();
-    if(!data.ok) return Swal.fire({icon:'error',title:'รับไม่ได้',text:data.error||'มีคนรับไปแล้ว'}).then(()=>loadJobs(true));
-    Swal.fire({icon:'success',title:'รับงานสำเร็จ',timer:1000,showConfirmButton:false});
-    loadJobs(true);
-  }
-  async function updateStatus(jobId,status){
-    const data = await api({action:'rider_update_job_status', token:riderSession.token, jobId, status});
-    if(!data.ok) return Swal.fire({icon:'error',text:data.error||'อัปเดตไม่ได้'});
-    Swal.fire({icon:'success',title:data.message||'อัปเดตแล้ว',timer:900,showConfirmButton:false}); loadJobs(true);
-  }
-  async function reportIssue(jobId){
-    const r = await Swal.fire({title:'แจ้งปัญหา',input:'textarea',inputPlaceholder:'เช่น ลูกค้าไม่รับสาย / หาหมุดไม่เจอ',showCancelButton:true,confirmButtonText:'ส่งแจ้งร้าน'});
-    if(!r.isConfirmed) return;
-    const data = await api({action:'rider_update_job_status', token:riderSession.token, jobId, status:'ISSUE', issueNote:r.value||'-'});
-    if(!data.ok) return Swal.fire({icon:'error',text:data.error||'แจ้งไม่ได้'});
-    Swal.fire({icon:'success',title:'แจ้งร้านแล้ว'}); loadJobs(true);
+  function renderPermissionError(containerId, message) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    el.innerHTML = `<div class="card rounded-3xl p-5 text-center" style="color:var(--red)">
+      <div class="text-4xl mb-2">🔒</div>
+      <div class="font-display font-bold">ยังอ่านข้อมูลงานไม่ได้</div>
+      <div class="text-xs mt-2 leading-relaxed">${escapeHtml(message || 'PERMISSION_DENIED')}<br>ต้องเพิ่ม Firebase Rules สำหรับ riderJobs ให้ rider.html อ่าน/รับงานได้</div>
+    </div>`;
   }
 
-  (async function boot(){ await initLine(); if(riderSession?.token){ showApp(); loadJobs(false); if(preselectJobId) setTimeout(()=>acceptJob(preselectJobId),700); } })();
-  // ลดความหน่วงและลดภาระ Apps Script: ดึงอัตโนมัติทุก 45 วินาที กดปุ่มรีเฟรชเองได้เมื่อต้องการ
-  setInterval(()=>{ if(riderSession?.token) loadJobs(true); }, 45000);
+  function renderMyJobs() {
+    const active = (window.myJobs || []).filter((j) => ['ASSIGNED','PICKED_UP','ISSUE'].includes(j.status));
+    const container = document.getElementById('my-jobs-list');
+    if (!container) return;
+    container.innerHTML = active.length ? active.map((job) => jobCard(job, true)).join('') : emptyCard('😊', 'ยังไม่มีงานค้าง', 'ถ้ามีงานใหม่ ให้ไปที่แท็บ “งานเปิด” แล้วกดรับงานได้เลย');
+  }
+
+  function renderOpenJobs() {
+    const container = document.getElementById('open-jobs-list');
+    if (!container) return;
+    const open = window.openJobs || [];
+    if (!open.length) {
+      container.innerHTML = emptyCard('🎉', 'ยังไม่มีงานเปิดรับ', 'รอร้านสร้างงานจากหน้า Admin หรือกดรีเฟรชอีกครั้ง');
+      return;
+    }
+    container.innerHTML = open.map((job) => jobCard(job, false)).join('');
+  }
+
+  function renderHistoryJobs() {
+    const container = document.getElementById('history-jobs-list');
+    if (!container) return;
+    const done = (window.myJobs || []).filter((j) => ['DELIVERED','CANCELLED'].includes(j.status)).slice(0, 20);
+    container.innerHTML = done.length ? done.map((job) => jobCard(job, true, true)).join('') : emptyCard('📦', 'ยังไม่มีประวัติวันนี้', 'เมื่องานส่งสำเร็จแล้ว จะมาอยู่ตรงนี้');
+  }
+
+  function statusBadge(status) {
+    const map = {
+      OPEN: ['รอรับงาน', 'fa-bullhorn', 'background:var(--yellow);border-color:var(--yellow-border);color:#A15B00'],
+      ASSIGNED: ['รับงานแล้ว', 'fa-user-check', 'background:var(--blue);border-color:var(--blue-border);color:#14532D'],
+      PICKED_UP: ['รับของแล้ว', 'fa-box', 'background:#F3E8FF;border-color:#E9D5FF;color:#7E22CE'],
+      DELIVERED: ['ส่งสำเร็จ', 'fa-circle-check', 'background:var(--mint);border-color:var(--mint-border);color:var(--primary)'],
+      ISSUE: ['มีปัญหา', 'fa-triangle-exclamation', 'background:#FFF1EE;border-color:#F2C8BF;color:var(--red)'],
+      CANCELLED: ['ยกเลิก', 'fa-ban', 'background:#F3F4F6;border-color:#E5E7EB;color:#6B7280']
+    };
+    const item = map[status] || [status || '-', 'fa-circle', 'background:#F3F4F6;border-color:#E5E7EB;color:#6B7280'];
+    return `<span class="pill" style="${item[2]}"><i class="fa-solid ${item[1]}"></i>${escapeHtml(item[0])}</span>`;
+  }
+
+  function getItemSummary(job) {
+    const text = String(job.itemsText || '').trim();
+    if (!text) return 'ดูรายการหลังรับงาน';
+    const lines = text.split('\n').map((x) => x.trim()).filter(Boolean);
+    const itemLines = lines.filter((line) => /^\d+\./.test(line));
+    let pieces = 0;
+    itemLines.forEach((line) => {
+      const match = line.match(/[xX×]\s*(\d+)/);
+      pieces += match ? Number(match[1] || 1) : 1;
+    });
+    const count = itemLines.length || lines.length || 1;
+    if (!pieces) pieces = count;
+    return `${count} รายการ / ${pieces} ชิ้น`;
+  }
+
+  function jobCard(job, mine = false, compact = false) {
+    const preselected = preselectJobId && String(job.jobId || '').toLowerCase() === preselectJobId.toLowerCase();
+    const customerFee = job.customerDeliveryFee ?? job.deliveryFee ?? 0;
+    const shopHelp = job.shopHelpDelivery ?? 0;
+    const distance = job.distanceKm || '-';
+    const zone = job.deliveryZoneLabel || job.deliveryZone || '-';
+    const itemSummary = getItemSummary(job);
+    const fullAddress = mine;
+    const mapUrl = job.mapLink || (job.customerLocation ? `https://maps.google.com/?q=${encodeURIComponent(job.customerLocation)}` : '');
+
+    const openActions = `
+      <button onclick="acceptJob('${escapeHtml(job.key)}')" class="btn w-full green-grad text-white rounded-2xl py-3.5 font-bold shadow-lg">
+        <i class="fa-solid fa-hand-pointer mr-1"></i> กดรับงานนี้
+      </button>`;
+
+    const mineActions = `
+      <div class="grid grid-cols-2 gap-2">
+        ${mapUrl ? `<a href="${escapeHtml(mapUrl)}" target="_blank" class="btn text-center rounded-2xl py-3 font-bold" style="background:var(--blue);border:1px solid var(--blue-border);color:#14532D"><i class="fa-solid fa-map-location-dot mr-1"></i> แผนที่</a>` : ''}
+        ${job.customerPhone ? `<a href="tel:${escapeHtml(job.customerPhone)}" class="btn text-center rounded-2xl py-3 font-bold" style="background:var(--mint);border:1px solid var(--mint-border);color:var(--primary)"><i class="fa-solid fa-phone mr-1"></i> โทรลูกค้า</a>` : ''}
+        ${job.status === 'ASSIGNED' ? `<button onclick="updateJobStatus('${escapeHtml(job.key)}','PICKED_UP')" class="btn rounded-2xl py-3 font-bold text-white col-span-2" style="background:#7c3aed"><i class="fa-solid fa-box mr-1"></i> รับของแล้ว</button>` : ''}
+        ${['ASSIGNED','PICKED_UP','ISSUE'].includes(job.status) ? `<button onclick="updateJobStatus('${escapeHtml(job.key)}','DELIVERED')" class="btn rounded-2xl py-3 font-bold text-white col-span-2" style="background:#16A34A"><i class="fa-solid fa-check mr-1"></i> ส่งสำเร็จ</button>` : ''}
+        ${['ASSIGNED','PICKED_UP'].includes(job.status) ? `<button onclick="reportIssue('${escapeHtml(job.key)}')" class="btn rounded-2xl py-3 font-bold col-span-2" style="background:#FFF1EE;border:1px solid #F2C8BF;color:var(--red)"><i class="fa-solid fa-triangle-exclamation mr-1"></i> แจ้งปัญหา</button>` : ''}
+      </div>`;
+
+    return `<article class="job-card card p-4 ${preselected ? 'ring-4 ring-yellow-200' : ''}">
+      <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0 flex-1">
+          <div class="flex flex-wrap gap-2 items-center">
+            ${statusBadge(job.status)}
+            ${preselected ? '<span class="pill" style="background:#FFF9E8;border-color:#F0DFA8;color:#A15B00"><i class="fa-solid fa-link"></i>จากลิงก์</span>' : ''}
+          </div>
+          <div class="font-display font-bold text-lg mt-2" style="color:var(--primary-deep)">${escapeHtml(job.orderId || job.jobId || '-')}</div>
+          <div class="text-xs" style="color:var(--muted)">${escapeHtml(job.jobId || '')} · ${formatDateTime(job.createdAt)}</div>
+        </div>
+        <div class="text-right shrink-0">
+          <div class="text-[11px] font-bold" style="color:var(--muted)">ค่ารอบ</div>
+          <div class="font-display text-3xl font-bold" style="color:#7c3aed">${formatNumber(job.riderPay)}</div>
+          <div class="text-[10px]" style="color:var(--muted)">บาท</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-2 mt-4">
+        <div class="rounded-2xl p-2 text-center" style="background:var(--soft);border:1px solid var(--border)">
+          <div class="text-[10px]" style="color:var(--muted)">ระยะ</div>
+          <div class="font-bold">${escapeHtml(distance)} กม.</div>
+        </div>
+        <div class="rounded-2xl p-2 text-center" style="background:var(--soft);border:1px solid var(--border)">
+          <div class="text-[10px]" style="color:var(--muted)">โซน</div>
+          <div class="font-bold">${escapeHtml(zone)}</div>
+        </div>
+        <div class="rounded-2xl p-2 text-center" style="background:var(--soft);border:1px solid var(--border)">
+          <div class="text-[10px]" style="color:var(--muted)">ของ</div>
+          <div class="font-bold text-xs leading-5">${escapeHtml(itemSummary)}</div>
+        </div>
+      </div>
+
+      <div class="mt-3 rounded-2xl p-3 text-xs leading-6" style="background:var(--yellow);border:1px solid var(--yellow-border);color:#7A4B08">
+        <div class="grid grid-cols-2 gap-x-3">
+          <div>ลูกค้าจ่ายค่าส่ง</div><div class="text-right font-bold">${formatNumber(customerFee)} บาท</div>
+          <div>ไรเดอร์ได้เงิน</div><div class="text-right font-bold">${formatNumber(job.riderPay)} บาท</div>
+          <div>ร้านช่วยเพิ่ม</div><div class="text-right font-bold">${formatNumber(shopHelp)} บาท</div>
+        </div>
+      </div>
+
+      ${fullAddress ? `<div class="mt-3 rounded-2xl p-3" style="background:var(--blue);border:1px solid var(--blue-border)">
+        <div class="font-bold text-sm" style="color:var(--primary-deep)"><i class="fa-solid fa-user mr-1"></i>${escapeHtml(job.customerName || '-')} ${job.customerPhone ? '(' + escapeHtml(job.customerPhone) + ')' : ''}</div>
+        <div class="text-xs mt-1 leading-6" style="color:var(--muted)"><i class="fa-solid fa-location-dot mr-1"></i>${escapeHtml(job.customerAddress || '-')} ${job.customerLandmark ? '(' + escapeHtml(job.customerLandmark) + ')' : ''}</div>
+      </div>` : `<div class="mt-3 text-xs rounded-2xl p-3" style="background:var(--soft);border:1px dashed var(--border);color:var(--muted)">
+        <i class="fa-solid fa-lock mr-1"></i> รับงานแล้วจึงแสดงเบอร์ลูกค้า ที่อยู่เต็ม และรายการละเอียด
+      </div>`}
+
+      ${fullAddress && job.itemsText && !compact ? `<details class="mt-3">
+        <summary class="rounded-2xl p-3 text-xs font-bold cursor-pointer" style="background:var(--soft);border:1px solid var(--border);color:var(--primary-deep)"><i class="fa-solid fa-basket-shopping mr-1"></i> ดูรายการสินค้า</summary>
+        <pre class="mt-2 whitespace-pre-wrap text-xs leading-6 rounded-2xl p-3" style="background:#fff;border:1px solid var(--border);color:var(--muted)">${escapeHtml(job.itemsText)}</pre>
+      </details>` : ''}
+
+      <div class="mt-4">
+        ${mine ? mineActions : openActions}
+      </div>
+    </article>`;
+  }
+
+  window.acceptJob = async function(jobKey) {
+    if (!window.riderProfile) return showLogin();
+    const jobRef = ref(db, `riderJobs/${jobKey}`);
+    const confirm = await Swal.fire({
+      icon: 'question',
+      title: 'รับงานนี้?',
+      text: 'ถ้ากดรับแล้ว งานจะล็อกให้คุณก่อน คนอื่นจะรับไม่ได้',
+      showCancelButton: true,
+      confirmButtonText: 'รับงาน',
+      cancelButtonText: 'ยกเลิก',
+      confirmButtonColor: '#176B32'
+    });
+    if (!confirm.isConfirmed) return;
+
+    Swal.fire({ title: 'กำลังล็อกงาน...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    try {
+      const result = await runTransaction(jobRef, (job) => {
+        if (!job) return;
+        if (job.status !== 'OPEN') return;
+        job.status = 'ASSIGNED';
+        job.assignedRiderUid = window.currentUid;
+        job.assignedRiderName = window.riderProfile.name;
+        job.assignedRiderPhone = window.riderProfile.phone;
+        job.assignedAt = new Date().toISOString();
+        job.updatedAt = new Date().toISOString();
+        return job;
+      });
+      Swal.close();
+      if (!result.committed) {
+        vibrate(160);
+        return Swal.fire('รับงานไม่ทัน', 'งานนี้อาจมีไรเดอร์คนอื่นรับไปแล้ว หรือร้านปิดงานแล้ว', 'info').then(() => refreshAll(true));
+      }
+      vibrate(80);
+      await Swal.fire({ icon: 'success', title: 'รับงานสำเร็จ', text: 'ไปที่แท็บ “งานฉัน” เพื่อดูเบอร์และที่อยู่ลูกค้า', timer: 1500, showConfirmButton: false });
+      switchView('mine');
+      refreshAll(true);
+    } catch (err) {
+      Swal.close();
+      Swal.fire('รับงานไม่ได้', err.message || String(err), 'error');
+    }
+  };
+
+  window.updateJobStatus = async function(jobKey, status) {
+    const job = (window.myJobs || []).find((j) => j.key === jobKey);
+    if (!job) return Swal.fire('ไม่พบงาน', '', 'error');
+    if (job.assignedRiderPhone !== window.riderProfile.phone) return Swal.fire('อัปเดตไม่ได้', 'งานนี้ไม่ใช่ของคุณ', 'error');
+
+    let title = 'อัปเดตสถานะ?';
+    if (status === 'PICKED_UP') title = 'ยืนยันว่ารับของแล้ว?';
+    if (status === 'DELIVERED') title = 'ยืนยันว่าส่งสำเร็จ?';
+
+    const ok = await Swal.fire({ icon:'question', title, showCancelButton:true, confirmButtonText:'ยืนยัน', cancelButtonText:'ยกเลิก', confirmButtonColor: status === 'DELIVERED' ? '#16A34A' : '#176B32' });
+    if (!ok.isConfirmed) return;
+
+    const updates = { status, updatedAt: new Date().toISOString() };
+    if (status === 'PICKED_UP') updates.pickedUpAt = new Date().toISOString();
+    if (status === 'DELIVERED') updates.deliveredAt = new Date().toISOString();
+
+    try {
+      await update(ref(db, `riderJobs/${jobKey}`), updates);
+      vibrate(50);
+      Swal.fire({ icon:'success', title:'อัปเดตแล้ว', timer:900, showConfirmButton:false });
+    } catch (err) {
+      Swal.fire('อัปเดตไม่ได้', err.message || String(err), 'error');
+    }
+  };
+
+  window.reportIssue = async function(jobKey) {
+    const job = (window.myJobs || []).find((j) => j.key === jobKey);
+    if (!job) return;
+    const result = await Swal.fire({
+      title: 'แจ้งปัญหา',
+      input: 'textarea',
+      inputPlaceholder: 'เช่น ลูกค้าไม่รับสาย / หาหมุดไม่เจอ / ฝนตกหนัก',
+      showCancelButton: true,
+      confirmButtonText: 'ส่งให้ร้าน',
+      cancelButtonText: 'ยกเลิก',
+      confirmButtonColor: '#D74C32'
+    });
+    if (!result.isConfirmed) return;
+    try {
+      await update(ref(db, `riderJobs/${jobKey}`), { status: 'ISSUE', issueNote: result.value || '-', updatedAt: new Date().toISOString() });
+      Swal.fire({ icon:'success', title:'แจ้งร้านแล้ว', timer:1000, showConfirmButton:false });
+    } catch (err) {
+      Swal.fire('แจ้งไม่ได้', err.message || String(err), 'error');
+    }
+  };
+
+  function bootProfile() {
+    const saved = getStoredProfile();
+    if (saved && saved.name && saved.phone) {
+      window.riderProfile = saved;
+      showApp();
+    } else {
+      showLogin();
+    }
+  }
+
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      window.currentUid = user.uid;
+      setConnection('เชื่อมต่อแล้ว', true);
+      bootProfile();
+    } else {
+      try {
+        await signInAnonymously(auth);
+      } catch (err) {
+        setConnection('เข้าสู่ระบบ anonymous ไม่ได้: ' + err.message, false);
+        Swal.fire('เชื่อมต่อ Firebase ไม่ได้', err.message || String(err), 'error');
+      }
+    }
+  });
+
+  document.getElementById('rider-phone-input').addEventListener('blur', (event) => {
+    event.target.value = normalizePhone(event.target.value);
+  });
+
+  setInterval(() => {
+    if (window.riderProfile && window.currentUid) refreshAll(false);
+  }, 45000);
 </script>
 </body>
 </html>
