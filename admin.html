@@ -1154,7 +1154,20 @@
         async function updateRelatedOrderStatus(orderId, statusText, extraUpdates = {}) {
             const order = findOrderByAnyId(orderId);
             if (!order || !order.firebaseKey) return false;
-            await update(ref(db, `orders/${order.firebaseKey}`), { status: statusText, ...extraUpdates });
+
+            // หมายเหตุความปลอดภัย:
+            // Rules ของ orders ตอนนี้ล็อก field แปลก ๆ ด้วย "$other": false
+            // ถ้าเรา update orders พร้อม riderJobId/riderJobKey โดยที่ Rules ยังไม่ได้เปิด field นี้
+            // Firebase จะตอบ PERMISSION_DENIED ทันที ถึงแม้การสร้าง riderJobs จะถูกต้องแล้วก็ตาม
+            // ดังนั้นส่วนนี้อัปเดตเฉพาะ status ให้ก่อน ส่วนรายละเอียดงานไรเดอร์เก็บไว้ที่ /riderJobs เป็นหลัก
+            await update(ref(db, `orders/${order.firebaseKey}`), { status: statusText });
+
+            // เก็บ index เพิ่มไว้ฝั่ง riderJobs แทน ไม่จำเป็นต้องยัดเข้า orders
+            // extraUpdates ยังรับไว้เพื่อรองรับอนาคต แต่ไม่เขียนลง orders โดยตรงในเวอร์ชันนี้
+            if (extraUpdates && Object.keys(extraUpdates).length) {
+                console.log('Rider job linked data is stored in /riderJobs, skipped writing extra fields to /orders:', extraUpdates);
+            }
+
             fetch(WEB_APP_URL, {
                 method: 'POST',
                 mode: 'no-cors',
