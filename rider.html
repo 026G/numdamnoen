@@ -519,7 +519,7 @@
   }
 
   function getItemSummary(job) {
-    const text = String(job.itemsText || '').trim();
+    const text = String(job.itemsText || job.publicItemsText || '').trim();
     if (!text) return 'ดูรายการหลังรับงาน';
     const lines = text.split('\n').map((x) => x.trim()).filter(Boolean);
     const itemLines = lines.filter((line) => /^\d+\./.test(line));
@@ -531,6 +531,34 @@
     const count = itemLines.length || lines.length || 1;
     if (!pieces) pieces = count;
     return `${count} รายการ / ${pieces} ชิ้น`;
+  }
+
+  function cleanRiderItemsText(job) {
+    const rawText = String(job.publicItemsText || job.itemsText || '').trim();
+    if (!rawText) return '';
+
+    const lines = rawText
+      .split('\n')
+      .map((line) => line.trim())
+      .filter(Boolean);
+
+    const mainItemLines = lines.filter((line) => /^\d+\./.test(line));
+    const sourceLines = mainItemLines.length ? mainItemLines : lines.filter((line) => !/^[-+•]/.test(line));
+
+    const cleanedItems = sourceLines.map((line) => {
+      let text = line;
+      text = text.replace(/^\d+\.\s*/, '');
+      text = text.replace(/^[-+•]\s*/, '');
+      text = text.replace(/\s*=\s*[0-9,]+(?:\.\d+)?\s*(?:บาท|บ\.)?.*$/i, '');
+      text = text.replace(/\s+[0-9,]+(?:\.\d+)?\s*(?:บาท|บ\.)\s*$/i, '');
+      text = text.replace(/\s*\([^)]*ราคา[^)]*\)\s*/gi, ' ');
+      text = text.replace(/\s*\+\s*.*$/g, '');
+      text = text.replace(/\s+[xX×]\s*(\d+)\s*$/i, ' x$1');
+      text = text.replace(/\s{2,}/g, ' ').trim();
+      return text;
+    }).filter(Boolean);
+
+    return cleanedItems.map((item, index) => `${index + 1}. ${item}`).join('\n');
   }
 
   function jobCard(job, mine = false, compact = false) {
@@ -595,9 +623,9 @@
         <i class="fa-solid fa-lock mr-1"></i> รับงานแล้วจึงแสดงเบอร์ลูกค้า ที่อยู่เต็ม และรายการละเอียด
       </div>`}
 
-      ${fullAddress && job.itemsText && !compact ? `<details class="mt-3">
+      ${fullAddress && cleanRiderItemsText(job) && !compact ? `<details class="mt-3" open>
         <summary class="rounded-2xl p-3 text-xs font-bold cursor-pointer" style="background:var(--soft);border:1px solid var(--border);color:var(--primary-deep)"><i class="fa-solid fa-basket-shopping mr-1"></i> ดูรายการสินค้า</summary>
-        <pre class="mt-2 whitespace-pre-wrap text-xs leading-6 rounded-2xl p-3" style="background:#fff;border:1px solid var(--border);color:var(--muted)">${escapeHtml(job.itemsText)}</pre>
+        <pre class="mt-2 whitespace-pre-wrap text-xs leading-6 rounded-2xl p-3" style="background:#fff;border:1px solid var(--border);color:var(--muted)">${escapeHtml(cleanRiderItemsText(job))}</pre>
       </details>` : ''}
 
       <div class="mt-4">
