@@ -666,7 +666,7 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold mb-1.5" style="color: var(--color-text-dark);">เบอร์โทร</label>
-                        <input type="tel" id="pickup-phone" class="w-full rounded-xl px-4 py-3 outline-none transition focus:ring-2" style="background: var(--color-base-warm); border: 1px solid var(--color-border-soft);" placeholder="08x-xxx-xxxx">
+                        <input type="tel" id="pickup-phone" class="w-full rounded-xl px-4 py-3 outline-none transition focus:ring-2" style="background: var(--color-base-warm); border: 1px solid var(--color-border-soft);" placeholder="เช่น 062-246-7746" maxlength="14" inputmode="tel" autocomplete="tel">
                     </div>
                 </div>
 
@@ -718,7 +718,7 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold mb-1.5" style="color: var(--color-text-dark);">เบอร์โทร</label>
-                        <input type="tel" id="cust-phone" class="w-full rounded-xl px-4 py-3 outline-none focus:ring-2" style="background: var(--color-base-warm); border: 1px solid var(--color-border-soft);" placeholder="08x-xxx-xxxx">
+                        <input type="tel" id="cust-phone" class="w-full rounded-xl px-4 py-3 outline-none focus:ring-2" style="background: var(--color-base-warm); border: 1px solid var(--color-border-soft);" placeholder="เช่น 062-246-7746" maxlength="14" inputmode="tel" autocomplete="tel">
                     </div>
                 </div>
                 <div>
@@ -932,10 +932,10 @@
 
                         <div class="flex gap-2">
                             <div class="flex-1 relative">
-                                <input type="tel" id="track-phone" placeholder="เช่น 0812345678"
+                                <input type="tel" id="track-phone" placeholder="เช่น 062-246-7746"
                                     class="w-full text-lg rounded-xl block p-3 pr-10 transition focus:ring-2"
                                     style="background: var(--color-base-warm); border: 1px solid var(--color-border-soft); color: var(--color-text-dark);"
-                                    maxlength="10" inputmode="numeric" autocomplete="tel"
+                                    maxlength="14" inputmode="tel" autocomplete="tel"
                                     onkeydown="if(event.key==='Enter'){ searchOrder(); }"/>
                                 <button type="button" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg transition" style="color: var(--color-text-muted);"
                                     onclick="(function(){ const el=document.getElementById('track-phone'); el.value=''; el.focus(); })()"
@@ -1110,6 +1110,49 @@
     };
     window.CATEGORY_ORDER = ['all', 'recommend', 'general', 'coconut_smoothie', 'coconut_water', 'fruit_smoothie', 'milk_smoothie', 'special', 'snack', 'promotion'];
 
+    // ============ PHONE HELPERS ============
+    window.normalizePhone = function(phone) {
+        return String(phone || '').replace(/\D/g, '');
+    };
+
+    window.isValidThaiPhone = function(phone) {
+        return /^0[0-9]{8,9}$/.test(String(phone || ''));
+    };
+
+    window.getNormalizedPhoneFromInput = function(inputId) {
+        const input = document.getElementById(inputId);
+        if (!input) return '';
+        const normalizedPhone = window.normalizePhone(input.value);
+        input.value = normalizedPhone;
+        return normalizedPhone;
+    };
+
+    window.attachPhoneInputHelpers = function() {
+        ['pickup-phone', 'cust-phone', 'track-phone'].forEach((inputId) => {
+            const input = document.getElementById(inputId);
+            if (!input || input.dataset.phoneHelperAttached === 'true') return;
+            input.dataset.phoneHelperAttached = 'true';
+            input.setAttribute('maxlength', '14');
+            input.setAttribute('inputmode', 'tel');
+            input.setAttribute('autocomplete', 'tel');
+            input.addEventListener('input', () => {
+                input.value = String(input.value || '').replace(/[^0-9\-\s]/g, '').slice(0, 14);
+            });
+            input.addEventListener('blur', () => {
+                const normalizedPhone = window.normalizePhone(input.value);
+                if (normalizedPhone) input.value = normalizedPhone;
+            });
+        });
+    };
+
+    window.showInvalidPhoneAlert = function() {
+        return Swal.fire({
+            icon: 'warning',
+            title: 'เบอร์โทรไม่ถูกต้อง',
+            text: 'กรุณากรอกเบอร์โทร 9-10 หลัก เช่น 0622467746 หรือ 062-246-7746'
+        });
+    };
+
     // ============ SHIPPING CALCULATION ============
     
     // เช็คโซนตามระยะ
@@ -1257,6 +1300,7 @@
 
     // ============ INIT ============
     document.addEventListener("DOMContentLoaded", async () => {
+        window.attachPhoneInputHelpers();
         Swal.fire({ title: 'กำลังโหลดเมนู...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
         loadCartFromStorage();
         loadModeFromStorage();
@@ -1288,8 +1332,12 @@
                     document.getElementById('pickup-name').value = localStorage.getItem('cust_name');
                 }
                 if(localStorage.getItem('cust_phone')) {
-                    document.getElementById('cust-phone').value = localStorage.getItem('cust_phone');
-                    document.getElementById('pickup-phone').value = localStorage.getItem('cust_phone');
+                    const savedPhone = window.normalizePhone(localStorage.getItem('cust_phone'));
+                    if (savedPhone) {
+                        localStorage.setItem('cust_phone', savedPhone);
+                        document.getElementById('cust-phone').value = savedPhone;
+                        document.getElementById('pickup-phone').value = savedPhone;
+                    }
                 }
                 if(localStorage.getItem('cust_address')) document.getElementById('cust-address').value = localStorage.getItem('cust_address');
                 window.updateTrackingButtonState();
@@ -1927,9 +1975,10 @@
 
     // ============ VALIDATE & GO TO PAYMENT ============
     window.validateAndGoToPaymentPickup = function() {
-        const name = document.getElementById('pickup-name').value;
-        const phone = document.getElementById('pickup-phone').value;
+        const name = document.getElementById('pickup-name').value.trim();
+        const phone = window.getNormalizedPhoneFromInput('pickup-phone');
         if(!name || !phone) return Swal.fire({icon: 'warning', text: 'กรุณากรอกชื่อและเบอร์โทรให้ครบถ้วน'});
+        if(!window.isValidThaiPhone(phone)) return window.showInvalidPhoneAlert();
         if(!window.pickupTime) return Swal.fire({icon: 'warning', text: 'กรุณาเลือกเวลาที่จะมารับ'});
         const foodTotal = window.cart.reduce((s, i) => s + i.finalPrice, 0);
         window.deliveryFee = 0;
@@ -1946,10 +1995,11 @@
     };
 
     window.validateAndGoToPayment = function() {
-        const name = document.getElementById('cust-name').value;
-        const phone = document.getElementById('cust-phone').value;
-        const address = document.getElementById('cust-address').value;
+        const name = document.getElementById('cust-name').value.trim();
+        const phone = window.getNormalizedPhoneFromInput('cust-phone');
+        const address = document.getElementById('cust-address').value.trim();
         if(!name || !phone || !address) return Swal.fire({icon: 'warning', text: 'กรุณากรอกข้อมูลที่อยู่ให้ครบถ้วน'});
+        if(!window.isValidThaiPhone(phone)) return window.showInvalidPhoneAlert();
         if(!window.userLat) return Swal.fire({icon: 'warning', text: 'กรุณาปักหมุดจุดส่งบนแผนที่'});
         if(window.distanceKm > window.MAX_DIST_KM) return Swal.fire({icon: 'error', text: `อยู่นอกพื้นที่จัดส่ง (จำกัด ${window.MAX_DIST_KM} กม.)`});
         
@@ -2077,16 +2127,19 @@
         let name, phone, address = '-', landmark = '-', location = '-';
         
         if (window.orderMode === 'pickup') {
-            name = document.getElementById('pickup-name').value;
-            phone = document.getElementById('pickup-phone').value;
+            name = document.getElementById('pickup-name').value.trim();
+            phone = window.getNormalizedPhoneFromInput('pickup-phone');
             address = `[รับหน้าร้าน] รับใน ${window.pickupTime} นาที`;
         } else {
-            name = document.getElementById('cust-name').value;
-            phone = document.getElementById('cust-phone').value;
-            address = document.getElementById('cust-address').value;
-            landmark = document.getElementById('cust-landmark').value;
+            name = document.getElementById('cust-name').value.trim();
+            phone = window.getNormalizedPhoneFromInput('cust-phone');
+            address = document.getElementById('cust-address').value.trim();
+            landmark = document.getElementById('cust-landmark').value.trim();
             location = `${window.userLat},${window.userLng}`;
         }
+
+        if (!name || !phone) return Swal.fire({icon: 'warning', text: 'กรุณากรอกชื่อและเบอร์โทรให้ครบถ้วน'});
+        if (!window.isValidThaiPhone(phone)) return window.showInvalidPhoneAlert();
         
         localStorage.setItem('cust_name', name);
         localStorage.setItem('cust_phone', phone);
@@ -2195,9 +2248,10 @@
     window.openTrackingPage = function() { window.showPage('tracking'); };
 
     window.initTrackingPage = function() {
-        const savedPhone = localStorage.getItem('cust_phone');
+        const savedPhone = window.normalizePhone(localStorage.getItem('cust_phone'));
         document.getElementById('tracking-search-box').classList.remove('hidden');
         if (savedPhone) {
+            localStorage.setItem('cust_phone', savedPhone);
             document.getElementById('track-phone').value = savedPhone;
             window.searchOrder(false); 
             if (window.trackingInterval) clearInterval(window.trackingInterval);
@@ -2210,11 +2264,12 @@
     window.searchOrder = function(isSilent = false) { 
         const phoneInput = document.getElementById('track-phone');
         if (!phoneInput) return;
-        const phone = phoneInput.value.trim();
+        const phone = window.normalizePhone(phoneInput.value);
+        phoneInput.value = phone;
         const searchBtn = document.querySelector('button[onclick="searchOrder()"]') || document.querySelector('.fa-search')?.parentElement;
         let originalBtnContent = '';
-        if(phone.length < 9) { 
-            if(!isSilent) Swal.fire({icon:'warning', title:'กรุณากรอกเบอร์โทรให้ถูกต้อง'}); 
+        if(!window.isValidThaiPhone(phone)) { 
+            if(!isSilent) window.showInvalidPhoneAlert(); 
             return; 
         }
         const resultDiv = document.getElementById('tracking-result');
