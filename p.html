@@ -3,295 +3,609 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบเพิ่มสินค้า - หนุ่มดำเนิน</title>
+    <title>ตัวช่วยสร้างข้อมูลสินค้า / Options - หนุ่มดำเนิน</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap');
-        body { font-family: 'Prompt', sans-serif; background-color: #f3f4f6; }
-        .input-group { margin-bottom: 1rem; }
-        label { display: block; font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 0.25rem; }
-        input, select, textarea { width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 0.375rem; outline: none; transition: border-color 0.2s; }
-        input:focus, select:focus, textarea:focus { border-color: #16a34a; ring: 2px; ring-color: #bbf7d0; }
+        @import url('https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;500;600;700;800&family=Mali:wght@400;500;600;700&display=swap');
+        :root {
+            --green: #176B32;
+            --green-deep: #0D4720;
+            --green-soft: #E8F6EA;
+            --green-soft-2: #D9EFDE;
+            --border: #DDEBDD;
+            --text: #12351F;
+            --muted: #64746A;
+            --danger: #D74C32;
+            --cream: #F8FCF8;
+        }
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Anuphan', sans-serif;
+            background: #EFF8F0;
+            color: var(--text);
+        }
+        .font-display { font-family: 'Mali', sans-serif; }
+        .card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            box-shadow: 0 12px 30px rgba(18, 53, 31, 0.07);
+        }
+        label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.35rem;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 0.72rem 0.82rem;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            outline: none;
+            background: #fff;
+            color: var(--text);
+            transition: 0.18s ease;
+            font-size: 0.92rem;
+        }
+        textarea { min-height: 86px; resize: vertical; }
+        input:focus, select:focus, textarea:focus {
+            border-color: rgba(23, 107, 50, 0.55);
+            box-shadow: 0 0 0 4px rgba(23, 107, 50, 0.08);
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            border-radius: 999px;
+            font-weight: 800;
+            transition: 0.16s ease;
+            user-select: none;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background: var(--green); color: #fff; box-shadow: 0 10px 22px rgba(23, 107, 50, 0.18); }
+        .btn-soft { background: var(--green-soft); color: var(--green-deep); border: 1px solid var(--green-soft-2); }
+        .btn-white { background: #fff; color: var(--green-deep); border: 1px solid var(--border); }
+        .btn-danger { background: #FFF0EC; color: var(--danger); border: 1px solid #FFD3C8; }
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            border-radius: 999px;
+            padding: 0.38rem 0.72rem;
+            background: var(--green-soft);
+            border: 1px solid var(--green-soft-2);
+            color: var(--green-deep);
+            font-size: 0.75rem;
+            font-weight: 800;
+        }
+        .option-group {
+            border: 1px solid var(--border);
+            background: #FBFFFB;
+            border-radius: 18px;
+            padding: 0.85rem;
+        }
+        .choice-row {
+            display: grid;
+            grid-template-columns: 1fr 88px 34px;
+            gap: 0.45rem;
+            align-items: center;
+        }
+        .copy-cell {
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            background: #fff;
+            overflow: hidden;
+        }
+        .copy-cell-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.7rem;
+            padding: 0.58rem 0.72rem;
+            border-bottom: 1px solid var(--border);
+            background: #F7FCF7;
+        }
+        .copy-cell textarea {
+            border: 0 !important;
+            border-radius: 0 !important;
+            min-height: 58px;
+            font-size: 0.82rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            box-shadow: none !important;
+            background: #fff;
+        }
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 22px;
+            transform: translateX(-50%) translateY(20px);
+            opacity: 0;
+            pointer-events: none;
+            background: var(--green-deep);
+            color: #fff;
+            padding: 0.75rem 1rem;
+            border-radius: 999px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+            font-weight: 800;
+            font-size: 0.9rem;
+            transition: 0.22s ease;
+            z-index: 50;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        @media (max-width: 640px) {
+            .choice-row { grid-template-columns: 1fr 72px 34px; }
+        }
     </style>
 </head>
-<body class="p-6">
-
-    <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
-        <div class="bg-white p-6 rounded-xl shadow-lg">
-            <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2"><i class="fa-solid fa-pen-to-square"></i> กรอกข้อมูลสินค้า</h2>
-            
-            <div class="grid grid-cols-2 gap-4">
-                <div class="input-group">
-                    <label>ID สินค้า (ห้ามซ้ำ)</label>
-                    <input type="number" id="p_id" placeholder="เช่น 1, 91">
+<body class="p-4 md:p-6">
+    <div class="max-w-7xl mx-auto space-y-5">
+        <header class="card p-5 md:p-6">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <div class="pill mb-3"><i class="fa-solid fa-leaf"></i> หนุ่มดำเนิน · Product Sheet Helper</div>
+                    <h1 class="font-display text-2xl md:text-3xl font-bold" style="color: var(--green-deep);">ตัวช่วยสร้างข้อมูลสินค้า + Options</h1>
+                    <p class="text-sm mt-2" style="color: var(--muted);">กรอกข้อมูลครั้งเดียว แล้วคัดลอกไปวางใน Google Sheet ทีละช่อง หรือคัดลอกทั้งแถวได้เลย</p>
                 </div>
-                <div class="input-group">
-                    <label>หมวดหมู่</label>
-                    <select id="p_category">
-                        <option value="recommend">Recommend (เมนูแนะนำ)</option>
-                        <option value="promotion">Promotion (โปรโมชั่น)</option>
-                        <option value="coconutfrappe">มะพร้าวปั่น</option>
-                        <option value="coconutwater">น้ำมะพร้าวสด</option>
-                    </select>
+                <div class="flex flex-wrap gap-2">
+                    <button class="btn btn-soft px-4 py-2 text-sm" onclick="fillSweetnessTemplate()"><i class="fa-solid fa-wand-magic-sparkles"></i> ความหวาน</button>
+                    <button class="btn btn-soft px-4 py-2 text-sm" onclick="fillCoconutMeatTemplate()"><i class="fa-solid fa-wand-magic-sparkles"></i> เนื้อมะพร้าว</button>
+                    <button class="btn btn-soft px-4 py-2 text-sm" onclick="fillExtraTemplate()"><i class="fa-solid fa-wand-magic-sparkles"></i> เพิ่มพิเศษ</button>
                 </div>
             </div>
+        </header>
 
-            <div class="input-group">
-                <label>ชื่อเมนู</label>
-                <input type="text" id="p_name" placeholder="เช่น มะพร้าวปั่นนมสด">
-            </div>
-
-            <div class="input-group">
-                <label>คำอธิบายสั้นๆ</label>
-                <input type="text" id="p_desc" placeholder="เช่น หวานมัน นัวสุดๆ">
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-                <div class="input-group">
-                    <label>ราคาขาย (บาท)</label>
-                    <input type="number" id="p_price" placeholder="100">
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-5">
+            <section class="card p-5 md:p-6">
+                <div class="flex items-center justify-between gap-3 mb-4 pb-3 border-b" style="border-color: var(--border);">
+                    <h2 class="font-display text-xl font-bold" style="color: var(--green-deep);"><i class="fa-solid fa-pen-to-square"></i> กรอกข้อมูลสินค้า</h2>
+                    <button class="btn btn-white px-3 py-2 text-xs" onclick="clearAll()"><i class="fa-solid fa-rotate-left"></i> ล้างฟอร์ม</button>
                 </div>
-                <div class="input-group">
-                    <label>ราคาเต็ม (ขีดฆ่า) *ไม่ใส่ก็ได้</label>
-                    <input type="number" id="p_originalPrice" placeholder="120">
-                </div>
-            </div>
 
-            <div class="input-group">
-                <label>ลิงก์รูปภาพ (URL)</label>
-                <input type="text" id="p_img" placeholder="https://...">
-                <p class="text-xs text-gray-400 mt-1">https://lh3.googleusercontent.com/d/ </p>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-                <div class="input-group">
-                    <label>ป้ายติดมุม (Badge) *ไม่ใส่ก็ได้</label>
-                    <input type="text" id="p_badge" placeholder="เช่น ขายดี, ลดราคา 🔥">
-                </div>
-                <div class="input-group">
-                    <label>สถานะสินค้า</label>
-                    <select id="p_stock">
-                        <option value="true">✅ มีของ (In Stock)</option>
-                        <option value="false">❌ หมด (Sold Out)</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="border-t pt-4 mt-2">
-                <div class="flex justify-between items-center mb-2">
-                    <label class="text-gray-700 font-bold">ตัวเลือกเพิ่มเติม (Options)</label>
-                    <button type="button" onclick="addOptionGroup()" class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded hover:bg-blue-100">+ เพิ่มกลุ่มตัวเลือก</button>
-                </div>
-                <div id="options-container" class="space-y-3">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                        <label>ID</label>
+                        <input type="number" id="p_id" placeholder="เช่น 301" oninput="refreshAll()">
                     </div>
-            </div>
-
-            <button onclick="generateCode()" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg mt-6 hover:bg-green-700 transition shadow-md">
-                <i class="fa-solid fa-code"></i> สร้างโค้ด
-            </button>
-        </div>
-
-        <div class="flex flex-col gap-6">
-            <div class="bg-white p-6 rounded-xl shadow-lg">
-                <h2 class="text-lg font-bold text-gray-800 mb-4">ตัวอย่างการ์ด (Preview)</h2>
-                <div class="border rounded-xl p-4 flex gap-4 relative max-w-sm mx-auto bg-white hover:shadow-sm transition">
-                    <div class="relative shrink-0 w-24 h-24 bg-gray-100 rounded-xl overflow-hidden">
-                        <img id="prev_img" src="https://via.placeholder.com/150" class="w-full h-full object-cover">
-                        <span id="prev_badge" class="absolute top-0 left-0 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-tl-xl rounded-br-lg hidden">Badge</span>
+                    <div>
+                        <label>หมวดหมู่</label>
+                        <select id="p_category" onchange="refreshAll()"></select>
                     </div>
-                    <div class="flex-1 flex flex-col justify-between py-1">
-                        <div>
-                            <h3 id="prev_name" class="font-bold text-gray-800 text-sm leading-tight mb-1">ชื่อสินค้า...</h3>
-                            <p id="prev_desc" class="text-xs text-gray-500 line-clamp-2">คำอธิบาย...</p>
-                        </div>
-                        <div class="flex items-end gap-2">
-                            <span id="prev_origPrice" class="text-gray-300 text-xs line-through hidden">฿0</span>
-                            <span id="prev_price" class="text-green-600 font-bold text-lg">฿0</span>
-                        </div>
+                    <div>
+                        <label>หมวดย่อย / subCategory</label>
+                        <input type="text" id="p_subCategory" placeholder="เช่น เมนูมะพร้าวปั่น" oninput="refreshAll()">
                     </div>
                 </div>
-            </div>
 
-            <div class="bg-gray-800 p-6 rounded-xl shadow-lg flex-1 flex flex-col">
-                <div class="flex justify-between items-center mb-2">
-                    <h2 class="text-lg font-bold text-white">ผลลัพธ์ (Code)</h2>
-                    <button onclick="copyCode()" class="text-xs bg-gray-600 text-white px-3 py-1 rounded hover:bg-gray-500">Copy</button>
+                <div class="mt-3">
+                    <label>ชื่อเมนู</label>
+                    <input type="text" id="p_name" placeholder="เช่น มะพร้าวปั่น (นมสด) 22ออนซ์" oninput="refreshAll()">
                 </div>
-                <textarea id="output_code" class="w-full h-full bg-gray-900 text-green-400 font-mono text-sm p-4 rounded-lg border-none focus:ring-0" readonly></textarea>
-                <p class="text-gray-400 text-xs mt-2">ก๊อปปี้โค้ดด้านบน ไปวางต่อท้ายในตัวแปร menuDB ในไฟล์ index.html</p>
-            </div>
-        </div>
 
-    </div>
+                <div class="mt-3">
+                    <label>คำอธิบาย</label>
+                    <input type="text" id="p_desc" placeholder="เช่น มะพร้าวปั่นนมสด หอมมะพร้าวแท้" oninput="refreshAll()">
+                </div>
 
-    <script>
-        // ฟังก์ชันสร้างกลุ่มตัวเลือก (เช่น ความหวาน, ท็อปปิ้ง)
-        function addOptionGroup() {
-            const container = document.getElementById('options-container');
-            const groupId = Date.now();
-            
-            const html = `
-                <div class="bg-gray-50 p-3 rounded border border-gray-200 relative group" id="group-${groupId}">
-                    <button onclick="this.parentElement.remove()" class="absolute top-2 right-2 text-red-400 hover:text-red-600"><i class="fa-solid fa-times"></i></button>
-                    
-                    <div class="grid grid-cols-2 gap-2 mb-2">
-                        <input type="text" class="opt-name text-sm" placeholder="ชื่อกลุ่ม (เช่น ความหวาน)">
-                        <select class="opt-type text-sm">
-                            <option value="radio">เลือกได้ 1 (Radio)</option>
-                            <option value="checkbox">เลือกได้หลาย (Checkbox)</option>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+                    <div>
+                        <label>ราคาขาย</label>
+                        <input type="number" id="p_price" placeholder="40" oninput="refreshAll()">
+                    </div>
+                    <div>
+                        <label>ราคาเต็ม / originalPrice</label>
+                        <input type="number" id="p_originalPrice" placeholder="ไม่ใส่ก็ได้" oninput="refreshAll()">
+                    </div>
+                    <div>
+                        <label>สถานะสินค้า</label>
+                        <select id="p_stock" onchange="refreshAll()">
+                            <option value="true">TRUE · มีของ</option>
+                            <option value="false">FALSE · หมด</option>
                         </select>
                     </div>
-                    
-                    <div class="mb-2">
-                         <input type="number" class="opt-max text-sm w-full" placeholder="เลือกได้สูงสุดกี่อย่าง (เฉพาะ Checkbox)">
+                </div>
+
+                <div class="mt-3">
+                    <label>ลิงก์รูปภาพ</label>
+                    <input type="text" id="p_img" placeholder="https://lh3.googleusercontent.com/d/..." oninput="refreshAll()">
+                </div>
+
+                <div class="mt-3">
+                    <label>Badge / ป้ายสินค้า</label>
+                    <input type="text" id="p_badge" placeholder="เช่น ขายดี, ลดราคา 🔥, ราคาเปิดตัว" oninput="refreshAll()">
+                </div>
+
+                <div class="mt-5 pt-4 border-t" style="border-color: var(--border);">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-3">
+                        <div>
+                            <h3 class="font-display font-bold text-lg" style="color: var(--green-deep);">ตัวเลือกเพิ่มเติม / Options</h3>
+                            <p class="text-xs mt-1" style="color: var(--muted);">ใช้สร้าง JSON สำหรับวางในคอลัมน์ options ของชีท</p>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <button class="btn btn-soft px-3 py-2 text-xs" onclick="addOptionGroup()"><i class="fa-solid fa-plus"></i> เพิ่มกลุ่ม</button>
+                            <button class="btn btn-danger px-3 py-2 text-xs" onclick="clearOptions()"><i class="fa-solid fa-trash"></i> ล้าง Options</button>
+                        </div>
                     </div>
 
-                    <div class="pl-4 border-l-2 border-gray-300 space-y-2 choices-container">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
+                        <button class="btn btn-white px-3 py-2 text-xs" onclick="fillSweetnessTemplate()">+ ชุดความหวาน</button>
+                        <button class="btn btn-white px-3 py-2 text-xs" onclick="fillCoconutMeatTemplate()">+ ชุดใส่เนื้อมะพร้าว</button>
+                        <button class="btn btn-white px-3 py-2 text-xs" onclick="fillExtraTemplate()">+ ชุดเพิ่มพิเศษ</button>
+                        <button class="btn btn-white px-3 py-2 text-xs" onclick="fillFullSmoothieTemplate()">+ ชุดปั่นครบ: หวาน + เนื้อ + เพิ่มพิเศษ</button>
+                    </div>
+
+                    <div id="options-container" class="space-y-3"></div>
+                </div>
+            </section>
+
+            <section class="space-y-5">
+                <div class="card p-5 md:p-6">
+                    <div class="flex items-center justify-between gap-3 mb-4 pb-3 border-b" style="border-color: var(--border);">
+                        <h2 class="font-display text-xl font-bold" style="color: var(--green-deep);"><i class="fa-solid fa-table"></i> คัดลอกไปใส่ชีท</h2>
+                        <button class="btn btn-primary px-4 py-2 text-sm" onclick="refreshAll()"><i class="fa-solid fa-code"></i> สร้างโค้ด</button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="cell-output-grid"></div>
+                </div>
+
+                <div class="card p-5 md:p-6">
+                    <div class="flex items-center justify-between gap-3 mb-3">
+                        <div>
+                            <h2 class="font-display text-lg font-bold" style="color: var(--green-deep);">Options JSON สำหรับวางช่องเดียว</h2>
+                            <p class="text-xs mt-1" style="color: var(--muted);">คัดลอกก้อนนี้ไปวางในคอลัมน์ options ได้เลย</p>
                         </div>
-                    <button onclick="addChoice('${groupId}')" class="text-xs text-green-600 mt-2 font-medium">+ เพิ่มตัวเลือกย่อย</button>
+                        <button class="btn btn-soft px-3 py-2 text-xs" onclick="copyById('output_options')"><i class="fa-regular fa-copy"></i> Copy</button>
+                    </div>
+                    <textarea id="output_options" readonly class="font-mono text-xs"></textarea>
                 </div>
-            `;
-            container.insertAdjacentHTML('beforeend', html);
+
+                <div class="card p-5 md:p-6">
+                    <div class="flex items-center justify-between gap-3 mb-3">
+                        <div>
+                            <h2 class="font-display text-lg font-bold" style="color: var(--green-deep);">คัดลอกทั้งแถวแบบ Google Sheet</h2>
+                            <p class="text-xs mt-1" style="color: var(--muted);">คัดลอกแล้ววางที่ช่อง A ของแถวใหม่ ระบบจะแยกเป็นแต่ละคอลัมน์ให้</p>
+                        </div>
+                        <button class="btn btn-soft px-3 py-2 text-xs" onclick="copyById('output_tsv')"><i class="fa-regular fa-copy"></i> Copy Row</button>
+                    </div>
+                    <textarea id="output_tsv" readonly class="font-mono text-xs"></textarea>
+                </div>
+
+                <div class="card p-5 md:p-6">
+                    <div class="flex items-center justify-between gap-3 mb-3">
+                        <div>
+                            <h2 class="font-display text-lg font-bold" style="color: var(--green-deep);">Object สำหรับโค้ดหน้าเว็บ</h2>
+                            <p class="text-xs mt-1" style="color: var(--muted);">ใช้กรณีอยากเอาไปใส่ในตัวแปรเมนูแบบ JavaScript</p>
+                        </div>
+                        <button class="btn btn-soft px-3 py-2 text-xs" onclick="copyById('output_object')"><i class="fa-regular fa-copy"></i> Copy</button>
+                    </div>
+                    <textarea id="output_object" readonly class="font-mono text-xs"></textarea>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">คัดลอกแล้ว</div>
+
+    <script>
+        window.CATEGORY_LABELS = {
+            all: 'ทั้งหมด',
+            recommend: 'แนะนำ',
+            general: 'เมนูทั่วไป',
+            promotion: 'โปรโมชั่น',
+            coconut_smoothie: 'มะพร้าวปั่น',
+            coconut_water: 'น้ำมะพร้าวแท้',
+            fruit_smoothie: 'อื่นๆ/ผลไม้ปั่น',
+            snack: 'ขนม'
+        };
+
+        window.CATEGORY_ORDER = [
+            'recommend',
+            'general',
+            'promotion',
+            'coconut_smoothie',
+            'coconut_water',
+            'fruit_smoothie',
+            'snack'
+        ];
+
+        const SHEET_COLUMNS = [
+            { key: 'id', label: 'A · id' },
+            { key: 'category', label: 'B · category' },
+            { key: 'subCategory', label: 'C · subCategory' },
+            { key: 'name', label: 'D · name' },
+            { key: 'desc', label: 'E · desc' },
+            { key: 'price', label: 'F · price' },
+            { key: 'originalPrice', label: 'G · originalPrice' },
+            { key: 'img', label: 'H · img' },
+            { key: 'badge', label: 'I · badge' },
+            { key: 'stock', label: 'J · stock' },
+            { key: 'options', label: 'K · options' }
+        ];
+
+        function initCategorySelect() {
+            const select = document.getElementById('p_category');
+            select.innerHTML = window.CATEGORY_ORDER.map(key => {
+                const label = window.CATEGORY_LABELS[key] || key;
+                return `<option value="${escapeHtml(key)}">${escapeHtml(label)} (${escapeHtml(key)})</option>`;
+            }).join('');
         }
 
-        // ฟังก์ชันสร้างตัวเลือกย่อย (เช่น หวานน้อย, ลอดช่อง)
-        function addChoice(groupId) {
-            const group = document.getElementById(`group-${groupId}`);
-            const container = group.querySelector('.choices-container');
-            
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        }
+
+        function safeCell(value) {
+            return String(value ?? '').replace(/\t/g, ' ').replace(/\r?\n/g, ' ').trim();
+        }
+
+        function numberOrEmpty(value) {
+            const text = String(value ?? '').trim();
+            if (text === '') return '';
+            const num = Number(text);
+            return Number.isFinite(num) ? num : '';
+        }
+
+        function addOptionGroup(data = {}) {
+            const container = document.getElementById('options-container');
+            const groupId = `g_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+            const type = data.type || 'radio';
+            const name = data.name || '';
+            const max = data.max ?? '';
+            const choices = Array.isArray(data.choices) ? data.choices : [];
+
             const html = `
-                <div class="flex gap-2 items-center choice-item">
-                    <input type="text" class="choice-label text-sm flex-1" placeholder="ชื่อตัวเลือก (เช่น หวานน้อย)">
-                    <input type="number" class="choice-price text-sm w-20" placeholder="+ราคา" value="0">
-                    <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-red-500"><i class="fa-solid fa-minus-circle"></i></button>
+                <div class="option-group" id="${groupId}">
+                    <div class="flex justify-between gap-2 mb-3">
+                        <div class="pill"><i class="fa-solid fa-list-check"></i> กลุ่มตัวเลือก</div>
+                        <button class="btn btn-danger w-8 h-8 text-xs" onclick="removeOptionGroup('${groupId}')" title="ลบกลุ่ม"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                        <div class="md:col-span-1">
+                            <label>ชื่อกลุ่ม</label>
+                            <input type="text" class="opt-name" placeholder="เช่น ระดับความหวาน" value="${escapeHtml(name)}" oninput="refreshAll()">
+                        </div>
+                        <div>
+                            <label>ประเภท</label>
+                            <select class="opt-type" onchange="handleTypeChange(this); refreshAll();">
+                                <option value="radio" ${type === 'radio' ? 'selected' : ''}>เลือกได้ 1 (Radio)</option>
+                                <option value="checkbox" ${type === 'checkbox' ? 'selected' : ''}>เลือกได้หลาย (Checkbox)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label>เลือกได้สูงสุด</label>
+                            <input type="number" class="opt-max" placeholder="เฉพาะ Checkbox" value="${escapeHtml(max)}" ${type === 'radio' ? 'disabled' : ''} oninput="refreshAll()">
+                        </div>
+                    </div>
+                    <div class="choices-container space-y-2 mt-3"></div>
+                    <button class="btn btn-soft px-3 py-2 text-xs mt-3" onclick="addChoice('${groupId}')"><i class="fa-solid fa-plus"></i> เพิ่มตัวเลือกย่อย</button>
                 </div>
             `;
             container.insertAdjacentHTML('beforeend', html);
+            choices.forEach(choice => addChoice(groupId, choice));
+            if (choices.length === 0) addChoice(groupId);
+            refreshAll();
         }
 
-        // ฟังก์ชันหลัก: สร้าง Code
-        function generateCode() {
-            // 1. ดึงค่าจากฟอร์มหลัก
-            const id = document.getElementById('p_id').value;
-            const category = document.getElementById('p_category').value;
-            const name = document.getElementById('p_name').value;
-            const desc = document.getElementById('p_desc').value;
-            const price = document.getElementById('p_price').value;
-            const originalPrice = document.getElementById('p_originalPrice').value;
-            const img = document.getElementById('p_img').value;
-            const badge = document.getElementById('p_badge').value;
-            const stock = document.getElementById('p_stock').value === 'true';
+        function removeOptionGroup(groupId) {
+            const group = document.getElementById(groupId);
+            if (group) group.remove();
+            refreshAll();
+        }
 
-            if(!id || !name || !price) {
-                alert('กรุณากรอก ID, ชื่อเมนู และราคา ให้ครบถ้วน');
-                return;
+        function handleTypeChange(selectEl) {
+            const group = selectEl.closest('.option-group');
+            const maxInput = group.querySelector('.opt-max');
+            if (selectEl.value === 'radio') {
+                maxInput.value = '';
+                maxInput.disabled = true;
+            } else {
+                maxInput.disabled = false;
+                if (!maxInput.value) maxInput.value = 2;
             }
+        }
 
-            // 2. ดึงค่า Options
+        function addChoice(groupId, data = {}) {
+            const group = document.getElementById(groupId);
+            if (!group) return;
+            const container = group.querySelector('.choices-container');
+            const label = data.label || '';
+            const price = data.price ?? 0;
+            const html = `
+                <div class="choice-row choice-item">
+                    <input type="text" class="choice-label" placeholder="ชื่อตัวเลือก เช่น หวานน้อย" value="${escapeHtml(label)}" oninput="refreshAll()">
+                    <input type="number" class="choice-price" placeholder="ราคา" value="${escapeHtml(price)}" oninput="refreshAll()">
+                    <button class="btn btn-danger h-9 text-xs" onclick="this.closest('.choice-item').remove(); refreshAll();" title="ลบตัวเลือก"><i class="fa-solid fa-minus"></i></button>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
+            refreshAll();
+        }
+
+        function readOptions() {
             const options = [];
-            document.querySelectorAll('#options-container > div').forEach(group => {
-                const optName = group.querySelector('.opt-name').value;
-                const optType = group.querySelector('.opt-type').value;
-                const optMax = group.querySelector('.opt-max').value;
-                
-                if(optName) {
-                    const choices = [];
-                    group.querySelectorAll('.choice-item').forEach(choice => {
-                        const label = choice.querySelector('.choice-label').value;
-                        const cPrice = choice.querySelector('.choice-price').value;
-                        if(label) {
-                            choices.push({ label: label, price: parseInt(cPrice) || 0 });
-                        }
-                    });
+            document.querySelectorAll('#options-container .option-group').forEach(group => {
+                const name = group.querySelector('.opt-name').value.trim();
+                const type = group.querySelector('.opt-type').value;
+                const maxValue = group.querySelector('.opt-max').value;
+                const choices = [];
 
-                    const optObj = { type: optType, name: optName, choices: choices };
-                    if(optType === 'checkbox' && optMax) optObj.max = parseInt(optMax);
-                    
-                    options.push(optObj);
+                group.querySelectorAll('.choice-item').forEach(row => {
+                    const label = row.querySelector('.choice-label').value.trim();
+                    const price = Number(row.querySelector('.choice-price').value || 0);
+                    if (label) choices.push({ label, price: Number.isFinite(price) ? price : 0 });
+                });
+
+                if (name && choices.length > 0) {
+                    const opt = { type, name };
+                    if (type === 'checkbox' && maxValue !== '') opt.max = Number(maxValue) || 1;
+                    opt.choices = choices;
+                    options.push(opt);
                 }
             });
+            return options;
+        }
 
-            // 3. สร้าง Object
-            const productObj = {
-                id: parseInt(id),
-                category: category,
-                name: name,
-                desc: desc,
-                price: parseInt(price),
-                originalPrice: originalPrice ? parseInt(originalPrice) : undefined,
-                badge: badge || undefined,
-                stock: stock,
-                img: img || "https://lh3.googleusercontent.com/d/19ro_rUeZkoPNdHJhgccYUDkfhC7G2E8U", // Default Img
-                options: options.length > 0 ? options : undefined
+        function readProduct() {
+            const options = readOptions();
+            return {
+                id: numberOrEmpty(document.getElementById('p_id').value),
+                category: document.getElementById('p_category').value,
+                subCategory: document.getElementById('p_subCategory').value.trim(),
+                name: document.getElementById('p_name').value.trim(),
+                desc: document.getElementById('p_desc').value.trim(),
+                price: numberOrEmpty(document.getElementById('p_price').value),
+                originalPrice: numberOrEmpty(document.getElementById('p_originalPrice').value),
+                img: document.getElementById('p_img').value.trim(),
+                badge: document.getElementById('p_badge').value.trim(),
+                stock: document.getElementById('p_stock').value === 'true' ? 'TRUE' : 'FALSE',
+                options: options.length ? JSON.stringify(options) : ''
             };
-
-            // 4. ล้างค่าที่เป็น undefined ออก
-            Object.keys(productObj).forEach(key => productObj[key] === undefined && delete productObj[key]);
-
-            // 5. แปลงเป็น String แบบสวยงาม (Format เหมือนที่คุณต้องการ)
-            // ใช้เทคนิค Regex เพื่อลบเครื่องหมาย " ที่ Key (เช่น "id": 1 => id: 1)
-            let jsonString = JSON.stringify(productObj, null, 4);
-            let formattedString = jsonString.replace(/"(\w+)":/g, '$1:').replace(/\n/g, ' '); // ทำให้เป็นบรรทัดเดียว หรือจัด Format ตามชอบ
-            
-            // จัดรูปแบบให้เป็นบรรทัดเดียวแบบที่คุณชอบ
-            formattedString = `{ ${formattedString.replace(/[{}]/g, '').trim()} },`;
-
-            // แสดงผล
-            document.getElementById('output_code').value = formattedString;
-            
-            // อัปเดต Preview
-            updatePreview(productObj);
         }
 
-        function updatePreview(obj) {
-    document.getElementById('prev_name').innerText = obj.name;
-    document.getElementById('prev_desc').innerText = obj.desc;
-    
-    // จัดการรูปภาพ
-    const imgEl = document.getElementById('prev_img');
-    if(obj.img && obj.img.length > 10) {
-        imgEl.src = obj.img;
-    } else {
-        imgEl.src = "https://via.placeholder.com/150";
-    }
-
-    const priceEl = document.getElementById('prev_price');
-    const origEl = document.getElementById('prev_origPrice');
-
-    // 🔥 Logic เปลี่ยนสี: ถ้ามีราคาเต็ม (originalPrice) ให้ราคาขายเป็นสีแดง
-    if(obj.originalPrice) {
-        origEl.innerText = `฿${obj.originalPrice}`;
-        origEl.classList.remove('hidden');
-        
-        // เป็นโปรโมชั่น -> สีแดง
-        priceEl.innerText = `฿${obj.price}`;
-        priceEl.className = "text-red-600 font-bold text-lg"; 
-    } else {
-        origEl.classList.add('hidden');
-        
-        // ราคาปกติ -> สีเขียว
-        priceEl.innerText = `฿${obj.price}`;
-        priceEl.className = "text-green-600 font-bold text-lg";
-    }
-    
-    // จัดการ Badge
-    const badgeEl = document.getElementById('prev_badge');
-    if(obj.badge) {
-        badgeEl.innerText = obj.badge;
-        badgeEl.classList.remove('hidden');
-    } else {
-        badgeEl.classList.add('hidden');
-    }
-}                                                                                                                                        
-
-        function copyCode() {
-            const copyText = document.getElementById("output_code");
-            copyText.select();
-            document.execCommand("copy");
-            alert("ก๊อปปี้โค้ดเรียบร้อย!");
+        function toJsObject(product) {
+            const obj = {
+                id: product.id === '' ? undefined : Number(product.id),
+                category: product.category || undefined,
+                subCategory: product.subCategory || undefined,
+                name: product.name || undefined,
+                desc: product.desc || undefined,
+                price: product.price === '' ? undefined : Number(product.price),
+                originalPrice: product.originalPrice === '' ? undefined : Number(product.originalPrice),
+                img: product.img || undefined,
+                badge: product.badge || undefined,
+                stock: product.stock === 'TRUE',
+                options: product.options ? JSON.parse(product.options) : undefined
+            };
+            Object.keys(obj).forEach(key => obj[key] === undefined && delete obj[key]);
+            return JSON.stringify(obj, null, 4).replace(/"(\w+)":/g, '$1:');
         }
+
+        function renderCellOutputs(product) {
+            const grid = document.getElementById('cell-output-grid');
+            grid.innerHTML = SHEET_COLUMNS.map(col => {
+                const value = product[col.key] ?? '';
+                return `
+                    <div class="copy-cell">
+                        <div class="copy-cell-head">
+                            <b class="text-xs" style="color: var(--green-deep);">${escapeHtml(col.label)}</b>
+                            <button class="btn btn-soft px-2 py-1 text-[11px]" onclick="copyById('cell_${col.key}')"><i class="fa-regular fa-copy"></i> Copy</button>
+                        </div>
+                        <textarea id="cell_${col.key}" readonly>${escapeHtml(value)}</textarea>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function refreshAll() {
+            const product = readProduct();
+            renderCellOutputs(product);
+            document.getElementById('output_options').value = product.options || '';
+            document.getElementById('output_tsv').value = SHEET_COLUMNS.map(col => safeCell(product[col.key])).join('\t');
+            document.getElementById('output_object').value = toJsObject(product);
+        }
+
+        async function copyText(text) {
+            try {
+                await navigator.clipboard.writeText(text);
+            } catch (e) {
+                const temp = document.createElement('textarea');
+                temp.value = text;
+                document.body.appendChild(temp);
+                temp.select();
+                document.execCommand('copy');
+                temp.remove();
+            }
+            showToast();
+        }
+
+        function copyById(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            copyText(el.value);
+        }
+
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 1200);
+        }
+
+        function clearOptions() {
+            document.getElementById('options-container').innerHTML = '';
+            refreshAll();
+        }
+
+        function clearAll() {
+            ['p_id','p_subCategory','p_name','p_desc','p_price','p_originalPrice','p_img','p_badge'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('p_category').value = 'recommend';
+            document.getElementById('p_stock').value = 'true';
+            clearOptions();
+        }
+
+        function fillSweetnessTemplate() {
+            addOptionGroup({
+                type: 'radio',
+                name: 'ระดับความหวาน',
+                choices: [
+                    { label: 'หวานน้อยกว่า (30)', price: 0 },
+                    { label: 'หวานน้อย (50)', price: 0 },
+                    { label: 'หวานปกติ (100)', price: 0 },
+                    { label: 'หวานมาก (125)', price: 0 }
+                ]
+            });
+        }
+
+        function fillCoconutMeatTemplate() {
+            addOptionGroup({
+                type: 'radio',
+                name: 'ใส่เนื้อมะพร้าวอ่อนหรือไม่',
+                choices: [
+                    { label: 'น้ำล้วน ไม่ใส่เนื้อมะพร้าว', price: 0 },
+                    { label: 'ใส่เนื้อมะพร้าวอ่อน', price: 0 }
+                ]
+            });
+        }
+
+        function fillExtraTemplate() {
+            addOptionGroup({
+                type: 'checkbox',
+                name: 'เพิ่มพิเศษ',
+                max: 2,
+                choices: [
+                    { label: 'เพิ่มเนื้อปั่นเข้มข้น (+50%)', price: 15 },
+                    { label: 'เพิ่มเนื้อเคี้ยว (เคี้ยวเพลินๆ)', price: 15 }
+                ]
+            });
+        }
+
+        function fillFullSmoothieTemplate() {
+            clearOptions();
+            fillSweetnessTemplate();
+            fillCoconutMeatTemplate();
+            fillExtraTemplate();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initCategorySelect();
+            document.getElementById('p_category').value = 'recommend';
+            addOptionGroup({
+                type: 'radio',
+                name: 'ใส่เนื้อมะพร้าวอ่อนหรือไม่',
+                choices: [
+                    { label: 'น้ำล้วน ไม่ใส่เนื้อมะพร้าว', price: 0 },
+                    { label: 'ใส่เนื้อมะพร้าวอ่อน', price: 0 }
+                ]
+            });
+            refreshAll();
+        });
     </script>
 </body>
 </html>
