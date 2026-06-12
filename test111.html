@@ -582,7 +582,7 @@
                             <div class="shop-subtitle">หอมมะพร้าวแท้ จากมะพร้าวน้ำหอมแท้</div>
                             <div class="shop-meta-row">
                                 <span id="shop-hours-label" class="shop-meta-chip"><i class="fa-regular fa-clock"></i> 09:00-20:00</span>
-                                <a href="tel:0622467746" class="shop-meta-chip hover:underline"><i class="fa-solid fa-phone"></i> 062-246-7746</a>
+                                <a href="tel:0622467746" id="shop-phone-link" class="shop-meta-chip hover:underline"><i class="fa-solid fa-phone"></i> 062-246-7746</a>
                             </div>
                         </div>
                     </div>
@@ -694,7 +694,7 @@
                         <div class="text-2xl">📍</div>
                         <div class="flex-1 text-xs" style="color: var(--color-text-dark);">
                             <div class="font-semibold mb-1">ที่อยู่ร้าน</div>
-                            <div style="color: var(--color-text-muted);">ร้านหนุ่มดำเนิน · โทร 062-246-7746</div>
+                            <div style="color: var(--color-text-muted);">ร้านหนุ่มดำเนิน · โทร <span id="pickup-shop-phone-label">062-246-7746</span></div>
                             <div id="pickup-shop-hours-label" class="mt-2 font-medium">เปิด 09:00 - 20:00 น.</div>
                         </div>
                     </div>
@@ -800,7 +800,7 @@
                     </div>
                 </label>
 
-                 <label class="block mb-3 cursor-pointer">
+                 <label id="transfer-label" class="block mb-3 cursor-pointer">
                     <input type="radio" name="paymentMethod" value="transfer" class="payment-radio hidden" checked onchange="togglePaymentDetail()">
                     <div class="border rounded-2xl p-4 flex items-center justify-between transition-all hover:bg-gray-50" style="border-color: var(--color-border-soft);">
                         <div class="flex items-center gap-3">
@@ -844,7 +844,7 @@
                                     </div>
                                     <div>
                                         <p class="text-[10px] leading-none" style="color: var(--color-text-muted);">ชื่อบัญชี</p>
-                                        <p class="text-sm font-semibold line-clamp-1" style="color: var(--color-text-dark);">นายวิวัฒน์ชัย พันธ์วิชัย</p>
+                                        <p id="account-name-display" class="text-sm font-semibold line-clamp-1" style="color: var(--color-text-dark);">นายวิวัฒน์ชัย พันธ์วิชัย</p>
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-2">
@@ -852,7 +852,7 @@
                                         <p class="text-[10px] leading-none" style="color: var(--color-text-muted);">เลขพร้อมเพย์ (KBank)</p>
                                         <div class="flex items-center justify-between">
                                             <span id="bank-acc-no" class="text-sm font-bold font-mono tracking-wide" style="color: #113566;">062-246-7746</span>
-                                            <button onclick="copyToClipboard('0622467746')" class="text-[10px] px-2 py-0.5 rounded transition flex items-center gap-1" style="background: var(--color-accent-blue); color: #113566;">
+                                            <button id="copy-promptpay-btn" onclick="copyToClipboard('0622467746')" class="text-[10px] px-2 py-0.5 rounded transition flex items-center gap-1" style="background: var(--color-accent-blue); color: #113566;">
                                                 <i class="fa-regular fa-copy"></i> คัดลอก
                                             </button>
                                         </div>
@@ -864,7 +864,7 @@
                             </button>
                         </div>
                     </div>
-                    <div class="mt-4 pt-4" style="border-top: 1px solid var(--color-border-soft);">
+                    <div id="slip-upload-box" class="mt-4 pt-4" style="border-top: 1px solid var(--color-border-soft);">
                         <label class="block text-xs font-bold mb-2 flex items-center gap-1" style="color: var(--color-text-dark);">
                             <i class="fa-solid fa-receipt" style="color: var(--color-primary);"></i> แนบหลักฐานการโอนเงิน
                         </label>
@@ -962,7 +962,7 @@
                             <button type="button" class="text-xs font-bold px-3 py-2 rounded-xl transition active:scale-95" style="background: var(--color-accent-blue); color: #113566;"
                                 onclick="(function(){ 
                                     Swal.fire({icon:'question', title:'ทิปเล็ก ๆ',
-                                        html:'<div style=&quot;text-align:left&quot;>✅ ใส่เบอร์เดียวกับตอนสั่ง<br>✅ ไม่ต้องใส่ขีด (-)<br>✅ ถ้าเพิ่งสั่ง รอสักครู่ให้ระบบอัปเดต</div>'});
+                                        html:'<div style=&quot;text-align:left&quot;>✅ ใส่เบอร์เดียวกับตอนสั่ง<br>✅ ใส่ขีด (-) หรือเว้นวรรคได้ ระบบจะแปลงให้อัตโนมัติ<br>✅ ถ้าเพิ่งสั่ง รอสักครู่ให้ระบบอัปเดต</div>'});
                                 })()">
                                 <i class="fa-solid fa-circle-info mr-1"></i> วิธีใช้
                             </button>
@@ -1253,19 +1253,170 @@
     }
 
     // ============ SETTINGS FROM ADMIN ============
+    window.DEFAULT_SHOP_SETTINGS = {
+        shopOpen: true,
+        pickupEnabled: true,
+        deliveryEnabled: true,
+        openHour: 6,
+        closeHour: 22,
+        maxDistanceKm: 5,
+        shopPhone: '0622467746',
+        announcement: '',
+        shipping: {
+            nearKm: 1.5,
+            midKm: 3,
+            maxKm: 5,
+            fullFee: { near: 30, mid: 50, far: 75 },
+            steps: [
+                { minTotal: 0, shopHelp: 0 },
+                { minTotal: 125, shopHelp: 15 },
+                { minTotal: 200, shopHelp: 25 },
+                { minTotal: 250, shopHelp: 30 },
+                { minTotal: 350, shopHelp: 40 },
+                { minTotal: 450, shopHelp: 50 },
+                { minTotal: 550, shopHelp: 65 },
+                { minTotal: 650, shopHelp: 75 }
+            ]
+        },
+        payment: {
+            transferEnabled: true,
+            codEnabled: true,
+            chatPayEnabled: true,
+            requireSlip: true,
+            promptpayNumber: '0622467746',
+            accountName: 'นายวิวัฒน์ชัย พันธ์วิชัย'
+        },
+        menu: {
+            defaultProductImage: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=600&auto=format&fit=crop',
+            categoryLabels: {
+                recommend: 'แนะนำ',
+                general: 'เมนูทั่วไป',
+                coconut_smoothie: 'มะพร้าวปั่น',
+                coconut_water: 'น้ำมะพร้าว',
+                fruit_smoothie: 'ผลไม้ปั่น',
+                milk_smoothie: 'นมสดปั่น',
+                special: 'เมนูพิเศษ',
+                snack: 'ขนม',
+                promotion: 'โปรโมชั่น'
+            }
+        },
+        order: {
+            defaultStatusPickup: '🏪 รอรับหน้าร้าน',
+            defaultStatusDelivery: '🍳 กำลังปรุง'
+        },
+        notifications: {
+            lineEnabled: true
+        }
+    };
+
+    window.deepMergeShopSettings = function(defaults, incoming) {
+        const output = Array.isArray(defaults) ? [...defaults] : { ...(defaults || {}) };
+        if (!incoming || typeof incoming !== 'object') return output;
+        Object.keys(incoming).forEach((key) => {
+            const incomingValue = incoming[key];
+            const defaultValue = defaults ? defaults[key] : undefined;
+            if (
+                incomingValue &&
+                typeof incomingValue === 'object' &&
+                !Array.isArray(incomingValue) &&
+                defaultValue &&
+                typeof defaultValue === 'object' &&
+                !Array.isArray(defaultValue)
+            ) {
+                output[key] = window.deepMergeShopSettings(defaultValue, incomingValue);
+            } else {
+                output[key] = incomingValue;
+            }
+        });
+        return output;
+    };
+
+    window.toFiniteNumber = function(value, fallback) {
+        const numberValue = Number(value);
+        return Number.isFinite(numberValue) ? numberValue : fallback;
+    };
+
+    window.formatPhoneDisplay = function(phone) {
+        const normalizedPhone = window.normalizePhone(phone);
+        if (normalizedPhone.length === 10) {
+            return `${normalizedPhone.slice(0, 3)}-${normalizedPhone.slice(3, 6)}-${normalizedPhone.slice(6)}`;
+        }
+        if (normalizedPhone.length === 9) {
+            return `${normalizedPhone.slice(0, 2)}-${normalizedPhone.slice(2, 5)}-${normalizedPhone.slice(5)}`;
+        }
+        return normalizedPhone || String(phone || '');
+    };
+
+    window.getPaymentSettings = function() {
+        const paymentSettings = window.shopSettings && window.shopSettings.payment ? window.shopSettings.payment : {};
+        return {
+            transferEnabled: paymentSettings.transferEnabled !== false,
+            codEnabled: paymentSettings.codEnabled !== false,
+            chatPayEnabled: paymentSettings.chatPayEnabled !== false,
+            requireSlip: paymentSettings.requireSlip !== false,
+            promptpayNumber: window.normalizePhone(paymentSettings.promptpayNumber || window.shopSettings.shopPhone || '0622467746') || '0622467746',
+            accountName: String(paymentSettings.accountName || 'นายวิวัฒน์ชัย พันธ์วิชัย')
+        };
+    };
+
+    window.getPromptPayNumber = function() {
+        return window.getPaymentSettings().promptpayNumber;
+    };
+
+    window.getShopPhone = function() {
+        return window.normalizePhone(window.shopSettings.shopPhone || window.getPromptPayNumber() || '0622467746') || '0622467746';
+    };
+
+    window.applyShippingSettings = function() {
+        const shipping = window.shopSettings.shipping || {};
+        const fullFee = shipping.fullFee || {};
+        window.NEAR_SHOP_KM = window.toFiniteNumber(shipping.nearKm, window.NEAR_SHOP_KM);
+        window.MID_SHOP_KM = window.toFiniteNumber(shipping.midKm, window.MID_SHOP_KM);
+        window.MAX_DIST_KM = window.toFiniteNumber(shipping.maxKm, window.toFiniteNumber(window.shopSettings.maxDistanceKm, window.MAX_DIST_KM));
+        window.SHIPPING_FULL_FEE = {
+            near: window.toFiniteNumber(fullFee.near, window.SHIPPING_FULL_FEE.near),
+            mid: window.toFiniteNumber(fullFee.mid, window.SHIPPING_FULL_FEE.mid),
+            far: window.toFiniteNumber(fullFee.far, window.SHIPPING_FULL_FEE.far)
+        };
+        if (Array.isArray(shipping.steps) && shipping.steps.length > 0) {
+            window.SHIPPING_STEPS = shipping.steps
+                .map(step => ({
+                    minTotal: window.toFiniteNumber(step.minTotal, 0),
+                    shopHelp: window.toFiniteNumber(step.shopHelp, 0)
+                }))
+                .filter(step => step.minTotal >= 0 && step.shopHelp >= 0)
+                .sort((a, b) => a.minTotal - b.minTotal);
+            if (!window.SHIPPING_STEPS.some(step => step.minTotal === 0)) {
+                window.SHIPPING_STEPS.unshift({ minTotal: 0, shopHelp: 0 });
+            }
+        }
+    };
+
+    window.applyCategorySettings = function() {
+        const labels = window.shopSettings.menu && window.shopSettings.menu.categoryLabels ? window.shopSettings.menu.categoryLabels : {};
+        window.CATEGORY_LABELS = { ...window.CATEGORY_LABELS, all: 'ทั้งหมด', ...labels };
+        const knownOrder = ['all', 'recommend', 'general', 'coconut_smoothie', 'coconut_water', 'fruit_smoothie', 'milk_smoothie', 'special', 'snack', 'promotion'];
+        const extraKeys = Object.keys(labels).filter(key => !knownOrder.includes(key));
+        window.CATEGORY_ORDER = [...knownOrder, ...extraKeys];
+    };
+
     window.loadShopSettings = async function() {
         try {
             const settingsSnap = await get(ref(db, 'settings'));
-            window.shopSettings = settingsSnap.exists() ? (settingsSnap.val() || {}) : {};
+            const rawSettings = settingsSnap.exists() ? (settingsSnap.val() || {}) : {};
+            window.shopSettings = window.deepMergeShopSettings(window.DEFAULT_SHOP_SETTINGS, rawSettings);
 
-            if (typeof window.shopSettings.openHour === 'number') window.OPEN_HOUR = window.shopSettings.openHour;
-            if (typeof window.shopSettings.closeHour === 'number') window.CLOSE_HOUR = window.shopSettings.closeHour;
-            if (typeof window.shopSettings.maxDistanceKm === 'number') window.MAX_DIST_KM = window.shopSettings.maxDistanceKm;
-
+            window.OPEN_HOUR = window.toFiniteNumber(window.shopSettings.openHour, window.OPEN_HOUR);
+            window.CLOSE_HOUR = window.toFiniteNumber(window.shopSettings.closeHour, window.CLOSE_HOUR);
+            window.MAX_DIST_KM = window.toFiniteNumber(window.shopSettings.maxDistanceKm, window.MAX_DIST_KM);
+            window.applyShippingSettings();
+            window.applyCategorySettings();
             window.applyShopSettingsUI();
         } catch (error) {
             console.warn('โหลด settings ไม่สำเร็จ ใช้ค่าเริ่มต้นแทน', error);
-            window.shopSettings = {};
+            window.shopSettings = window.deepMergeShopSettings(window.DEFAULT_SHOP_SETTINGS, {});
+            window.applyShippingSettings();
+            window.applyCategorySettings();
             window.applyShopSettingsUI();
         }
     };
@@ -1277,6 +1428,24 @@
 
         const pickupHours = document.getElementById('pickup-shop-hours-label');
         if (pickupHours) pickupHours.innerText = `เปิด ${String(window.OPEN_HOUR).padStart(2,'0')}:00 - ${String(window.CLOSE_HOUR).padStart(2,'0')}:00 น.`;
+
+        const shopPhone = window.getShopPhone();
+        const shopPhoneDisplay = window.formatPhoneDisplay(shopPhone);
+        const shopPhoneLink = document.getElementById('shop-phone-link');
+        if (shopPhoneLink) {
+            shopPhoneLink.href = `tel:${shopPhone}`;
+            shopPhoneLink.innerHTML = `<i class="fa-solid fa-phone"></i> ${shopPhoneDisplay}`;
+        }
+        const pickupPhoneLabel = document.getElementById('pickup-shop-phone-label');
+        if (pickupPhoneLabel) pickupPhoneLabel.innerText = shopPhoneDisplay;
+
+        const payment = window.getPaymentSettings();
+        const bankAccNo = document.getElementById('bank-acc-no');
+        if (bankAccNo) bankAccNo.innerText = window.formatPhoneDisplay(payment.promptpayNumber);
+        const accountNameDisplay = document.getElementById('account-name-display');
+        if (accountNameDisplay) accountNameDisplay.innerText = payment.accountName;
+        const copyPromptPayBtn = document.getElementById('copy-promptpay-btn');
+        if (copyPromptPayBtn) copyPromptPayBtn.setAttribute('onclick', `copyToClipboard('${payment.promptpayNumber}')`);
 
         const announcement = String(window.shopSettings.announcement || '').trim();
         let annBox = document.getElementById('shop-announcement-box');
@@ -1296,6 +1465,58 @@
             annBox.innerHTML = announcement ? `📣 ${announcement}` : '';
             annBox.classList.toggle('hidden', !announcement);
         }
+
+        window.updatePaymentAvailability(window.orderMode || 'pickup');
+    };
+
+    window.updatePaymentAvailability = function(mode) {
+        const payment = window.getPaymentSettings();
+        const transferLabel = document.getElementById('transfer-label');
+        const codLabel = document.getElementById('cod-label');
+        const chatPayLabel = document.getElementById('chat-pay-label');
+        const slipUploadBox = document.getElementById('slip-upload-box');
+
+        if (transferLabel) transferLabel.classList.toggle('hidden', !payment.transferEnabled);
+        if (codLabel) codLabel.classList.toggle('hidden', !(mode === 'pickup' && payment.codEnabled));
+        if (chatPayLabel) chatPayLabel.classList.toggle('hidden', !payment.chatPayEnabled);
+        if (slipUploadBox) slipUploadBox.classList.toggle('hidden', !payment.requireSlip);
+    };
+
+    window.getAvailablePaymentMethods = function(mode) {
+        const payment = window.getPaymentSettings();
+        const methods = [];
+        if (payment.transferEnabled) methods.push('transfer');
+        if (mode === 'pickup' && payment.codEnabled) methods.push('cod');
+        if (payment.chatPayEnabled) methods.push('chat_pay');
+        return methods;
+    };
+
+    window.selectAvailablePaymentMethod = function(mode) {
+        window.updatePaymentAvailability(mode);
+        const methods = window.getAvailablePaymentMethods(mode);
+        if (methods.length === 0) return false;
+        const currentChecked = document.querySelector('input[name="paymentMethod"]:checked');
+        if (!currentChecked || !methods.includes(currentChecked.value)) {
+            const nextInput = document.querySelector(`input[name="paymentMethod"][value="${methods[0]}"]`);
+            if (nextInput) nextInput.checked = true;
+        }
+        window.togglePaymentDetail();
+        return true;
+    };
+
+    window.updatePromptPayQR = function(grandTotal) {
+        const amount = Number(grandTotal) || 0;
+        const payment = window.getPaymentSettings();
+        const qrImage = document.getElementById('qr-image');
+        const qrAmountDisplay = document.getElementById('qr-amount-display');
+        const codAmountDisplay = document.getElementById('cod-amount-display');
+        const bankAccNo = document.getElementById('bank-acc-no');
+        const accountNameDisplay = document.getElementById('account-name-display');
+        if (qrImage) qrImage.src = `https://promptpay.io/${payment.promptpayNumber}/${amount}`;
+        if (qrAmountDisplay) qrAmountDisplay.innerText = `${amount} บาท`;
+        if (codAmountDisplay) codAmountDisplay.innerText = `${amount}`;
+        if (bankAccNo) bankAccNo.innerText = window.formatPhoneDisplay(payment.promptpayNumber);
+        if (accountNameDisplay) accountNameDisplay.innerText = payment.accountName;
     };
 
     // ============ INIT ============
@@ -1350,15 +1571,20 @@
 
     // ============ MODE TOGGLE ============
     window.setMode = function(mode, skipSave) {
-        if (mode === 'pickup' && window.shopSettings && window.shopSettings.pickupEnabled === false) {
+        const pickupEnabled = !(window.shopSettings && window.shopSettings.pickupEnabled === false);
+        const deliveryEnabled = !(window.shopSettings && window.shopSettings.deliveryEnabled === false);
+        if (!pickupEnabled && !deliveryEnabled) {
+            Swal.fire({icon:'info', title:'หยุดรับออเดอร์ชั่วคราว', text:'ตอนนี้ร้านปิดรับทั้งรับหน้าร้านและเดลิเวอรี่'});
+            mode = window.orderMode || 'pickup';
+        } else if (mode === 'pickup' && !pickupEnabled) {
             Swal.fire({icon:'info', title:'ปิดรับหน้าร้านชั่วคราว', text:'กรุณาเลือกเดลิเวอรี่แทน'});
             mode = 'delivery';
-        }
-        if (mode === 'delivery' && window.shopSettings && window.shopSettings.deliveryEnabled === false) {
+        } else if (mode === 'delivery' && !deliveryEnabled) {
             Swal.fire({icon:'info', title:'ปิดเดลิเวอรี่ชั่วคราว', text:'กรุณาเลือกรับหน้าร้านแทน'});
             mode = 'pickup';
         }
         window.orderMode = mode;
+        window.updatePaymentAvailability(mode);
         if (!skipSave) saveModeToStorage();
         
         const btnPickup = document.getElementById('mode-btn-pickup');
@@ -1445,6 +1671,12 @@
     };
 
     window.goToNextStep = function() {
+        if (window.orderMode === 'pickup' && window.shopSettings && window.shopSettings.pickupEnabled === false) {
+            return Swal.fire({icon:'warning', title:'ตอนนี้ปิดรับหน้าร้านชั่วคราว'});
+        }
+        if (window.orderMode === 'delivery' && window.shopSettings && window.shopSettings.deliveryEnabled === false) {
+            return Swal.fire({icon:'warning', title:'ตอนนี้ปิดเดลิเวอรี่ชั่วคราว'});
+        }
         if (window.orderMode === 'pickup') window.showPage('pickup');
         else window.showPage('address');
     };
@@ -1652,7 +1884,7 @@
                 <div class="menu-card-inner p-3 flex gap-3.5" style="background: white; border: 1px solid var(--color-border-soft); box-shadow: 0 2px 8px rgba(45, 80, 22, 0.04);">
                     <div class="relative shrink-0 flex flex-col items-center">
                         <div class="${pastelClass} menu-image rounded-2xl overflow-hidden relative flex items-center justify-center">
-                            <img src="${item.img}" class="w-full h-full object-cover" onerror="this.style.display='none'">
+                            <img src="${item.img || (window.shopSettings.menu && window.shopSettings.menu.defaultProductImage) || window.DEFAULT_SHOP_SETTINGS.menu.defaultProductImage}" class="w-full h-full object-cover" onerror="this.style.display='none'">
                             ${isSoldOut ? '<span class="absolute inset-0 flex items-center justify-center bg-black/45 text-white font-bold text-sm rounded-2xl z-10">หมด</span>' : ''}
                         </div>
                         ${underImageBadgeHtml}
@@ -1980,6 +2212,8 @@
         if(!name || !phone) return Swal.fire({icon: 'warning', text: 'กรุณากรอกชื่อและเบอร์โทรให้ครบถ้วน'});
         if(!window.isValidThaiPhone(phone)) return window.showInvalidPhoneAlert();
         if(!window.pickupTime) return Swal.fire({icon: 'warning', text: 'กรุณาเลือกเวลาที่จะมารับ'});
+        if(window.shopSettings && window.shopSettings.pickupEnabled === false) return Swal.fire({icon:'warning', title:'ตอนนี้ปิดรับหน้าร้านชั่วคราว'});
+
         const foodTotal = window.cart.reduce((s, i) => s + i.finalPrice, 0);
         window.deliveryFee = 0;
         const grandTotal = foodTotal;
@@ -1987,10 +2221,11 @@
         document.getElementById('summary-food-total').innerText = `${foodTotal} บาท`;
         document.getElementById('summary-delivery-row').style.display = 'none';
         document.getElementById('summary-grand-total').innerText = `${grandTotal} บาท`;
-        document.getElementById('qr-image').src = `https://promptpay.io/0622467746/${grandTotal}`;
-        document.getElementById('qr-amount-display').innerText = `${grandTotal} บาท`;
-        document.getElementById('cod-amount-display').innerText = `${grandTotal}`;
-        document.getElementById('cod-label').classList.remove('hidden');
+        window.updatePromptPayQR(grandTotal);
+
+        if (!window.selectAvailablePaymentMethod('pickup')) {
+            return Swal.fire({icon:'warning', title:'ยังไม่ได้เปิดช่องทางชำระเงิน', text:'กรุณาเปิดช่องทางชำระเงินในหน้า Admin ก่อน'});
+        }
         window.showPage('payment');
     };
 
@@ -2000,11 +2235,13 @@
         const address = document.getElementById('cust-address').value.trim();
         if(!name || !phone || !address) return Swal.fire({icon: 'warning', text: 'กรุณากรอกข้อมูลที่อยู่ให้ครบถ้วน'});
         if(!window.isValidThaiPhone(phone)) return window.showInvalidPhoneAlert();
+        if(window.shopSettings && window.shopSettings.deliveryEnabled === false) return Swal.fire({icon:'warning', title:'ตอนนี้ปิดเดลิเวอรี่ชั่วคราว'});
         if(!window.userLat) return Swal.fire({icon: 'warning', text: 'กรุณาปักหมุดจุดส่งบนแผนที่'});
         if(window.distanceKm > window.MAX_DIST_KM) return Swal.fire({icon: 'error', text: `อยู่นอกพื้นที่จัดส่ง (จำกัด ${window.MAX_DIST_KM} กม.)`});
         
         const foodTotal = window.cart.reduce((s, i) => s + i.finalPrice, 0);
         const result = window.calculateDeliveryFee(foodTotal, window.distanceKm);
+        if (!result) return Swal.fire({icon:'error', text:'ไม่สามารถคำนวณค่าส่งได้ กรุณาลองปักหมุดใหม่'});
         window.deliveryFee = result.customerFee;
         const grandTotal = foodTotal + window.deliveryFee;
         
@@ -2051,19 +2288,23 @@
             } else feeDetail.innerText = "";
         }
         document.getElementById('summary-grand-total').innerText = `${grandTotal} บาท`;
-        document.getElementById('qr-image').src = `https://promptpay.io/0622467746/${grandTotal}`;
-        document.getElementById('qr-amount-display').innerText = `${grandTotal} บาท`;
-        document.getElementById('cod-label').classList.add('hidden');
-        document.querySelector('input[name="paymentMethod"][value="transfer"]').checked = true;
-        window.togglePaymentDetail();
+        window.updatePromptPayQR(grandTotal);
+
+        if (!window.selectAvailablePaymentMethod('delivery')) {
+            return Swal.fire({icon:'warning', title:'ยังไม่ได้เปิดช่องทางชำระเงิน', text:'กรุณาเปิดช่องทางชำระเงินในหน้า Admin ก่อน'});
+        }
         window.showPage('payment');
     };
 
     window.togglePaymentDetail = function() {
-        const method = document.querySelector('input[name="paymentMethod"]:checked').value;
-        document.getElementById('payment-transfer-detail').classList.toggle('hidden', method !== 'transfer');
-        document.getElementById('payment-cod-detail').classList.toggle('hidden', method !== 'cod');
-        document.getElementById('payment-chat-pay-detail').classList.toggle('hidden', method !== 'chat_pay');
+        const checkedInput = document.querySelector('input[name="paymentMethod"]:checked');
+        const method = checkedInput ? checkedInput.value : '';
+        const transferDetail = document.getElementById('payment-transfer-detail');
+        const codDetail = document.getElementById('payment-cod-detail');
+        const chatPayDetail = document.getElementById('payment-chat-pay-detail');
+        if (transferDetail) transferDetail.classList.toggle('hidden', method !== 'transfer');
+        if (codDetail) codDetail.classList.toggle('hidden', method !== 'cod');
+        if (chatPayDetail) chatPayDetail.classList.toggle('hidden', method !== 'chat_pay');
     };
 
     // ============ STOCK CHECK BEFORE SUBMIT ============
@@ -2121,7 +2362,15 @@
             return;
         }
 
-        const method = document.querySelector('input[name="paymentMethod"]:checked').value;
+        const checkedPaymentInput = document.querySelector('input[name="paymentMethod"]:checked');
+        if (!checkedPaymentInput) return Swal.fire({icon:'warning', title:'กรุณาเลือกวิธีชำระเงิน'});
+        const method = checkedPaymentInput.value;
+        const availableMethods = window.getAvailablePaymentMethods(window.orderMode);
+        if (!availableMethods.includes(method)) {
+            return Swal.fire({icon:'warning', title:'ช่องทางชำระเงินนี้ปิดอยู่', text:'กรุณาเลือกช่องทางอื่น'});
+        }
+
+        const payment = window.getPaymentSettings();
         const total = document.getElementById('summary-grand-total').innerText;
         let slipBase64 = "-";
         let name, phone, address = '-', landmark = '-', location = '-';
@@ -2149,17 +2398,23 @@
             localStorage.setItem('cust_lng', window.userLng);
         }
         
-        if(method === 'transfer') {
+        if(method === 'transfer' && payment.requireSlip) {
             const fileInput = document.getElementById('slip-file');
             if(fileInput.files.length === 0) return Swal.fire({icon: 'warning', text: 'กรุณาแนบสลิปการโอนเงิน'});
             slipBase64 = await window.toBase64(fileInput.files[0]);
+        } else if (method === 'transfer' && !payment.requireSlip) {
+            const fileInput = document.getElementById('slip-file');
+            if(fileInput && fileInput.files.length > 0) slipBase64 = await window.toBase64(fileInput.files[0]);
         }
 
         Swal.fire({ title: 'กำลังส่งออเดอร์...', text: 'กรุณารอสักครู่', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
         const timestamp = new Date();
         const shortId = timestamp.getTime().toString().slice(-4);
         const orderId = `ORD-${shortId}`;
-        let initialStatus = "🕒 รอร้านรับยอด";
+        const orderSettings = window.shopSettings.order || {};
+        let initialStatus = window.orderMode === 'pickup'
+            ? (orderSettings.defaultStatusPickup || '🏪 รอรับหน้าร้าน')
+            : (orderSettings.defaultStatusDelivery || '🍳 กำลังปรุง');
         if (method === 'chat_pay') initialStatus = "💬 รอแอดมินแจ้งยอด";
         if (method === 'cod') initialStatus = "🏪 รอรับที่ร้าน (จ่ายเงินสด)";
 
@@ -2199,7 +2454,7 @@
                 method: 'POST', mode: 'no-cors', 
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newOrder)
-            }).catch(err => console.error("LINE Error", err));
+            }).catch(err => console.error("LINE/Sheet Error", err));
             window.saveOrderToHistory(newOrder);
             window.cart = [];
             localStorage.removeItem('shopping_cart'); 
