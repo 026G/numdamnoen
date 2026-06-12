@@ -135,6 +135,123 @@
             </div>
         </div>
 
+
+
+        <div id="view-settings" class="hidden p-4 max-w-2xl mx-auto pb-24">
+            <div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm mb-4">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <h2 class="font-bold text-gray-800 text-lg flex items-center gap-2"><i class="fa-solid fa-sliders text-blue-600"></i> ตั้งค่าร้าน</h2>
+                        <p class="text-xs text-gray-500 mt-1">ปรับค่าหลักของร้านได้จากหน้านี้ แล้วบันทึกไว้ที่ Firebase / settings</p>
+                    </div>
+                    <button onclick="saveSettings()" class="bg-blue-600 text-white rounded-xl px-4 py-2 text-sm font-bold shadow hover:bg-blue-700 active:scale-95 whitespace-nowrap"><i class="fa-solid fa-floppy-disk mr-1"></i> บันทึก</button>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <section class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div class="bg-blue-50 border-b border-blue-100 p-4">
+                        <h3 class="font-bold text-blue-800"><i class="fa-solid fa-store mr-2"></i>1) ร้าน / เปิดปิดระบบ</h3>
+                        <p class="text-xs text-blue-700 mt-1">เปิดปิดร้าน รับหน้าร้าน เดลิเวอรี่ เวลาเปิดปิด ระยะส่ง และประกาศ</p>
+                    </div>
+                    <div class="p-4 space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <label class="flex items-center justify-between bg-gray-50 border rounded-xl p-3 font-bold text-sm">เปิดร้าน <input id="setting-shop-open" type="checkbox" class="w-5 h-5 accent-blue-600"></label>
+                            <label class="flex items-center justify-between bg-gray-50 border rounded-xl p-3 font-bold text-sm">รับหน้าร้าน <input id="setting-pickup-enabled" type="checkbox" class="w-5 h-5 accent-blue-600"></label>
+                            <label class="flex items-center justify-between bg-gray-50 border rounded-xl p-3 font-bold text-sm">เดลิเวอรี่ <input id="setting-delivery-enabled" type="checkbox" class="w-5 h-5 accent-blue-600"></label>
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <div><label class="text-xs font-bold text-gray-600">เปิดกี่โมง</label><input id="setting-open-hour" type="number" min="0" max="23" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
+                            <div><label class="text-xs font-bold text-gray-600">ปิดกี่โมง</label><input id="setting-close-hour" type="number" min="0" max="23" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
+                            <div><label class="text-xs font-bold text-gray-600">ส่งไกลสุด กม.</label><input id="setting-max-distance" type="number" step="0.1" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
+                            <div><label class="text-xs font-bold text-gray-600">เบอร์ร้าน</label><input id="setting-shop-phone" type="tel" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
+                        </div>
+                        <div><label class="text-xs font-bold text-gray-600">ประกาศหน้าเว็บ</label><textarea id="setting-announcement" rows="2" class="w-full mt-1 border rounded-xl px-3 py-2 text-sm"></textarea></div>
+                    </div>
+                </section>
+
+                <section class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div class="bg-emerald-50 border-b border-emerald-100 p-4">
+                        <h3 class="font-bold text-emerald-800"><i class="fa-solid fa-motorcycle mr-2"></i>2) ค่าส่ง</h3>
+                        <p class="text-xs text-emerald-700 mt-1">กำหนดโซนค่าส่งและขั้นที่ร้านช่วยออก</p>
+                    </div>
+                    <div class="p-4 space-y-4">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <div><label class="text-xs font-bold text-gray-600">ใกล้ไม่เกิน กม.</label><input id="setting-near-km" type="number" step="0.1" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
+                            <div><label class="text-xs font-bold text-gray-600">กลางไม่เกิน กม.</label><input id="setting-mid-km" type="number" step="0.1" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
+                            <div><label class="text-xs font-bold text-gray-600">ไกลสุด กม.</label><input id="setting-shipping-max-km" type="number" step="0.1" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
+                            <div><label class="text-xs font-bold text-gray-600">ค่าส่งใกล้</label><input id="setting-fee-near" type="number" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
+                            <div><label class="text-xs font-bold text-gray-600">ค่าส่งกลาง</label><input id="setting-fee-mid" type="number" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
+                            <div><label class="text-xs font-bold text-gray-600">ค่าส่งไกล</label><input id="setting-fee-far" type="number" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-center mb-2"><label class="text-sm font-bold text-gray-700">ขั้นช่วยค่าส่ง</label><button type="button" onclick="addShippingStepRow()" class="text-xs bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-full font-bold">+ เพิ่มขั้น</button></div>
+                            <div id="shipping-steps-container" class="space-y-2"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div class="bg-purple-50 border-b border-purple-100 p-4"><h3 class="font-bold text-purple-800"><i class="fa-solid fa-wallet mr-2"></i>3) การชำระเงิน</h3></div>
+                    <div class="p-4 space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                            <label class="flex items-center justify-between bg-gray-50 border rounded-xl p-3 font-bold text-sm">โอน/สแกน <input id="setting-transfer-enabled" type="checkbox" class="w-5 h-5 accent-purple-600"></label>
+                            <label class="flex items-center justify-between bg-gray-50 border rounded-xl p-3 font-bold text-sm">เงินสด/COD <input id="setting-cod-enabled" type="checkbox" class="w-5 h-5 accent-purple-600"></label>
+                            <label class="flex items-center justify-between bg-gray-50 border rounded-xl p-3 font-bold text-sm">โอนในไลน์ <input id="setting-chatpay-enabled" type="checkbox" class="w-5 h-5 accent-purple-600"></label>
+                            <label class="flex items-center justify-between bg-gray-50 border rounded-xl p-3 font-bold text-sm">บังคับสลิป <input id="setting-require-slip" type="checkbox" class="w-5 h-5 accent-purple-600"></label>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div><label class="text-xs font-bold text-gray-600">เลขพร้อมเพย์</label><input id="setting-promptpay-number" type="text" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
+                            <div><label class="text-xs font-bold text-gray-600">ชื่อบัญชี</label><input id="setting-account-name" type="text" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div class="bg-orange-50 border-b border-orange-100 p-4"><h3 class="font-bold text-orange-800"><i class="fa-solid fa-boxes-stacked mr-2"></i>4) เมนู / สินค้า</h3></div>
+                    <div class="p-4 space-y-4">
+                        <div><label class="text-xs font-bold text-gray-600">รูปเริ่มต้น กรณีสินค้าไม่มีรูป</label><input id="setting-default-product-img" type="text" class="w-full mt-1 border rounded-xl px-3 py-2 text-sm"></div>
+                        <div><label class="text-xs font-bold text-gray-600">หมวดหมู่ที่ใช้บ่อย (code=ชื่อไทย)</label><textarea id="setting-category-lines" rows="5" class="w-full mt-1 border rounded-xl px-3 py-2 text-xs font-mono"></textarea></div>
+                        <div><label class="text-xs font-bold text-gray-600">Option Preset มาตรฐาน (JSON)</label><textarea id="setting-option-presets" rows="6" class="w-full mt-1 border rounded-xl px-3 py-2 text-xs font-mono"></textarea></div>
+                    </div>
+                </section>
+
+                <section class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div class="bg-amber-50 border-b border-amber-100 p-4"><h3 class="font-bold text-amber-800"><i class="fa-solid fa-clipboard-check mr-2"></i>5) ออเดอร์</h3></div>
+                    <div class="p-4 space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div><label class="text-xs font-bold text-gray-600">สถานะเริ่มต้นรับหน้าร้าน</label><input id="setting-default-status-pickup" type="text" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
+                            <div><label class="text-xs font-bold text-gray-600">สถานะเริ่มต้นเดลิเวอรี่</label><input id="setting-default-status-delivery" type="text" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
+                        </div>
+                        <div><label class="text-xs font-bold text-gray-600">สถานะที่ใช้บ่อย (1 บรรทัดต่อสถานะ)</label><textarea id="setting-order-statuses" rows="4" class="w-full mt-1 border rounded-xl px-3 py-2 text-sm"></textarea></div>
+                        <div><label class="text-xs font-bold text-gray-600">เหตุผลยกเลิก (1 บรรทัดต่อเหตุผล)</label><textarea id="setting-cancel-reasons" rows="4" class="w-full mt-1 border rounded-xl px-3 py-2 text-sm"></textarea></div>
+                        <label class="flex items-center justify-between bg-gray-50 border rounded-xl p-3 font-bold text-sm">แยกป้ายรับหน้าร้าน/เดลิเวอรี่ให้ชัด <input id="setting-split-order-view" type="checkbox" class="w-5 h-5 accent-amber-600"></label>
+                    </div>
+                </section>
+
+                <section class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                    <div class="bg-sky-50 border-b border-sky-100 p-4"><h3 class="font-bold text-sky-800"><i class="fa-solid fa-bell mr-2"></i>6) การแจ้งเตือน</h3></div>
+                    <div class="p-4 space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <label class="flex items-center justify-between bg-gray-50 border rounded-xl p-3 font-bold text-sm">เสียงออเดอร์ใหม่ <input id="setting-sound-enabled" type="checkbox" class="w-5 h-5 accent-sky-600"></label>
+                            <label class="flex items-center justify-between bg-gray-50 border rounded-xl p-3 font-bold text-sm">แจ้งเตือนซ้ำ <input id="setting-repeat-enabled" type="checkbox" class="w-5 h-5 accent-sky-600"></label>
+                            <div><label class="text-xs font-bold text-gray-600">ซ้ำทุกกี่นาที</label><input id="setting-repeat-minutes" type="number" min="1" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <label class="flex items-center justify-between bg-gray-50 border rounded-xl p-3 font-bold text-sm">แจ้งเตือน LINE/Apps Script <input id="setting-line-enabled" type="checkbox" class="w-5 h-5 accent-sky-600"></label>
+                            <label class="flex items-center justify-between bg-gray-50 border rounded-xl p-3 font-bold text-sm">เตือนออเดอร์รอรับนาน <input id="setting-pending-alert-enabled" type="checkbox" class="w-5 h-5 accent-sky-600"></label>
+                        </div>
+                        <div><label class="text-xs font-bold text-gray-600">ข้อความเตือนซ้ำ</label><input id="setting-repeat-message" type="text" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
+                    </div>
+                </section>
+
+                <div class="sticky bottom-20 z-30 bg-white/95 backdrop-blur border rounded-2xl shadow-lg p-3 flex gap-3">
+                    <button onclick="resetSettingsToDefault()" class="px-4 py-3 bg-gray-100 text-gray-600 rounded-xl font-bold hover:bg-gray-200">ค่าเริ่มต้น</button>
+                    <button onclick="saveSettings()" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold shadow hover:bg-blue-700"><i class="fa-solid fa-floppy-disk mr-1"></i> บันทึกการตั้งค่า</button>
+                </div>
+            </div>
+        </div>
+
         <div class="fixed bottom-0 w-full bg-white border-t border-gray-200 flex justify-around py-2 z-40 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
             <button onclick="switchView('orders')" id="nav-orders" class="flex flex-col items-center w-full py-1 tab-active">
                 <i class="fa-solid fa-clipboard-list text-xl mb-1"></i>
@@ -147,6 +264,10 @@
             <button onclick="switchView('products')" id="nav-products" class="flex flex-col items-center w-full py-1 tab-inactive">
                 <i class="fa-solid fa-box-open text-xl mb-1"></i>
                 <span class="text-xs font-bold">สินค้า</span>
+            </button>
+            <button onclick="switchView('settings')" id="nav-settings" class="flex flex-col items-center w-full py-1 tab-inactive">
+                <i class="fa-solid fa-sliders text-xl mb-1"></i>
+                <span class="text-xs font-bold">ตั้งค่า</span>
             </button>
         </div>
 
@@ -382,6 +503,9 @@
         window.allMenuItems = {}; // Cache all menu items for option lookup
         window.currentAdminItem = null;
         window.adminOptionQty = 1;
+        window.adminSettings = {};
+        window.settingsListener = null;
+        window.shippingStepsDraft = [];
 
         // Page Navigation
         const pages = {
@@ -437,17 +561,19 @@
                 } catch (err) { Swal.fire('Error', 'อุปกรณ์นี้ไม่รองรับการล็อคหน้าจอ', 'error'); }
             }
         }
-        window.testSound = function(silent = false) { const audio = document.getElementById('notif-sound'); audio.currentTime = 0; audio.volume = 1.0; audio.play().then(() => { if(!silent) Swal.fire({ toast: true, position: 'top', icon: 'success', title: 'เสียงทำงานปกติ', showConfirmButton: false, timer: 1000 }); }).catch(e => { console.log('Audio Autoplay Blocked:', e); if(!silent) Swal.fire({ icon: 'warning', title: 'เสียงถูกปิดกั้น', text: 'กรุณากดที่หน้าจอ 1 ครั้งเพื่อเปิดใช้งานเสียง' }); }); }
+        window.testSound = function(silent = false) { if (silent && window.adminSettings && window.adminSettings.notifications && window.adminSettings.notifications.soundEnabled === false) return; const audio = document.getElementById('notif-sound'); audio.currentTime = 0; audio.volume = 1.0; audio.play().then(() => { if(!silent) Swal.fire({ toast: true, position: 'top', icon: 'success', title: 'เสียงทำงานปกติ', showConfirmButton: false, timer: 1000 }); }).catch(e => { console.log('Audio Autoplay Blocked:', e); if(!silent) Swal.fire({ icon: 'warning', title: 'เสียงถูกปิดกั้น', text: 'กรุณากดที่หน้าจอ 1 ครั้งเพื่อเปิดใช้งานเสียง' }); }); }
 
         // Navigation
         window.switchView = function(viewName) {
             document.getElementById('view-orders').classList.add('hidden');
             document.getElementById('view-history').classList.add('hidden');
             document.getElementById('view-products').classList.add('hidden');
+            document.getElementById('view-settings').classList.add('hidden');
             
             document.getElementById('nav-orders').classList.replace('tab-active','tab-inactive');
             document.getElementById('nav-history').classList.replace('tab-active','tab-inactive');
             document.getElementById('nav-products').classList.replace('tab-active','tab-inactive');
+            document.getElementById('nav-settings').classList.replace('tab-active','tab-inactive');
 
             document.getElementById(`view-${viewName}`).classList.remove('hidden');
             document.getElementById(`nav-${viewName}`).classList.replace('tab-inactive','tab-active');
@@ -461,10 +587,14 @@
             } else if (viewName === 'history') {
                 title.innerHTML = '<i class="fa-solid fa-clock-rotate-left"></i> ประวัติออเดอร์';
                 addBtn.classList.add('hidden');
-            } else {
+            } else if (viewName === 'products') {
                 title.innerHTML = '<i class="fa-solid fa-box"></i> จัดการสินค้า';
                 addBtn.classList.remove('hidden');
                 startListeningProducts();
+            } else if (viewName === 'settings') {
+                title.innerHTML = '<i class="fa-solid fa-sliders"></i> ตั้งค่าร้าน';
+                addBtn.classList.add('hidden');
+                startListeningSettings();
             }
         }
 
@@ -1055,6 +1185,256 @@
             });
         };
 
+
+        // ==========================================
+        // ⚙️ Shop Settings Logic
+        // ==========================================
+        function getDefaultSettings() {
+            return {
+                shopOpen: true,
+                pickupEnabled: true,
+                deliveryEnabled: true,
+                openHour: 9,
+                closeHour: 20,
+                maxDistanceKm: 5,
+                shopPhone: '0622467746',
+                announcement: '',
+                shipping: {
+                    nearKm: 1.5,
+                    midKm: 3,
+                    maxKm: 5,
+                    fullFee: { near: 30, mid: 50, far: 75 },
+                    steps: [
+                        { minTotal: 0, shopHelp: 0 },
+                        { minTotal: 125, shopHelp: 15 },
+                        { minTotal: 200, shopHelp: 25 },
+                        { minTotal: 250, shopHelp: 30 },
+                        { minTotal: 350, shopHelp: 40 },
+                        { minTotal: 450, shopHelp: 50 },
+                        { minTotal: 550, shopHelp: 65 },
+                        { minTotal: 650, shopHelp: 75 }
+                    ]
+                },
+                payment: {
+                    transferEnabled: true,
+                    codEnabled: true,
+                    chatPayEnabled: true,
+                    requireSlip: true,
+                    promptpayNumber: '0622467746',
+                    accountName: 'นายวิวัฒน์ชัย พันธ์วิชัย'
+                },
+                menu: {
+                    defaultProductImage: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=600&auto=format&fit=crop',
+                    categoryLabels: {
+                        recommend: 'แนะนำ',
+                        general: 'เมนูทั่วไป',
+                        coconut_smoothie: 'มะพร้าวปั่น',
+                        coconut_water: 'น้ำมะพร้าว',
+                        fruit_smoothie: 'ผลไม้ปั่น',
+                        milk_smoothie: 'นมสดปั่น',
+                        special: 'เมนูพิเศษ',
+                        snack: 'ขนม',
+                        promotion: 'โปรโมชั่น'
+                    },
+                    optionPresets: [
+                        { type: 'radio', name: 'ระดับความหวาน', choices: [ { label: 'หวานน้อยกว่า 30%', price: 0 }, { label: 'หวานน้อย 50%', price: 0 }, { label: 'หวานปกติ 100%', price: 0 } ] },
+                        { type: 'radio', name: 'ใส่เนื้อมะพร้าวอ่อนหรือไม่', choices: [ { label: 'น้ำล้วน ไม่ใส่เนื้อ', price: 0 }, { label: 'ใส่เนื้อมะพร้าวอ่อน', price: 0 } ] },
+                        { type: 'checkbox', name: 'เพิ่มพิเศษ', max: 2, choices: [ { label: 'เพิ่มเนื้อปั่นเข้มข้น +50%', price: 15 }, { label: 'เพิ่มเนื้อเคี้ยว', price: 15 } ] }
+                    ]
+                },
+                order: {
+                    defaultStatusPickup: '🏪 รอรับหน้าร้าน',
+                    defaultStatusDelivery: '🍳 กำลังปรุง',
+                    splitOrderView: true,
+                    statuses: ['🍳 กำลังปรุง', '🏪 รอลูกค้ามารับ', '🛵 ไรเดอร์นำส่ง', '✅ สำเร็จ', '❌ ยกเลิก'],
+                    cancelReasons: ['ของหมด', 'ติดต่อลูกค้าไม่ได้', 'อยู่นอกพื้นที่จัดส่ง', 'ลูกค้าขอยกเลิก']
+                },
+                notifications: {
+                    soundEnabled: true,
+                    repeatEnabled: false,
+                    repeatMinutes: 3,
+                    lineEnabled: true,
+                    pendingAlertEnabled: true,
+                    repeatMessage: 'มีออเดอร์รอรับอยู่ อย่าลืมกดรับยอดครับ'
+                }
+            };
+        }
+
+        function deepMergeSettings(defaults, incoming) {
+            const output = Array.isArray(defaults) ? [...defaults] : { ...defaults };
+            if (!incoming || typeof incoming !== 'object') return output;
+            Object.keys(incoming).forEach(key => {
+                const incomingValue = incoming[key];
+                const defaultValue = defaults ? defaults[key] : undefined;
+                if (incomingValue && typeof incomingValue === 'object' && !Array.isArray(incomingValue) && defaultValue && typeof defaultValue === 'object' && !Array.isArray(defaultValue)) {
+                    output[key] = deepMergeSettings(defaultValue, incomingValue);
+                } else {
+                    output[key] = incomingValue;
+                }
+            });
+            return output;
+        }
+
+        function normalizePhone(phone) { return String(phone || '').replace(/\D/g, ''); }
+        function setChecked(id, value) { const el = document.getElementById(id); if (el) el.checked = !!value; }
+        function setValue(id, value) { const el = document.getElementById(id); if (el) el.value = value ?? ''; }
+        function getChecked(id) { return !!document.getElementById(id)?.checked; }
+        function getNumberValue(id, fallback = 0) { const num = Number(document.getElementById(id)?.value); return Number.isFinite(num) ? num : fallback; }
+        function getTextValue(id) { return (document.getElementById(id)?.value || '').trim(); }
+        function categoryObjectToLines(obj) { return Object.entries(obj || {}).map(([key, val]) => `${key}=${val}`).join('\n'); }
+        function linesToCategoryObject(text) {
+            const obj = {};
+            String(text || '').split('\n').map(line => line.trim()).filter(Boolean).forEach(line => {
+                const idx = line.indexOf('=');
+                if (idx > -1) {
+                    const key = line.slice(0, idx).trim();
+                    const val = line.slice(idx + 1).trim();
+                    if (key && val) obj[key] = val;
+                }
+            });
+            return obj;
+        }
+
+        window.startListeningSettings = function() {
+            if (window.settingsListener) return;
+            window.settingsListener = onValue(ref(db, 'settings'), (snapshot) => {
+                const defaults = getDefaultSettings();
+                const data = snapshot.exists() ? snapshot.val() : {};
+                window.adminSettings = deepMergeSettings(defaults, data);
+                populateSettingsForm(window.adminSettings);
+            });
+        }
+
+        function populateSettingsForm(settings) {
+            setChecked('setting-shop-open', settings.shopOpen);
+            setChecked('setting-pickup-enabled', settings.pickupEnabled);
+            setChecked('setting-delivery-enabled', settings.deliveryEnabled);
+            setValue('setting-open-hour', settings.openHour);
+            setValue('setting-close-hour', settings.closeHour);
+            setValue('setting-max-distance', settings.maxDistanceKm);
+            setValue('setting-shop-phone', settings.shopPhone);
+            setValue('setting-announcement', settings.announcement);
+
+            setValue('setting-near-km', settings.shipping?.nearKm);
+            setValue('setting-mid-km', settings.shipping?.midKm);
+            setValue('setting-shipping-max-km', settings.shipping?.maxKm);
+            setValue('setting-fee-near', settings.shipping?.fullFee?.near);
+            setValue('setting-fee-mid', settings.shipping?.fullFee?.mid);
+            setValue('setting-fee-far', settings.shipping?.fullFee?.far);
+            window.shippingStepsDraft = Array.isArray(settings.shipping?.steps) ? settings.shipping.steps.map(step => ({ minTotal: Number(step.minTotal) || 0, shopHelp: Number(step.shopHelp) || 0 })) : [];
+            renderShippingSteps();
+
+            setChecked('setting-transfer-enabled', settings.payment?.transferEnabled);
+            setChecked('setting-cod-enabled', settings.payment?.codEnabled);
+            setChecked('setting-chatpay-enabled', settings.payment?.chatPayEnabled);
+            setChecked('setting-require-slip', settings.payment?.requireSlip);
+            setValue('setting-promptpay-number', settings.payment?.promptpayNumber);
+            setValue('setting-account-name', settings.payment?.accountName);
+
+            setValue('setting-default-product-img', settings.menu?.defaultProductImage);
+            setValue('setting-category-lines', categoryObjectToLines(settings.menu?.categoryLabels));
+            setValue('setting-option-presets', JSON.stringify(settings.menu?.optionPresets || [], null, 2));
+
+            setValue('setting-default-status-pickup', settings.order?.defaultStatusPickup);
+            setValue('setting-default-status-delivery', settings.order?.defaultStatusDelivery);
+            setValue('setting-order-statuses', (settings.order?.statuses || []).join('\n'));
+            setValue('setting-cancel-reasons', (settings.order?.cancelReasons || []).join('\n'));
+            setChecked('setting-split-order-view', settings.order?.splitOrderView);
+
+            setChecked('setting-sound-enabled', settings.notifications?.soundEnabled);
+            setChecked('setting-repeat-enabled', settings.notifications?.repeatEnabled);
+            setValue('setting-repeat-minutes', settings.notifications?.repeatMinutes);
+            setChecked('setting-line-enabled', settings.notifications?.lineEnabled);
+            setChecked('setting-pending-alert-enabled', settings.notifications?.pendingAlertEnabled);
+            setValue('setting-repeat-message', settings.notifications?.repeatMessage);
+        }
+
+        window.renderShippingSteps = function() {
+            const container = document.getElementById('shipping-steps-container');
+            if (!container) return;
+            if (!Array.isArray(window.shippingStepsDraft) || window.shippingStepsDraft.length === 0) window.shippingStepsDraft = [{ minTotal: 0, shopHelp: 0 }];
+            container.innerHTML = window.shippingStepsDraft.map((step, idx) => `
+                <div class="grid grid-cols-[1fr_1fr_auto] gap-2 items-center bg-gray-50 border border-gray-200 rounded-xl p-2">
+                    <div><label class="block text-[10px] font-bold text-gray-500 mb-1">ยอดขั้นต่ำ</label><input type="number" class="w-full border rounded-lg px-2 py-2 text-sm" value="${step.minTotal}" oninput="updateShippingStepValue(${idx}, 'minTotal', this.value)"></div>
+                    <div><label class="block text-[10px] font-bold text-gray-500 mb-1">ร้านช่วย</label><input type="number" class="w-full border rounded-lg px-2 py-2 text-sm" value="${step.shopHelp}" oninput="updateShippingStepValue(${idx}, 'shopHelp', this.value)"></div>
+                    <button type="button" onclick="removeShippingStepRow(${idx})" class="mt-4 w-9 h-9 rounded-lg bg-red-50 text-red-500 hover:bg-red-100"><i class="fa-solid fa-trash-can"></i></button>
+                </div>`).join('');
+        }
+        window.updateShippingStepValue = function(index, field, value) { if (window.shippingStepsDraft[index]) window.shippingStepsDraft[index][field] = Number(value) || 0; }
+        window.addShippingStepRow = function() { window.shippingStepsDraft.push({ minTotal: 0, shopHelp: 0 }); renderShippingSteps(); }
+        window.removeShippingStepRow = function(index) { window.shippingStepsDraft.splice(index, 1); renderShippingSteps(); }
+
+        function collectSettingsForm() {
+            let optionPresets = [];
+            try {
+                optionPresets = JSON.parse(getTextValue('setting-option-presets') || '[]');
+                if (!Array.isArray(optionPresets)) throw new Error('Option Preset ต้องเป็น Array');
+            } catch (err) { throw new Error('Option Preset JSON ไม่ถูกต้อง กรุณาตรวจรูปแบบอีกครั้ง'); }
+
+            return {
+                shopOpen: getChecked('setting-shop-open'),
+                pickupEnabled: getChecked('setting-pickup-enabled'),
+                deliveryEnabled: getChecked('setting-delivery-enabled'),
+                openHour: getNumberValue('setting-open-hour', 9),
+                closeHour: getNumberValue('setting-close-hour', 20),
+                maxDistanceKm: getNumberValue('setting-max-distance', 5),
+                shopPhone: normalizePhone(getTextValue('setting-shop-phone')),
+                announcement: getTextValue('setting-announcement'),
+                shipping: {
+                    nearKm: getNumberValue('setting-near-km', 1.5),
+                    midKm: getNumberValue('setting-mid-km', 3),
+                    maxKm: getNumberValue('setting-shipping-max-km', 5),
+                    fullFee: { near: getNumberValue('setting-fee-near', 30), mid: getNumberValue('setting-fee-mid', 50), far: getNumberValue('setting-fee-far', 75) },
+                    steps: (window.shippingStepsDraft || []).map(step => ({ minTotal: Number(step.minTotal) || 0, shopHelp: Number(step.shopHelp) || 0 })).sort((a, b) => a.minTotal - b.minTotal)
+                },
+                payment: {
+                    transferEnabled: getChecked('setting-transfer-enabled'),
+                    codEnabled: getChecked('setting-cod-enabled'),
+                    chatPayEnabled: getChecked('setting-chatpay-enabled'),
+                    requireSlip: getChecked('setting-require-slip'),
+                    promptpayNumber: normalizePhone(getTextValue('setting-promptpay-number')),
+                    accountName: getTextValue('setting-account-name')
+                },
+                menu: {
+                    defaultProductImage: getTextValue('setting-default-product-img'),
+                    categoryLabels: linesToCategoryObject(getTextValue('setting-category-lines')),
+                    optionPresets
+                },
+                order: {
+                    defaultStatusPickup: getTextValue('setting-default-status-pickup') || '🏪 รอรับหน้าร้าน',
+                    defaultStatusDelivery: getTextValue('setting-default-status-delivery') || '🍳 กำลังปรุง',
+                    splitOrderView: getChecked('setting-split-order-view'),
+                    statuses: getTextValue('setting-order-statuses').split('\n').map(v => v.trim()).filter(Boolean),
+                    cancelReasons: getTextValue('setting-cancel-reasons').split('\n').map(v => v.trim()).filter(Boolean)
+                },
+                notifications: {
+                    soundEnabled: getChecked('setting-sound-enabled'),
+                    repeatEnabled: getChecked('setting-repeat-enabled'),
+                    repeatMinutes: getNumberValue('setting-repeat-minutes', 3),
+                    lineEnabled: getChecked('setting-line-enabled'),
+                    pendingAlertEnabled: getChecked('setting-pending-alert-enabled'),
+                    repeatMessage: getTextValue('setting-repeat-message')
+                },
+                updatedAt: new Date().toISOString(),
+                updatedBy: auth.currentUser ? auth.currentUser.email : 'unknown'
+            };
+        }
+
+        window.saveSettings = async function() {
+            try {
+                const data = collectSettingsForm();
+                await set(ref(db, 'settings'), data);
+                await push(ref(db, 'adminLogs'), { type: 'settings_update', timestamp: new Date().toISOString(), user: auth.currentUser ? auth.currentUser.email : 'unknown', message: 'อัปเดตการตั้งค่าร้าน' });
+                Swal.fire({ icon: 'success', title: 'บันทึกการตั้งค่าแล้ว', timer: 1200, showConfirmButton: false });
+            } catch (err) { Swal.fire({ icon: 'error', title: 'บันทึกไม่สำเร็จ', text: err.message || 'กรุณาตรวจข้อมูลอีกครั้ง' }); }
+        }
+
+        window.resetSettingsToDefault = function() {
+            Swal.fire({ title: 'คืนค่าเริ่มต้น?', text: 'ระบบจะใส่ค่าพื้นฐานให้ในฟอร์มก่อน ยังไม่บันทึกจนกว่าจะกดบันทึก', icon: 'question', showCancelButton: true, confirmButtonText: 'คืนค่า', cancelButtonText: 'ยกเลิก' }).then(result => {
+                if (result.isConfirmed) { window.adminSettings = getDefaultSettings(); populateSettingsForm(window.adminSettings); }
+            });
+        }
+
         // ==========================================
         // 🔥🔥 Manual Order Logic (Mobile Friendly + Options) 🔥🔥
         // ==========================================
@@ -1298,13 +1678,15 @@
         }
 
         window.confirmManualOrder = async function() {
-            const phone = document.getElementById('manual-phone').value;
+            const rawPhone = document.getElementById('manual-phone').value;
+            const phone = normalizePhone(rawPhone);
             const name = document.getElementById('manual-name').value || 'ลูกค้าทั่วไป';
             const address = window.adminDeliveryMode === 'delivery' ? document.getElementById('manual-address').value : 'รับหน้าร้าน';
             const deliveryFee = parseInt(document.getElementById('manual-delivery-fee').value) || 0;
             const paymentMethod = document.getElementById('manual-payment').value;
             
             if(!phone) return Swal.fire('แจ้งเตือน', 'กรุณากรอกเบอร์โทรลูกค้า', 'warning');
+            if(!/^0[0-9]{8,9}$/.test(phone)) return Swal.fire('แจ้งเตือน', 'เบอร์โทรไม่ถูกต้อง กรุณากรอก 9-10 หลัก เช่น 0622467746', 'warning');
             if(window.adminCart.length === 0) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกสินค้า', 'warning');
 
             const total = document.getElementById('manual-total-price').innerText.replace('.-','');
@@ -1338,7 +1720,7 @@
                 deliveryFee: deliveryFee,
                 paymentMethod: paymentMethod,
                 slipImage: '-',
-                status: window.adminDeliveryMode === 'pickup' ? "🏪 รอรับหน้าร้าน" : "🍳 กำลังปรุง" 
+                status: window.adminDeliveryMode === 'pickup' ? (window.adminSettings?.order?.defaultStatusPickup || "🏪 รอรับหน้าร้าน") : (window.adminSettings?.order?.defaultStatusDelivery || "🍳 กำลังปรุง") 
             };
 
             try {
