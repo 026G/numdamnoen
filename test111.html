@@ -53,10 +53,7 @@
         }
 
         html {
-            background:
-                radial-gradient(circle at 15% -10%, rgba(216, 238, 225, 0.9), transparent 30rem),
-                radial-gradient(circle at 95% 12%, rgba(232, 246, 234, 0.9), transparent 24rem),
-                #EFF8F0;
+            background: #EFF8F0;
             scroll-behavior: smooth;
         }
 
@@ -90,29 +87,71 @@
 
         header.sticky,
         .app-header {
-            background: rgba(255, 255, 255, 0.96) !important;
-            backdrop-filter: blur(18px) saturate(160%);
-            -webkit-backdrop-filter: blur(18px) saturate(160%);
+            background: rgba(255, 255, 255, 0.97) !important;
+            backdrop-filter: blur(16px) saturate(150%);
+            -webkit-backdrop-filter: blur(16px) saturate(150%);
             border-bottom: 1px solid rgba(221, 235, 221, 0.95);
-            box-shadow: 0 10px 28px rgba(18, 53, 31, 0.05) !important;
+            box-shadow: 0 10px 26px rgba(18, 53, 31, 0.05) !important;
         }
-        header .px-4.py-3 { padding-top: 0.8rem !important; padding-bottom: 0.7rem !important; }
-        header h1 {
+        header .px-4.py-3 { padding-top: 0.85rem !important; padding-bottom: 0.8rem !important; }
+        .header-topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.65rem;
+            margin-bottom: 0.75rem;
+        }
+        .brand-card {
+            background: linear-gradient(180deg, #FFFFFF 0%, #F8FCF8 100%);
+            border: 1px solid var(--color-border-soft);
+            border-radius: 1.45rem;
+            padding: 0.9rem;
+            box-shadow: 0 12px 24px rgba(18, 53, 31, 0.05);
+        }
+        .brand-card h1 {
             color: var(--color-primary-deep) !important;
             letter-spacing: -0.02em;
+            font-size: 1.35rem !important;
+            margin: 0 !important;
         }
-        header .font-script { color: var(--color-primary-light) !important; }
+        .shop-subtitle {
+            color: var(--color-primary) !important;
+            font-size: 0.88rem;
+            line-height: 1.35;
+            font-weight: 600;
+            margin-top: 0.1rem;
+        }
+        .shop-meta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+            margin-top: 0.6rem;
+        }
+        .shop-meta-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: var(--color-green-soft);
+            color: var(--color-text-dark);
+            border: 1px solid var(--color-green-soft-2);
+            border-radius: 999px;
+            padding: 0.34rem 0.6rem;
+            font-size: 0.72rem;
+            font-weight: 600;
+            line-height: 1;
+        }
         header .w-16.h-16 {
-            width: 3.55rem !important;
-            height: 3.55rem !important;
+            width: 4.75rem !important;
+            height: 4.75rem !important;
             border: 2px solid var(--color-green-soft-2) !important;
-            box-shadow: 0 6px 16px rgba(23, 107, 50, 0.12) !important;
+            box-shadow: 0 8px 18px rgba(23, 107, 50, 0.10) !important;
+            padding: 0.32rem !important;
         }
         #shop-status-badge {
             border: 2px solid #fff;
-            padding: 0.13rem 0.48rem !important;
-            font-size: 0.55rem !important;
-            box-shadow: 0 5px 14px rgba(18, 53, 31, 0.15) !important;
+            padding: 0.18rem 0.56rem !important;
+            font-size: 0.58rem !important;
+            box-shadow: 0 6px 14px rgba(18, 53, 31, 0.15) !important;
         }
         header button[onclick="goBack()"],
         #header-tracking-btn {
@@ -120,45 +159,60 @@
             border: 1px solid var(--color-border-soft) !important;
             color: var(--color-primary-deep) !important;
             box-shadow: 0 4px 12px rgba(18, 53, 31, 0.05);
+            min-height: 2.5rem;
+        }
+        header button[onclick="goBack()"] { width: 2.6rem !important; height: 2.6rem !important; }
+        #header-tracking-btn {
+            padding: 0.55rem 0.8rem !important;
+            border-radius: 0.95rem !important;
+            font-size: 0.75rem !important;
+            font-weight: 700 !important;
+            line-height: 1 !important;
         }
         header button[onclick="goBack()"]:active,
         #header-tracking-btn:active { transform: scale(0.96); }
 
         #mode-toggle-container {
-            background: var(--color-base-warm) !important;
+            background: #F2F8F3 !important;
             border: 1px solid var(--color-border-soft);
             border-radius: 1.35rem !important;
-            padding: 0.32rem !important;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.9);
+            padding: 0.34rem !important;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.95);
+            margin-top: 0.8rem !important;
         }
         .mode-toggle-active {
             background: #FFFFFF !important;
             border: 1.5px solid var(--color-primary) !important;
             border-radius: 1.05rem !important;
-            box-shadow: 0 6px 16px rgba(23, 107, 50, 0.13) !important;
+            box-shadow: 0 8px 18px rgba(23, 107, 50, 0.12) !important;
         }
         .mode-toggle-inactive {
             background: transparent !important;
             border: 1.5px solid transparent !important;
             border-radius: 1.05rem !important;
         }
-        .mode-toggle-inactive .mode-icon { opacity: 0.45; filter: grayscale(0.15); }
+        .mode-toggle-inactive .mode-icon { opacity: 0.5; }
         .mode-toggle-active .mode-icon { transform: translateY(-1px); }
-        .mode-text { letter-spacing: -0.01em; }
-        .mode-subtext { opacity: 0.85; }
+        .mode-text { letter-spacing: -0.01em; font-size: 0.88rem !important; }
+        .mode-subtext { opacity: 0.8; font-size: 0.68rem !important; }
 
         #delivery-pin-row button,
         #pin-reminder-card button {
-            background: #F3FBF5 !important;
+            background: #F6FBF7 !important;
             border: 1px solid var(--color-green-soft-2) !important;
             border-radius: var(--radius-lg) !important;
             box-shadow: none !important;
         }
-        #pin-reminder-card { margin: 0.8rem 1rem 0 !important; }
+        #header-pin-btn {
+            min-height: 3rem;
+            padding-top: 0.8rem !important;
+            padding-bottom: 0.8rem !important;
+        }
+        #pin-reminder-card { margin: 0.9rem 1rem 0 !important; }
 
         #category-tabs {
-            padding: 0.55rem 1rem 0.7rem !important;
-            gap: 0.5rem !important;
+            padding: 0.65rem 1rem 0.8rem !important;
+            gap: 0.55rem !important;
             background: #FFFFFF !important;
             border-bottom: 1px solid var(--color-border-soft) !important;
         }
@@ -169,12 +223,13 @@
             min-width: max-content;
             border: 1px solid var(--color-border-soft) !important;
             border-radius: 999px !important;
-            padding: 0.55rem 0.9rem !important;
-            font-size: 0.82rem !important;
+            padding: 0.62rem 1rem !important;
+            font-size: 0.83rem !important;
             line-height: 1;
             background: #FFFFFF !important;
             color: var(--color-text-muted) !important;
             box-shadow: 0 3px 10px rgba(18, 53, 31, 0.035);
+            font-weight: 700 !important;
         }
         .category-tab.tab-active {
             background: var(--color-primary) !important;
@@ -185,11 +240,11 @@
         .category-tab.tab-inactive { background: #FFFFFF !important; }
 
         .order-guide-card {
-            margin: 0.95rem 1rem 0.65rem;
-            padding: 0.8rem;
+            margin: 0.95rem 1rem 0.55rem;
+            padding: 0.9rem;
             border: 1px solid var(--color-green-soft-2);
             border-radius: var(--radius-xl);
-            background: linear-gradient(180deg, #F6FFF7 0%, #FFFFFF 100%);
+            background: linear-gradient(180deg, #FBFFFB 0%, #F6FFF7 100%);
             box-shadow: var(--shadow-soft);
         }
         .order-guide-title {
@@ -201,8 +256,9 @@
         }
         .order-guide-title strong {
             color: var(--color-primary-deep);
-            font-family: 'Mali', sans-serif;
-            font-size: 0.9rem;
+            font-family: 'Anuphan', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 800;
         }
         .order-guide-title span {
             color: var(--color-primary);
@@ -255,15 +311,27 @@
             padding-right: 1rem !important;
         }
         #page-menu .font-script { color: var(--color-primary-light) !important; }
+        .menu-heading-clean .menu-kicker {
+            color: var(--color-primary-light) !important;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
         #page-menu h2 {
             color: var(--color-primary-deep) !important;
-            font-size: 1.25rem !important;
+            font-size: 1.28rem !important;
             letter-spacing: -0.025em;
+        }
+        .menu-heading-clean .menu-subcopy {
+            color: var(--color-text-muted);
+            font-size: 0.76rem;
+            margin-top: 0.25rem;
         }
         #menu-list { padding: 0 0.8rem 1.2rem !important; }
 
         .section-divider {
-            padding: 0.75rem 0.15rem 0.35rem !important;
+            padding: 0.9rem 0.2rem 0.45rem !important;
             margin: 0 !important;
         }
         .section-divider .section-divider-text {
@@ -271,30 +339,30 @@
             align-items: center;
             gap: 0.35rem;
             color: var(--color-primary-deep) !important;
-            font-family: 'Mali', sans-serif;
+            font-family: 'Anuphan', sans-serif;
             font-size: 0.86rem;
-            font-weight: 700;
-            background: #FFFFFF;
+            font-weight: 800;
+            background: #F7FBF7;
             border: 1px solid var(--color-border-soft);
-            border-radius: 999px;
-            padding: 0.4rem 0.75rem;
-            box-shadow: 0 3px 10px rgba(18, 53, 31, 0.035);
+            border-radius: 0.95rem;
+            padding: 0.48rem 0.82rem;
+            box-shadow: none;
         }
-        .section-divider .section-divider-text::before { content: '🌴'; font-size: 0.85rem; }
+        .section-divider .section-divider-text::before { content: ''; display: none; }
 
         .menu-card {
             padding-left: 0 !important;
             padding-right: 0 !important;
-            margin-bottom: 0.72rem !important;
+            margin-bottom: 0.8rem !important;
             transition: transform 0.16s ease, filter 0.16s ease;
         }
         .menu-card:active { transform: scale(0.988); }
         .menu-card-inner {
             background: #FFFFFF !important;
             border: 1px solid var(--color-border-soft) !important;
-            box-shadow: var(--shadow-card) !important;
-            border-radius: var(--radius-xl) !important;
-            padding: 0.72rem !important;
+            box-shadow: 0 8px 18px rgba(18, 53, 31, 0.06) !important;
+            border-radius: 1.35rem !important;
+            padding: 0.9rem !important;
             position: relative;
             overflow: hidden;
         }
@@ -302,64 +370,65 @@
             content: '';
             position: absolute;
             left: 0;
-            top: 0.95rem;
-            bottom: 0.95rem;
-            width: 4px;
+            top: 1rem;
+            bottom: 1rem;
+            width: 5px;
             border-radius: 999px;
-            background: var(--color-primary);
-            opacity: 0.72;
+            background: linear-gradient(180deg, var(--color-primary-light), var(--color-primary));
+            opacity: 0.9;
         }
         .menu-image {
-            width: 5.5rem !important;
-            height: 5.5rem !important;
-            border-radius: 1.15rem !important;
-            background: var(--color-green-soft) !important;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.8);
+            width: 6.4rem !important;
+            height: 6.4rem !important;
+            border-radius: 1.25rem !important;
+            background: #ECF8EE !important;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.88);
         }
-        .menu-image img { transform: scale(1.02); }
+        .menu-image img { transform: scale(1.04); }
         .menu-badge {
-            width: 5.5rem !important;
+            width: 6.3rem !important;
             border-radius: 999px !important;
             font-size: 0.62rem !important;
-            padding: 0.25rem 0.4rem !important;
+            padding: 0.3rem 0.45rem !important;
             background: #FFF8E1 !important;
             border-color: var(--color-accent-yellow-dark) !important;
             color: #8A5A11 !important;
         }
         .menu-title {
             color: var(--color-primary-deep) !important;
-            font-size: 0.96rem !important;
-            line-height: 1.34 !important;
+            font-size: 1rem !important;
+            line-height: 1.38 !important;
             font-weight: 800 !important;
             letter-spacing: -0.02em;
         }
         .menu-desc {
             color: var(--color-text-muted) !important;
-            line-height: 1.52 !important;
-            font-size: 0.75rem !important;
+            line-height: 1.55 !important;
+            font-size: 0.77rem !important;
         }
-        .menu-original-price { font-size: 0.68rem !important; color: #9AA49B !important; }
+        .menu-original-price { font-size: 0.72rem !important; color: #9AA49B !important; }
         .menu-price {
             color: var(--color-primary) !important;
-            font-size: 1.35rem !important;
+            font-size: 1.55rem !important;
             letter-spacing: -0.045em;
         }
         .add-btn {
-            width: 4.25rem !important;
-            height: 2.35rem !important;
+            min-width: 5rem !important;
+            height: 2.65rem !important;
+            padding: 0 0.95rem !important;
             border-radius: 999px !important;
             background: var(--color-primary) !important;
             box-shadow: var(--shadow-button) !important;
             display: inline-flex !important;
-            gap: 0.28rem;
+            gap: 0.35rem;
         }
         .add-btn::after {
             content: 'เพิ่ม';
-            font-size: 0.72rem;
+            font-size: 0.78rem;
             font-weight: 800;
             line-height: 1;
         }
-        .add-btn i { font-size: 0.72rem !important; }
+        .add-btn i { font-size: 0.78rem !important; }
 
         .bg-pastel-blue,
         .bg-pastel-mint,
@@ -474,13 +543,14 @@
         @keyframes pulse-soft { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
 
         @media (max-width: 380px) {
-            header .w-16.h-16 { width: 3.15rem !important; height: 3.15rem !important; }
-            .menu-image { width: 5rem !important; height: 5rem !important; }
-            .menu-badge { width: 5rem !important; }
-            .menu-title { font-size: 0.9rem !important; }
-            .menu-price { font-size: 1.23rem !important; }
-            .add-btn { width: 3.8rem !important; height: 2.22rem !important; }
-            .add-btn::after { font-size: 0.66rem; }
+            header .w-16.h-16 { width: 4.1rem !important; height: 4.1rem !important; }
+            .brand-card { padding: 0.8rem !important; }
+            .menu-image { width: 5.6rem !important; height: 5.6rem !important; }
+            .menu-badge { width: 5.5rem !important; }
+            .menu-title { font-size: 0.92rem !important; }
+            .menu-price { font-size: 1.35rem !important; }
+            .add-btn { min-width: 4.4rem !important; height: 2.4rem !important; }
+            .add-btn::after { font-size: 0.7rem; }
             .order-guide-step small { font-size: 0.62rem; }
         }
     </style>
@@ -492,44 +562,46 @@
         <!-- HEADER -->
         <header class="app-header sticky top-0 z-30" style="background-color: var(--color-base); backdrop-filter: blur(8px);">
             <div class="px-4 py-3">
-                <div class="flex items-start gap-3">
-                    <button onclick="goBack()" class="mt-1 w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition" style="background: white; color: var(--color-text-muted); border: 1px solid var(--color-border-soft);">
+                <div class="header-topbar">
+                    <button onclick="goBack()" class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition" style="background: white; color: var(--color-text-muted); border: 1px solid var(--color-border-soft);">
                         <i class="fa-solid fa-arrow-left text-sm"></i>
                     </button>
-                    <div class="flex-1 min-w-0 flex gap-3"> 
+                    <button id="header-tracking-btn" onclick="handleTrackingClick()" class="text-[10px] px-2.5 py-1.5 rounded-xl transition font-medium flex items-center gap-1" style="background: white; color: var(--color-text-dark); border: 1px solid var(--color-border-soft);"></button>
+                </div>
+
+                <div class="brand-card">
+                    <div class="flex items-center gap-3">
                         <div class="shrink-0 relative">
-                            <div class="w-16 h-16 rounded-full bg-white p-1 shadow-sm" style="border: 2px solid var(--color-accent-mint);">
+                            <div class="w-16 h-16 rounded-full bg-white shadow-sm" style="border: 2px solid var(--color-accent-mint);">
                                 <img src="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8" class="w-full h-full rounded-full object-cover">
                             </div>
                             <span id="shop-status-badge" class="absolute -bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 text-[9px] font-bold text-white rounded-full shadow-sm whitespace-nowrap hidden"></span>
                         </div>
-                        <div class="flex-1 min-w-0 flex flex-col justify-center gap-1">
+                        <div class="flex-1 min-w-0">
                             <h1 class="font-display text-lg font-semibold leading-tight" style="color: var(--color-primary);">หนุ่มดำเนิน</h1>
-                            <div class="font-script text-base leading-none" style="color: var(--color-primary-light);">มะพร้าวปั่น 🌴</div>
-                            <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px]" style="color: var(--color-text-muted);">
-                                <span id="shop-hours-label"><i class="fa-regular fa-clock"></i> 09:00-20:00</span>
-                                <span>·</span>
-                                <a href="tel:0622467746" class="hover:underline"><i class="fa-solid fa-phone"></i> 062-246-7746</a>
+                            <div class="shop-subtitle">มะพร้าวปั่นสด ทำใหม่ทุกแก้ว</div>
+                            <div class="shop-meta-row">
+                                <span id="shop-hours-label" class="shop-meta-chip"><i class="fa-regular fa-clock"></i> 09:00-20:00</span>
+                                <a href="tel:0622467746" class="shop-meta-chip hover:underline"><i class="fa-solid fa-phone"></i> 062-246-7746</a>
                             </div>
                         </div>
-                        <button id="header-tracking-btn" onclick="handleTrackingClick()" class="shrink-0 text-[10px] px-2.5 py-1.5 rounded-xl transition font-medium flex items-center gap-1 self-start" style="background: white; color: var(--color-text-dark); border: 1px solid var(--color-border-soft);"></button>
                     </div>
                 </div>
 
                 <div id="mode-toggle-container" class="mt-3 grid grid-cols-2 gap-1 p-1 rounded-2xl" style="background: var(--color-base-warm);">
                     <button onclick="setMode('pickup')" id="mode-btn-pickup" class="mode-toggle-active px-3 py-2.5 rounded-xl text-center transition">
                         <div class="text-xl leading-none mode-icon">🏪</div>
-                        <div class="text-xs font-semibold mt-1 mode-text">รับเองหน้าร้าน</div>
+                        <div class="text-xs font-semibold mt-1 mode-text">รับที่ร้าน</div>
                         <div class="text-[9px] mt-0.5 mode-subtext">ไม่มีค่าส่ง</div>
                     </button>
                     <button onclick="setMode('delivery')" id="mode-btn-delivery" class="mode-toggle-inactive px-3 py-2.5 rounded-xl text-center transition">
                         <div class="text-xl leading-none mode-icon">🛵</div>
                         <div class="text-xs font-semibold mt-1 mode-text">ส่งถึงบ้าน</div>
-                        <div class="text-[9px] mt-0.5 mode-subtext">คำนวณค่าส่ง</div>
+                        <div class="text-[9px] mt-0.5 mode-subtext">คำนวณค่าส่งตามระยะ</div>
                     </button>
                 </div>
 
-                <div id="delivery-pin-row" class="mt-2 hidden">
+                <div id="delivery-pin-row" class="mt-3 hidden">
                     <button id="header-pin-btn" onclick="goToMapPage()" class="w-full flex items-center gap-2 text-xs px-3 py-2 rounded-xl transition" style="background: var(--color-accent-blue); color: var(--color-text-dark); border: 1px solid var(--color-accent-blue-dark);">
                         <i class="fa-solid fa-location-dot" style="color: var(--color-hot);"></i>
                         <span id="header-distance" class="font-medium flex-1 text-left">แตะเพื่อปักหมุดและคำนวณค่าส่ง</span>
@@ -562,18 +634,19 @@
             <div class="order-guide-card">
                 <div class="order-guide-title">
                     <strong>สั่งออนไลน์ง่าย ๆ</strong>
-                    <span>เลือกเมนูได้เลย</span>
+                    <span>เริ่มสั่งได้ทันที</span>
                 </div>
                 <div class="order-guide-grid">
                     <div class="order-guide-step"><b>1</b><small>เลือกเมนู</small></div>
-                    <div class="order-guide-step"><b>2</b><small>เช็กตะกร้า</small></div>
+                    <div class="order-guide-step"><b>2</b><small>ตรวจตะกร้า</small></div>
                     <div class="order-guide-step"><b>3</b><small>ชำระเงิน</small></div>
                 </div>
             </div>
 
             <div class="menu-heading-clean px-5 mt-4 mb-2">
-                <div class="font-script text-base font-semibold leading-none" style="color: var(--color-primary-light);">— Online Menu —</div>
-                <h2 class="font-display text-xl font-semibold mt-1" style="color: var(--color-primary);">เลือกเมนูที่ต้องการ</h2>
+                <div class="menu-kicker">เมนูออนไลน์</div>
+                <h2 class="font-display text-xl font-semibold mt-1" style="color: var(--color-primary);">เลือกเมนูได้เลย</h2>
+                <p class="menu-subcopy">แตะที่สินค้าเพื่อเลือกตัวเลือกและเพิ่มลงตะกร้า</p>
             </div>
 
             <div id="menu-list" class="pb-4"></div>
@@ -1379,6 +1452,14 @@
         return cats[0] || 'recommend';
     };
 
+    window.cleanDisplayLabel = function(value) {
+        return String(value || '')
+            .replace(/[️‍]/g, '')
+            .replace(/^[\s\p{Extended_Pictographic}\-–—•·]+/gu, '')
+            .replace(/[\s]{2,}/g, ' ')
+            .trim();
+    };
+
     window.renderCategoryTabs = function() {
         const container = document.getElementById('category-tabs');
         if (!container) return;
@@ -1388,7 +1469,7 @@
             return;
         }
         container.innerHTML = cats.map(cat => {
-            const label = window.CATEGORY_LABELS[cat] || cat;
+            const label = window.cleanDisplayLabel(window.CATEGORY_LABELS[cat] || cat);
             return `<button onclick="switchTab('${cat}')" id="tab-${cat}" data-cat="${cat}" class="category-tab tab-inactive text-center font-medium cursor-pointer transition-all" style="color: var(--color-text-muted);">${label}</button>`;
         }).join('');
     };
@@ -1519,7 +1600,7 @@
         const items = window.menuDB.filter(i => (cat === 'all' || i.category === cat) && i.hidden !== true);
         const pastelBgs = ['bg-pastel-blue', 'bg-pastel-mint', 'bg-pastel-yellow', 'bg-pastel-pink'];
         const titleEl = document.querySelector('#page-menu h2');
-        if (titleEl) titleEl.innerText = window.CATEGORY_LABELS[cat] || cat || 'เมนู';
+        if (titleEl) titleEl.innerText = window.cleanDisplayLabel(window.CATEGORY_LABELS[cat] || cat || 'เมนู');
         if (items.length === 0) {
             list.innerHTML = `<div class="mx-4 mt-4 rounded-3xl p-8 text-center" style="background:white;border:1px solid var(--color-border-soft);box-shadow:var(--shadow-soft);color:var(--color-text-muted);"><div class="text-3xl mb-2">🌴</div><div class="font-bold" style="color:var(--color-text-dark);">ยังไม่มีเมนูในหมวดนี้</div><div class="text-xs mt-1">ลองเลือกหมวดอื่นก่อนได้นะคะ</div></div>`;
             return;
@@ -1538,7 +1619,7 @@
             
             return `
             <div class="menu-card px-4 mb-3 ${isSoldOut ? 'opacity-60 grayscale pointer-events-none' : 'cursor-pointer'}" onclick="${!isSoldOut ? `openModal('${item.id}')` : ''}">
-                <div class="menu-card-inner p-3 flex gap-3" style="background: white; border: 1px solid var(--color-border-soft); box-shadow: 0 2px 8px rgba(45, 80, 22, 0.04);">
+                <div class="menu-card-inner p-3 flex gap-3.5" style="background: white; border: 1px solid var(--color-border-soft); box-shadow: 0 2px 8px rgba(45, 80, 22, 0.04);">
                     <div class="relative shrink-0 flex flex-col items-center">
                         <div class="${pastelClass} menu-image rounded-2xl overflow-hidden relative flex items-center justify-center">
                             <img src="${item.img}" class="w-full h-full object-cover" onerror="this.style.display='none'">
@@ -1575,7 +1656,7 @@
         subCats.forEach(subCatName => {
             const subItems = items.filter(i => (i.subCategory || 'ราคาพิเศษ') === subCatName);
             if (subItems.length > 0) {
-                finalHTML += `<div class="section-divider px-5 py-3 mt-2 mb-1"><div class="section-divider-text">${subCatName}</div></div>`;
+                finalHTML += `<div class="section-divider px-5 py-3 mt-2 mb-1"><div class="section-divider-text">${window.cleanDisplayLabel(subCatName)}</div></div>`;
                 finalHTML += subItems.map(item => {
                     const html = createCard(item, globalIdx);
                     globalIdx++;
