@@ -138,116 +138,229 @@
 
 
         <div id="view-settings" class="hidden p-4 max-w-2xl mx-auto pb-24">
-            <div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm mb-4">
+            <div class="mb-4 bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
                 <div class="flex items-start justify-between gap-3">
                     <div>
                         <h2 class="font-bold text-gray-800 text-lg flex items-center gap-2"><i class="fa-solid fa-sliders text-blue-600"></i> ตั้งค่าร้าน</h2>
-                        <p class="text-xs text-gray-500 mt-1">ปรับค่าหลักของร้านได้จากหน้านี้ แล้วบันทึกไว้ที่ Firebase / settings</p>
+                        <p class="text-xs text-gray-500 mt-1">ตั้งค่าที่ใช้กับหน้าเว็บลูกค้าและหน้าแอดมิน โดยบันทึกไว้ที่ Firebase / settings</p>
                     </div>
-                    <button onclick="saveSettings()" class="bg-blue-600 text-white rounded-xl px-4 py-2 text-sm font-bold shadow hover:bg-blue-700 active:scale-95 whitespace-nowrap"><i class="fa-solid fa-floppy-disk mr-1"></i> บันทึก</button>
+                    <button onclick="saveSettings()" class="bg-blue-600 text-white rounded-xl px-4 py-2 text-sm font-bold shadow hover:bg-blue-700 active:scale-95 whitespace-nowrap">
+                        <i class="fa-solid fa-floppy-disk mr-1"></i> บันทึก
+                    </button>
                 </div>
             </div>
 
             <div class="space-y-4">
                 <section class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                     <div class="bg-blue-50 border-b border-blue-100 p-4">
-                        <h3 class="font-bold text-blue-800"><i class="fa-solid fa-store mr-2"></i>1) ร้าน / เปิดปิดระบบ</h3>
-                        <p class="text-xs text-blue-700 mt-1">เปิดปิดร้าน รับหน้าร้าน เดลิเวอรี่ เวลาเปิดปิด ระยะส่ง และประกาศ</p>
+                        <h3 class="font-bold text-blue-800 flex items-center gap-2"><i class="fa-solid fa-store"></i> 1) ตั้งค่าร้าน / เปิดปิดระบบ</h3>
+                        <p class="text-xs text-blue-700 mt-1">ใช้สำหรับเปิดปิดร้าน รับหน้าร้าน เดลิเวอรี่ เวลาเปิด และประกาศหน้าเว็บ</p>
                     </div>
                     <div class="p-4 space-y-4">
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <label class="flex items-center justify-between bg-gray-50 border rounded-xl p-3 font-bold text-sm">เปิดร้าน <input id="setting-shop-open" type="checkbox" class="w-5 h-5 accent-blue-600"></label>
-                            <label class="flex items-center justify-between bg-gray-50 border rounded-xl p-3 font-bold text-sm">รับหน้าร้าน <input id="setting-pickup-enabled" type="checkbox" class="w-5 h-5 accent-blue-600"></label>
-                            <label class="flex items-center justify-between bg-gray-50 border rounded-xl p-3 font-bold text-sm">เดลิเวอรี่ <input id="setting-delivery-enabled" type="checkbox" class="w-5 h-5 accent-blue-600"></label>
+                            <label class="flex items-center justify-between gap-3 bg-gray-50 rounded-xl border border-gray-200 p-3 cursor-pointer">
+                                <span class="text-sm font-bold text-gray-700">เปิดร้าน</span>
+                                <input type="checkbox" id="setting-shop-open" class="w-5 h-5 accent-blue-600">
+                            </label>
+                            <label class="flex items-center justify-between gap-3 bg-gray-50 rounded-xl border border-gray-200 p-3 cursor-pointer">
+                                <span class="text-sm font-bold text-gray-700">รับหน้าร้าน</span>
+                                <input type="checkbox" id="setting-pickup-enabled" class="w-5 h-5 accent-blue-600">
+                            </label>
+                            <label class="flex items-center justify-between gap-3 bg-gray-50 rounded-xl border border-gray-200 p-3 cursor-pointer">
+                                <span class="text-sm font-bold text-gray-700">เดลิเวอรี่</span>
+                                <input type="checkbox" id="setting-delivery-enabled" class="w-5 h-5 accent-blue-600">
+                            </label>
                         </div>
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                            <div><label class="text-xs font-bold text-gray-600">เปิดกี่โมง</label><input id="setting-open-hour" type="number" min="0" max="23" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
-                            <div><label class="text-xs font-bold text-gray-600">ปิดกี่โมง</label><input id="setting-close-hour" type="number" min="0" max="23" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
-                            <div><label class="text-xs font-bold text-gray-600">ส่งไกลสุด กม.</label><input id="setting-max-distance" type="number" step="0.1" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
-                            <div><label class="text-xs font-bold text-gray-600">เบอร์ร้าน</label><input id="setting-shop-phone" type="tel" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
+                            <div><label class="block text-xs font-bold text-gray-600 mb-1">เปิดกี่โมง</label><input type="number" id="setting-open-hour" min="0" max="23" class="w-full border border-gray-300 rounded-xl px-3 py-2" placeholder="9"></div>
+                            <div><label class="block text-xs font-bold text-gray-600 mb-1">ปิดกี่โมง</label><input type="number" id="setting-close-hour" min="0" max="23" class="w-full border border-gray-300 rounded-xl px-3 py-2" placeholder="20"></div>
+                            <div><label class="block text-xs font-bold text-gray-600 mb-1">ส่งไกลสุด (กม.)</label><input type="number" id="setting-max-distance" step="0.1" min="0" class="w-full border border-gray-300 rounded-xl px-3 py-2" placeholder="5"></div>
+                            <div><label class="block text-xs font-bold text-gray-600 mb-1">โทรร้าน</label><input type="tel" id="setting-shop-phone" class="w-full border border-gray-300 rounded-xl px-3 py-2" placeholder="0622467746"></div>
                         </div>
-                        <div><label class="text-xs font-bold text-gray-600">ประกาศหน้าเว็บ</label><textarea id="setting-announcement" rows="2" class="w-full mt-1 border rounded-xl px-3 py-2 text-sm"></textarea></div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1">ประกาศหน้าเว็บ</label>
+                            <textarea id="setting-announcement" rows="2" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" placeholder="เช่น วันนี้มีมะพร้าวน้ำหอมสดใหม่ พร้อมส่งครับ"></textarea>
+                        </div>
                     </div>
                 </section>
 
                 <section class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                     <div class="bg-emerald-50 border-b border-emerald-100 p-4">
-                        <h3 class="font-bold text-emerald-800"><i class="fa-solid fa-motorcycle mr-2"></i>2) ค่าส่ง</h3>
-                        <p class="text-xs text-emerald-700 mt-1">กำหนดโซนค่าส่งและขั้นที่ร้านช่วยออก</p>
+                        <h3 class="font-bold text-emerald-800 flex items-center gap-2"><i class="fa-solid fa-motorcycle"></i> 2) ตั้งค่าค่าส่ง</h3>
+                        <p class="text-xs text-emerald-700 mt-1">กำหนดโซนค่าส่งและขั้นที่ร้านช่วยออกค่าส่ง</p>
                     </div>
                     <div class="p-4 space-y-4">
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            <div><label class="text-xs font-bold text-gray-600">ใกล้ไม่เกิน กม.</label><input id="setting-near-km" type="number" step="0.1" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
-                            <div><label class="text-xs font-bold text-gray-600">กลางไม่เกิน กม.</label><input id="setting-mid-km" type="number" step="0.1" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
-                            <div><label class="text-xs font-bold text-gray-600">ไกลสุด กม.</label><input id="setting-shipping-max-km" type="number" step="0.1" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
-                            <div><label class="text-xs font-bold text-gray-600">ค่าส่งใกล้</label><input id="setting-fee-near" type="number" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
-                            <div><label class="text-xs font-bold text-gray-600">ค่าส่งกลาง</label><input id="setting-fee-mid" type="number" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
-                            <div><label class="text-xs font-bold text-gray-600">ค่าส่งไกล</label><input id="setting-fee-far" type="number" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
+                            <div><label class="block text-xs font-bold text-gray-600 mb-1">โซนใกล้ไม่เกิน (กม.)</label><input type="number" id="setting-near-km" step="0.1" class="w-full border border-gray-300 rounded-xl px-3 py-2" placeholder="1.5"></div>
+                            <div><label class="block text-xs font-bold text-gray-600 mb-1">โซนกลางไม่เกิน (กม.)</label><input type="number" id="setting-mid-km" step="0.1" class="w-full border border-gray-300 rounded-xl px-3 py-2" placeholder="3"></div>
+                            <div><label class="block text-xs font-bold text-gray-600 mb-1">ระยะสูงสุด (กม.)</label><input type="number" id="setting-shipping-max-km" step="0.1" class="w-full border border-gray-300 rounded-xl px-3 py-2" placeholder="5"></div>
+                        </div>
+                        <div class="grid grid-cols-3 gap-3">
+                            <div><label class="block text-xs font-bold text-gray-600 mb-1">ใกล้ (บาท)</label><input type="number" id="setting-fee-near" class="w-full border border-gray-300 rounded-xl px-3 py-2" placeholder="30"></div>
+                            <div><label class="block text-xs font-bold text-gray-600 mb-1">กลาง (บาท)</label><input type="number" id="setting-fee-mid" class="w-full border border-gray-300 rounded-xl px-3 py-2" placeholder="50"></div>
+                            <div><label class="block text-xs font-bold text-gray-600 mb-1">ไกล (บาท)</label><input type="number" id="setting-fee-far" class="w-full border border-gray-300 rounded-xl px-3 py-2" placeholder="75"></div>
                         </div>
                         <div>
-                            <div class="flex justify-between items-center mb-2"><label class="text-sm font-bold text-gray-700">ขั้นช่วยค่าส่ง</label><button type="button" onclick="addShippingStepRow()" class="text-xs bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-full font-bold">+ เพิ่มขั้น</button></div>
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="text-sm font-bold text-gray-700">ขั้นช่วยค่าส่ง</label>
+                                <button type="button" onclick="addShippingStepRow()" class="text-xs bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-full font-bold hover:bg-emerald-200"><i class="fa-solid fa-plus"></i> เพิ่มขั้น</button>
+                            </div>
                             <div id="shipping-steps-container" class="space-y-2"></div>
                         </div>
                     </div>
                 </section>
 
                 <section class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                    <div class="bg-purple-50 border-b border-purple-100 p-4"><h3 class="font-bold text-purple-800"><i class="fa-solid fa-wallet mr-2"></i>3) การชำระเงิน</h3></div>
+                    <div class="bg-purple-50 border-b border-purple-100 p-4">
+                        <h3 class="font-bold text-purple-800 flex items-center gap-2"><i class="fa-solid fa-wallet"></i> 3) ตั้งค่าการชำระเงิน</h3>
+                        <p class="text-xs text-purple-700 mt-1">เปิด/ปิดวิธีจ่ายเงินและข้อมูลบัญชีพร้อมเพย์</p>
+                    </div>
                     <div class="p-4 space-y-4">
                         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                            <label class="flex items-center justify-between bg-gray-50 border rounded-xl p-3 font-bold text-sm">โอน/สแกน <input id="setting-transfer-enabled" type="checkbox" class="w-5 h-5 accent-purple-600"></label>
-                            <label class="flex items-center justify-between bg-gray-50 border rounded-xl p-3 font-bold text-sm">เงินสด/COD <input id="setting-cod-enabled" type="checkbox" class="w-5 h-5 accent-purple-600"></label>
-                            <label class="flex items-center justify-between bg-gray-50 border rounded-xl p-3 font-bold text-sm">โอนในไลน์ <input id="setting-chatpay-enabled" type="checkbox" class="w-5 h-5 accent-purple-600"></label>
-                            <label class="flex items-center justify-between bg-gray-50 border rounded-xl p-3 font-bold text-sm">บังคับสลิป <input id="setting-require-slip" type="checkbox" class="w-5 h-5 accent-purple-600"></label>
+                            <label class="flex items-center justify-between gap-3 bg-gray-50 rounded-xl border border-gray-200 p-3 cursor-pointer"><span class="text-sm font-bold text-gray-700">โอน/สแกน</span><input type="checkbox" id="setting-transfer-enabled" class="w-5 h-5 accent-purple-600"></label>
+                            <label class="flex items-center justify-between gap-3 bg-gray-50 rounded-xl border border-gray-200 p-3 cursor-pointer"><span class="text-sm font-bold text-gray-700">เงินสด/COD</span><input type="checkbox" id="setting-cod-enabled" class="w-5 h-5 accent-purple-600"></label>
+                            <label class="flex items-center justify-between gap-3 bg-gray-50 rounded-xl border border-gray-200 p-3 cursor-pointer"><span class="text-sm font-bold text-gray-700">โอนในไลน์</span><input type="checkbox" id="setting-chatpay-enabled" class="w-5 h-5 accent-purple-600"></label>
+                            <label class="flex items-center justify-between gap-3 bg-gray-50 rounded-xl border border-gray-200 p-3 cursor-pointer"><span class="text-sm font-bold text-gray-700">บังคับแนบสลิป</span><input type="checkbox" id="setting-require-slip" class="w-5 h-5 accent-purple-600"></label>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div><label class="text-xs font-bold text-gray-600">เลขพร้อมเพย์</label><input id="setting-promptpay-number" type="text" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
-                            <div><label class="text-xs font-bold text-gray-600">ชื่อบัญชี</label><input id="setting-account-name" type="text" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
+                            <div><label class="block text-xs font-bold text-gray-600 mb-1">เลขพร้อมเพย์</label><input type="text" id="setting-promptpay-number" class="w-full border border-gray-300 rounded-xl px-3 py-2" placeholder="0622467746"></div>
+                            <div><label class="block text-xs font-bold text-gray-600 mb-1">ชื่อบัญชี</label><input type="text" id="setting-account-name" class="w-full border border-gray-300 rounded-xl px-3 py-2" placeholder="ชื่อบัญชี"></div>
                         </div>
                     </div>
                 </section>
 
                 <section class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                    <div class="bg-orange-50 border-b border-orange-100 p-4"><h3 class="font-bold text-orange-800"><i class="fa-solid fa-boxes-stacked mr-2"></i>4) เมนู / สินค้า</h3></div>
+                    <div class="bg-orange-50 border-b border-orange-100 p-4">
+                        <h3 class="font-bold text-orange-800 flex items-center gap-2"><i class="fa-solid fa-boxes-stacked"></i> 4) ตั้งค่าเมนู / สินค้า</h3>
+                        <p class="text-xs text-orange-700 mt-1">เตรียมค่ากลางสำหรับหมวดหมู่ รูปเริ่มต้น และชุดตัวเลือกมาตรฐาน</p>
+                    </div>
                     <div class="p-4 space-y-4">
-                        <div><label class="text-xs font-bold text-gray-600">รูปเริ่มต้น กรณีสินค้าไม่มีรูป</label><input id="setting-default-product-img" type="text" class="w-full mt-1 border rounded-xl px-3 py-2 text-sm"></div>
-                        <div><label class="text-xs font-bold text-gray-600">หมวดหมู่ที่ใช้บ่อย (code=ชื่อไทย)</label><textarea id="setting-category-lines" rows="5" class="w-full mt-1 border rounded-xl px-3 py-2 text-xs font-mono"></textarea></div>
-                        <div><label class="text-xs font-bold text-gray-600">Option Preset มาตรฐาน (JSON)</label><textarea id="setting-option-presets" rows="6" class="w-full mt-1 border rounded-xl px-3 py-2 text-xs font-mono"></textarea></div>
+                        <div><label class="block text-xs font-bold text-gray-600 mb-1">ลิงก์รูปเริ่มต้น กรณีสินค้าไม่มีรูป</label><input type="text" id="setting-default-product-img" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm" placeholder="https://..."></div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1">รายการหมวดหมู่ที่ใช้บ่อย (1 บรรทัดต่อ 1 หมวด: code=ชื่อไทย)</label>
+                            <textarea id="setting-category-lines" rows="5" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-xs font-mono" placeholder="recommend=แนะนำ&#10;coconut_smoothie=มะพร้าวปั่น"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1">Option Preset มาตรฐาน (JSON)</label>
+                            <textarea id="setting-option-presets" rows="6" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-xs font-mono" placeholder='[{"name":"ระดับความหวาน","type":"radio","choices":[{"label":"หวานน้อย","price":0}]}]'></textarea>
+                        </div>
                     </div>
                 </section>
 
                 <section class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                    <div class="bg-amber-50 border-b border-amber-100 p-4"><h3 class="font-bold text-amber-800"><i class="fa-solid fa-clipboard-check mr-2"></i>5) ออเดอร์</h3></div>
+                    <div class="bg-amber-50 border-b border-amber-100 p-4">
+                        <h3 class="font-bold text-amber-800 flex items-center gap-2"><i class="fa-solid fa-clipboard-check"></i> 5) ตั้งค่าออเดอร์</h3>
+                        <p class="text-xs text-amber-700 mt-1">ตั้งค่าสถานะเริ่มต้น รายการสถานะ และเหตุผลยกเลิก</p>
+                    </div>
                     <div class="p-4 space-y-4">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div><label class="text-xs font-bold text-gray-600">สถานะเริ่มต้นรับหน้าร้าน</label><input id="setting-default-status-pickup" type="text" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
-                            <div><label class="text-xs font-bold text-gray-600">สถานะเริ่มต้นเดลิเวอรี่</label><input id="setting-default-status-delivery" type="text" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
+                            <div><label class="block text-xs font-bold text-gray-600 mb-1">สถานะเริ่มต้นรับหน้าร้าน</label><input type="text" id="setting-default-status-pickup" class="w-full border border-gray-300 rounded-xl px-3 py-2" placeholder="🏪 รอรับหน้าร้าน"></div>
+                            <div><label class="block text-xs font-bold text-gray-600 mb-1">สถานะเริ่มต้นเดลิเวอรี่</label><input type="text" id="setting-default-status-delivery" class="w-full border border-gray-300 rounded-xl px-3 py-2" placeholder="🍳 กำลังปรุง"></div>
                         </div>
-                        <div><label class="text-xs font-bold text-gray-600">สถานะที่ใช้บ่อย (1 บรรทัดต่อสถานะ)</label><textarea id="setting-order-statuses" rows="4" class="w-full mt-1 border rounded-xl px-3 py-2 text-sm"></textarea></div>
-                        <div><label class="text-xs font-bold text-gray-600">เหตุผลยกเลิก (1 บรรทัดต่อเหตุผล)</label><textarea id="setting-cancel-reasons" rows="4" class="w-full mt-1 border rounded-xl px-3 py-2 text-sm"></textarea></div>
-                        <label class="flex items-center justify-between bg-gray-50 border rounded-xl p-3 font-bold text-sm">แยกป้ายรับหน้าร้าน/เดลิเวอรี่ให้ชัด <input id="setting-split-order-view" type="checkbox" class="w-5 h-5 accent-amber-600"></label>
+                        <div><label class="block text-xs font-bold text-gray-600 mb-1">สถานะที่ใช้บ่อย (1 บรรทัดต่อ 1 สถานะ)</label><textarea id="setting-order-statuses" rows="4" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm"></textarea></div>
+                        <div><label class="block text-xs font-bold text-gray-600 mb-1">เหตุผลยกเลิก (1 บรรทัดต่อ 1 เหตุผล)</label><textarea id="setting-cancel-reasons" rows="4" class="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm"></textarea></div>
+                        <label class="flex items-center justify-between gap-3 bg-gray-50 rounded-xl border border-gray-200 p-3 cursor-pointer"><span class="text-sm font-bold text-gray-700">แยกออเดอร์รับหน้าร้าน/เดลิเวอรี่ให้ชัด</span><input type="checkbox" id="setting-split-order-view" class="w-5 h-5 accent-amber-600"></label>
                     </div>
                 </section>
 
                 <section class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-                    <div class="bg-sky-50 border-b border-sky-100 p-4"><h3 class="font-bold text-sky-800"><i class="fa-solid fa-bell mr-2"></i>6) การแจ้งเตือน</h3></div>
+                    <div class="bg-sky-50 border-b border-sky-100 p-4">
+                        <h3 class="font-bold text-sky-800 flex items-center gap-2"><i class="fa-solid fa-bell"></i> 6) ตั้งค่าการแจ้งเตือน</h3>
+                        <p class="text-xs text-sky-700 mt-1">ตั้งค่าเสียง แจ้งเตือนซ้ำ และช่องทางแจ้งเตือนทั่วไป</p>
+                    </div>
                     <div class="p-4 space-y-4">
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <label class="flex items-center justify-between bg-gray-50 border rounded-xl p-3 font-bold text-sm">เสียงออเดอร์ใหม่ <input id="setting-sound-enabled" type="checkbox" class="w-5 h-5 accent-sky-600"></label>
-                            <label class="flex items-center justify-between bg-gray-50 border rounded-xl p-3 font-bold text-sm">แจ้งเตือนซ้ำ <input id="setting-repeat-enabled" type="checkbox" class="w-5 h-5 accent-sky-600"></label>
-                            <div><label class="text-xs font-bold text-gray-600">ซ้ำทุกกี่นาที</label><input id="setting-repeat-minutes" type="number" min="1" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
+                            <label class="flex items-center justify-between gap-3 bg-gray-50 rounded-xl border border-gray-200 p-3 cursor-pointer"><span class="text-sm font-bold text-gray-700">เสียงออเดอร์ใหม่</span><input type="checkbox" id="setting-sound-enabled" class="w-5 h-5 accent-sky-600"></label>
+                            <label class="flex items-center justify-between gap-3 bg-gray-50 rounded-xl border border-gray-200 p-3 cursor-pointer"><span class="text-sm font-bold text-gray-700">แจ้งเตือนซ้ำ</span><input type="checkbox" id="setting-repeat-enabled" class="w-5 h-5 accent-sky-600"></label>
+                            <div><label class="block text-xs font-bold text-gray-600 mb-1">ซ้ำทุกกี่นาที</label><input type="number" id="setting-repeat-minutes" min="1" class="w-full border border-gray-300 rounded-xl px-3 py-2" placeholder="3"></div>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <label class="flex items-center justify-between bg-gray-50 border rounded-xl p-3 font-bold text-sm">แจ้งเตือน LINE/Apps Script <input id="setting-line-enabled" type="checkbox" class="w-5 h-5 accent-sky-600"></label>
-                            <label class="flex items-center justify-between bg-gray-50 border rounded-xl p-3 font-bold text-sm">เตือนออเดอร์รอรับนาน <input id="setting-pending-alert-enabled" type="checkbox" class="w-5 h-5 accent-sky-600"></label>
+                            <label class="flex items-center justify-between gap-3 bg-gray-50 rounded-xl border border-gray-200 p-3 cursor-pointer"><span class="text-sm font-bold text-gray-700">แจ้งเตือน LINE/Apps Script</span><input type="checkbox" id="setting-line-enabled" class="w-5 h-5 accent-sky-600"></label>
+                            <label class="flex items-center justify-between gap-3 bg-gray-50 rounded-xl border border-gray-200 p-3 cursor-pointer"><span class="text-sm font-bold text-gray-700">แจ้งเตือนเมื่อรอรับนาน</span><input type="checkbox" id="setting-pending-alert-enabled" class="w-5 h-5 accent-sky-600"></label>
                         </div>
-                        <div><label class="text-xs font-bold text-gray-600">ข้อความเตือนซ้ำ</label><input id="setting-repeat-message" type="text" class="w-full mt-1 border rounded-xl px-3 py-2"></div>
+                        <div><label class="block text-xs font-bold text-gray-600 mb-1">ข้อความเตือนซ้ำ</label><input type="text" id="setting-repeat-message" class="w-full border border-gray-300 rounded-xl px-3 py-2" placeholder="มีออเดอร์รอรับอยู่ อย่าลืมกดรับยอดครับ"></div>
                     </div>
                 </section>
 
-                <div class="sticky bottom-20 z-30 bg-white/95 backdrop-blur border rounded-2xl shadow-lg p-3 flex gap-3">
-                    <button onclick="resetSettingsToDefault()" class="px-4 py-3 bg-gray-100 text-gray-600 rounded-xl font-bold hover:bg-gray-200">ค่าเริ่มต้น</button>
+                <div class="sticky bottom-20 z-30 bg-white/95 backdrop-blur border border-gray-200 rounded-2xl shadow-lg p-3 flex gap-3">
+                    <button onclick="resetSettingsToDefault()" class="px-4 py-3 bg-gray-100 text-gray-600 rounded-xl font-bold hover:bg-gray-200"><i class="fa-solid fa-rotate-left mr-1"></i> ค่าเริ่มต้น</button>
                     <button onclick="saveSettings()" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold shadow hover:bg-blue-700"><i class="fa-solid fa-floppy-disk mr-1"></i> บันทึกการตั้งค่า</button>
+                </div>
+            </div>
+        </div>
+
+
+
+        <div id="view-riders" class="hidden p-4 max-w-2xl mx-auto pb-24">
+            <div class="mb-4 bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <h2 class="font-bold text-gray-800 text-lg flex items-center gap-2"><i class="fa-solid fa-motorcycle text-purple-600"></i> จัดการไรเดอร์</h2>
+                        <p class="text-xs text-gray-500 mt-1">จัดการงานส่งในหน้า Admin เดียว ไม่ต้องเปิดหลังบ้านไรเดอร์แยก งานจะบันทึกไว้ที่ Firebase / riderJobs</p>
+                    </div>
+                    <button onclick="openCreateRiderJobDialog()" class="bg-purple-600 text-white rounded-xl px-4 py-2 text-sm font-bold shadow hover:bg-purple-700 active:scale-95 whitespace-nowrap">
+                        <i class="fa-solid fa-plus mr-1"></i> สร้างงาน
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+                <div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+                    <div class="text-xs text-gray-500">งานเปิดรับ</div>
+                    <div id="rider-kpi-open" class="text-3xl font-bold text-orange-600">0</div>
+                    <div class="text-[10px] text-gray-400">รอคนรับงาน</div>
+                </div>
+                <div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+                    <div class="text-xs text-gray-500">กำลังส่ง</div>
+                    <div id="rider-kpi-active" class="text-3xl font-bold text-blue-600">0</div>
+                    <div class="text-[10px] text-gray-400">รับงาน/รับของแล้ว</div>
+                </div>
+                <div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+                    <div class="text-xs text-gray-500">ส่งสำเร็จวันนี้</div>
+                    <div id="rider-kpi-done" class="text-3xl font-bold text-green-600">0</div>
+                    <div class="text-[10px] text-gray-400">DELIVERED</div>
+                </div>
+                <div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+                    <div class="text-xs text-gray-500">ค่ารอบวันนี้</div>
+                    <div id="rider-kpi-pay" class="text-3xl font-bold text-gray-800">0</div>
+                    <div class="text-[10px] text-gray-400">บาท</div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-3 mb-4">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <button onclick="openCreateRiderJobDialog()" class="rounded-xl bg-purple-50 text-purple-700 border border-purple-100 py-3 text-xs font-bold hover:bg-purple-100 active:scale-95"><i class="fa-solid fa-clipboard-list mr-1"></i> สร้างจาก Order ID</button>
+                    <button onclick="openAddRiderDialog()" class="rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-100 py-3 text-xs font-bold hover:bg-emerald-100 active:scale-95"><i class="fa-solid fa-user-plus mr-1"></i> เพิ่มไรเดอร์</button>
+                    <button onclick="copyOpenJobsSummary()" class="rounded-xl bg-yellow-50 text-yellow-700 border border-yellow-100 py-3 text-xs font-bold hover:bg-yellow-100 active:scale-95"><i class="fa-solid fa-copy mr-1"></i> คัดลอกงานเปิด</button>
+                    <button onclick="refreshRiderTab()" class="rounded-xl bg-blue-50 text-blue-700 border border-blue-100 py-3 text-xs font-bold hover:bg-blue-100 active:scale-95"><i class="fa-solid fa-rotate mr-1"></i> รีเฟรช</button>
+                </div>
+                <div class="mt-3 flex gap-2 overflow-x-auto no-scrollbar">
+                    <button data-rider-filter="ALL" onclick="setRiderFilter('ALL')" class="rider-filter-btn shrink-0 px-3 py-2 rounded-full text-xs font-bold bg-purple-600 text-white">ทั้งหมด</button>
+                    <button data-rider-filter="OPEN" onclick="setRiderFilter('OPEN')" class="rider-filter-btn shrink-0 px-3 py-2 rounded-full text-xs font-bold bg-gray-100 text-gray-600">เปิดรับ</button>
+                    <button data-rider-filter="ASSIGNED" onclick="setRiderFilter('ASSIGNED')" class="rider-filter-btn shrink-0 px-3 py-2 rounded-full text-xs font-bold bg-gray-100 text-gray-600">รับแล้ว</button>
+                    <button data-rider-filter="PICKED_UP" onclick="setRiderFilter('PICKED_UP')" class="rider-filter-btn shrink-0 px-3 py-2 rounded-full text-xs font-bold bg-gray-100 text-gray-600">รับของแล้ว</button>
+                    <button data-rider-filter="DELIVERED" onclick="setRiderFilter('DELIVERED')" class="rider-filter-btn shrink-0 px-3 py-2 rounded-full text-xs font-bold bg-gray-100 text-gray-600">ส่งแล้ว</button>
+                    <button data-rider-filter="ISSUE" onclick="setRiderFilter('ISSUE')" class="rider-filter-btn shrink-0 px-3 py-2 rounded-full text-xs font-bold bg-gray-100 text-gray-600">มีปัญหา</button>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="font-bold text-gray-800 flex items-center gap-2"><i class="fa-solid fa-route text-purple-600"></i> งานไรเดอร์</h3>
+                    <span id="rider-job-count" class="text-xs text-gray-500">0 งาน</span>
+                </div>
+                <div id="rider-jobs-list" class="space-y-3">
+                    <div class="text-center text-gray-400 py-10">กำลังโหลดงานไรเดอร์...</div>
+                </div>
+            </div>
+
+            <div>
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="font-bold text-gray-800 flex items-center gap-2"><i class="fa-solid fa-users text-emerald-600"></i> รายชื่อไรเดอร์</h3>
+                    <span id="rider-list-count" class="text-xs text-gray-500">0 คน</span>
+                </div>
+                <div id="riders-list" class="space-y-3">
+                    <div class="text-center text-gray-400 py-10">กำลังโหลดรายชื่อไรเดอร์...</div>
                 </div>
             </div>
         </div>
@@ -264,6 +377,10 @@
             <button onclick="switchView('products')" id="nav-products" class="flex flex-col items-center w-full py-1 tab-inactive">
                 <i class="fa-solid fa-box-open text-xl mb-1"></i>
                 <span class="text-xs font-bold">สินค้า</span>
+            </button>
+            <button onclick="switchView('riders')" id="nav-riders" class="flex flex-col items-center w-full py-1 tab-inactive">
+                <i class="fa-solid fa-motorcycle text-xl mb-1"></i>
+                <span class="text-xs font-bold">ไรเดอร์</span>
             </button>
             <button onclick="switchView('settings')" id="nav-settings" class="flex flex-col items-center w-full py-1 tab-inactive">
                 <i class="fa-solid fa-sliders text-xl mb-1"></i>
@@ -568,11 +685,13 @@
             document.getElementById('view-orders').classList.add('hidden');
             document.getElementById('view-history').classList.add('hidden');
             document.getElementById('view-products').classList.add('hidden');
+            document.getElementById('view-riders').classList.add('hidden');
             document.getElementById('view-settings').classList.add('hidden');
             
             document.getElementById('nav-orders').classList.replace('tab-active','tab-inactive');
             document.getElementById('nav-history').classList.replace('tab-active','tab-inactive');
             document.getElementById('nav-products').classList.replace('tab-active','tab-inactive');
+            document.getElementById('nav-riders').classList.replace('tab-active','tab-inactive');
             document.getElementById('nav-settings').classList.replace('tab-active','tab-inactive');
 
             document.getElementById(`view-${viewName}`).classList.remove('hidden');
@@ -591,6 +710,10 @@
                 title.innerHTML = '<i class="fa-solid fa-box"></i> จัดการสินค้า';
                 addBtn.classList.remove('hidden');
                 startListeningProducts();
+            } else if (viewName === 'riders') {
+                title.innerHTML = '<i class="fa-solid fa-motorcycle"></i> จัดการไรเดอร์';
+                addBtn.classList.add('hidden');
+                startListeningRiderManagement();
             } else if (viewName === 'settings') {
                 title.innerHTML = '<i class="fa-solid fa-sliders"></i> ตั้งค่าร้าน';
                 addBtn.classList.add('hidden');
@@ -608,7 +731,8 @@
                 containerOrders.innerHTML = ''; containerHistory.innerHTML = '';
                 if (!snapshot.exists()) { containerOrders.innerHTML = '<div class="text-center text-gray-400 mt-10">ยังไม่มีออเดอร์</div>'; return; }
                 const data = snapshot.val();
-                const orders = Object.values(data).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                window.allOrdersCache = Object.entries(data).map(([key, val]) => ({ firebaseKey: key, ...val }));
+                const orders = window.allOrdersCache.slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
                 const activeOrders = orders.filter(o => !o.status.includes('สำเร็จ') && !o.status.includes('ยกเลิก'));
                 if (!isFirstLoad && activeOrders.length > lastOrderCount) { window.testSound(true); const toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000 }); toast.fire({ icon: 'success', title: 'มีออเดอร์ใหม่!' }); }
                 lastOrderCount = activeOrders.length; isFirstLoad = false;
@@ -728,7 +852,7 @@
             let actionButtons = '';
             if (!isFinished) {
                 const riderButton = channel.type === 'delivery'
-                    ? (lalamoveButton ? lalamoveButton : `<button onclick="window.updateStatus('${order.id}', '🛵 ไรเดอร์นำส่ง')" class="flex-1 bg-white border border-purple-200 text-purple-600 py-2 rounded text-xs font-bold hover:bg-purple-50 shadow-sm whitespace-nowrap">เรียกไรเดอร์</button>`)
+                    ? (lalamoveButton ? lalamoveButton : `<button onclick="window.openCreateRiderJobFromOrder('${order.id}')" class="flex-1 bg-white border border-purple-200 text-purple-600 py-2 rounded text-xs font-bold hover:bg-purple-50 shadow-sm whitespace-nowrap">เรียกไรเดอร์</button>`)
                     : `<button onclick="window.updateStatus('${order.id}', '🏪 รอลูกค้ามารับ')" class="flex-1 bg-white border border-emerald-200 text-emerald-600 py-2 rounded text-xs font-bold hover:bg-emerald-50 shadow-sm whitespace-nowrap">รอลูกค้ามารับ</button>`;
 
                 actionButtons = `<div class="p-2 bg-gray-50 flex gap-2 overflow-x-auto"><button onclick="window.updateStatus('${order.id}', '🍳 กำลังปรุง')" class="flex-1 bg-white border border-blue-200 text-blue-600 py-2 rounded text-xs font-bold hover:bg-blue-50 shadow-sm whitespace-nowrap">รับยอด/ปรุง</button>${riderButton}<button onclick="window.updateStatus('${order.id}', '✅ สำเร็จ')" class="flex-1 bg-green-500 text-white py-2 rounded text-xs font-bold hover:bg-green-600 shadow-sm whitespace-nowrap">จบงาน</button><button onclick="window.updateStatus('${order.id}', '❌ ยกเลิก')" class="px-3 bg-red-100 text-red-500 py-2 rounded text-xs font-bold hover:bg-red-200 shadow-sm"><i class="fa-solid fa-trash"></i></button></div>`;
@@ -793,6 +917,493 @@
 
         window.updateStatus = function(orderId, newStatus) { Swal.fire({ title: 'ยืนยัน?', text: `${newStatus}`, icon: 'question', showCancelButton: true, confirmButtonText: 'ตกลง' }).then((result) => { if (result.isConfirmed) { onValue(ref(db, 'orders'), (snapshot) => { const data = snapshot.val(); let firebaseKey = null; for (const [key, val] of Object.entries(data)) { if (val.id === orderId) { firebaseKey = key; break; } } if (firebaseKey) { update(ref(db, `orders/${firebaseKey}`), { status: newStatus }); } }, { onlyOnce: true }); fetch(WEB_APP_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'admin_update_status', id: orderId, status: newStatus }) }).then(() => console.log('Sheet Updated')).catch(e => console.error('Sheet Update Error', e)); } }); }
         window.viewSlip = function(img) { Swal.fire({ imageUrl: img, imageAlt: 'Slip', showCloseButton: true, showConfirmButton: false }); }
+
+
+
+        // ==========================================
+        // 🛵 Rider Management in Admin (Firebase-only)
+        // ==========================================
+        window.riderJobsCache = [];
+        window.ridersCache = [];
+        window.allOrdersCache = window.allOrdersCache || [];
+        window.riderFilter = 'ALL';
+        window.riderJobsListener = null;
+        window.ridersListener = null;
+
+        function makeSafeFirebaseKey(value) {
+            return String(value || Date.now()).replace(/[.#$\[\]/]/g, '_');
+        }
+
+        function formatNumber(value) {
+            const num = Number(value || 0);
+            return num.toLocaleString('th-TH', { maximumFractionDigits: 2 });
+        }
+
+        function isTodayIso(value) {
+            if (!value) return false;
+            const d = new Date(value);
+            if (Number.isNaN(d.getTime())) return false;
+            const now = new Date();
+            return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+        }
+
+        function getOrderIdCandidates(input) {
+            const raw = String(input || '').trim();
+            const onlyDigits = raw.replace(/\D/g, '');
+            const list = [raw];
+            if (onlyDigits) {
+                list.push(onlyDigits, `ORD-${onlyDigits}`);
+            }
+            return [...new Set(list.filter(Boolean))];
+        }
+
+        function findOrderByAnyId(input) {
+            const candidates = getOrderIdCandidates(input);
+            const orders = window.allOrdersCache || [];
+            return orders.find(order => {
+                const id = String(order.id || '').trim();
+                const shortId = id.slice(-4);
+                return candidates.includes(id) || candidates.includes(shortId) || candidates.some(c => id.endsWith(c));
+            }) || null;
+        }
+
+        function isDeliveryOrder(order) {
+            if (!order) return false;
+            const channel = getOrderChannelInfo(order);
+            return channel.type === 'delivery';
+        }
+
+        function buildItemsTextFromOrder(order) {
+            if (!Array.isArray(order.items)) return '';
+            return order.items.map((item, idx) => {
+                const options = Array.isArray(item.selectedOptions) && item.selectedOptions.length ? `\n   + ${item.selectedOptions.join(', ')}` : '';
+                return `${idx + 1}. ${item.name || '-'} x${item.qty || 1} = ${item.finalPrice || item.price || 0} บาท${options}`;
+            }).join('\n');
+        }
+
+        function buildRiderJobFromOrder(order, extra = {}) {
+            const customer = order.customer || {};
+            const orderId = String(order.id || '').trim();
+            const shortId = orderId.replace(/^ORD-?/i, '').slice(-6) || Date.now().toString().slice(-6);
+            const locationText = String(customer.location || '');
+            let mapLink = '';
+            if (locationText && locationText !== '-' && locationText !== 'null' && locationText !== 'undefined') {
+                mapLink = `https://maps.google.com/?q=${encodeURIComponent(locationText)}`;
+            } else if (customer.address) {
+                mapLink = `https://maps.google.com/?q=${encodeURIComponent(customer.address)}`;
+            }
+            const deliveryFee = Number(order.deliveryFee || order.shippingFee || order.shipping || 0);
+            const riderPay = Number(extra.riderPay ?? deliveryFee ?? 0);
+            return {
+                jobId: `JOB-${shortId}`,
+                orderId,
+                orderKey: order.firebaseKey || '',
+                orderMode: 'delivery',
+                status: extra.status || 'OPEN',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                customerName: customer.name || '',
+                customerPhone: customer.phone || '',
+                customerAddress: customer.address || '',
+                customerLandmark: customer.landmark || '',
+                customerLocation: locationText || '',
+                mapLink,
+                distanceKm: order.distanceKm || '',
+                deliveryFee,
+                riderPay,
+                total: order.total || '',
+                paymentMethod: order.paymentMethod || '',
+                items: Array.isArray(order.items) ? order.items : [],
+                itemsText: buildItemsTextFromOrder(order),
+                note: extra.note || '',
+                assignedRiderId: '',
+                assignedRiderName: '',
+                assignedRiderPhone: ''
+            };
+        }
+
+        async function updateRelatedOrderStatus(orderId, statusText, extraUpdates = {}) {
+            const order = findOrderByAnyId(orderId);
+            if (!order || !order.firebaseKey) return false;
+            await update(ref(db, `orders/${order.firebaseKey}`), { status: statusText, ...extraUpdates });
+            fetch(WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'admin_update_status', id: order.id, status: statusText })
+            }).catch(e => console.warn('Sheet update failed:', e));
+            return true;
+        }
+
+        window.startListeningRiderManagement = function() {
+            if (!window.riderJobsListener) {
+                window.riderJobsListener = onValue(ref(db, 'riderJobs'), (snapshot) => {
+                    const data = snapshot.exists() ? snapshot.val() : {};
+                    window.riderJobsCache = Object.entries(data).map(([key, value]) => ({ key, ...value })).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+                    renderRiderManagement();
+                });
+            }
+            if (!window.ridersListener) {
+                window.ridersListener = onValue(ref(db, 'riders'), (snapshot) => {
+                    const data = snapshot.exists() ? snapshot.val() : {};
+                    window.ridersCache = Object.entries(data).map(([key, value]) => ({ key, ...value })).sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'th'));
+                    renderRiderManagement();
+                });
+            }
+            renderRiderManagement();
+        }
+
+        window.refreshRiderTab = function() {
+            startListeningRiderManagement();
+            renderRiderManagement();
+            Swal.fire({ toast: true, position: 'top', icon: 'success', title: 'รีเฟรชแล้ว', timer: 900, showConfirmButton: false });
+        }
+
+        window.setRiderFilter = function(filter) {
+            window.riderFilter = filter;
+            document.querySelectorAll('.rider-filter-btn').forEach(btn => {
+                const active = btn.dataset.riderFilter === filter;
+                btn.className = active
+                    ? 'rider-filter-btn shrink-0 px-3 py-2 rounded-full text-xs font-bold bg-purple-600 text-white'
+                    : 'rider-filter-btn shrink-0 px-3 py-2 rounded-full text-xs font-bold bg-gray-100 text-gray-600';
+            });
+            renderRiderJobsList();
+        }
+
+        function renderRiderManagement() {
+            renderRiderKpis();
+            renderRiderJobsList();
+            renderRidersList();
+        }
+
+        function renderRiderKpis() {
+            const jobs = window.riderJobsCache || [];
+            const open = jobs.filter(j => j.status === 'OPEN').length;
+            const active = jobs.filter(j => ['ASSIGNED', 'PICKED_UP'].includes(j.status)).length;
+            const deliveredToday = jobs.filter(j => j.status === 'DELIVERED' && isTodayIso(j.deliveredAt || j.updatedAt)).length;
+            const payToday = jobs.filter(j => j.status === 'DELIVERED' && isTodayIso(j.deliveredAt || j.updatedAt)).reduce((sum, j) => sum + Number(j.riderPay || 0), 0);
+            const setText = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
+            setText('rider-kpi-open', open);
+            setText('rider-kpi-active', active);
+            setText('rider-kpi-done', deliveredToday);
+            setText('rider-kpi-pay', formatNumber(payToday));
+            setText('rider-job-count', `${jobs.length} งาน`);
+            setText('rider-list-count', `${(window.ridersCache || []).length} คน`);
+        }
+
+        function riderStatusBadge(status) {
+            const map = {
+                OPEN: ['bg-orange-100 text-orange-700 border-orange-200', 'รอไรเดอร์รับงาน', 'fa-bullhorn'],
+                ASSIGNED: ['bg-blue-100 text-blue-700 border-blue-200', 'รับงานแล้ว', 'fa-user-check'],
+                PICKED_UP: ['bg-purple-100 text-purple-700 border-purple-200', 'รับของแล้ว', 'fa-box'],
+                DELIVERED: ['bg-green-100 text-green-700 border-green-200', 'ส่งสำเร็จ', 'fa-circle-check'],
+                ISSUE: ['bg-red-100 text-red-700 border-red-200', 'มีปัญหา', 'fa-triangle-exclamation'],
+                CANCELLED: ['bg-gray-100 text-gray-600 border-gray-200', 'ยกเลิก', 'fa-ban']
+            };
+            const [cls, label, icon] = map[status] || ['bg-gray-100 text-gray-600 border-gray-200', status || '-', 'fa-circle'];
+            return `<span class="px-2 py-1 rounded-full text-xs font-bold border ${cls}"><i class="fa-solid ${icon}"></i> ${label}</span>`;
+        }
+
+        function renderRiderJobsList() {
+            const container = document.getElementById('rider-jobs-list');
+            if (!container) return;
+            let jobs = window.riderJobsCache || [];
+            if (window.riderFilter && window.riderFilter !== 'ALL') jobs = jobs.filter(job => job.status === window.riderFilter);
+            if (!jobs.length) {
+                container.innerHTML = '<div class="bg-white border border-gray-200 rounded-2xl p-8 text-center text-gray-400">ยังไม่มีงานไรเดอร์ในหมวดนี้</div>';
+                return;
+            }
+            container.innerHTML = jobs.map(job => createRiderJobCard(job)).join('');
+        }
+
+        function createRiderJobCard(job) {
+            const mapBtn = job.mapLink ? `<a href="${window.escapeHtml(job.mapLink)}" target="_blank" class="bg-white border border-sky-200 text-sky-700 px-3 py-2 rounded-xl text-xs font-bold hover:bg-sky-50"><i class="fa-solid fa-map-location-dot"></i> แผนที่</a>` : '';
+            const phoneBtn = job.customerPhone ? `<a href="tel:${window.escapeHtml(job.customerPhone)}" class="bg-white border border-emerald-200 text-emerald-700 px-3 py-2 rounded-xl text-xs font-bold hover:bg-emerald-50"><i class="fa-solid fa-phone"></i> โทร</a>` : '';
+            const riderLine = job.assignedRiderName ? `<div class="mt-2 text-xs font-bold text-purple-700 bg-purple-50 border border-purple-100 rounded-xl px-3 py-2"><i class="fa-solid fa-motorcycle"></i> ${window.escapeHtml(job.assignedRiderName)} ${job.assignedRiderPhone ? '(' + window.escapeHtml(job.assignedRiderPhone) + ')' : ''}</div>` : '';
+            const itemsText = job.itemsText || buildItemsTextFromOrder({ items: job.items || [] });
+            return `
+                <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+                    <div class="p-4 bg-gray-50 border-b border-gray-100 flex justify-between items-start gap-3">
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <b class="text-gray-800">${window.escapeHtml(job.jobId || job.key || '-')}</b>
+                                ${riderStatusBadge(job.status)}
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1">ออเดอร์: ${window.escapeHtml(job.orderId || '-')} · ${job.createdAt ? new Date(job.createdAt).toLocaleString('th-TH') : '-'}</div>
+                        </div>
+                        <div class="text-right shrink-0">
+                            <div class="text-2xl font-bold text-purple-600">฿${formatNumber(job.riderPay)}</div>
+                            <div class="text-[10px] text-gray-500">ค่ารอบ</div>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="bg-sky-50 border border-sky-100 rounded-xl p-3 text-sm text-sky-900">
+                            <div class="font-bold"><i class="fa-solid fa-user"></i> ${window.escapeHtml(job.customerName || '-')} ${job.customerPhone ? '(' + window.escapeHtml(job.customerPhone) + ')' : ''}</div>
+                            <div class="text-xs mt-1"><i class="fa-solid fa-location-dot"></i> ${window.escapeHtml(job.customerAddress || '-')} ${job.customerLandmark ? '(' + window.escapeHtml(job.customerLandmark) + ')' : ''}</div>
+                            <div class="mt-2 flex gap-2 flex-wrap">
+                                ${job.distanceKm ? `<span class="bg-white border border-sky-100 rounded-lg px-2 py-1 text-xs font-bold">ระยะ ${window.escapeHtml(job.distanceKm)} กม.</span>` : ''}
+                                ${job.deliveryFee !== undefined && job.deliveryFee !== '' ? `<span class="bg-white border border-sky-100 rounded-lg px-2 py-1 text-xs font-bold">ค่าส่งลูกค้า ${formatNumber(job.deliveryFee)} บาท</span>` : ''}
+                            </div>
+                        </div>
+                        ${riderLine}
+                        ${itemsText ? `<details class="mt-3"><summary class="text-xs font-bold text-gray-600 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2"><i class="fa-solid fa-basket-shopping"></i> ดูรายการสินค้า</summary><pre class="mt-2 text-xs whitespace-pre-wrap bg-gray-50 border border-gray-200 rounded-xl p-3 text-gray-700">${window.escapeHtml(itemsText)}</pre></details>` : ''}
+                        <div class="mt-3 flex gap-2 flex-wrap">
+                            ${job.status === 'OPEN' ? `<button onclick="assignRiderToJob('${window.escapeHtml(job.key)}')" class="bg-purple-600 text-white px-3 py-2 rounded-xl text-xs font-bold hover:bg-purple-700"><i class="fa-solid fa-user-check"></i> มอบหมายไรเดอร์</button>` : ''}
+                            ${job.status === 'ASSIGNED' ? `<button onclick="updateRiderJobStatus('${window.escapeHtml(job.key)}','PICKED_UP')" class="bg-blue-600 text-white px-3 py-2 rounded-xl text-xs font-bold hover:bg-blue-700"><i class="fa-solid fa-box"></i> รับของแล้ว</button>` : ''}
+                            ${['ASSIGNED','PICKED_UP'].includes(job.status) ? `<button onclick="updateRiderJobStatus('${window.escapeHtml(job.key)}','DELIVERED')" class="bg-green-600 text-white px-3 py-2 rounded-xl text-xs font-bold hover:bg-green-700"><i class="fa-solid fa-check"></i> ส่งสำเร็จ</button>` : ''}
+                            ${!['DELIVERED','CANCELLED'].includes(job.status) ? `<button onclick="markRiderJobIssue('${window.escapeHtml(job.key)}')" class="bg-red-50 text-red-600 border border-red-100 px-3 py-2 rounded-xl text-xs font-bold hover:bg-red-100"><i class="fa-solid fa-triangle-exclamation"></i> ปัญหา</button>` : ''}
+                            <button onclick="copyRiderJobSummary('${window.escapeHtml(job.key)}')" class="bg-yellow-50 text-yellow-700 border border-yellow-100 px-3 py-2 rounded-xl text-xs font-bold hover:bg-yellow-100"><i class="fa-solid fa-copy"></i> คัดลอก</button>
+                            ${mapBtn}${phoneBtn}
+                            <button onclick="deleteRiderJob('${window.escapeHtml(job.key)}')" class="bg-gray-50 text-gray-500 border border-gray-200 px-3 py-2 rounded-xl text-xs font-bold hover:bg-gray-100"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        function renderRidersList() {
+            const container = document.getElementById('riders-list');
+            if (!container) return;
+            const riders = window.ridersCache || [];
+            if (!riders.length) {
+                container.innerHTML = '<div class="bg-white border border-gray-200 rounded-2xl p-8 text-center text-gray-400">ยังไม่มีรายชื่อไรเดอร์ กด “เพิ่มไรเดอร์” เพื่อเริ่มใช้งาน</div>';
+                return;
+            }
+            container.innerHTML = riders.map(rider => {
+                const active = rider.active !== false;
+                const activeText = active ? 'เปิดใช้งาน' : 'ปิดใช้งาน';
+                const activeClass = active ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-gray-100 text-gray-500 border-gray-200';
+                return `
+                    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-4">
+                        <div class="flex items-start gap-3">
+                            <div class="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-2xl shrink-0">🛵</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <b class="text-gray-800">${window.escapeHtml(rider.name || '-')}</b>
+                                    <span class="px-2 py-1 rounded-full text-xs font-bold border ${activeClass}">${activeText}</span>
+                                </div>
+                                <div class="text-xs text-gray-500 mt-1">${window.escapeHtml(rider.phone || '-')} · ส่งได้สูงสุด ${window.escapeHtml(rider.maxDistanceKm || 5)} กม.</div>
+                                ${rider.note ? `<div class="text-xs text-gray-500 mt-1">${window.escapeHtml(rider.note)}</div>` : ''}
+                            </div>
+                        </div>
+                        <div class="mt-3 flex gap-2">
+                            <a href="tel:${window.escapeHtml(rider.phone || '')}" class="flex-1 text-center bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-xl py-2 text-xs font-bold"><i class="fa-solid fa-phone"></i> โทร</a>
+                            <button onclick="openAddRiderDialog('${window.escapeHtml(rider.key)}')" class="flex-1 bg-blue-50 text-blue-700 border border-blue-100 rounded-xl py-2 text-xs font-bold"><i class="fa-solid fa-pen"></i> แก้ไข</button>
+                            <button onclick="toggleRiderActiveFirebase('${window.escapeHtml(rider.key)}', ${active ? 'true' : 'false'})" class="flex-1 ${active ? 'bg-red-50 text-red-600 border-red-100' : 'bg-emerald-50 text-emerald-700 border-emerald-100'} border rounded-xl py-2 text-xs font-bold">${active ? 'ปิด' : 'เปิด'}</button>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        window.openCreateRiderJobFromOrder = function(orderId) {
+            const order = findOrderByAnyId(orderId);
+            if (!order) return Swal.fire('ไม่พบออเดอร์', `ไม่พบ Order ID: ${orderId}`, 'error');
+            if (!isDeliveryOrder(order)) return Swal.fire('ยังสร้างงานไม่ได้', 'ออเดอร์นี้ไม่ใช่เดลิเวอรี่ หรือไม่มีข้อมูลจัดส่ง', 'warning');
+            const defaultPay = Number(order.deliveryFee || order.shippingFee || order.shipping || 0) || 35;
+            Swal.fire({
+                title: 'สร้างงานไรเดอร์?',
+                html: `<div class="text-left text-sm leading-7">
+                    <b>ออเดอร์:</b> ${window.escapeHtml(order.id)}<br>
+                    <b>ลูกค้า:</b> ${window.escapeHtml(order.customer?.name || '-')}<br>
+                    <b>ที่อยู่:</b> ${window.escapeHtml(order.customer?.address || '-')}<br>
+                    <label class="block mt-3 text-xs font-bold text-gray-600">ค่ารอบไรเดอร์ (บาท)</label>
+                    <input id="swal-rider-pay" type="number" class="swal2-input" style="margin:6px 0 0;width:100%" value="${defaultPay}">
+                    <label class="block mt-3 text-xs font-bold text-gray-600">หมายเหตุ</label>
+                    <input id="swal-rider-note" class="swal2-input" style="margin:6px 0 0;width:100%" placeholder="เช่น รีบส่ง / ลูกค้ารอหน้าบ้าน">
+                </div>`,
+                showCancelButton: true,
+                confirmButtonText: 'สร้างงาน',
+                cancelButtonText: 'ยกเลิก',
+                confirmButtonColor: '#7c3aed',
+                preConfirm: () => ({
+                    riderPay: Number(document.getElementById('swal-rider-pay').value) || defaultPay,
+                    note: document.getElementById('swal-rider-note').value.trim()
+                })
+            }).then(async result => {
+                if (!result.isConfirmed) return;
+                await createRiderJobFromOrder(order, result.value || {});
+            });
+        }
+
+        window.openCreateRiderJobDialog = function() {
+            Swal.fire({
+                title: 'สร้างงานไรเดอร์จากออเดอร์',
+                html: `<div class="text-left text-sm">
+                    <label class="block text-xs font-bold text-gray-600 mb-1">Order ID</label>
+                    <input id="swal-order-id" class="swal2-input" style="margin:0;width:100%" placeholder="เช่น 3320 หรือ ORD-3320">
+                    <label class="block text-xs font-bold text-gray-600 mt-3 mb-1">ค่ารอบไรเดอร์ (บาท)</label>
+                    <input id="swal-rider-pay" type="number" class="swal2-input" style="margin:0;width:100%" placeholder="เช่น 35">
+                    <label class="block text-xs font-bold text-gray-600 mt-3 mb-1">หมายเหตุ</label>
+                    <input id="swal-rider-note" class="swal2-input" style="margin:0;width:100%" placeholder="ถ้ามี">
+                </div>`,
+                showCancelButton: true,
+                confirmButtonText: 'สร้างงาน',
+                cancelButtonText: 'ยกเลิก',
+                confirmButtonColor: '#7c3aed',
+                preConfirm: () => ({
+                    orderId: document.getElementById('swal-order-id').value.trim(),
+                    riderPay: Number(document.getElementById('swal-rider-pay').value) || null,
+                    note: document.getElementById('swal-rider-note').value.trim()
+                })
+            }).then(async result => {
+                if (!result.isConfirmed) return;
+                const order = findOrderByAnyId(result.value.orderId);
+                if (!order) return Swal.fire('ไม่พบออเดอร์', 'ลองใส่เลขท้าย 4 ตัว หรือ ORD-xxxx ให้ตรงกับหน้าออเดอร์', 'error');
+                if (!isDeliveryOrder(order)) return Swal.fire('สร้างงานไม่สำเร็จ', 'ออเดอร์นี้ไม่ใช่เดลิเวอรี่ หรือไม่มีข้อมูลจัดส่ง', 'warning');
+                await createRiderJobFromOrder(order, { riderPay: result.value.riderPay ?? undefined, note: result.value.note });
+            });
+        }
+
+        async function createRiderJobFromOrder(order, extra = {}) {
+            try {
+                const job = buildRiderJobFromOrder(order, extra);
+                const key = makeSafeFirebaseKey(job.orderId);
+                const existing = (window.riderJobsCache || []).find(j => j.key === key || j.orderId === job.orderId);
+                if (existing && existing.status !== 'CANCELLED') {
+                    const go = await Swal.fire({ icon: 'question', title: 'มีงานนี้อยู่แล้ว', text: 'ต้องการอัปเดตข้อมูลงานเดิมหรือไม่?', showCancelButton: true, confirmButtonText: 'อัปเดต', cancelButtonText: 'ยกเลิก' });
+                    if (!go.isConfirmed) return;
+                }
+                await set(ref(db, `riderJobs/${key}`), { ...(existing || {}), ...job, key, updatedAt: new Date().toISOString() });
+                await updateRelatedOrderStatus(job.orderId, '🛵 รอไรเดอร์รับงาน', { riderJobId: job.jobId, riderJobKey: key });
+                await push(ref(db, 'adminLogs'), { type: 'rider_job_create', timestamp: new Date().toISOString(), user: auth.currentUser ? auth.currentUser.email : 'unknown', orderId: job.orderId, jobId: job.jobId });
+                Swal.fire({ icon: 'success', title: 'สร้างงานไรเดอร์แล้ว', text: `${job.jobId} จาก ${job.orderId}`, timer: 1500, showConfirmButton: false });
+                startListeningRiderManagement();
+            } catch (err) {
+                Swal.fire('สร้างงานไม่สำเร็จ', err.message || String(err), 'error');
+            }
+        }
+
+        window.openAddRiderDialog = function(riderKey = '') {
+            const rider = riderKey ? (window.ridersCache || []).find(r => r.key === riderKey) : null;
+            Swal.fire({
+                title: rider ? 'แก้ไขไรเดอร์' : 'เพิ่มไรเดอร์',
+                html: `<div class="text-left text-sm">
+                    <label class="block text-xs font-bold text-gray-600 mb-1">ชื่อไรเดอร์</label>
+                    <input id="swal-rider-name" class="swal2-input" style="margin:0;width:100%" value="${window.escapeHtml(rider?.name || '')}" placeholder="เช่น พี่ตู่">
+                    <label class="block text-xs font-bold text-gray-600 mt-3 mb-1">เบอร์โทร</label>
+                    <input id="swal-rider-phone" class="swal2-input" style="margin:0;width:100%" value="${window.escapeHtml(rider?.phone || '')}" placeholder="08xxxxxxxx">
+                    <label class="block text-xs font-bold text-gray-600 mt-3 mb-1">ส่งได้สูงสุด (กม.)</label>
+                    <input id="swal-rider-max" type="number" class="swal2-input" style="margin:0;width:100%" value="${window.escapeHtml(rider?.maxDistanceKm || 5)}">
+                    <label class="block text-xs font-bold text-gray-600 mt-3 mb-1">หมายเหตุ</label>
+                    <input id="swal-rider-note" class="swal2-input" style="margin:0;width:100%" value="${window.escapeHtml(rider?.note || '')}" placeholder="เช่น มอเตอร์ไซค์ / รถยนต์">
+                </div>`,
+                showCancelButton: true,
+                confirmButtonText: 'บันทึก',
+                cancelButtonText: 'ยกเลิก',
+                confirmButtonColor: '#059669',
+                preConfirm: () => ({
+                    name: document.getElementById('swal-rider-name').value.trim(),
+                    phone: normalizePhone(document.getElementById('swal-rider-phone').value),
+                    maxDistanceKm: Number(document.getElementById('swal-rider-max').value) || 5,
+                    note: document.getElementById('swal-rider-note').value.trim()
+                })
+            }).then(async result => {
+                if (!result.isConfirmed) return;
+                const data = result.value;
+                if (!data.name || !data.phone) return Swal.fire('ข้อมูลไม่ครบ', 'กรุณาใส่ชื่อและเบอร์ไรเดอร์', 'warning');
+                const key = riderKey || makeSafeFirebaseKey(data.phone);
+                await set(ref(db, `riders/${key}`), { ...(rider || {}), ...data, key, active: rider ? rider.active !== false : true, updatedAt: new Date().toISOString(), createdAt: rider?.createdAt || new Date().toISOString() });
+                Swal.fire({ icon: 'success', title: 'บันทึกไรเดอร์แล้ว', timer: 1100, showConfirmButton: false });
+                startListeningRiderManagement();
+            });
+        }
+
+        window.toggleRiderActiveFirebase = async function(riderKey, currentActive) {
+            await update(ref(db, `riders/${riderKey}`), { active: !currentActive, updatedAt: new Date().toISOString() });
+        }
+
+        window.assignRiderToJob = function(jobKey) {
+            const activeRiders = (window.ridersCache || []).filter(r => r.active !== false);
+            if (!activeRiders.length) return Swal.fire('ยังไม่มีไรเดอร์', 'เพิ่มรายชื่อไรเดอร์ก่อน หรือเปิดใช้งานไรเดอร์', 'warning');
+            const options = activeRiders.map(r => `<option value="${window.escapeHtml(r.key)}">${window.escapeHtml(r.name)} (${window.escapeHtml(r.phone || '-')})</option>`).join('');
+            Swal.fire({
+                title: 'มอบหมายไรเดอร์',
+                html: `<select id="swal-assign-rider" class="swal2-select" style="width:100%;margin:0">${options}</select>`,
+                showCancelButton: true,
+                confirmButtonText: 'มอบหมาย',
+                cancelButtonText: 'ยกเลิก',
+                confirmButtonColor: '#7c3aed',
+                preConfirm: () => document.getElementById('swal-assign-rider').value
+            }).then(async result => {
+                if (!result.isConfirmed) return;
+                const rider = activeRiders.find(r => r.key === result.value);
+                if (!rider) return;
+                const job = (window.riderJobsCache || []).find(j => j.key === jobKey);
+                await update(ref(db, `riderJobs/${jobKey}`), { status: 'ASSIGNED', assignedRiderId: rider.key, assignedRiderName: rider.name, assignedRiderPhone: rider.phone, assignedAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+                if (job?.orderId) await updateRelatedOrderStatus(job.orderId, `🛵 ${rider.name} รับงานแล้ว`);
+                Swal.fire({ icon: 'success', title: 'มอบหมายแล้ว', timer: 1000, showConfirmButton: false });
+            });
+        }
+
+        window.updateRiderJobStatus = async function(jobKey, status) {
+            const job = (window.riderJobsCache || []).find(j => j.key === jobKey);
+            if (!job) return;
+            const updates = { status, updatedAt: new Date().toISOString() };
+            let orderStatus = '';
+            if (status === 'PICKED_UP') { updates.pickedUpAt = new Date().toISOString(); orderStatus = '🛵 ไรเดอร์รับของแล้ว'; }
+            if (status === 'DELIVERED') { updates.deliveredAt = new Date().toISOString(); orderStatus = '✅ สำเร็จ'; }
+            await update(ref(db, `riderJobs/${jobKey}`), updates);
+            if (orderStatus && job.orderId) await updateRelatedOrderStatus(job.orderId, orderStatus);
+            Swal.fire({ icon: 'success', title: 'อัปเดตแล้ว', timer: 900, showConfirmButton: false });
+        }
+
+        window.markRiderJobIssue = function(jobKey) {
+            Swal.fire({
+                title: 'บันทึกปัญหางานส่ง',
+                input: 'textarea',
+                inputPlaceholder: 'เช่น ติดต่อไม่ได้ / ฝนตกหนัก / ที่อยู่ไม่ชัด',
+                showCancelButton: true,
+                confirmButtonText: 'บันทึก',
+                cancelButtonText: 'ยกเลิก',
+                confirmButtonColor: '#dc2626'
+            }).then(async result => {
+                if (!result.isConfirmed) return;
+                const job = (window.riderJobsCache || []).find(j => j.key === jobKey);
+                await update(ref(db, `riderJobs/${jobKey}`), { status: 'ISSUE', issueNote: result.value || '', updatedAt: new Date().toISOString() });
+                if (job?.orderId) await updateRelatedOrderStatus(job.orderId, '⚠️ ไรเดอร์พบปัญหา');
+            });
+        }
+
+        window.deleteRiderJob = function(jobKey) {
+            Swal.fire({ icon: 'warning', title: 'ลบงานไรเดอร์?', text: 'ลบเฉพาะงานไรเดอร์ ไม่ลบออเดอร์หลัก', showCancelButton: true, confirmButtonText: 'ลบ', cancelButtonText: 'ยกเลิก', confirmButtonColor: '#dc2626' }).then(async result => {
+                if (!result.isConfirmed) return;
+                await remove(ref(db, `riderJobs/${jobKey}`));
+                Swal.fire({ icon: 'success', title: 'ลบแล้ว', timer: 900, showConfirmButton: false });
+            });
+        }
+
+        function buildRiderJobShareText(job) {
+            return [
+                '🛵 งานส่งใหม่ | หนุ่มดำเนิน',
+                '',
+                `งาน: ${job.jobId || '-'}`,
+                `ออเดอร์: ${job.orderId || '-'}`,
+                `ค่ารอบ: ${job.riderPay || 0} บาท`,
+                job.distanceKm ? `ระยะ: ${job.distanceKm} กม.` : '',
+                '',
+                `ลูกค้า: ${job.customerName || '-'}`,
+                `โทร: ${job.customerPhone || '-'}`,
+                `ที่อยู่: ${job.customerAddress || '-'}`,
+                job.customerLandmark ? `จุดสังเกต: ${job.customerLandmark}` : '',
+                job.mapLink ? `แผนที่: ${job.mapLink}` : '',
+                '',
+                'รายการสินค้า:',
+                job.itemsText || '-'
+            ].filter(Boolean).join('\n');
+        }
+
+        window.copyRiderJobSummary = async function(jobKey) {
+            const job = (window.riderJobsCache || []).find(j => j.key === jobKey);
+            if (!job) return;
+            await window.copyToClipboard(buildRiderJobShareText(job));
+        }
+
+        window.copyOpenJobsSummary = async function() {
+            const jobs = (window.riderJobsCache || []).filter(j => j.status === 'OPEN');
+            if (!jobs.length) return Swal.fire('ยังไม่มีงานเปิดรับ', '', 'info');
+            const text = jobs.map(buildRiderJobShareText).join('\n\n--------------------\n\n');
+            await window.copyToClipboard(text);
+        }
+
 
         // Products Management
         let productListener = null; let sortable = null;
@@ -1275,13 +1886,38 @@
             return output;
         }
 
-        function normalizePhone(phone) { return String(phone || '').replace(/\D/g, ''); }
-        function setChecked(id, value) { const el = document.getElementById(id); if (el) el.checked = !!value; }
-        function setValue(id, value) { const el = document.getElementById(id); if (el) el.value = value ?? ''; }
-        function getChecked(id) { return !!document.getElementById(id)?.checked; }
-        function getNumberValue(id, fallback = 0) { const num = Number(document.getElementById(id)?.value); return Number.isFinite(num) ? num : fallback; }
-        function getTextValue(id) { return (document.getElementById(id)?.value || '').trim(); }
-        function categoryObjectToLines(obj) { return Object.entries(obj || {}).map(([key, val]) => `${key}=${val}`).join('\n'); }
+        function normalizePhone(phone) {
+            return String(phone || '').replace(/\D/g, '');
+        }
+
+        function setChecked(id, value) {
+            const el = document.getElementById(id);
+            if (el) el.checked = !!value;
+        }
+
+        function setValue(id, value) {
+            const el = document.getElementById(id);
+            if (el) el.value = value ?? '';
+        }
+
+        function getChecked(id) {
+            return !!document.getElementById(id)?.checked;
+        }
+
+        function getNumberValue(id, fallback = 0) {
+            const raw = document.getElementById(id)?.value;
+            const num = Number(raw);
+            return Number.isFinite(num) ? num : fallback;
+        }
+
+        function getTextValue(id) {
+            return (document.getElementById(id)?.value || '').trim();
+        }
+
+        function categoryObjectToLines(obj) {
+            return Object.entries(obj || {}).map(([key, val]) => `${key}=${val}`).join('\n');
+        }
+
         function linesToCategoryObject(text) {
             const obj = {};
             String(text || '').split('\n').map(line => line.trim()).filter(Boolean).forEach(line => {
@@ -1355,21 +1991,46 @@
             if (!Array.isArray(window.shippingStepsDraft) || window.shippingStepsDraft.length === 0) window.shippingStepsDraft = [{ minTotal: 0, shopHelp: 0 }];
             container.innerHTML = window.shippingStepsDraft.map((step, idx) => `
                 <div class="grid grid-cols-[1fr_1fr_auto] gap-2 items-center bg-gray-50 border border-gray-200 rounded-xl p-2">
-                    <div><label class="block text-[10px] font-bold text-gray-500 mb-1">ยอดขั้นต่ำ</label><input type="number" class="w-full border rounded-lg px-2 py-2 text-sm" value="${step.minTotal}" oninput="updateShippingStepValue(${idx}, 'minTotal', this.value)"></div>
-                    <div><label class="block text-[10px] font-bold text-gray-500 mb-1">ร้านช่วย</label><input type="number" class="w-full border rounded-lg px-2 py-2 text-sm" value="${step.shopHelp}" oninput="updateShippingStepValue(${idx}, 'shopHelp', this.value)"></div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-500 mb-1">ยอดอาหารขั้นต่ำ</label>
+                        <input type="number" class="shipping-step-min w-full border border-gray-300 rounded-lg px-2 py-2 text-sm" value="${step.minTotal}" oninput="updateShippingStepValue(${idx}, 'minTotal', this.value)">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-gray-500 mb-1">ร้านช่วยค่าส่ง</label>
+                        <input type="number" class="shipping-step-help w-full border border-gray-300 rounded-lg px-2 py-2 text-sm" value="${step.shopHelp}" oninput="updateShippingStepValue(${idx}, 'shopHelp', this.value)">
+                    </div>
                     <button type="button" onclick="removeShippingStepRow(${idx})" class="mt-4 w-9 h-9 rounded-lg bg-red-50 text-red-500 hover:bg-red-100"><i class="fa-solid fa-trash-can"></i></button>
-                </div>`).join('');
+                </div>
+            `).join('');
         }
-        window.updateShippingStepValue = function(index, field, value) { if (window.shippingStepsDraft[index]) window.shippingStepsDraft[index][field] = Number(value) || 0; }
-        window.addShippingStepRow = function() { window.shippingStepsDraft.push({ minTotal: 0, shopHelp: 0 }); renderShippingSteps(); }
-        window.removeShippingStepRow = function(index) { window.shippingStepsDraft.splice(index, 1); renderShippingSteps(); }
+
+        window.updateShippingStepValue = function(index, field, value) {
+            if (!window.shippingStepsDraft[index]) return;
+            window.shippingStepsDraft[index][field] = Number(value) || 0;
+        }
+
+        window.addShippingStepRow = function() {
+            window.shippingStepsDraft.push({ minTotal: 0, shopHelp: 0 });
+            renderShippingSteps();
+        }
+
+        window.removeShippingStepRow = function(index) {
+            window.shippingStepsDraft.splice(index, 1);
+            renderShippingSteps();
+        }
 
         function collectSettingsForm() {
             let optionPresets = [];
             try {
                 optionPresets = JSON.parse(getTextValue('setting-option-presets') || '[]');
                 if (!Array.isArray(optionPresets)) throw new Error('Option Preset ต้องเป็น Array');
-            } catch (err) { throw new Error('Option Preset JSON ไม่ถูกต้อง กรุณาตรวจรูปแบบอีกครั้ง'); }
+            } catch (err) {
+                throw new Error('Option Preset JSON ไม่ถูกต้อง กรุณาตรวจรูปแบบอีกครั้ง');
+            }
+
+            const statuses = getTextValue('setting-order-statuses').split('\n').map(v => v.trim()).filter(Boolean);
+            const cancelReasons = getTextValue('setting-cancel-reasons').split('\n').map(v => v.trim()).filter(Boolean);
+            const steps = (window.shippingStepsDraft || []).map(step => ({ minTotal: Number(step.minTotal) || 0, shopHelp: Number(step.shopHelp) || 0 })).sort((a, b) => a.minTotal - b.minTotal);
 
             return {
                 shopOpen: getChecked('setting-shop-open'),
@@ -1384,8 +2045,12 @@
                     nearKm: getNumberValue('setting-near-km', 1.5),
                     midKm: getNumberValue('setting-mid-km', 3),
                     maxKm: getNumberValue('setting-shipping-max-km', 5),
-                    fullFee: { near: getNumberValue('setting-fee-near', 30), mid: getNumberValue('setting-fee-mid', 50), far: getNumberValue('setting-fee-far', 75) },
-                    steps: (window.shippingStepsDraft || []).map(step => ({ minTotal: Number(step.minTotal) || 0, shopHelp: Number(step.shopHelp) || 0 })).sort((a, b) => a.minTotal - b.minTotal)
+                    fullFee: {
+                        near: getNumberValue('setting-fee-near', 30),
+                        mid: getNumberValue('setting-fee-mid', 50),
+                        far: getNumberValue('setting-fee-far', 75)
+                    },
+                    steps
                 },
                 payment: {
                     transferEnabled: getChecked('setting-transfer-enabled'),
@@ -1404,8 +2069,8 @@
                     defaultStatusPickup: getTextValue('setting-default-status-pickup') || '🏪 รอรับหน้าร้าน',
                     defaultStatusDelivery: getTextValue('setting-default-status-delivery') || '🍳 กำลังปรุง',
                     splitOrderView: getChecked('setting-split-order-view'),
-                    statuses: getTextValue('setting-order-statuses').split('\n').map(v => v.trim()).filter(Boolean),
-                    cancelReasons: getTextValue('setting-cancel-reasons').split('\n').map(v => v.trim()).filter(Boolean)
+                    statuses,
+                    cancelReasons
                 },
                 notifications: {
                     soundEnabled: getChecked('setting-sound-enabled'),
@@ -1424,14 +2089,31 @@
             try {
                 const data = collectSettingsForm();
                 await set(ref(db, 'settings'), data);
-                await push(ref(db, 'adminLogs'), { type: 'settings_update', timestamp: new Date().toISOString(), user: auth.currentUser ? auth.currentUser.email : 'unknown', message: 'อัปเดตการตั้งค่าร้าน' });
+                await push(ref(db, 'adminLogs'), {
+                    type: 'settings_update',
+                    timestamp: new Date().toISOString(),
+                    user: auth.currentUser ? auth.currentUser.email : 'unknown',
+                    message: 'อัปเดตการตั้งค่าร้าน'
+                });
                 Swal.fire({ icon: 'success', title: 'บันทึกการตั้งค่าแล้ว', timer: 1200, showConfirmButton: false });
-            } catch (err) { Swal.fire({ icon: 'error', title: 'บันทึกไม่สำเร็จ', text: err.message || 'กรุณาตรวจข้อมูลอีกครั้ง' }); }
+            } catch (err) {
+                Swal.fire({ icon: 'error', title: 'บันทึกไม่สำเร็จ', text: err.message || 'กรุณาตรวจข้อมูลอีกครั้ง' });
+            }
         }
 
         window.resetSettingsToDefault = function() {
-            Swal.fire({ title: 'คืนค่าเริ่มต้น?', text: 'ระบบจะใส่ค่าพื้นฐานให้ในฟอร์มก่อน ยังไม่บันทึกจนกว่าจะกดบันทึก', icon: 'question', showCancelButton: true, confirmButtonText: 'คืนค่า', cancelButtonText: 'ยกเลิก' }).then(result => {
-                if (result.isConfirmed) { window.adminSettings = getDefaultSettings(); populateSettingsForm(window.adminSettings); }
+            Swal.fire({
+                title: 'คืนค่าเริ่มต้น?',
+                text: 'ระบบจะใส่ค่าพื้นฐานให้ในฟอร์มก่อน ยังไม่บันทึกจนกว่าจะกดบันทึก',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'คืนค่า',
+                cancelButtonText: 'ยกเลิก'
+            }).then(result => {
+                if (result.isConfirmed) {
+                    window.adminSettings = getDefaultSettings();
+                    populateSettingsForm(window.adminSettings);
+                }
             });
         }
 
