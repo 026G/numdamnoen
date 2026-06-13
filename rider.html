@@ -568,6 +568,7 @@
     const itemSummary = getItemSummary(job);
     const fullAddress = mine;
     const mapUrl = job.mapLink || (job.customerLocation ? `https://maps.google.com/?q=${encodeURIComponent(job.customerLocation)}` : '');
+    const issueMiniButton = mine && !compact && ['ASSIGNED','PICKED_UP'].includes(job.status) ? `<button onclick="reportIssue('${escapeHtml(job.key)}')" class="btn text-[11px] font-bold px-2.5 py-1 rounded-full" style="background:#FFF1EE;border:1px solid #F2C8BF;color:var(--red)"><i class="fa-solid fa-triangle-exclamation mr-1"></i>แจ้งปัญหา</button>` : '';
 
     const openActions = `
       <button onclick="acceptJob('${escapeHtml(job.key)}')" class="btn w-full green-grad text-white rounded-2xl py-3.5 font-bold shadow-lg">
@@ -580,7 +581,6 @@
         ${job.customerPhone ? `<a href="tel:${escapeHtml(job.customerPhone)}" class="btn text-center rounded-2xl py-3 font-bold" style="background:var(--mint);border:1px solid var(--mint-border);color:var(--primary)"><i class="fa-solid fa-phone mr-1"></i> โทรลูกค้า</a>` : ''}
         ${job.status === 'ASSIGNED' ? `<button onclick="updateJobStatus('${escapeHtml(job.key)}','PICKED_UP')" class="btn rounded-2xl py-3 font-bold text-white col-span-2" style="background:#7c3aed"><i class="fa-solid fa-box mr-1"></i> รับของแล้ว</button>` : ''}
         ${['ASSIGNED','PICKED_UP','ISSUE'].includes(job.status) ? `<button onclick="updateJobStatus('${escapeHtml(job.key)}','DELIVERED')" class="btn rounded-2xl py-3 font-bold text-white col-span-2" style="background:#16A34A"><i class="fa-solid fa-check mr-1"></i> ส่งสำเร็จ</button>` : ''}
-        ${['ASSIGNED','PICKED_UP'].includes(job.status) ? `<button onclick="reportIssue('${escapeHtml(job.key)}')" class="btn rounded-2xl py-3 font-bold col-span-2" style="background:#FFF1EE;border:1px solid #F2C8BF;color:var(--red)"><i class="fa-solid fa-triangle-exclamation mr-1"></i> แจ้งปัญหา</button>` : ''}
       </div>`;
 
     return `<article class="job-card card p-4 ${preselected ? 'ring-4 ring-yellow-200' : ''}">
@@ -590,7 +590,10 @@
             ${statusBadge(job.status)}
             ${preselected ? '<span class="pill" style="background:#FFF9E8;border-color:#F0DFA8;color:#A15B00"><i class="fa-solid fa-link"></i>จากลิงก์</span>' : ''}
           </div>
-          <div class="font-display font-bold text-lg mt-2" style="color:var(--primary-deep)">${escapeHtml(job.orderId || job.jobId || '-')}</div>
+          <div class="flex items-center gap-2 mt-2 flex-wrap">
+            <div class="font-display font-bold text-lg leading-tight" style="color:var(--primary-deep)">${escapeHtml(job.orderId || job.jobId || '-')}</div>
+            ${issueMiniButton}
+          </div>
           <div class="text-xs" style="color:var(--muted)">${escapeHtml(job.jobId || '')} · ${formatDateTime(job.createdAt)}</div>
         </div>
         <div class="text-right shrink-0">
