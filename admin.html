@@ -341,6 +341,7 @@
                     <button data-rider-filter="PICKED_UP" onclick="setRiderFilter('PICKED_UP')" class="rider-filter-btn shrink-0 px-3 py-2 rounded-full text-xs font-bold bg-gray-100 text-gray-600">รับของแล้ว</button>
                     <button data-rider-filter="DELIVERED" onclick="setRiderFilter('DELIVERED')" class="rider-filter-btn shrink-0 px-3 py-2 rounded-full text-xs font-bold bg-gray-100 text-gray-600">ส่งแล้ว</button>
                     <button data-rider-filter="ISSUE" onclick="setRiderFilter('ISSUE')" class="rider-filter-btn shrink-0 px-3 py-2 rounded-full text-xs font-bold bg-gray-100 text-gray-600">มีปัญหา</button>
+                    <button data-rider-filter="OUTSOURCE" onclick="setRiderFilter('OUTSOURCE')" class="rider-filter-btn shrink-0 px-3 py-2 rounded-full text-xs font-bold bg-gray-100 text-gray-600">รถนอก</button>
                 </div>
             </div>
 
@@ -1240,6 +1241,7 @@
                 PICKED_UP: ['bg-purple-100 text-purple-700 border-purple-200', 'รับของแล้ว', 'fa-box'],
                 DELIVERED: ['bg-green-100 text-green-700 border-green-200', 'ส่งสำเร็จ', 'fa-circle-check'],
                 ISSUE: ['bg-red-100 text-red-700 border-red-200', 'มีปัญหา', 'fa-triangle-exclamation'],
+                OUTSOURCE: ['bg-slate-100 text-slate-700 border-slate-200', 'ใช้รถนอก', 'fa-truck-fast'],
                 CANCELLED: ['bg-gray-100 text-gray-600 border-gray-200', 'ยกเลิก', 'fa-ban']
             };
             const [cls, label, icon] = map[status] || ['bg-gray-100 text-gray-600 border-gray-200', status || '-', 'fa-circle'];
@@ -1262,6 +1264,8 @@
             const mapBtn = job.mapLink ? `<a href="${window.escapeHtml(job.mapLink)}" target="_blank" class="bg-white border border-sky-200 text-sky-700 px-3 py-2 rounded-xl text-xs font-bold hover:bg-sky-50"><i class="fa-solid fa-map-location-dot"></i> แผนที่</a>` : '';
             const phoneBtn = job.customerPhone ? `<a href="tel:${window.escapeHtml(job.customerPhone)}" class="bg-white border border-emerald-200 text-emerald-700 px-3 py-2 rounded-xl text-xs font-bold hover:bg-emerald-50"><i class="fa-solid fa-phone"></i> โทร</a>` : '';
             const riderLine = job.assignedRiderName ? `<div class="mt-2 text-xs font-bold text-purple-700 bg-purple-50 border border-purple-100 rounded-xl px-3 py-2"><i class="fa-solid fa-motorcycle"></i> ${window.escapeHtml(job.assignedRiderName)} ${job.assignedRiderPhone ? '(' + window.escapeHtml(job.assignedRiderPhone) + ')' : ''}</div>` : '';
+            const outsourceLine = job.status === 'OUTSOURCE' ? `<div class="mt-2 text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2"><i class="fa-solid fa-truck-fast"></i> ใช้รถนอก${job.outsourceProvider ? ' · ' + window.escapeHtml(job.outsourceProvider) : ''}${job.outsourceNote ? '<div class="font-normal text-slate-500 mt-1">' + window.escapeHtml(job.outsourceNote) + '</div>' : ''}</div>` : '';
+            const copyAddressBtn = job.customerAddress ? `<button onclick="copyRiderJobAddress('${window.escapeHtml(job.key)}')" class="bg-white border border-slate-200 text-slate-700 px-3 py-2 rounded-xl text-xs font-bold hover:bg-slate-50"><i class="fa-regular fa-copy"></i> คัดลอกที่อยู่</button>` : '';
             const itemsText = job.itemsText || buildItemsTextFromOrder({ items: job.items || [] });
             return `
                 <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
@@ -1290,13 +1294,16 @@
                             </div>
                         </div>
                         ${riderLine}
+                        ${outsourceLine}
                         ${itemsText ? `<details class="mt-3"><summary class="text-xs font-bold text-gray-600 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2"><i class="fa-solid fa-basket-shopping"></i> ดูรายการสินค้า</summary><pre class="mt-2 text-xs whitespace-pre-wrap bg-gray-50 border border-gray-200 rounded-xl p-3 text-gray-700">${window.escapeHtml(itemsText)}</pre></details>` : ''}
                         <div class="mt-3 flex gap-2 flex-wrap">
                             ${job.status === 'OPEN' ? `<button onclick="assignRiderToJob('${window.escapeHtml(job.key)}')" class="bg-purple-600 text-white px-3 py-2 rounded-xl text-xs font-bold hover:bg-purple-700"><i class="fa-solid fa-user-check"></i> มอบหมายไรเดอร์</button>` : ''}
+                            ${job.status === 'OPEN' ? `<button onclick="outsourceRiderJob('${window.escapeHtml(job.key)}')" class="bg-slate-700 text-white px-3 py-2 rounded-xl text-xs font-bold hover:bg-slate-800"><i class="fa-solid fa-truck-fast"></i> เรียกรถนอกเอง</button>` : ''}
                             ${job.status === 'ASSIGNED' ? `<button onclick="updateRiderJobStatus('${window.escapeHtml(job.key)}','PICKED_UP')" class="bg-blue-600 text-white px-3 py-2 rounded-xl text-xs font-bold hover:bg-blue-700"><i class="fa-solid fa-box"></i> รับของแล้ว</button>` : ''}
                             ${['ASSIGNED','PICKED_UP'].includes(job.status) ? `<button onclick="updateRiderJobStatus('${window.escapeHtml(job.key)}','DELIVERED')" class="bg-green-600 text-white px-3 py-2 rounded-xl text-xs font-bold hover:bg-green-700"><i class="fa-solid fa-check"></i> ส่งสำเร็จ</button>` : ''}
                             ${!['DELIVERED','CANCELLED'].includes(job.status) ? `<button onclick="markRiderJobIssue('${window.escapeHtml(job.key)}')" class="bg-red-50 text-red-600 border border-red-100 px-3 py-2 rounded-xl text-xs font-bold hover:bg-red-100"><i class="fa-solid fa-triangle-exclamation"></i> ปัญหา</button>` : ''}
                             <button onclick="copyRiderJobSummary('${window.escapeHtml(job.key)}')" class="bg-yellow-50 text-yellow-700 border border-yellow-100 px-3 py-2 rounded-xl text-xs font-bold hover:bg-yellow-100"><i class="fa-solid fa-copy"></i> คัดลอก</button>
+                            ${copyAddressBtn}
                             ${mapBtn}${phoneBtn}
                             <button onclick="deleteRiderJob('${window.escapeHtml(job.key)}')" class="bg-gray-50 text-gray-500 border border-gray-200 px-3 py-2 rounded-xl text-xs font-bold hover:bg-gray-100"><i class="fa-solid fa-trash-can"></i></button>
                         </div>
@@ -1533,6 +1540,81 @@
                 if (job?.orderId) await updateRelatedOrderStatus(job.orderId, `🛵 ${rider.name} รับงานแล้ว`);
                 Swal.fire({ icon: 'success', title: 'มอบหมายแล้ว', timer: 1000, showConfirmButton: false });
             });
+        }
+
+        window.outsourceRiderJob = function(jobKey) {
+            const job = (window.riderJobsCache || []).find(j => j.key === jobKey);
+            if (!job) return Swal.fire('ไม่พบงาน', '', 'error');
+            if (job.status !== 'OPEN') return Swal.fire('ใช้รถนอกไม่ได้', 'งานนี้ไม่ใช่งานเปิดรับแล้ว', 'info');
+            Swal.fire({
+                title: 'เรียกรถนอกเอง',
+                html: `<div class="text-left text-sm leading-6">
+                    <div class="rounded-xl bg-slate-50 border border-slate-200 p-3 mb-3 text-slate-700">
+                        <b>ออเดอร์:</b> ${window.escapeHtml(job.orderId || job.jobId || '-')}<br>
+                        <b>ลูกค้า:</b> ${window.escapeHtml(job.customerName || '-')}<br>
+                        <b>ที่อยู่:</b> ${window.escapeHtml(job.customerAddress || '-')}
+                    </div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">ช่องทางรถนอก</label>
+                    <select id="swal-outsource-provider" class="swal2-select" style="width:100%;margin:0">
+                        <option value="Lalamove">Lalamove</option>
+                        <option value="Grab / LINE MAN">Grab / LINE MAN</option>
+                        <option value="วิน / คนส่งเอง">วิน / คนส่งเอง</option>
+                        <option value="อื่น ๆ">อื่น ๆ</option>
+                    </select>
+                    <label class="block text-xs font-bold text-gray-600 mt-3 mb-1">หมายเหตุ</label>
+                    <textarea id="swal-outsource-note" class="swal2-textarea" style="width:100%;margin:0" placeholder="เช่น ไม่มีไรเดอร์รับงาน เรียก Lalamove เองแล้ว"></textarea>
+                    <div class="mt-3 text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-xl p-3">
+                        กดยืนยันแล้วงานนี้จะเปลี่ยนเป็น <b>OUTSOURCE</b> และจะไม่ขึ้นในหน้า rider.html ให้ไรเดอร์ร้านกดรับแล้ว
+                    </div>
+                </div>`,
+                showCancelButton: true,
+                confirmButtonText: 'ยืนยันใช้รถนอก',
+                cancelButtonText: 'ยกเลิก',
+                confirmButtonColor: '#334155',
+                preConfirm: () => ({
+                    provider: document.getElementById('swal-outsource-provider').value,
+                    note: document.getElementById('swal-outsource-note').value.trim()
+                })
+            }).then(async result => {
+                if (!result.isConfirmed) return;
+                const now = new Date().toISOString();
+                const data = result.value || {};
+                try {
+                    await update(ref(db, `riderJobs/${jobKey}`), {
+                        status: 'OUTSOURCE',
+                        outsourceProvider: data.provider || 'รถนอก',
+                        outsourceNote: data.note || '',
+                        outsourcedAt: now,
+                        updatedAt: now
+                    });
+                    if (job?.orderId) await updateRelatedOrderStatus(job.orderId, '🚗 ใช้รถนอก / กำลังจัดส่ง');
+                    await push(ref(db, 'adminLogs'), {
+                        type: 'rider_job_outsource',
+                        timestamp: now,
+                        user: auth.currentUser ? auth.currentUser.email : 'unknown',
+                        orderId: job.orderId || '',
+                        jobId: job.jobId || '',
+                        provider: data.provider || 'รถนอก',
+                        note: data.note || ''
+                    });
+                    Swal.fire({ icon: 'success', title: 'เปลี่ยนเป็นใช้รถนอกแล้ว', text: 'งานนี้จะไม่ขึ้นหน้าไรเดอร์ร้านแล้ว', timer: 1500, showConfirmButton: false });
+                } catch (err) {
+                    Swal.fire('อัปเดตไม่ได้', err.message || String(err), 'error');
+                }
+            });
+        }
+
+        window.copyRiderJobAddress = async function(jobKey) {
+            const job = (window.riderJobsCache || []).find(j => j.key === jobKey);
+            if (!job) return;
+            const text = [
+                job.customerName ? `ลูกค้า: ${job.customerName}` : '',
+                job.customerPhone ? `โทร: ${job.customerPhone}` : '',
+                job.customerAddress ? `ที่อยู่: ${job.customerAddress}` : '',
+                job.customerLandmark ? `จุดสังเกต: ${job.customerLandmark}` : '',
+                job.mapLink ? `แผนที่: ${job.mapLink}` : ''
+            ].filter(Boolean).join('\n');
+            await window.copyToClipboard(text || '-');
         }
 
         window.updateRiderJobStatus = async function(jobKey, status) {
