@@ -251,7 +251,7 @@
       <div class="max-w-[480px] mx-auto grid grid-cols-3">
         <button class="tab-btn active py-2.5" data-tab="mine" onclick="switchView('mine')">
           <div class="tab-icon mx-auto w-11 h-10 rounded-2xl border flex items-center justify-center transition" style="border-color:transparent"><i class="fa-solid fa-motorcycle"></i></div>
-          <div class="text-[11px] font-bold mt-0.5">งานฉัน</div>
+          <div class="text-[11px] font-bold mt-0.5">งานของฉัน</div>
         </button>
         <button class="tab-btn py-2.5" data-tab="open" onclick="switchView('open')">
           <div class="tab-icon mx-auto w-11 h-10 rounded-2xl border flex items-center justify-center transition relative" style="border-color:transparent">
@@ -670,7 +670,7 @@
         return Swal.fire('รับงานไม่ทัน', 'งานนี้อาจมีไรเดอร์คนอื่นรับไปแล้ว หรือร้านปิดงานแล้ว', 'info').then(() => refreshAll(true));
       }
       vibrate(80);
-      await Swal.fire({ icon: 'success', title: 'รับงานสำเร็จ', text: 'ไปที่แท็บ “งานฉัน” เพื่อดูเบอร์และที่อยู่ลูกค้า', timer: 1500, showConfirmButton: false });
+      await Swal.fire({ icon: 'success', title: 'รับงานสำเร็จ', text: 'รับงานแล้ว อีก 10 นาที ไปที่ร้านเพื่อรับของ', timer: 1500, showConfirmButton: false });
       switchView('mine');
       refreshAll(true);
     } catch (err) {
@@ -686,9 +686,17 @@
 
     let title = 'อัปเดตสถานะ?';
     if (status === 'PICKED_UP') title = 'ยืนยันว่ารับของแล้ว?';
-    if (status === 'DELIVERED') title = 'ยืนยันว่าส่งสำเร็จ?';
+    if (status === 'DELIVERED') title = 'ส่งถึงลูกค้าแล้วใช่ไหม?';
 
-    const ok = await Swal.fire({ icon:'question', title, showCancelButton:true, confirmButtonText:'ยืนยัน', cancelButtonText:'ยกเลิก', confirmButtonColor: status === 'DELIVERED' ? '#16A34A' : '#176B32' });
+    const ok = await Swal.fire({
+      icon: status === 'DELIVERED' ? 'warning' : 'question',
+      title,
+      text: status === 'DELIVERED' ? 'กดปุ่มนี้เฉพาะเมื่อส่งสินค้าให้ลูกค้าเรียบร้อยแล้ว' : '',
+      showCancelButton: true,
+      confirmButtonText: status === 'DELIVERED' ? 'ส่งถึงลูกค้าแล้ว' : 'ยืนยัน',
+      cancelButtonText: 'ยกเลิก',
+      confirmButtonColor: status === 'DELIVERED' ? '#16A34A' : '#176B32'
+    });
     if (!ok.isConfirmed) return;
 
     const updates = { status, updatedAt: new Date().toISOString() };
