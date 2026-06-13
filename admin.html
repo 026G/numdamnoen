@@ -1266,7 +1266,6 @@
             const phoneBtn = job.customerPhone ? `<a href="tel:${window.escapeHtml(job.customerPhone)}" class="bg-white border border-emerald-200 text-emerald-700 px-3 py-2 rounded-xl text-xs font-bold hover:bg-emerald-50"><i class="fa-solid fa-phone"></i> โทร</a>` : '';
             const riderLine = job.assignedRiderName ? `<div class="mt-2 text-xs font-bold text-purple-700 bg-purple-50 border border-purple-100 rounded-xl px-3 py-2"><i class="fa-solid fa-motorcycle"></i> ${window.escapeHtml(job.assignedRiderName)} ${job.assignedRiderPhone ? '(' + window.escapeHtml(job.assignedRiderPhone) + ')' : ''}</div>` : '';
             const outsourceLine = job.status === 'OUTSOURCE' ? `<div class="mt-2 text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2"><i class="fa-solid fa-truck-fast"></i> ใช้รถนอก${job.outsourceProvider ? ' · ' + window.escapeHtml(job.outsourceProvider) : ''}${job.outsourceNote ? '<div class="font-normal text-slate-500 mt-1">' + window.escapeHtml(job.outsourceNote) + '</div>' : ''}</div>` : '';
-            const broadcastLine = job.broadcastedAt ? `<div class="mt-2 text-xs font-bold text-green-700 bg-green-50 border border-green-100 rounded-xl px-3 py-2"><i class="fa-solid fa-bullhorn"></i> ประกาศเข้ากลุ่มแล้ว ${job.broadcastedAt ? '· ' + new Date(job.broadcastedAt).toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'}) : ''}${job.broadcastCount ? ' · ' + Number(job.broadcastCount) + ' ครั้ง' : ''}</div>` : '';
             const copyAddressBtn = job.customerAddress ? `<button onclick="copyRiderJobAddress('${window.escapeHtml(job.key)}')" class="bg-white border border-slate-200 text-slate-700 px-3 py-2 rounded-xl text-xs font-bold hover:bg-slate-50"><i class="fa-regular fa-copy"></i> คัดลอกที่อยู่</button>` : '';
             const itemsText = job.itemsText || buildItemsTextFromOrder({ items: job.items || [] });
             return `
@@ -1717,19 +1716,17 @@
         function buildRiderJobBroadcastText(job) {
             const acceptUrl = getRiderAcceptUrl(job);
             return [
-                '🛵 งานส่งใหม่ | หนุ่มดำเนิน',
+                '🛵 งานส่งใหม่',
+                `${job.orderId || job.jobId || '-'}`,
                 '',
-                `งาน: ${job.jobId || '-'}`,
-                `ออเดอร์: ${job.orderId || '-'}`,
-                `ค่ารอบ: ${formatNumber(job.riderPay || 0)} บาท`,
-                job.distanceKm ? `ระยะ: ${job.distanceKm} กม.` : '',
-                job.deliveryZoneLabel || job.deliveryZone ? `โซน: ${job.deliveryZoneLabel || job.deliveryZone}` : '',
-                `ของ: ${getRiderItemSummaryFromJob(job)}`,
+                job.distanceKm ? `ระยะ ${job.distanceKm} กม.${job.deliveryZoneLabel || job.deliveryZone ? ' · โซน' + (job.deliveryZoneLabel || job.deliveryZone) : ''}` : '',
+                `ค่ารอบไรเดอร์: ${formatNumber(job.riderPay || 0)} บาท`,
+                `จำนวนสินค้า: ${getRiderItemSummaryFromJob(job)}`,
                 '',
-                'กดรับงานที่ลิงก์นี้:',
-                acceptUrl,
+                'ปลายทางและรายการละเอียดจะแสดงหลังรับงานสำเร็จ',
                 '',
-                'หมายเหตุ: รับงานแล้วจึงเห็นเบอร์ลูกค้า ที่อยู่ และรายการละเอียด'
+                'กดรับงานนี้:',
+                acceptUrl
             ].filter(Boolean).join('\n');
         }
 
