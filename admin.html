@@ -1254,11 +1254,18 @@
             if (!container) return;
             let jobs = window.riderJobsCache || [];
             if (window.riderFilter && window.riderFilter !== 'ALL') jobs = jobs.filter(job => job.status === window.riderFilter);
+            const countEl = document.getElementById('rider-job-count');
+            if (countEl) countEl.textContent = `${jobs.length} งาน`;
             if (!jobs.length) {
                 container.innerHTML = '<div class="bg-white border border-gray-200 rounded-2xl p-8 text-center text-gray-400">ยังไม่มีงานไรเดอร์ในหมวดนี้</div>';
                 return;
             }
-            container.innerHTML = jobs.map(job => createRiderJobCard(job)).join('');
+            try {
+                container.innerHTML = jobs.map(job => createRiderJobCard(job)).join('');
+            } catch (err) {
+                console.error('render rider job card failed:', err);
+                container.innerHTML = `<div class="bg-white border border-red-200 rounded-2xl p-6 text-center text-red-600">แสดงงานไรเดอร์ไม่ได้: ${window.escapeHtml(err.message || String(err))}</div>`;
+            }
         }
 
         function createRiderJobCard(job) {
@@ -1266,6 +1273,7 @@
             const phoneBtn = job.customerPhone ? `<a href="tel:${window.escapeHtml(job.customerPhone)}" class="bg-white border border-emerald-200 text-emerald-700 px-3 py-2 rounded-xl text-xs font-bold hover:bg-emerald-50"><i class="fa-solid fa-phone"></i> โทร</a>` : '';
             const riderLine = job.assignedRiderName ? `<div class="mt-2 text-xs font-bold text-purple-700 bg-purple-50 border border-purple-100 rounded-xl px-3 py-2"><i class="fa-solid fa-motorcycle"></i> ${window.escapeHtml(job.assignedRiderName)} ${job.assignedRiderPhone ? '(' + window.escapeHtml(job.assignedRiderPhone) + ')' : ''}</div>` : '';
             const outsourceLine = job.status === 'OUTSOURCE' ? `<div class="mt-2 text-xs font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2"><i class="fa-solid fa-truck-fast"></i> ใช้รถนอก${job.outsourceProvider ? ' · ' + window.escapeHtml(job.outsourceProvider) : ''}${job.outsourceNote ? '<div class="font-normal text-slate-500 mt-1">' + window.escapeHtml(job.outsourceNote) + '</div>' : ''}</div>` : '';
+            const broadcastLine = job.broadcastedAt ? `<div class="mt-2 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl px-3 py-2"><i class="fa-solid fa-bullhorn"></i> ประกาศเข้ากลุ่มแล้ว${job.broadcastCount ? ' · ' + window.escapeHtml(job.broadcastCount) + ' ครั้ง' : ''}</div>` : '';
             const copyAddressBtn = job.customerAddress ? `<button onclick="copyRiderJobAddress('${window.escapeHtml(job.key)}')" class="bg-white border border-slate-200 text-slate-700 px-3 py-2 rounded-xl text-xs font-bold hover:bg-slate-50"><i class="fa-regular fa-copy"></i> คัดลอกที่อยู่</button>` : '';
             const itemsText = job.itemsText || buildItemsTextFromOrder({ items: job.items || [] });
             return `
@@ -1663,10 +1671,24 @@
         }
 
         window.deleteRiderJob = function(jobKey) {
-            Swal.fire({ icon: 'warning', title: 'ลบงานไรเดอร์?', text: 'ลบเฉพาะงานไรเดอร์ ไม่ลบออเดอร์หลัก', showCancelButton: true, confirmButtonText: 'ลบ', cancelButtonText: 'ยกเลิก', confirmButtonColor: '#dc2626' }).then(async result => {
+            Swal.fire({
+                icon: 'warning',
+                title: 'ลบงานไรเดอร์?',
+                text: 'ลบเฉพาะงานไรเดอร์ ไม่ลบออเดอร์หลัก',
+                showCancelButton: true,
+                confirmButtonText: 'ลบ',
+                cancelButtonText: 'ยกเลิก',
+                confirmButtonColor: '#dc2626'
+            }).then(async result => {
                 if (!result.isConfirmed) return;
-                await remove(ref(db, `riderJobs/${jobKey}`));
-                Swal.fire({ icon: 'success', title: 'ลบแล้ว', timer: 900, showConfirmButton: false });
+                try {
+                    await remove(ref(db, `riderJobs/${jobKey}`));
+                    window.riderJobsCache = (window.riderJobsCache || []).filter(j => j.key !== jobKey);
+                    renderRiderManagement();
+                    Swal.fire({ icon: 'success', title: 'ลบแล้ว', timer: 900, showConfirmButton: false });
+                } catch (err) {
+                    Swal.fire('ลบงานไม่ได้', err.message || String(err), 'error');
+                }
             });
         }
 
