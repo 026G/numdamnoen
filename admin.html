@@ -174,7 +174,7 @@
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                             <div><label class="block text-xs font-bold text-gray-600 mb-1">เปิดกี่โมง</label><input type="number" id="setting-open-hour" min="0" max="23" class="w-full border border-gray-300 rounded-xl px-3 py-2" placeholder="9"></div>
                             <div><label class="block text-xs font-bold text-gray-600 mb-1">ปิดกี่โมง</label><input type="number" id="setting-close-hour" min="0" max="23" class="w-full border border-gray-300 rounded-xl px-3 py-2" placeholder="20"></div>
-                            <div><label class="block text-xs font-bold text-gray-600 mb-1">ส่งไกลสุด (กม.)</label><input type="number" id="setting-max-distance" step="0.1" min="0" class="w-full border border-gray-300 rounded-xl px-3 py-2" placeholder="5"></div>
+                            <div><label class="block text-xs font-bold text-gray-600 mb-1">ส่งไกลสุด (กม.)</label><input type="number" id="setting-max-distance" step="0.1" min="0" class="w-full border border-gray-300 rounded-xl px-3 py-2" placeholder="5" oninput="const el=document.getElementById('setting-shipping-max-km'); if(el) el.value=this.value;"></div>
                             <div><label class="block text-xs font-bold text-gray-600 mb-1">โทรร้าน</label><input type="tel" id="setting-shop-phone" class="w-full border border-gray-300 rounded-xl px-3 py-2" placeholder="0622467746"></div>
                         </div>
                         <div>
@@ -187,25 +187,40 @@
                 <section class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
                     <div class="bg-emerald-50 border-b border-emerald-100 p-4">
                         <h3 class="font-bold text-emerald-800 flex items-center gap-2"><i class="fa-solid fa-motorcycle"></i> 2) ตั้งค่าค่าส่ง</h3>
-                        <p class="text-xs text-emerald-700 mt-1">กำหนดโซนค่าส่งและขั้นที่ร้านช่วยออกค่าส่ง</p>
+                        <p class="text-xs text-emerald-700 mt-1">กำหนดค่ารอบไรเดอร์ตามระยะจริง และกำหนดส่วนที่ร้านช่วยค่าส่งตามยอดอาหาร</p>
                     </div>
-                    <div class="p-4 space-y-4">
-                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                            <div><label class="block text-xs font-bold text-gray-600 mb-1">โซนใกล้ไม่เกิน (กม.)</label><input type="number" id="setting-near-km" step="0.1" class="w-full border border-gray-300 rounded-xl px-3 py-2" placeholder="1.5"></div>
-                            <div><label class="block text-xs font-bold text-gray-600 mb-1">โซนกลางไม่เกิน (กม.)</label><input type="number" id="setting-mid-km" step="0.1" class="w-full border border-gray-300 rounded-xl px-3 py-2" placeholder="3"></div>
-                            <div><label class="block text-xs font-bold text-gray-600 mb-1">ระยะสูงสุด (กม.)</label><input type="number" id="setting-shipping-max-km" step="0.1" class="w-full border border-gray-300 rounded-xl px-3 py-2" placeholder="5"></div>
+                    <div class="p-4 space-y-5">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-600 mb-1">ระยะจัดส่งสูงสุด (กม.)</label>
+                            <input type="number" id="setting-shipping-max-km" step="0.1" min="0.1" class="w-full border border-gray-300 rounded-xl px-3 py-2" placeholder="5" oninput="const el=document.getElementById('setting-max-distance'); if(el) el.value=this.value;">
+                            <p class="text-[11px] text-gray-500 mt-1">ลูกค้าที่อยู่เกินระยะนี้จะไม่สามารถเลือกเดลิเวอรี่ได้</p>
                         </div>
-                        <div class="grid grid-cols-3 gap-3">
-                            <div><label class="block text-xs font-bold text-gray-600 mb-1">ใกล้ (บาท)</label><input type="number" id="setting-fee-near" class="w-full border border-gray-300 rounded-xl px-3 py-2" placeholder="30"></div>
-                            <div><label class="block text-xs font-bold text-gray-600 mb-1">กลาง (บาท)</label><input type="number" id="setting-fee-mid" class="w-full border border-gray-300 rounded-xl px-3 py-2" placeholder="50"></div>
-                            <div><label class="block text-xs font-bold text-gray-600 mb-1">ไกล (บาท)</label><input type="number" id="setting-fee-far" class="w-full border border-gray-300 rounded-xl px-3 py-2" placeholder="75"></div>
-                        </div>
+
                         <div>
                             <div class="flex justify-between items-center mb-2">
-                                <label class="text-sm font-bold text-gray-700">ขั้นช่วยค่าส่ง</label>
+                                <div>
+                                    <label class="text-sm font-bold text-gray-700">ค่ารอบไรเดอร์ตามระยะ</label>
+                                    <p class="text-[11px] text-gray-500 mt-0.5">ค่านี้เป็นค่าส่งเต็ม และเป็นจำนวนเงินที่ไรเดอร์ได้รับ</p>
+                                </div>
+                                <button type="button" onclick="addRiderRateStepRow()" class="text-xs bg-purple-100 text-purple-700 px-3 py-1.5 rounded-full font-bold hover:bg-purple-200"><i class="fa-solid fa-plus"></i> เพิ่มระยะ</button>
+                            </div>
+                            <div id="rider-rate-steps-container" class="space-y-2"></div>
+                        </div>
+
+                        <div class="border-t border-gray-200 pt-4">
+                            <div class="flex justify-between items-center mb-2">
+                                <div>
+                                    <label class="text-sm font-bold text-gray-700">ขั้นช่วยค่าส่ง</label>
+                                    <p class="text-[11px] text-gray-500 mt-0.5">ระบบหักเงินช่วยจากค่ารอบไรเดอร์ แล้วเก็บส่วนที่เหลือจากลูกค้า</p>
+                                </div>
                                 <button type="button" onclick="addShippingStepRow()" class="text-xs bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-full font-bold hover:bg-emerald-200"><i class="fa-solid fa-plus"></i> เพิ่มขั้น</button>
                             </div>
                             <div id="shipping-steps-container" class="space-y-2"></div>
+                        </div>
+
+                        <div class="rounded-xl bg-blue-50 border border-blue-100 p-3 text-xs text-blue-800 leading-6">
+                            <b>สูตรที่ใช้:</b> ลูกค้าจ่ายค่าส่ง = ค่ารอบไรเดอร์ตามระยะ − ร้านช่วยค่าส่ง<br>
+                            ไรเดอร์ยังได้รับค่ารอบเต็มตามระยะทุกงาน
                         </div>
                     </div>
                 </section>
@@ -624,6 +639,7 @@
         window.adminOptionQty = 1;
         window.adminSettings = {};
         window.settingsListener = null;
+        window.riderRateStepsDraft = [];
         window.shippingStepsDraft = [];
 
         // Page Navigation
@@ -1004,32 +1020,74 @@
         function getRiderShippingSettings() {
             const defaults = (typeof getDefaultSettings === 'function' ? getDefaultSettings() : {}).shipping || {};
             const current = (window.adminSettings && window.adminSettings.shipping) ? window.adminSettings.shipping : {};
-            const merged = {
+            return {
                 ...defaults,
                 ...current,
                 fullFee: {
                     ...(defaults.fullFee || {}),
                     ...(current.fullFee || {})
-                }
+                },
+                rateSteps: Array.isArray(current.rateSteps) && current.rateSteps.length
+                    ? current.rateSteps
+                    : (Array.isArray(defaults.rateSteps) ? defaults.rateSteps : [])
             };
-            return merged;
         }
 
         function getOrderDistanceKmNumber(order) {
             return toCleanNumber(order?.distanceKm ?? order?.distance ?? order?.distanceText, 0);
         }
 
-        function getRiderZoneFromOrder(order) {
+        function getNormalizedRiderRateSteps() {
             const shipping = getRiderShippingSettings();
+            const fallbackSteps = [
+                { maxKm: 1.5, fee: 30 },
+                { maxKm: 2.0, fee: 40 },
+                { maxKm: 2.5, fee: 45 },
+                { maxKm: 3.0, fee: 50 },
+                { maxKm: 3.5, fee: 65 },
+                { maxKm: 4.0, fee: 70 },
+                { maxKm: 5.0, fee: 75 }
+            ];
+            const source = Array.isArray(shipping.rateSteps) && shipping.rateSteps.length
+                ? shipping.rateSteps
+                : fallbackSteps;
+            const normalized = source
+                .map(step => ({
+                    maxKm: toCleanNumber(step?.maxKm, 0),
+                    fee: toCleanNumber(step?.fee, 0)
+                }))
+                .filter(step => step.maxKm > 0 && step.fee >= 0)
+                .sort((a, b) => a.maxKm - b.maxKm);
+            return normalized.length ? normalized : fallbackSteps;
+        }
+
+        function getRiderRateByDistance(distanceKm) {
+            const distance = toCleanNumber(distanceKm, 0);
+            if (distance <= 0) return null;
+            const steps = getNormalizedRiderRateSteps();
+            let previousMaxKm = 0;
+            for (const step of steps) {
+                if (distance <= step.maxKm) {
+                    return {
+                        minKmExclusive: previousMaxKm,
+                        maxKm: step.maxKm,
+                        fee: step.fee,
+                        label: previousMaxKm > 0
+                            ? `มากกว่า ${formatNumber(previousMaxKm)}–${formatNumber(step.maxKm)} กม.`
+                            : `ไม่เกิน ${formatNumber(step.maxKm)} กม.`
+                    };
+                }
+                previousMaxKm = step.maxKm;
+            }
+            return null;
+        }
+
+        function getRiderZoneFromOrder(order) {
             const savedZone = order?.shippingDetails?.zone || order?.deliveryZone || order?.zone || '';
             if (['near', 'mid', 'far'].includes(savedZone)) return savedZone;
-
             const distance = getOrderDistanceKmNumber(order);
-            const nearKm = toCleanNumber(shipping.nearKm, 1.5);
-            const midKm = toCleanNumber(shipping.midKm, 3);
-
-            if (distance > 0 && distance <= nearKm) return 'near';
-            if (distance > 0 && distance <= midKm) return 'mid';
+            if (distance > 0 && distance <= 1.5) return 'near';
+            if (distance > 0 && distance <= 3) return 'mid';
             if (distance > 0) return 'far';
             return 'far';
         }
@@ -1053,7 +1111,10 @@
         function getFullRiderFeeFromOrder(order) {
             const shipping = getRiderShippingSettings();
             const zone = getRiderZoneFromOrder(order);
+            const distanceRate = getRiderRateByDistance(getOrderDistanceKmNumber(order));
             return firstPositiveNumber(
+                distanceRate?.fee,
+                order?.shippingDetails?.riderFee,
                 order?.shippingDetails?.fullFee,
                 order?.riderFullFee,
                 shipping?.fullFee?.[zone],
@@ -1075,15 +1136,16 @@
         function getRiderPayBreakdown(order, manualPay = null) {
             const distance = getOrderDistanceKmNumber(order);
             const zone = getRiderZoneFromOrder(order);
+            const rateStep = getRiderRateByDistance(distance);
             const customerFee = getCustomerDeliveryFeeFromOrder(order);
             const fullFee = getFullRiderFeeFromOrder(order);
             const riderPay = getRecommendedRiderPay(order, manualPay);
-            const savedShopHelp = toCleanNumber(order?.shippingDetails?.shopHelp, 0);
-            const shopHelp = Math.max(0, riderPay - customerFee, savedShopHelp);
+            const shopHelp = Math.max(0, riderPay - customerFee);
             return {
                 distance,
                 zone,
                 zoneLabel: getRiderZoneLabel(zone),
+                rateLabel: rateStep?.label || order?.shippingDetails?.rateLabel || '-',
                 customerFee,
                 fullFee,
                 riderPay,
@@ -1097,12 +1159,12 @@
                 <div class="font-bold text-purple-800 mb-1"><i class="fa-solid fa-motorcycle"></i> คำนวณค่ารอบอัตโนมัติ</div>
                 <div class="grid grid-cols-2 gap-x-3 gap-y-1">
                     <div>ระยะส่ง</div><div class="font-bold text-right">${b.distance ? formatNumber(b.distance) + ' กม.' : '-'}</div>
-                    <div>โซน</div><div class="font-bold text-right">${b.zoneLabel}</div>
+                    <div>เรทระยะ</div><div class="font-bold text-right">${window.escapeHtml(b.rateLabel)}</div>
                     <div>ลูกค้าจ่ายค่าส่ง</div><div class="font-bold text-right">${formatNumber(b.customerFee)} บาท</div>
                     <div>ไรเดอร์ได้เงิน</div><div class="font-bold text-right text-purple-700">${formatNumber(b.riderPay)} บาท</div>
                     <div>ร้านช่วยเพิ่ม</div><div class="font-bold text-right">${formatNumber(b.shopHelp)} บาท</div>
                 </div>
-                <div class="mt-2 text-[11px] text-purple-700">ใช้ค่ารอบเต็มตามโซนจาก settings.shipping.fullFee หรือ shippingDetails.fullFee ของออเดอร์</div>
+                <div class="mt-2 text-[11px] text-purple-700">คำนวณค่ารอบจาก settings.shipping.rateSteps ตามระยะของออเดอร์</div>
             </div>`;
         }
 
@@ -1141,6 +1203,7 @@
                 shopHelpDelivery: riderBreakdown.shopHelp,
                 deliveryZone: riderBreakdown.zone,
                 deliveryZoneLabel: riderBreakdown.zoneLabel,
+                deliveryRateLabel: riderBreakdown.rateLabel,
                 riderPay,
                 total: order.total || '',
                 paymentMethod: order.paymentMethod || '',
@@ -1410,7 +1473,7 @@
                     <label class="block text-xs font-bold text-gray-600 mb-1">Order ID</label>
                     <input id="swal-order-id" class="swal2-input" style="margin:0;width:100%" placeholder="เช่น 3320 หรือ ORD-3320">
                     <div id="swal-rider-auto-summary" class="mt-3 rounded-xl bg-gray-50 border border-gray-200 p-3 text-xs text-gray-600 leading-6">
-                        ใส่ Order ID แล้วระบบจะคำนวณค่ารอบไรเดอร์จากระยะส่ง/โซนอัตโนมัติ
+                        ใส่ Order ID แล้วระบบจะคำนวณค่ารอบไรเดอร์จากตารางระยะทางอัตโนมัติ
                     </div>
                     <label class="block text-xs font-bold text-gray-600 mt-3 mb-1">ไรเดอร์ได้เงิน (บาท)</label>
                     <input id="swal-rider-pay" type="number" class="swal2-input" style="margin:0;width:100%" placeholder="อัตโนมัติ เช่น 75">
@@ -1441,7 +1504,7 @@
                         }
                         const b = getRiderPayBreakdown(order);
                         summary.className = 'mt-3 rounded-xl bg-purple-50 border border-purple-100 p-3 text-xs text-purple-900 leading-6';
-                        summary.innerHTML = `ออเดอร์ ${window.escapeHtml(order.id)} · ระยะ ${b.distance ? formatNumber(b.distance) + ' กม.' : '-'} · โซน${b.zoneLabel}<br>ลูกค้าจ่ายค่าส่ง ${formatNumber(b.customerFee)} บาท · <b>ไรเดอร์ได้เงิน ${formatNumber(b.riderPay)} บาท</b> · ร้านช่วยเพิ่ม ${formatNumber(b.shopHelp)} บาท`;
+                        summary.innerHTML = `ออเดอร์ ${window.escapeHtml(order.id)} · ระยะ ${b.distance ? formatNumber(b.distance) + ' กม.' : '-'} · เรท ${window.escapeHtml(b.rateLabel)}<br>ลูกค้าจ่ายค่าส่ง ${formatNumber(b.customerFee)} บาท · <b>ไรเดอร์ได้เงิน ${formatNumber(b.riderPay)} บาท</b> · ร้านช่วยเพิ่ม ${formatNumber(b.shopHelp)} บาท`;
                         if (!payInput.dataset.manualEdited) payInput.value = b.riderPay || '';
                     };
                     orderInput.addEventListener('input', () => {
@@ -1454,7 +1517,7 @@
                         if (order && isDeliveryOrder(order)) {
                             const b = getRiderPayBreakdown(order, payInput.value);
                             summary.className = 'mt-3 rounded-xl bg-purple-50 border border-purple-100 p-3 text-xs text-purple-900 leading-6';
-                            summary.innerHTML = `ออเดอร์ ${window.escapeHtml(order.id)} · ระยะ ${b.distance ? formatNumber(b.distance) + ' กม.' : '-'} · โซน${b.zoneLabel}<br>ลูกค้าจ่ายค่าส่ง ${formatNumber(b.customerFee)} บาท · <b>ไรเดอร์ได้เงิน ${formatNumber(b.riderPay)} บาท</b> · ร้านช่วยเพิ่ม ${formatNumber(b.shopHelp)} บาท`;
+                            summary.innerHTML = `ออเดอร์ ${window.escapeHtml(order.id)} · ระยะ ${b.distance ? formatNumber(b.distance) + ' กม.' : '-'} · เรท ${window.escapeHtml(b.rateLabel)}<br>ลูกค้าจ่ายค่าส่ง ${formatNumber(b.customerFee)} บาท · <b>ไรเดอร์ได้เงิน ${formatNumber(b.riderPay)} บาท</b> · ร้านช่วยเพิ่ม ${formatNumber(b.shopHelp)} บาท`;
                         }
                     });
                 },
@@ -1741,7 +1804,7 @@
                 '🛵 งานส่งใหม่',
                 `${job.orderId || job.jobId || '-'}`,
                 '',
-                job.distanceKm ? `ระยะ ${job.distanceKm} กม.${job.deliveryZoneLabel || job.deliveryZone ? ' · โซน' + (job.deliveryZoneLabel || job.deliveryZone) : ''}` : '',
+                job.distanceKm ? `ระยะ ${job.distanceKm} กม.${job.deliveryRateLabel ? ' · ' + job.deliveryRateLabel : ''}` : '',
                 `ค่ารอบไรเดอร์: ${formatNumber(job.riderPay || 0)} บาท`,
                 `จำนวนสินค้า: ${getRiderItemSummaryFromJob(job)}`,
                 '',
@@ -2298,19 +2361,25 @@
                 shopPhone: '0622467746',
                 announcement: '',
                 shipping: {
+                    maxKm: 5,
+                    rateSteps: [
+                        { maxKm: 1.5, fee: 30 },
+                        { maxKm: 2.0, fee: 40 },
+                        { maxKm: 2.5, fee: 45 },
+                        { maxKm: 3.0, fee: 50 },
+                        { maxKm: 3.5, fee: 65 },
+                        { maxKm: 4.0, fee: 70 },
+                        { maxKm: 5.0, fee: 75 }
+                    ],
+                    // เก็บค่าเดิมไว้เพื่อให้หน้าเว็บรุ่นเก่ายังอ่านได้ระหว่างเปลี่ยนระบบ
                     nearKm: 1.5,
                     midKm: 3,
-                    maxKm: 5,
                     fullFee: { near: 30, mid: 50, far: 75 },
                     steps: [
                         { minTotal: 0, shopHelp: 0 },
-                        { minTotal: 125, shopHelp: 15 },
-                        { minTotal: 200, shopHelp: 25 },
-                        { minTotal: 250, shopHelp: 30 },
-                        { minTotal: 350, shopHelp: 40 },
-                        { minTotal: 450, shopHelp: 50 },
-                        { minTotal: 550, shopHelp: 65 },
-                        { minTotal: 650, shopHelp: 75 }
+                        { minTotal: 150, shopHelp: 15 },
+                        { minTotal: 250, shopHelp: 25 },
+                        { minTotal: 400, shopHelp: 35 }
                     ]
                 },
                 payment: {
@@ -2434,17 +2503,26 @@
             setChecked('setting-delivery-enabled', settings.deliveryEnabled);
             setValue('setting-open-hour', settings.openHour);
             setValue('setting-close-hour', settings.closeHour);
-            setValue('setting-max-distance', settings.maxDistanceKm);
+            const resolvedMaxDistance = Number(settings.shipping?.maxKm ?? settings.maxDistanceKm ?? 5);
+            setValue('setting-max-distance', resolvedMaxDistance);
             setValue('setting-shop-phone', settings.shopPhone);
             setValue('setting-announcement', settings.announcement);
 
-            setValue('setting-near-km', settings.shipping?.nearKm);
-            setValue('setting-mid-km', settings.shipping?.midKm);
-            setValue('setting-shipping-max-km', settings.shipping?.maxKm);
-            setValue('setting-fee-near', settings.shipping?.fullFee?.near);
-            setValue('setting-fee-mid', settings.shipping?.fullFee?.mid);
-            setValue('setting-fee-far', settings.shipping?.fullFee?.far);
-            window.shippingStepsDraft = Array.isArray(settings.shipping?.steps) ? settings.shipping.steps.map(step => ({ minTotal: Number(step.minTotal) || 0, shopHelp: Number(step.shopHelp) || 0 })) : [];
+            setValue('setting-shipping-max-km', resolvedMaxDistance);
+            window.riderRateStepsDraft = Array.isArray(settings.shipping?.rateSteps) && settings.shipping.rateSteps.length
+                ? settings.shipping.rateSteps.map(step => ({
+                    maxKm: Number(step.maxKm) || 0,
+                    fee: Number(step.fee) || 0
+                }))
+                : getDefaultSettings().shipping.rateSteps.map(step => ({ ...step }));
+            renderRiderRateSteps();
+
+            window.shippingStepsDraft = Array.isArray(settings.shipping?.steps)
+                ? settings.shipping.steps.map(step => ({
+                    minTotal: Number(step.minTotal) || 0,
+                    shopHelp: Number(step.shopHelp) || 0
+                }))
+                : [];
             renderShippingSteps();
 
             setChecked('setting-transfer-enabled', settings.payment?.transferEnabled);
@@ -2470,6 +2548,55 @@
             setChecked('setting-line-enabled', settings.notifications?.lineEnabled);
             setChecked('setting-pending-alert-enabled', settings.notifications?.pendingAlertEnabled);
             setValue('setting-repeat-message', settings.notifications?.repeatMessage);
+        }
+
+        window.renderRiderRateSteps = function() {
+            const container = document.getElementById('rider-rate-steps-container');
+            if (!container) return;
+            if (!Array.isArray(window.riderRateStepsDraft) || window.riderRateStepsDraft.length === 0) {
+                window.riderRateStepsDraft = getDefaultSettings().shipping.rateSteps.map(step => ({ ...step }));
+            }
+            window.riderRateStepsDraft.sort((a, b) => Number(a.maxKm || 0) - Number(b.maxKm || 0));
+            container.innerHTML = window.riderRateStepsDraft.map((step, idx) => `
+                <div class="grid grid-cols-[1fr_1fr_auto] gap-2 items-center bg-purple-50 border border-purple-100 rounded-xl p-2">
+                    <div>
+                        <label class="block text-[10px] font-bold text-purple-700 mb-1">ระยะไม่เกิน (กม.)</label>
+                        <input type="number" step="0.1" min="0.1" class="w-full border border-purple-200 rounded-lg px-2 py-2 text-sm" value="${step.maxKm}" oninput="updateRiderRateStepValue(${idx}, 'maxKm', this.value)">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-purple-700 mb-1">ไรเดอร์ได้ (บาท)</label>
+                        <input type="number" min="0" class="w-full border border-purple-200 rounded-lg px-2 py-2 text-sm" value="${step.fee}" oninput="updateRiderRateStepValue(${idx}, 'fee', this.value)">
+                    </div>
+                    <button type="button" onclick="removeRiderRateStepRow(${idx})" class="mt-4 w-9 h-9 rounded-lg bg-red-50 text-red-500 hover:bg-red-100" title="ลบระยะนี้"><i class="fa-solid fa-trash-can"></i></button>
+                </div>
+            `).join('');
+        }
+
+        window.updateRiderRateStepValue = function(index, field, value) {
+            if (!window.riderRateStepsDraft[index]) return;
+            window.riderRateStepsDraft[index][field] = Number(value) || 0;
+        }
+
+        window.addRiderRateStepRow = function() {
+            const rows = Array.isArray(window.riderRateStepsDraft) ? window.riderRateStepsDraft : [];
+            const lastMaxKm = rows.length ? Math.max(...rows.map(step => Number(step.maxKm) || 0)) : 0;
+            const lastFee = rows.length ? Number(rows[rows.length - 1].fee) || 0 : 0;
+            rows.push({
+                maxKm: Number((lastMaxKm + 0.5).toFixed(1)),
+                fee: lastFee
+            });
+            window.riderRateStepsDraft = rows;
+            renderRiderRateSteps();
+        }
+
+        window.removeRiderRateStepRow = function(index) {
+            if (!Array.isArray(window.riderRateStepsDraft)) return;
+            if (window.riderRateStepsDraft.length <= 1) {
+                Swal.fire({ icon: 'warning', title: 'ต้องมีอย่างน้อย 1 ระยะ', timer: 1200, showConfirmButton: false });
+                return;
+            }
+            window.riderRateStepsDraft.splice(index, 1);
+            renderRiderRateSteps();
         }
 
         window.renderShippingSteps = function() {
@@ -2517,7 +2644,46 @@
 
             const statuses = getTextValue('setting-order-statuses').split('\n').map(v => v.trim()).filter(Boolean);
             const cancelReasons = getTextValue('setting-cancel-reasons').split('\n').map(v => v.trim()).filter(Boolean);
-            const steps = (window.shippingStepsDraft || []).map(step => ({ minTotal: Number(step.minTotal) || 0, shopHelp: Number(step.shopHelp) || 0 })).sort((a, b) => a.minTotal - b.minTotal);
+
+            const rateSteps = (window.riderRateStepsDraft || [])
+                .map(step => ({
+                    maxKm: Number(step.maxKm) || 0,
+                    fee: Number(step.fee) || 0
+                }))
+                .filter(step => step.maxKm > 0 && step.fee >= 0)
+                .sort((a, b) => a.maxKm - b.maxKm);
+
+            if (rateSteps.length === 0) {
+                throw new Error('กรุณากำหนดค่ารอบไรเดอร์อย่างน้อย 1 ระยะ');
+            }
+
+            for (let index = 1; index < rateSteps.length; index++) {
+                if (rateSteps[index].maxKm <= rateSteps[index - 1].maxKm) {
+                    throw new Error('ระยะค่ารอบไรเดอร์ต้องเรียงจากน้อยไปมากและห้ามซ้ำกัน');
+                }
+            }
+
+            const shippingMaxKm = getNumberValue('setting-shipping-max-km', 5);
+            const lastRateMaxKm = rateSteps[rateSteps.length - 1].maxKm;
+            if (lastRateMaxKm < shippingMaxKm) {
+                throw new Error(`ตารางค่ารอบรองรับถึง ${lastRateMaxKm} กม. แต่ตั้งระยะสูงสุดไว้ ${shippingMaxKm} กม. กรุณาเพิ่มระยะค่ารอบให้ครอบคลุม`);
+            }
+
+            const steps = (window.shippingStepsDraft || [])
+                .map(step => ({
+                    minTotal: Number(step.minTotal) || 0,
+                    shopHelp: Number(step.shopHelp) || 0
+                }))
+                .filter(step => step.minTotal >= 0 && step.shopHelp >= 0)
+                .sort((a, b) => a.minTotal - b.minTotal);
+
+            if (!steps.some(step => step.minTotal === 0)) {
+                steps.unshift({ minTotal: 0, shopHelp: 0 });
+            }
+
+            const legacyNearStep = rateSteps.find(step => step.maxKm >= 1.5) || rateSteps[0];
+            const legacyMidStep = rateSteps.find(step => step.maxKm >= 3) || rateSteps[rateSteps.length - 1];
+            const legacyFarStep = rateSteps.find(step => step.maxKm >= shippingMaxKm) || rateSteps[rateSteps.length - 1];
 
             return {
                 shopOpen: getChecked('setting-shop-open'),
@@ -2525,17 +2691,19 @@
                 deliveryEnabled: getChecked('setting-delivery-enabled'),
                 openHour: getNumberValue('setting-open-hour', 9),
                 closeHour: getNumberValue('setting-close-hour', 20),
-                maxDistanceKm: getNumberValue('setting-max-distance', 5),
+                maxDistanceKm: shippingMaxKm,
                 shopPhone: normalizePhone(getTextValue('setting-shop-phone')),
                 announcement: getTextValue('setting-announcement'),
                 shipping: {
-                    nearKm: getNumberValue('setting-near-km', 1.5),
-                    midKm: getNumberValue('setting-mid-km', 3),
-                    maxKm: getNumberValue('setting-shipping-max-km', 5),
+                    maxKm: shippingMaxKm,
+                    rateSteps,
+                    // ค่า legacy สำหรับหน้าเว็บรุ่นเก่า ระหว่างที่ยังอัปโหลดไฟล์ลูกค้าเวอร์ชันใหม่ไม่ครบ
+                    nearKm: 1.5,
+                    midKm: 3,
                     fullFee: {
-                        near: getNumberValue('setting-fee-near', 30),
-                        mid: getNumberValue('setting-fee-mid', 50),
-                        far: getNumberValue('setting-fee-far', 75)
+                        near: legacyNearStep.fee,
+                        mid: legacyMidStep.fee,
+                        far: legacyFarStep.fee
                     },
                     steps
                 },
