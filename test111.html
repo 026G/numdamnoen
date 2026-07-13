@@ -1062,20 +1062,28 @@
     window.CLOSE_HOUR = 22; 
     window.WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzYBSnGMUXEXdHyJ21L98xxkGbCNVlcqRBvtJti38vr95txAcemZ4wJVeO70JIttX2RHQ/exec"; 
 
-    // 🌴 ระบบค่าส่งขั้นบันได 8 ขั้น × 3 โซน (ตารางของผู้ใช้)
-    // ZONES: ใกล้ (≤1.5km) ค่าส่งจริง 30, กลาง (1.5-3km) ค่าส่งจริง 50, ไกล (3-5km) ค่าส่งจริง 75
-    // STEP TABLE: ร้านช่วยค่าส่งตามยอดอาหาร
-    window.SHIPPING_FULL_FEE = { near: 30, mid: 50, far: 75 };
-    window.SHIPPING_STEPS = [
-        { minTotal: 0,    shopHelp: 0  },  // ต่ำกว่า 125
-        { minTotal: 125,  shopHelp: 15 },  // 125+
-        { minTotal: 200,  shopHelp: 25 },  // 200+
-        { minTotal: 250,  shopHelp: 30 },  // 250+
-        { minTotal: 350,  shopHelp: 40 },  // 350+
-        { minTotal: 450,  shopHelp: 50 },  // 450+
-        { minTotal: 550,  shopHelp: 65 },  // 550+
-        { minTotal: 650,  shopHelp: 75 }   // 650+
+    // 🌴 ค่ารอบไรเดอร์ตามระยะจริง 7 ขั้น
+    // ค่านี้เป็นทั้งค่าส่งเต็มและจำนวนเงินที่ไรเดอร์ได้รับ
+    window.RIDER_RATE_STEPS = [
+        { maxKm: 1.5, fee: 30 },
+        { maxKm: 2.0, fee: 40 },
+        { maxKm: 2.5, fee: 45 },
+        { maxKm: 3.0, fee: 50 },
+        { maxKm: 3.5, fee: 65 },
+        { maxKm: 4.0, fee: 70 },
+        { maxKm: 5.0, fee: 75 }
     ];
+
+    // ขั้นที่ร้านช่วยค่าส่งตามยอดอาหาร
+    window.SHIPPING_STEPS = [
+        { minTotal: 0,   shopHelp: 0  },
+        { minTotal: 150, shopHelp: 15 },
+        { minTotal: 250, shopHelp: 25 },
+        { minTotal: 400, shopHelp: 35 }
+    ];
+
+    // ค่าเดิมเก็บไว้รองรับข้อมูลออเดอร์/การตั้งค่ารุ่นเก่า แต่ไม่ใช้เป็นสูตรหลักแล้ว
+    window.SHIPPING_FULL_FEE = { near: 30, mid: 50, far: 75 };
     window.NEAR_SHOP_KM = 1.5;
     window.MID_SHOP_KM = 3.0;
 
@@ -1159,17 +1167,58 @@
     };
 
     // ============ SHIPPING CALCULATION ============
-    
-    // เช็คโซนตามระยะ
+
+    // เช็คชื่อโซนเดิมเพื่อใช้กับรายงานและข้อมูลเก่า
     window.getZone = function(distanceKm) {
         if (distanceKm <= window.NEAR_SHOP_KM) return 'near';
         if (distanceKm <= window.MID_SHOP_KM) return 'mid';
         return 'far';
     };
 
+    window.formatDistanceRateValue = function(value) {
+        const numberValue = Number(value);
+        if (!Number.isFinite(numberValue)) return '0';
+        return Number.isInteger(numberValue)
+            ? String(numberValue)
+            : numberValue.toFixed(1).replace(/\.0$/, '');
+    };
+
+    // หาเรทไรเดอร์ตามระยะจริงจากตาราง 7 ขั้น
+    window.getRiderRateByDistance = function(distanceKm) {
+        const distance = Number(distanceKm);
+        if (!Number.isFinite(distance) || distance < 0 || distance > window.MAX_DIST_KM) {
+            return null;
+        }
+
+        const rateSteps = Array.isArray(window.RIDER_RATE_STEPS)
+            ? [...window.RIDER_RATE_STEPS].sort((a, b) => Number(a.maxKm) - Number(b.maxKm))
+            : [];
+
+        let previousMaxKm = 0;
+        for (const step of rateSteps) {
+            const maxKm = Number(step.maxKm);
+            const fee = Number(step.fee);
+            if (!Number.isFinite(maxKm) || !Number.isFinite(fee) || maxKm <= 0 || fee < 0) continue;
+
+            if (distance <= maxKm) {
+                return {
+                    minKmExclusive: previousMaxKm,
+                    maxKm,
+                    fee,
+                    label: previousMaxKm > 0
+                        ? `มากกว่า ${window.formatDistanceRateValue(previousMaxKm)}–${window.formatDistanceRateValue(maxKm)} กม.`
+                        : `ไม่เกิน ${window.formatDistanceRateValue(maxKm)} กม.`
+                };
+            }
+            previousMaxKm = maxKm;
+        }
+
+        return null;
+    };
+
     // หาขั้นปัจจุบันจากยอดอาหาร
     window.getCurrentStep = function(foodTotal) {
-        let currentStep = window.SHIPPING_STEPS[0];
+        let currentStep = window.SHIPPING_STEPS[0] || { minTotal: 0, shopHelp: 0 };
         for (const step of window.SHIPPING_STEPS) {
             if (foodTotal >= step.minTotal) currentStep = step;
         }
@@ -1181,46 +1230,51 @@
         for (const step of window.SHIPPING_STEPS) {
             if (foodTotal < step.minTotal) return step;
         }
-        return null; // ถึงขั้นสูงสุดแล้ว
+        return null;
     };
 
-    // คำนวณค่าส่งจริงที่ลูกค้าต้องจ่าย
+    // คำนวณค่าส่งลูกค้า โดยไรเดอร์ยังได้รับค่ารอบเต็มตามระยะ
     window.calculateDeliveryFee = function(foodTotal, distanceKm) {
-        if (distanceKm > window.MAX_DIST_KM) return null;
-        const zone = window.getZone(distanceKm);
-        const fullFee = window.SHIPPING_FULL_FEE[zone];
+        const rateStep = window.getRiderRateByDistance(distanceKm);
+        if (!rateStep) return null;
+
+        const fullFee = rateStep.fee;
         const currentStep = window.getCurrentStep(foodTotal);
-        const customerFee = Math.max(0, fullFee - currentStep.shopHelp);
+        const shopHelp = Math.min(Math.max(0, Number(currentStep.shopHelp) || 0), fullFee);
+        const customerFee = Math.max(0, fullFee - shopHelp);
+
         return {
-            fullFee: fullFee,
-            shopHelp: Math.min(currentStep.shopHelp, fullFee), // ไม่เกินค่าส่งจริง
-            customerFee: customerFee,
+            fullFee,
+            riderFee: fullFee,
+            shopHelp,
+            customerFee,
             isFree: customerFee === 0,
-            zone: zone,
-            currentStep: currentStep
+            zone: window.getZone(distanceKm),
+            rateLabel: rateStep.label,
+            rateMaxKm: rateStep.maxKm,
+            currentStep
         };
     };
 
-    // คำนวณ hint สำหรับขั้นถัดไป
+    // คำนวณคำแนะนำให้เพิ่มยอดถึงขั้นส่วนลดถัดไป
     window.getNextStepHint = function(foodTotal, distanceKm) {
-        if (distanceKm > window.MAX_DIST_KM) return null;
-        const zone = window.getZone(distanceKm);
-        const fullFee = window.SHIPPING_FULL_FEE[zone];
-        const nextStep = window.getNextStep(foodTotal);
-        if (!nextStep) return null; // ถึงขั้นสูงสุดแล้ว
-        
         const currentResult = window.calculateDeliveryFee(foodTotal, distanceKm);
-        // ค่าส่งใหม่ถ้าถึงขั้นถัดไป (cap ไว้ที่ fullFee)
-        const newCustomerFee = Math.max(0, fullFee - Math.min(nextStep.shopHelp, fullFee));
+        if (!currentResult) return null;
+
+        const nextStep = window.getNextStep(foodTotal);
+        if (!nextStep) return null;
+
+        const fullFee = currentResult.fullFee;
+        const nextShopHelp = Math.min(Math.max(0, Number(nextStep.shopHelp) || 0), fullFee);
+        const newCustomerFee = Math.max(0, fullFee - nextShopHelp);
         const savings = currentResult.customerFee - newCustomerFee;
         const needMore = nextStep.minTotal - foodTotal;
-        
-        // ถ้าไม่ประหยัด (เพราะฟรีอยู่แล้ว) → ไม่ต้องแสดง hint
+
         if (savings <= 0) return null;
-        
+
         return {
-            needMore: needMore,
-            savings: savings,
+            needMore,
+            savings,
             willBeFree: newCustomerFee === 0,
             nextTarget: nextStep.minTotal
         };
@@ -1268,19 +1322,25 @@
         shopPhone: '0622467746',
         announcement: '',
         shipping: {
+            maxKm: 5,
+            rateSteps: [
+                { maxKm: 1.5, fee: 30 },
+                { maxKm: 2.0, fee: 40 },
+                { maxKm: 2.5, fee: 45 },
+                { maxKm: 3.0, fee: 50 },
+                { maxKm: 3.5, fee: 65 },
+                { maxKm: 4.0, fee: 70 },
+                { maxKm: 5.0, fee: 75 }
+            ],
+            // รองรับข้อมูลตั้งค่ารุ่นเก่า
             nearKm: 1.5,
             midKm: 3,
-            maxKm: 5,
             fullFee: { near: 30, mid: 50, far: 75 },
             steps: [
                 { minTotal: 0, shopHelp: 0 },
-                { minTotal: 125, shopHelp: 15 },
-                { minTotal: 200, shopHelp: 25 },
-                { minTotal: 250, shopHelp: 30 },
-                { minTotal: 350, shopHelp: 40 },
-                { minTotal: 450, shopHelp: 50 },
-                { minTotal: 550, shopHelp: 65 },
-                { minTotal: 650, shopHelp: 75 }
+                { minTotal: 150, shopHelp: 15 },
+                { minTotal: 250, shopHelp: 25 },
+                { minTotal: 400, shopHelp: 35 }
             ]
         },
         payment: {
@@ -1379,14 +1439,35 @@
     window.applyShippingSettings = function() {
         const shipping = window.shopSettings.shipping || {};
         const fullFee = shipping.fullFee || {};
+
         window.NEAR_SHOP_KM = window.toFiniteNumber(shipping.nearKm, window.NEAR_SHOP_KM);
         window.MID_SHOP_KM = window.toFiniteNumber(shipping.midKm, window.MID_SHOP_KM);
-        window.MAX_DIST_KM = window.toFiniteNumber(shipping.maxKm, window.toFiniteNumber(window.shopSettings.maxDistanceKm, window.MAX_DIST_KM));
+        window.MAX_DIST_KM = window.toFiniteNumber(
+            shipping.maxKm,
+            window.toFiniteNumber(window.shopSettings.maxDistanceKm, window.MAX_DIST_KM)
+        );
+
+        // ค่าเดิมเก็บไว้รองรับออเดอร์หรือหน้าแอดมินรุ่นเก่า
         window.SHIPPING_FULL_FEE = {
             near: window.toFiniteNumber(fullFee.near, window.SHIPPING_FULL_FEE.near),
             mid: window.toFiniteNumber(fullFee.mid, window.SHIPPING_FULL_FEE.mid),
             far: window.toFiniteNumber(fullFee.far, window.SHIPPING_FULL_FEE.far)
         };
+
+        if (Array.isArray(shipping.rateSteps) && shipping.rateSteps.length > 0) {
+            const validRateSteps = shipping.rateSteps
+                .map(step => ({
+                    maxKm: window.toFiniteNumber(step.maxKm, 0),
+                    fee: window.toFiniteNumber(step.fee, 0)
+                }))
+                .filter(step => step.maxKm > 0 && step.fee >= 0)
+                .sort((a, b) => a.maxKm - b.maxKm);
+
+            if (validRateSteps.length > 0) {
+                window.RIDER_RATE_STEPS = validRateSteps;
+            }
+        }
+
         if (Array.isArray(shipping.steps) && shipping.steps.length > 0) {
             window.SHIPPING_STEPS = shipping.steps
                 .map(step => ({
@@ -1395,6 +1476,7 @@
                 }))
                 .filter(step => step.minTotal >= 0 && step.shopHelp >= 0)
                 .sort((a, b) => a.minTotal - b.minTotal);
+
             if (!window.SHIPPING_STEPS.some(step => step.minTotal === 0)) {
                 window.SHIPPING_STEPS.unshift({ minTotal: 0, shopHelp: 0 });
             }
@@ -2567,9 +2649,12 @@
             const result = window.calculateDeliveryFee(foodTotal, window.distanceKm);
             shippingDetails = {
                 fullFee: result.fullFee,
+                riderFee: result.riderFee,
                 shopHelp: result.shopHelp,
                 customerFee: result.customerFee,
-                zone: result.zone
+                zone: result.zone,
+                rateLabel: result.rateLabel,
+                rateMaxKm: result.rateMaxKm
             };
         }
 
