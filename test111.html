@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
     <style>
@@ -843,16 +844,16 @@
                                         <i class="fa-solid fa-user"></i>
                                     </div>
                                     <div>
-                                        <p class="text-[10px] leading-none" style="color: var(--color-text-muted);">ชื่อบัญชี</p>
-                                        <p id="account-name-display" class="text-sm font-semibold line-clamp-1" style="color: var(--color-text-dark);">นายวิวัฒน์ชัย พันธ์วิชัย</p>
+                                        <p class="text-[10px] leading-none" style="color: var(--color-text-muted);">ชื่อร้านค้า</p>
+                                        <p id="account-name-display" class="text-sm font-semibold line-clamp-1" style="color: var(--color-text-dark);">NUMDAMNOEN</p>
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <div class="flex-1">
-                                        <p class="text-[10px] leading-none" style="color: var(--color-text-muted);">เลขพร้อมเพย์ (KBank)</p>
+                                        <p class="text-[10px] leading-none" style="color: var(--color-text-muted);">รหัสร้านค้า LINE Pay</p>
                                         <div class="flex items-center justify-between">
-                                            <span id="bank-acc-no" class="text-sm font-bold font-mono tracking-wide" style="color: #113566;">062-246-7746</span>
-                                            <button id="copy-promptpay-btn" onclick="copyToClipboard('0622467746')" class="text-[10px] px-2 py-0.5 rounded transition flex items-center gap-1" style="background: var(--color-accent-blue); color: #113566;">
+                                            <span id="bank-acc-no" class="text-sm font-bold font-mono tracking-wide" style="color: #113566;">LPM20000035300676340</span>
+                                            <button id="copy-promptpay-btn" onclick="copyToClipboard('LPM20000035300676340')" class="text-[10px] px-2 py-0.5 rounded transition flex items-center gap-1" style="background: var(--color-accent-blue); color: #113566;">
                                                 <i class="fa-regular fa-copy"></i> คัดลอก
                                             </button>
                                         </div>
@@ -863,6 +864,10 @@
                                 <i class="fa-solid fa-download"></i> บันทึกรูป QR Code
                             </button>
                         </div>
+                    </div>
+                    <div class="mt-4 rounded-2xl p-3 text-xs flex items-start gap-2" style="background: var(--color-accent-mint); color: var(--color-text-dark); border: 1px solid var(--color-accent-mint-dark);">
+                        <i class="fa-solid fa-volume-high mt-0.5" style="color: var(--color-primary);"></i>
+                        <div><b>ไม่ต้องแนบสลิป</b><br>เมื่อชำระสำเร็จ เครื่องที่ร้านจะแจ้งยอดเป็นเสียงอัตโนมัติ</div>
                     </div>
                     <div id="slip-upload-box" class="mt-4 pt-4" style="border-top: 1px solid var(--color-border-soft);">
                         <label class="block text-xs font-bold mb-2 flex items-center gap-1" style="color: var(--color-text-dark);">
@@ -1282,9 +1287,11 @@
             transferEnabled: true,
             codEnabled: true,
             chatPayEnabled: true,
-            requireSlip: true,
+            requireSlip: false,
             promptpayNumber: '0622467746',
-            accountName: 'นายวิวัฒน์ชัย พันธ์วิชัย'
+            merchantRef: 'LPM20000035300676340',
+            merchantQrPayload: '00020101021139760016A90000000000000001032000203CsB0314210001169061280413RabbitLINEPay0503MRC30740016A00000067701011201150135554009220410220LPM200000353006763400307LINEPay5303764540105802TH62140710SPMC00000063046EA8',
+            accountName: 'NUMDAMNOEN'
         },
         menu: {
             defaultProductImage: 'https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=600&auto=format&fit=crop',
@@ -1353,9 +1360,11 @@
             transferEnabled: paymentSettings.transferEnabled !== false,
             codEnabled: paymentSettings.codEnabled !== false,
             chatPayEnabled: paymentSettings.chatPayEnabled !== false,
-            requireSlip: paymentSettings.requireSlip !== false,
+            requireSlip: false,
             promptpayNumber: window.normalizePhone(paymentSettings.promptpayNumber || window.shopSettings.shopPhone || '0622467746') || '0622467746',
-            accountName: String(paymentSettings.accountName || 'นายวิวัฒน์ชัย พันธ์วิชัย')
+            merchantRef: String(paymentSettings.merchantRef || 'LPM20000035300676340'),
+            merchantQrPayload: String(paymentSettings.merchantQrPayload || '00020101021139760016A90000000000000001032000203CsB0314210001169061280413RabbitLINEPay0503MRC30740016A00000067701011201150135554009220410220LPM200000353006763400307LINEPay5303764540105802TH62140710SPMC00000063046EA8').replace(/\s+/g, ''),
+            accountName: 'NUMDAMNOEN'
         };
     };
 
@@ -1441,11 +1450,11 @@
 
         const payment = window.getPaymentSettings();
         const bankAccNo = document.getElementById('bank-acc-no');
-        if (bankAccNo) bankAccNo.innerText = window.formatPhoneDisplay(payment.promptpayNumber);
+        if (bankAccNo) bankAccNo.innerText = payment.merchantRef;
         const accountNameDisplay = document.getElementById('account-name-display');
         if (accountNameDisplay) accountNameDisplay.innerText = payment.accountName;
         const copyPromptPayBtn = document.getElementById('copy-promptpay-btn');
-        if (copyPromptPayBtn) copyPromptPayBtn.setAttribute('onclick', `copyToClipboard('${payment.promptpayNumber}')`);
+        if (copyPromptPayBtn) copyPromptPayBtn.setAttribute('onclick', `copyToClipboard('${payment.merchantRef}')`);
 
         const announcement = String(window.shopSettings.announcement || '').trim();
         let annBox = document.getElementById('shop-announcement-box');
@@ -1504,6 +1513,128 @@
         return true;
     };
 
+    window.calculateEmvCrc16 = function(payload) {
+        let crc = 0xFFFF;
+        for (let index = 0; index < payload.length; index++) {
+            crc ^= payload.charCodeAt(index) << 8;
+            for (let bit = 0; bit < 8; bit++) {
+                if ((crc & 0x8000) !== 0) {
+                    crc = ((crc << 1) ^ 0x1021) & 0xFFFF;
+                } else {
+                    crc = (crc << 1) & 0xFFFF;
+                }
+            }
+        }
+        return crc.toString(16).toUpperCase().padStart(4, '0');
+    };
+
+    window.buildLinePayMerchantQrPayload = function(basePayload, grandTotal) {
+        const amount = Number(grandTotal);
+        if (!Number.isFinite(amount) || amount <= 0) {
+            throw new Error('ยอดชำระไม่ถูกต้อง');
+        }
+
+        const cleanPayload = String(basePayload || '').replace(/\s+/g, '');
+        if (!cleanPayload) {
+            throw new Error('ไม่พบข้อมูล QR ร้านค้า');
+        }
+
+        const amountText = amount.toFixed(2);
+        const fields = [];
+        let index = 0;
+        let amountFieldFound = false;
+
+        while (index < cleanPayload.length) {
+            if (index + 4 > cleanPayload.length) {
+                throw new Error('รูปแบบ QR ร้านค้าไม่สมบูรณ์');
+            }
+
+            const tag = cleanPayload.slice(index, index + 2);
+            const lengthText = cleanPayload.slice(index + 2, index + 4);
+            const length = Number(lengthText);
+
+            if (!/^\d{2}$/.test(lengthText) || !Number.isInteger(length)) {
+                throw new Error('รูปแบบข้อมูล QR ร้านค้าไม่ถูกต้อง');
+            }
+
+            const valueStart = index + 4;
+            const valueEnd = valueStart + length;
+            if (valueEnd > cleanPayload.length) {
+                throw new Error('ความยาวข้อมูล QR ร้านค้าไม่ถูกต้อง');
+            }
+
+            const value = cleanPayload.slice(valueStart, valueEnd);
+
+            if (tag === '63') {
+                break;
+            }
+
+            if (tag === '54') {
+                fields.push(`54${String(amountText.length).padStart(2, '0')}${amountText}`);
+                amountFieldFound = true;
+            } else {
+                fields.push(`${tag}${lengthText}${value}`);
+            }
+
+            index = valueEnd;
+        }
+
+        if (!amountFieldFound) {
+            const currencyIndex = fields.findIndex(field => field.startsWith('53'));
+            const amountField = `54${String(amountText.length).padStart(2, '0')}${amountText}`;
+            if (currencyIndex >= 0) {
+                fields.splice(currencyIndex + 1, 0, amountField);
+            } else {
+                fields.push(amountField);
+            }
+        }
+
+        const payloadWithoutCrc = `${fields.join('')}6304`;
+        return `${payloadWithoutCrc}${window.calculateEmvCrc16(payloadWithoutCrc)}`;
+    };
+
+    window.renderLinePayMerchantQR = function(payload) {
+        const qrImage = document.getElementById('qr-image');
+        if (!qrImage) return;
+
+        if (!window.QRCode) {
+            throw new Error('โหลดตัวสร้าง QR Code ไม่สำเร็จ');
+        }
+
+        const temporaryContainer = document.createElement('div');
+        new window.QRCode(temporaryContainer, {
+            text: payload,
+            width: 320,
+            height: 320,
+            colorDark: '#000000',
+            colorLight: '#FFFFFF',
+            correctLevel: window.QRCode.CorrectLevel.M
+        });
+
+        const sourceCanvas = temporaryContainer.querySelector('canvas');
+        const generatedImage = temporaryContainer.querySelector('img');
+
+        if (sourceCanvas) {
+            const quietZone = 24;
+            const outputCanvas = document.createElement('canvas');
+            outputCanvas.width = sourceCanvas.width + (quietZone * 2);
+            outputCanvas.height = sourceCanvas.height + (quietZone * 2);
+
+            const context = outputCanvas.getContext('2d');
+            context.fillStyle = '#FFFFFF';
+            context.fillRect(0, 0, outputCanvas.width, outputCanvas.height);
+            context.drawImage(sourceCanvas, quietZone, quietZone);
+
+            qrImage.src = outputCanvas.toDataURL('image/png');
+        } else if (generatedImage && generatedImage.src) {
+            qrImage.src = generatedImage.src;
+        } else {
+            throw new Error('สร้างรูป QR Code ไม่สำเร็จ');
+        }
+
+        qrImage.dataset.paymentPayload = payload;
+    };
+
     window.updatePromptPayQR = function(grandTotal) {
         const amount = Number(grandTotal) || 0;
         const payment = window.getPaymentSettings();
@@ -1512,10 +1643,21 @@
         const codAmountDisplay = document.getElementById('cod-amount-display');
         const bankAccNo = document.getElementById('bank-acc-no');
         const accountNameDisplay = document.getElementById('account-name-display');
-        if (qrImage) qrImage.src = `https://promptpay.io/${payment.promptpayNumber}/${amount}`;
+
+        try {
+            const paymentPayload = window.buildLinePayMerchantQrPayload(payment.merchantQrPayload, amount);
+            window.renderLinePayMerchantQR(paymentPayload);
+        } catch (error) {
+            console.error('สร้าง LINE Pay Merchant QR ไม่สำเร็จ:', error);
+            if (qrImage) {
+                qrImage.removeAttribute('src');
+                qrImage.alt = 'สร้าง QR Code ไม่สำเร็จ กรุณาแจ้งร้านค้า';
+            }
+        }
+
         if (qrAmountDisplay) qrAmountDisplay.innerText = `${amount} บาท`;
         if (codAmountDisplay) codAmountDisplay.innerText = `${amount}`;
-        if (bankAccNo) bankAccNo.innerText = window.formatPhoneDisplay(payment.promptpayNumber);
+        if (bankAccNo) bankAccNo.innerText = payment.merchantRef;
         if (accountNameDisplay) accountNameDisplay.innerText = payment.accountName;
     };
 
