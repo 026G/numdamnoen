@@ -554,919 +554,649 @@
             .add-btn::after { font-size: 0.7rem; }
             .order-guide-step small { font-size: 0.62rem; }
         }
-    </style>
 
-    <!-- NUMDAMNOEN UI REDESIGN V3: presentation only; original ordering logic remains unchanged -->
-    <style id="numdamnoen-ui-redesign-v3">
-        :root {
-            --nd-green: #087B3E;
-            --nd-green-dark: #07572F;
-            --nd-green-deep: #043D22;
-            --nd-lime: #DDF3B9;
-            --nd-cream: #FFFDF5;
-            --nd-cream-2: #F5F5E9;
-            --nd-card: rgba(255,255,255,.94);
-            --nd-line: rgba(8,123,62,.13);
-            --nd-shadow: 0 18px 45px rgba(4,61,34,.11);
-            --nd-shadow-soft: 0 10px 28px rgba(4,61,34,.08);
-        }
 
-        html { background: #EAF2E8 !important; }
-        body {
-            background:
-                radial-gradient(circle at 8% 2%, rgba(198,229,170,.48), transparent 23rem),
-                radial-gradient(circle at 100% 14%, rgba(236,220,152,.30), transparent 24rem),
-                #EEF4EC !important;
-        }
-        .app-shell {
-            background: var(--nd-cream) !important;
-            box-shadow: 0 30px 90px rgba(4,61,34,.18) !important;
-        }
-
-        /* Compact premium shop header */
-        .app-header {
-            background: rgba(255,253,245,.91) !important;
-            border-bottom: 0 !important;
+        /* ===== Redesigned storefront hero ===== */
+        body.menu-page-active .app-header {
+            background: linear-gradient(180deg, rgba(246,251,246,0.92) 0%, rgba(246,251,246,0.65) 65%, rgba(246,251,246,0) 100%) !important;
+            backdrop-filter: blur(12px) saturate(140%);
+            -webkit-backdrop-filter: blur(12px) saturate(140%);
+            border-bottom: none !important;
             box-shadow: none !important;
-            backdrop-filter: blur(20px) saturate(145%) !important;
         }
-        .app-header > .px-4.py-3 { padding: .75rem 1rem .65rem !important; }
-        .header-topbar { margin-bottom: .55rem !important; }
-        .brand-card {
-            padding: .72rem !important;
-            border-radius: 1.55rem !important;
-            border: 1px solid rgba(8,123,62,.12) !important;
-            background: rgba(255,255,255,.84) !important;
-            box-shadow: 0 12px 35px rgba(4,61,34,.07) !important;
+        body:not(.menu-page-active) .app-header {
+            background: rgba(255,255,255,0.97) !important;
+            border-bottom: 1px solid rgba(221,235,221,0.95) !important;
+            box-shadow: 0 10px 26px rgba(18,53,31,0.05) !important;
         }
-        .brand-card h1 { font-size: 1.08rem !important; }
-        .shop-subtitle { font-size: .73rem !important; color: #527061 !important; }
-        .shop-meta-row { margin-top: .42rem !important; gap: .35rem !important; }
-        .shop-meta-chip {
-            padding: .3rem .52rem !important;
-            font-size: .64rem !important;
-            background: #F0F8EC !important;
-            border-color: rgba(8,123,62,.12) !important;
+        .hero-topbar {
+            margin-bottom: 0 !important;
+            align-items: center;
         }
-        header .w-16.h-16 {
-            width: 3.85rem !important;
-            height: 3.85rem !important;
-            padding: .18rem !important;
-            border-color: rgba(8,123,62,.22) !important;
-        }
-        #header-tracking-btn,
-        header button[onclick="goBack()"] {
+        .hero-nav-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.42rem;
+            min-height: 2.8rem;
+            padding: 0.72rem 1rem !important;
             border-radius: 999px !important;
-            background: rgba(255,255,255,.88) !important;
-            border-color: rgba(8,123,62,.12) !important;
+            background: rgba(255,255,255,0.88) !important;
+            border: 1px solid rgba(221,235,221,0.95) !important;
+            box-shadow: 0 8px 22px rgba(18, 53, 31, 0.08) !important;
+            color: var(--color-primary-deep) !important;
+            font-size: 0.82rem !important;
+            font-weight: 800 !important;
         }
-        #header-tracking-btn { max-width: 10.5rem; overflow: hidden; white-space: nowrap; }
-
-        /* Ordering mode becomes a light segmented control */
-        #mode-toggle-container {
-            margin-top: .65rem !important;
-            border-radius: 1.25rem !important;
-            background: #EEF5EA !important;
-            border-color: rgba(8,123,62,.10) !important;
+        .hero-icon-btn {
+            width: 2.85rem !important;
+            height: 2.85rem !important;
+            border-radius: 999px !important;
+            background: rgba(255,255,255,0.88) !important;
+            border: 1px solid rgba(221,235,221,0.95) !important;
+            box-shadow: 0 8px 22px rgba(18, 53, 31, 0.08) !important;
+            color: var(--color-primary-deep) !important;
         }
-        .mode-toggle-active {
-            border-color: rgba(8,123,62,.24) !important;
-            box-shadow: 0 8px 18px rgba(8,123,62,.11) !important;
-        }
-        .mode-icon { font-size: 1.05rem !important; }
-        .mode-text { font-size: .78rem !important; }
-        .mode-subtext { font-size: .61rem !important; }
-
-        /* Hero */
-        #page-menu { background: var(--nd-cream) !important; padding-bottom: 7rem; }
-        .nd-home-hero {
+        .menu-home-wrap { padding-bottom: 0.8rem; }
+        .hero-storefront {
             position: relative;
-            min-height: 25rem;
             overflow: hidden;
-            margin: .2rem .9rem 0;
-            padding: 1.25rem 1.15rem 1.15rem;
             border-radius: 2rem;
+            border: 1px solid #E1ECDC;
             background:
-                radial-gradient(circle at 88% 25%, rgba(255,255,255,.95), rgba(255,255,255,.18) 31%, transparent 48%),
-                radial-gradient(circle at 20% 2%, rgba(222,245,197,.82), transparent 41%),
-                linear-gradient(145deg, #FFFDF6 0%, #F6F5E8 52%, #E9F0D8 100%);
-            box-shadow: var(--nd-shadow);
-            border: 1px solid rgba(8,123,62,.10);
-            isolation: isolate;
+                radial-gradient(circle at 80% 25%, rgba(127, 191, 124, 0.18), transparent 28%),
+                radial-gradient(circle at 10% 100%, rgba(150, 213, 138, 0.18), transparent 25%),
+                linear-gradient(135deg, #FFFDF6 0%, #FBFFF9 58%, #F1F8EE 100%);
+            box-shadow: 0 18px 38px rgba(18, 53, 31, 0.10);
+            margin: 0.25rem 1rem 0.75rem;
+            padding: 1.15rem;
         }
-        .nd-home-hero::before,
-        .nd-home-hero::after {
-            content: "";
+        .hero-storefront::before,
+        .hero-storefront::after {
+            content: '';
             position: absolute;
-            z-index: -1;
+            width: 12rem;
+            height: 12rem;
+            border-radius: 999px;
+            background: rgba(34, 112, 61, 0.05);
+            z-index: 0;
             pointer-events: none;
         }
-        .nd-home-hero::before {
-            width: 11rem; height: 11rem; right: -4rem; top: -3.7rem;
-            border: 2rem solid rgba(8,123,62,.05);
-            border-radius: 50%;
+        .hero-storefront::before { top: -4rem; right: -4rem; }
+        .hero-storefront::after { bottom: -5rem; left: -4rem; }
+        .hero-leaf {
+            position: absolute;
+            z-index: 0;
+            width: 5rem;
+            height: 5rem;
+            opacity: 0.18;
+            background: radial-gradient(circle at 50% 50%, rgba(73,158,94,0.95) 0 18%, transparent 20%),
+                        linear-gradient(135deg, rgba(73,158,94,0.12), rgba(73,158,94,0));
+            filter: blur(0.2px);
+            transform: rotate(20deg);
         }
-        .nd-home-hero::after {
-            width: 7.5rem; height: 7.5rem; left: -4rem; bottom: -3rem;
-            background: rgba(208,235,180,.52);
-            border-radius: 45% 55% 60% 40%;
-            transform: rotate(32deg);
+        .hero-leaf.leaf-a { top: -0.4rem; left: -0.4rem; border-radius: 0 100% 0 100%; }
+        .hero-leaf.leaf-b { top: 0.2rem; right: -0.5rem; border-radius: 100% 0 100% 0; transform: rotate(-18deg); }
+        .hero-storefront > * { position: relative; z-index: 1; }
+        .hero-shop-row {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            margin-bottom: 1rem;
         }
-        .nd-hero-kicker {
-            display: inline-flex; align-items: center; gap: .38rem;
-            padding: .38rem .68rem;
+        .hero-logo-ring {
+            width: 4.7rem;
+            height: 4.7rem;
             border-radius: 999px;
-            background: #0B8345;
-            color: white;
-            font-size: .68rem;
-            font-weight: 800;
-            box-shadow: 0 8px 18px rgba(8,123,62,.18);
+            background: #fff;
+            border: 3px solid rgba(255,255,255,0.94);
+            box-shadow: 0 10px 22px rgba(18,53,31,0.12);
+            padding: 0.24rem;
+            flex-shrink: 0;
         }
-        .nd-hero-title {
-            max-width: 15rem;
-            margin-top: 1rem;
-            font-family: 'Mali', sans-serif;
-            font-size: clamp(2rem, 8vw, 2.75rem);
-            line-height: 1.12;
-            letter-spacing: -.055em;
-            color: var(--nd-green-dark);
+        .hero-logo-ring img { width: 100%; height: 100%; object-fit: cover; border-radius: 999px; }
+        .hero-shop-copy h1 {
+            font-size: 1.18rem;
+            line-height: 1.08;
+            letter-spacing: -0.03em;
+            color: var(--color-primary-deep);
+            margin: 0;
+        }
+        .hero-shop-copy .shop-subtitle {
+            font-size: 0.84rem;
+            color: var(--color-primary);
+            margin-top: 0.18rem;
             font-weight: 700;
         }
-        .nd-hero-title span { display: block; font-size: .68em; margin-top: .3rem; }
-        .nd-hero-copy {
-            max-width: 16rem;
-            margin-top: .65rem;
-            color: #425F50;
-            font-size: .84rem;
-            line-height: 1.65;
-            font-weight: 650;
+        .hero-meta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.55rem;
         }
-        .nd-hero-product {
-            position: absolute;
-            right: -1.75rem;
-            bottom: 5.1rem;
-            width: 13rem;
-            height: 15.5rem;
-            object-fit: cover;
-            object-position: center;
-            border-radius: 46% 46% 1.7rem 1.7rem;
-            filter: drop-shadow(0 20px 24px rgba(4,61,34,.20));
-            transform: rotate(2deg);
-            background: #E8F1DE;
-            border: .42rem solid rgba(255,255,255,.84);
-        }
-        .nd-best-badge {
-            position: absolute;
-            right: .78rem;
-            top: 7.15rem;
-            width: 4.5rem; height: 4.5rem;
-            display: flex; align-items: center; justify-content: center;
-            text-align: center;
-            color: #fff;
-            background: linear-gradient(145deg, #60AD5F, #147B42);
-            border: .28rem solid rgba(255,255,255,.72);
-            border-radius: 50%;
-            font-family: 'Mali', sans-serif;
-            font-size: .72rem;
+        .hero-meta-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            min-height: 1.95rem;
+            padding: 0.34rem 0.62rem;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.82);
+            border: 1px solid #DDEBDD;
+            color: var(--color-text-dark);
+            font-size: 0.72rem;
             font-weight: 700;
-            line-height: 1.2;
-            box-shadow: 0 12px 25px rgba(8,123,62,.22);
-            transform: rotate(7deg);
+            box-shadow: 0 4px 10px rgba(18,53,31,0.04);
         }
-        .nd-trust-row {
-            position: absolute;
-            left: 1.05rem; right: 1.05rem; bottom: 1.05rem;
+        #shop-status-badge.hero-open-badge {
+            position: static !important;
+            transform: none !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.34rem 0.72rem !important;
+            font-size: 0.7rem !important;
+            border-radius: 999px !important;
+            box-shadow: 0 8px 18px rgba(18,53,31,0.14) !important;
+            min-width: 4.2rem;
+        }
+        .hero-location-line {
+            margin-top: 0.4rem;
+            color: var(--color-text-muted);
+            font-size: 0.78rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .hero-main-grid {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0,1fr));
-            gap: .5rem;
+            grid-template-columns: minmax(0, 1.15fr) minmax(170px, 0.85fr);
+            gap: 0.9rem;
+            align-items: end;
         }
-        .nd-trust-item {
-            min-height: 4.65rem;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            gap: .3rem;
-            padding: .52rem .32rem;
-            border-radius: 1.3rem;
-            background: rgba(255,255,255,.72);
-            border: 1px solid rgba(8,123,62,.10);
-            box-shadow: 0 8px 18px rgba(4,61,34,.06);
-            text-align: center;
-            color: var(--nd-green-dark);
-            font-size: .62rem;
+        .hero-copy-block { padding-top: 0.15rem; }
+        .hero-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.38rem 0.8rem;
+            border-radius: 999px;
+            background: linear-gradient(180deg, #1C8A46 0%, #146E35 100%);
+            color: #fff;
+            font-size: 0.76rem;
             font-weight: 800;
-            line-height: 1.25;
-            backdrop-filter: blur(8px);
+            box-shadow: 0 10px 18px rgba(23,107,50,0.18);
         }
-        .nd-trust-item i { font-size: 1.28rem; color: #17844A; }
-
-        /* Delivery promo */
-        .nd-delivery-promo {
-            margin: .85rem .9rem 0;
-            width: calc(100% - 1.8rem);
-            display: flex; align-items: center; gap: .75rem;
-            padding: .8rem .85rem;
-            border-radius: 1.45rem;
-            border: 1px solid rgba(8,123,62,.11);
-            background: rgba(255,255,255,.92);
-            box-shadow: var(--nd-shadow-soft);
+        .hero-big-title {
+            margin-top: 0.9rem;
+            margin-bottom: 0;
+            font-family: 'Mali', sans-serif;
+            font-weight: 700;
+            font-size: 2.45rem;
+            line-height: 0.95;
+            letter-spacing: -0.05em;
+            color: var(--color-primary-deep);
+        }
+        .hero-big-title span {
+            display: block;
+            margin-top: 0.32rem;
+            font-size: 2.02rem;
+            color: #26884B;
+        }
+        .hero-tagline {
+            margin-top: 0.85rem;
+            color: #355240;
+            font-size: 0.98rem;
+            line-height: 1.55;
+            font-weight: 600;
+            max-width: 20rem;
+        }
+        .hero-benefit-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.55rem;
+            margin-top: 1.05rem;
+        }
+        .hero-benefit-card {
+            background: rgba(255,255,255,0.88);
+            border: 1px solid #E1ECDE;
+            border-radius: 1.1rem;
+            padding: 0.75rem 0.55rem;
+            text-align: center;
+            box-shadow: 0 8px 18px rgba(18,53,31,0.05);
+        }
+        .hero-benefit-card i {
+            display: block;
+            color: #2D9A4B;
+            font-size: 1.38rem;
+            margin-bottom: 0.45rem;
+        }
+        .hero-benefit-card div {
+            font-size: 0.8rem;
+            line-height: 1.3;
+            color: var(--color-primary-deep);
+            font-weight: 800;
+        }
+        .hero-product-stage {
+            position: relative;
+            min-height: 21rem;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        .hero-product-backdrop {
+            position: absolute;
+            inset: 1rem 0 0.5rem 0;
+            border-radius: 2rem 2rem 1.8rem 1.8rem;
+            background: linear-gradient(180deg, #F2A6A3 0%, #E98C85 100%);
+            box-shadow: inset 0 0 0 6px rgba(255,255,255,0.65);
+        }
+        .hero-product-backdrop::after {
+            content: '';
+            position: absolute;
+            inset: 0.7rem;
+            border-radius: 1.5rem;
+            border: 1px dashed rgba(255,255,255,0.5);
+        }
+        .hero-product-plinth {
+            position: absolute;
+            left: 50%;
+            bottom: 1.1rem;
+            width: 9.6rem;
+            height: 1.2rem;
+            transform: translateX(-50%);
+            border-radius: 999px;
+            background: rgba(255,255,255,0.7);
+            filter: blur(0.5px);
+        }
+        #hero-main-image {
+            position: relative;
+            z-index: 2;
+            width: 92%;
+            max-width: 18rem;
+            max-height: 19rem;
+            object-fit: contain;
+            filter: drop-shadow(0 16px 30px rgba(0,0,0,0.18));
+        }
+        .hero-product-badge {
+            position: absolute;
+            top: 1.6rem;
+            right: 0.3rem;
+            z-index: 3;
+            width: 5.25rem;
+            height: 5.25rem;
+            border-radius: 999px;
+            background: linear-gradient(180deg, #53AF68 0%, #2B8A47 100%);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 0.92rem;
+            line-height: 1.15;
+            font-weight: 800;
+            box-shadow: 0 10px 20px rgba(32,109,52,0.22);
+            border: 4px solid rgba(255,255,255,0.92);
+            padding: 0.5rem;
+        }
+        .hero-product-label {
+            position: absolute;
+            left: 50%;
+            bottom: 0.35rem;
+            transform: translateX(-50%);
+            z-index: 3;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            white-space: nowrap;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.92);
+            border: 1px solid #E2ECE0;
+            padding: 0.45rem 0.8rem;
+            color: var(--color-primary-deep);
+            font-size: 0.76rem;
+            font-weight: 800;
+            box-shadow: 0 8px 16px rgba(18,53,31,0.08);
+        }
+        .hero-action-strip {
+            margin-top: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            padding: 0.9rem 1rem;
+            border-radius: 1.3rem;
+            background: rgba(255,255,255,0.9);
+            border: 1px solid #E3EEDF;
+            box-shadow: 0 10px 22px rgba(18,53,31,0.06);
+        }
+        .hero-action-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 1rem;
+            background: linear-gradient(180deg, #F8FFE8 0%, #E9F7D5 100%);
+            color: #2D8C46;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .hero-action-strip strong {
+            display: block;
+            color: var(--color-primary-deep);
+            font-size: 1.02rem;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+        .hero-action-strip small {
+            display: block;
+            color: var(--color-text-muted);
+            font-size: 0.78rem;
+            margin-top: 0.16rem;
+        }
+        .hero-action-strip .hero-cta-btn {
+            margin-left: auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            min-height: 2.75rem;
+            padding: 0.65rem 1rem;
+            border-radius: 999px;
+            background: linear-gradient(180deg, #54A968 0%, #2B8A46 100%);
+            color: #fff;
+            font-size: 0.83rem;
+            font-weight: 800;
+            box-shadow: 0 10px 18px rgba(23,107,50,0.22);
+        }
+        #mode-toggle-container.hero-mode-panel {
+            margin-top: 1rem !important;
+            background: rgba(232,246,234,0.7) !important;
+            border: 1px solid #D7E8D6 !important;
+            border-radius: 1.4rem !important;
+            padding: 0.34rem !important;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.92), 0 8px 18px rgba(18,53,31,0.04);
+        }
+        .hero-mode-panel button {
+            min-height: 4.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .hero-mode-panel .mode-text {
+            font-size: 0.9rem !important;
+            font-weight: 800 !important;
+        }
+        .hero-mode-panel .mode-subtext {
+            font-size: 0.68rem !important;
+            font-weight: 700 !important;
+        }
+        #delivery-pin-row.hero-pin-row {
+            margin-top: 0.85rem !important;
+        }
+        .hero-pin-card {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.95rem 1rem !important;
+            border-radius: 1.2rem !important;
+            background: rgba(255,255,255,0.88) !important;
+            border: 1px solid #DDEBDD !important;
+            box-shadow: 0 10px 18px rgba(18,53,31,0.05) !important;
+        }
+        .hero-pin-card .pin-icon {
+            width: 2.8rem;
+            height: 2.8rem;
+            border-radius: 999px;
+            background: linear-gradient(180deg, #FFE4DD 0%, #FFD4CB 100%);
+            color: #D74C32;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .hero-pin-card .pin-copy {
+            flex: 1;
+            min-width: 0;
             text-align: left;
         }
-        .nd-delivery-icon {
-            width: 3.2rem; height: 3.2rem; flex: 0 0 auto;
-            display: grid; place-items: center;
-            border-radius: 1.05rem;
-            background: linear-gradient(145deg,#E1F1C7,#F8F5DC);
-            color: var(--nd-green);
-            font-size: 1.38rem;
-        }
-        .nd-delivery-promo strong { display:block; color:var(--nd-green-dark); font-size:.83rem; }
-        .nd-delivery-promo small { display:block; color:#6C7A71; font-size:.66rem; margin-top:.13rem; }
-        .nd-delivery-action {
-            margin-left: auto;
-            flex: 0 0 auto;
-            padding: .62rem .72rem;
-            border-radius: 999px;
-            background: linear-gradient(135deg,#71B958,#188345);
-            color: #fff;
-            font-size: .65rem;
+        .hero-pin-card .pin-copy strong {
+            display: block;
+            font-size: 0.82rem;
+            color: var(--color-primary-deep);
             font-weight: 800;
-            box-shadow: 0 8px 16px rgba(8,123,62,.20);
+            line-height: 1.2;
         }
-
-        /* Category dock moved here by the visual-only helper */
-        .nd-category-shell {
-            margin: .85rem .9rem 0;
-            padding: .7rem .2rem .45rem;
-            border-radius: 1.6rem;
-            background: rgba(255,255,255,.94);
-            border: 1px solid rgba(8,123,62,.10);
-            box-shadow: var(--nd-shadow-soft);
-            overflow: hidden;
-        }
-        #category-tabs {
-            padding: .15rem .65rem .4rem !important;
-            gap: .7rem !important;
-            border-bottom: 0 !important;
-            background: transparent !important;
-        }
-        .category-tab {
-            min-width: 4.55rem !important;
-            min-height: 4.35rem;
-            display: inline-flex !important;
-            align-items: center;
-            justify-content: flex-end;
-            flex-direction: column;
-            gap: .42rem;
-            padding: .56rem .45rem !important;
-            border-radius: 1.25rem !important;
-            font-size: .69rem !important;
-            border-color: transparent !important;
-            background: #F7F6EF !important;
-            box-shadow: none !important;
-            position: relative;
-        }
-        .category-tab::before {
-            content: "✦";
-            width: 2.15rem; height: 2.15rem;
-            display: grid; place-items: center;
-            border-radius: 50%;
-            background: #E6F2D5;
-            color: var(--nd-green);
-            font-size: 1rem;
-        }
-        .category-tab[data-cat="all"]::before { content: "🌴"; }
-        .category-tab[data-cat="recommend"]::before { content: "⭐"; }
-        .category-tab[data-cat="general"]::before,
-        .category-tab[data-cat="coconut_smoothie"]::before { content: "🥥"; }
-        .category-tab[data-cat="coconut_water"]::before { content: "🧴"; }
-        .category-tab[data-cat="fruit_smoothie"]::before { content: "🍓"; }
-        .category-tab[data-cat="milk_smoothie"]::before { content: "🥛"; }
-        .category-tab[data-cat="special"]::before { content: "✨"; }
-        .category-tab[data-cat="snack"]::before { content: "🍪"; }
-        .category-tab[data-cat="promotion"]::before { content: "🎁"; }
-        .category-tab.tab-active {
-            background: linear-gradient(145deg,#178B4B,#06723A) !important;
-            color: white !important;
-            transform: translateY(-1px);
-            box-shadow: 0 10px 20px rgba(8,123,62,.20) !important;
-        }
-        .category-tab.tab-active::before { background: rgba(255,255,255,.18); color:#fff; }
-
-        .nd-menu-heading {
-            display:flex; align-items:flex-end; justify-content:space-between; gap:1rem;
-            margin: 1.15rem 1rem .72rem;
-        }
-        .nd-menu-kicker { font-size:.66rem; color:#6C8A78; font-weight:800; letter-spacing:.08em; }
-        .nd-menu-heading h2 {
-            margin: .14rem 0 0;
-            color: var(--nd-green-dark) !important;
-            font-family: 'Mali', sans-serif;
-            font-size: 1.22rem !important;
+        .hero-pin-card .pin-copy span {
+            display: block;
+            margin-top: 0.16rem;
+            color: var(--color-text-muted);
+            font-size: 0.72rem;
             font-weight: 700;
         }
-        .nd-menu-heading button { color:var(--nd-green); font-size:.69rem; font-weight:800; white-space:nowrap; }
-
-        /* Product grid while keeping original card click behavior */
-        #menu-list {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: .78rem;
-            padding: 0 .9rem 2rem !important;
+        #pin-reminder-card { margin: 0 1rem 0.55rem !important; }
+        .menu-heading-clean {
+            margin: 0.25rem 1rem 0 !important;
+            padding-left: 0.15rem !important;
+            padding-right: 0.15rem !important;
         }
-        #menu-list > .section-divider { grid-column: 1 / -1; }
-        #menu-list > div:not(.menu-card):not(.section-divider) { grid-column: 1 / -1; }
-        .section-divider { padding: .55rem .08rem .05rem !important; }
-        .section-divider .section-divider-text {
-            border:0 !important;
-            background:transparent !important;
-            padding:.15rem 0 !important;
-            font-size:.82rem !important;
-            color:var(--nd-green-dark) !important;
-        }
-        .menu-card { padding: 0 !important; margin: 0 !important; min-width: 0; }
-        .menu-card-inner {
-            min-height: 100%;
-            flex-direction: column !important;
-            gap: .65rem !important;
-            padding: .56rem !important;
-            border-radius: 1.45rem !important;
-            border-color: rgba(8,123,62,.10) !important;
-            box-shadow: 0 10px 24px rgba(4,61,34,.09) !important;
-            background: rgba(255,255,255,.96) !important;
-        }
-        .menu-card-inner::before { display:none !important; }
-        .menu-card .relative.shrink-0 { width:100%; align-items:stretch !important; }
-        .menu-image {
-            width: 100% !important;
-            height: auto !important;
-            aspect-ratio: 1 / 1;
-            border-radius: 1.15rem !important;
-            background: linear-gradient(145deg,#EEF3E4,#F9F4E7) !important;
-            overflow:hidden;
-        }
-        .menu-image img { transform: scale(1.015) !important; }
-        .menu-badge {
-            position:absolute;
-            top:.42rem; left:.42rem;
-            width:auto !important;
-            max-width:calc(100% - .84rem);
-            margin:0 !important;
-            padding:.26rem .48rem !important;
-            border-radius:999px !important;
-            background:#087B3E !important;
-            border-color:rgba(255,255,255,.55) !important;
-            color:#fff !important;
-            font-family:'Anuphan',sans-serif !important;
-            font-size:.54rem !important;
-            overflow:hidden;
-            white-space:nowrap;
-            text-overflow:ellipsis;
-        }
-        .menu-card .flex-1.flex.flex-col { width:100%; padding:.05rem .18rem .15rem !important; }
-        .menu-title {
-            min-height: 2.55rem;
-            font-size: .83rem !important;
-            line-height: 1.45 !important;
-            color:#183E2A !important;
-        }
-        .menu-desc { min-height:2.2rem; font-size:.64rem !important; line-height:1.45 !important; }
-        .menu-original-price { font-size:.6rem !important; }
-        .menu-price { font-size:1.14rem !important; color:var(--nd-green-dark) !important; }
-        .add-btn {
-            min-width: 2.4rem !important;
-            width: 2.4rem !important;
-            height: 2.4rem !important;
-            padding:0 !important;
-            background:linear-gradient(145deg,#1C964F,#087B3E) !important;
-            box-shadow:0 8px 16px rgba(8,123,62,.22) !important;
-        }
-        .add-btn::after { display:none !important; }
-
-        /* Promotion strip */
-        .nd-promo-strip {
-            margin: .2rem .9rem 1rem;
-            min-height: 6.8rem;
-            display:flex; align-items:center; gap:.7rem;
-            padding:.85rem 1rem;
-            border-radius:1.65rem;
-            background:
-                radial-gradient(circle at 95% 15%, rgba(255,255,255,.44), transparent 7rem),
-                linear-gradient(110deg,#B8D98E,#E3F0C5);
-            border:1px solid rgba(8,123,62,.11);
-            overflow:hidden;
-            position:relative;
-            color:var(--nd-green-dark);
-            box-shadow:var(--nd-shadow-soft);
-        }
-        .nd-promo-strip::after {
-            content:"🥥";
-            position:absolute; right:.8rem; bottom:-.7rem;
-            font-size:5.3rem; opacity:.24; transform:rotate(-12deg);
-        }
-        .nd-promo-mascot { font-size:3.2rem; flex:0 0 auto; filter:drop-shadow(0 8px 10px rgba(4,61,34,.12)); }
-        .nd-promo-strip strong { display:block; font-family:'Mali',sans-serif; font-size:1.08rem; }
-        .nd-promo-strip b { color:#E54D25; font-size:1.18rem; }
-        .nd-promo-strip small { display:block; margin-top:.2rem; color:#486754; font-size:.62rem; }
-
-        /* Existing supporting pages */
-        #page-cart, #page-pickup, #page-address, #page-payment, #page-tracking { background:#F7F8EF !important; }
-        #page-cart > div, #page-payment > div, #tracking-search-box, #tracking-result > div {
-            border-radius:1.5rem !important;
-            margin-left:.8rem; margin-right:.8rem;
-            border:1px solid rgba(8,123,62,.10) !important;
-            box-shadow:var(--nd-shadow-soft) !important;
-        }
-        input, textarea, select { border-radius:1.05rem !important; }
-
-        /* Cart/action footer */
-        #sticky-footer {
-            border-radius: 1.5rem 1.5rem 0 0;
-            background: rgba(255,255,255,.96) !important;
-            border-top-color:rgba(8,123,62,.10) !important;
-            box-shadow:0 -16px 38px rgba(4,61,34,.14) !important;
-        }
-        #btn-view-cart,
-        #btn-go-next button:last-child,
-        #btn-confirm-pickup,
-        #btn-confirm-address,
-        #btn-confirm-order,
-        #option-modal button[onclick="confirmAddToCart()"] {
-            background:linear-gradient(135deg,#148748,#056D37) !important;
-        }
-
-        /* Bottom navigation is visual navigation using existing functions */
-        .nd-bottom-nav {
-            position: fixed;
-            left:50%; transform:translateX(-50%);
-            bottom: .55rem;
-            z-index: 38;
-            width: calc(100% - 1.35rem);
-            max-width: calc(28rem - 1.35rem);
-            display:grid;
-            grid-template-columns:repeat(4,1fr);
-            gap:.2rem;
-            padding:.5rem .45rem calc(.45rem + env(safe-area-inset-bottom));
-            border-radius:1.65rem;
-            background:rgba(255,255,255,.94);
-            border:1px solid rgba(8,123,62,.11);
-            box-shadow:0 18px 44px rgba(4,61,34,.18);
-            backdrop-filter:blur(18px) saturate(160%);
-            transition:opacity .2s ease, transform .2s ease;
-        }
-        .nd-bottom-nav.nd-nav-hidden { opacity:0; pointer-events:none; transform:translate(-50%, 1rem); }
-        .nd-nav-btn {
-            min-width:0;
-            display:flex; flex-direction:column; align-items:center; justify-content:center;
-            gap:.24rem;
-            padding:.42rem .15rem;
-            color:#88978E;
-            font-size:.58rem;
-            font-weight:750;
-            border-radius:1.05rem;
-            position:relative;
-        }
-        .nd-nav-btn i { font-size:1.05rem; }
-        .nd-nav-btn.nd-active { color:var(--nd-green); background:#EFF7E9; }
-        #nd-nav-count {
-            position:absolute; top:.12rem; left:calc(50% + .36rem);
-            min-width:1.05rem; height:1.05rem;
-            display:none; place-items:center;
-            padding:0 .2rem;
-            border-radius:999px;
-            background:#087B3E; color:white;
-            border:2px solid white;
-            font-size:.49rem;
-            line-height:1;
-        }
-
-        #pin-reminder-card { margin-top:.75rem !important; }
-
-        @media (max-width: 380px) {
-            .nd-home-hero { min-height:23.5rem; }
-            .nd-hero-title { font-size:2rem; max-width:13.5rem; }
-            .nd-hero-copy { max-width:13rem; font-size:.73rem; }
-            .nd-hero-product { width:11rem; height:14rem; right:-1.7rem; }
-            .nd-best-badge { width:4rem; height:4rem; top:7.4rem; font-size:.64rem; }
-            .category-tab { min-width:4.1rem !important; }
-            .menu-title { font-size:.76rem !important; }
-            .menu-desc { font-size:.59rem !important; }
-        }
-
-
-        /* =========================================================
-           HEADER REFINEMENT V4
-           ปรับเฉพาะหน้าตาส่วนหัว โดยคง ID / onclick / ระบบเดิมทั้งหมด
-           ========================================================= */
-        .app-header {
-            position: sticky;
-            top: 0;
-            z-index: 30;
-            background: rgba(255, 253, 246, .94) !important;
-            border-bottom: 1px solid rgba(8, 123, 62, .08) !important;
-            box-shadow: 0 10px 28px rgba(4, 61, 34, .07) !important;
-            backdrop-filter: blur(20px) saturate(155%) !important;
-            -webkit-backdrop-filter: blur(20px) saturate(155%) !important;
-        }
-
-        .nd-shop-header-wrap {
-            position: relative;
-            overflow: hidden;
-            padding: .72rem .95rem .78rem;
-            background:
-                radial-gradient(circle at 100% 0%, rgba(214, 239, 188, .46), transparent 9rem),
-                linear-gradient(180deg, rgba(255,255,255,.98) 0%, rgba(250,252,243,.96) 100%);
-        }
-        .nd-shop-header-wrap::before {
-            content: "";
-            position: absolute;
-            width: 8.5rem;
-            height: 8.5rem;
-            right: -5.5rem;
-            bottom: -6.2rem;
-            border: 1.25rem solid rgba(8,123,62,.035);
-            border-radius: 50%;
-            pointer-events: none;
-        }
-
-        .nd-header-actions {
-            position: relative;
-            z-index: 2;
-            display: grid;
-            grid-template-columns: 2.55rem minmax(0,1fr) auto;
-            align-items: center;
-            gap: .55rem;
-            min-height: 2.55rem;
-            margin-bottom: .62rem;
-        }
-        .nd-header-page-title {
-            min-width: 0;
-            text-align: center;
-            color: #456453;
-            font-size: .72rem;
-            font-weight: 800;
-            letter-spacing: .02em;
-        }
-        .nd-header-page-title span {
-            display: inline-flex;
-            align-items: center;
-            gap: .34rem;
-            padding: .32rem .62rem;
-            border-radius: 999px;
-            background: rgba(236,246,228,.78);
-            border: 1px solid rgba(8,123,62,.08);
-        }
-        .nd-header-page-title i { color: #19824A; font-size: .65rem; }
-
-        .nd-round-action,
-        #header-tracking-btn {
-            min-height: 2.55rem !important;
-            border-radius: 999px !important;
-            border: 1px solid rgba(8,123,62,.11) !important;
-            background: rgba(255,255,255,.94) !important;
-            color: var(--nd-green-dark) !important;
-            box-shadow: 0 7px 18px rgba(4,61,34,.065) !important;
-            transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
-        }
-        .nd-round-action {
-            width: 2.55rem !important;
-            height: 2.55rem !important;
-            display: inline-grid !important;
-            place-items: center;
-            padding: 0 !important;
-        }
-        #header-tracking-btn {
-            max-width: 7.25rem !important;
-            padding: .55rem .78rem !important;
-            justify-content: center;
-            gap: .38rem !important;
-            overflow: hidden;
-            white-space: nowrap;
-            font-size: .68rem !important;
-            font-weight: 800 !important;
-        }
-        .nd-round-action:active,
-        #header-tracking-btn:active {
-            transform: scale(.96);
-            box-shadow: 0 3px 9px rgba(4,61,34,.06) !important;
-        }
-
-        .nd-store-identity {
-            position: relative;
-            z-index: 2;
-            display: grid;
-            grid-template-columns: 4rem minmax(0,1fr);
-            align-items: center;
-            gap: .78rem;
-            padding: .72rem .75rem;
-            border-radius: 1.5rem;
-            background: rgba(255,255,255,.82);
-            border: 1px solid rgba(8,123,62,.10);
-            box-shadow: 0 12px 30px rgba(4,61,34,.06);
-        }
-        .nd-store-logo-wrap {
-            position: relative;
-            align-self: center;
-        }
-        .nd-store-logo-wrap .w-16.h-16 {
-            width: 4rem !important;
-            height: 4rem !important;
-            padding: .17rem !important;
-            border: 1px solid rgba(8,123,62,.18) !important;
-            background: #fff !important;
-            box-shadow: 0 8px 18px rgba(4,61,34,.10) !important;
-        }
-        .nd-store-logo-wrap img { background: #fff; }
-        #shop-status-badge {
-            left: 50% !important;
-            bottom: -.18rem !important;
-            transform: translateX(-50%) !important;
-            min-width: 3rem;
-            padding: .19rem .5rem !important;
-            border: 2px solid #fff !important;
-            font-size: .55rem !important;
-            text-align: center;
-            box-shadow: 0 6px 13px rgba(4,61,34,.16) !important;
-        }
-
-        .nd-store-copy { min-width: 0; }
-        .nd-store-name-row {
-            display: flex;
-            align-items: center;
-            gap: .48rem;
-            min-width: 0;
-        }
-        .nd-store-name-row h1 {
-            min-width: 0;
-            margin: 0 !important;
-            overflow: hidden;
-            color: var(--nd-green-dark) !important;
-            font-family: 'Mali', sans-serif;
-            font-size: 1.05rem !important;
-            font-weight: 700 !important;
-            line-height: 1.25 !important;
-            letter-spacing: -.035em;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .nd-made-fresh {
-            flex: 0 0 auto;
-            display: inline-flex;
-            align-items: center;
-            gap: .24rem;
-            padding: .23rem .42rem;
-            border-radius: 999px;
-            color: #087B3E;
-            background: #EAF6DF;
-            border: 1px solid rgba(8,123,62,.09);
-            font-size: .52rem;
-            font-weight: 850;
-            line-height: 1;
-        }
-        .nd-made-fresh::before {
-            content: "";
-            width: .34rem;
-            height: .34rem;
-            border-radius: 50%;
-            background: #19A35A;
-            box-shadow: 0 0 0 .18rem rgba(25,163,90,.10);
-        }
-        .shop-subtitle {
-            margin-top: .14rem !important;
-            overflow: hidden;
-            color: #63776B !important;
-            font-size: .68rem !important;
-            font-weight: 650 !important;
-            line-height: 1.35 !important;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .shop-meta-row {
-            display: flex;
-            flex-wrap: nowrap;
-            gap: .32rem !important;
-            margin-top: .46rem !important;
-            overflow: hidden;
-        }
-        .shop-meta-chip {
-            min-width: 0;
-            padding: .3rem .48rem !important;
-            border: 1px solid rgba(8,123,62,.09) !important;
-            background: #F2F8ED !important;
-            color: #254F38 !important;
-            font-size: .58rem !important;
-            font-weight: 750 !important;
-            line-height: 1 !important;
-            white-space: nowrap;
-            box-shadow: none !important;
-        }
-        .shop-meta-chip i { color: #138148; }
-        .nd-location-chip {
-            flex: 1 1 auto;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        #mode-toggle-container {
-            position: relative;
-            z-index: 2;
-            margin-top: .58rem !important;
-            padding: .3rem !important;
-            gap: .3rem !important;
-            border: 1px solid rgba(8,123,62,.09) !important;
-            border-radius: 1.28rem !important;
-            background: rgba(235,244,229,.92) !important;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,.9) !important;
-        }
-        #mode-toggle-container > button {
-            min-height: 3.78rem;
-            padding: .62rem .42rem !important;
-            border-radius: 1.02rem !important;
-            transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
-        }
-        #mode-toggle-container > button:active { transform: scale(.985); }
-        .mode-toggle-active {
-            color: #fff !important;
-            background: linear-gradient(135deg, #12864A 0%, #076638 100%) !important;
-            border: 1px solid rgba(4,84,43,.16) !important;
-            box-shadow: 0 9px 20px rgba(8,123,62,.20) !important;
-        }
-        .mode-toggle-inactive {
-            color: #63776B !important;
+        #category-tabs.hero-category-tabs {
+            margin: 0.55rem 1rem 0.2rem !important;
+            padding: 0.45rem 0.15rem 0.15rem !important;
             background: transparent !important;
-            border: 1px solid transparent !important;
-            box-shadow: none !important;
+            border-bottom: none !important;
+            gap: 0.45rem !important;
         }
-        .mode-toggle-active .mode-icon,
-        .mode-toggle-active .mode-text,
-        .mode-toggle-active .mode-subtext { color: #fff !important; opacity: 1 !important; }
-        .mode-toggle-inactive .mode-icon { opacity: .66 !important; }
-        .mode-icon {
-            font-size: 1rem !important;
-            line-height: 1 !important;
+        .category-tab {
+            padding: 0.68rem 1.05rem !important;
+            background: rgba(255,255,255,0.95) !important;
+            border: 1px solid #E0EBDD !important;
+            box-shadow: 0 8px 18px rgba(18,53,31,0.05);
         }
-        .mode-text {
-            margin-top: .3rem !important;
-            font-size: .73rem !important;
-            font-weight: 800 !important;
-            line-height: 1.1 !important;
+        .category-tab.tab-active {
+            color: white !important;
+            border-color: var(--color-primary) !important;
+            background: linear-gradient(180deg, #28924C 0%, #176B32 100%) !important;
+            box-shadow: 0 12px 24px rgba(23,107,50,0.20);
         }
-        .mode-subtext {
-            margin-top: .2rem !important;
-            font-size: .56rem !important;
-            font-weight: 650 !important;
-            line-height: 1 !important;
+        #menu-list { padding-top: 0.15rem !important; }
+        .menu-card-inner {
+            padding: 1rem !important;
+            border-radius: 1.45rem !important;
+            box-shadow: 0 12px 24px rgba(18,53,31,0.07) !important;
         }
-
-        #delivery-pin-row { margin-top: .55rem !important; }
-        #header-pin-btn {
-            min-height: 2.75rem !important;
-            padding: .65rem .75rem !important;
-            border: 1px solid rgba(8,123,62,.10) !important;
-            border-radius: 1rem !important;
-            background: rgba(255,255,255,.82) !important;
-            box-shadow: 0 7px 17px rgba(4,61,34,.05) !important;
-            color: #355E45 !important;
+        .menu-card-inner::before {
+            top: 0.9rem;
+            bottom: 0.9rem;
+            opacity: 1;
         }
-
-        .app-header > #category-tabs {
-            padding-top: .25rem !important;
-            padding-bottom: .45rem !important;
+        .menu-image {
+            width: 6.65rem !important;
+            height: 6.65rem !important;
+            border-radius: 1.35rem !important;
         }
-
+        @media (max-width: 420px) {
+            .hero-main-grid {
+                grid-template-columns: 1fr;
+                gap: 0.7rem;
+            }
+            .hero-big-title { font-size: 2.2rem; }
+            .hero-big-title span { font-size: 1.82rem; }
+            .hero-product-stage {
+                min-height: 18rem;
+                margin-top: 0.2rem;
+            }
+            .hero-product-backdrop {
+                inset: 0.5rem 0.8rem 0.4rem 0.8rem;
+            }
+            .hero-product-badge {
+                top: 0.9rem;
+                right: 1rem;
+                width: 4.85rem;
+                height: 4.85rem;
+                font-size: 0.85rem;
+            }
+            .hero-benefit-grid {
+                grid-template-columns: repeat(3, minmax(0,1fr));
+            }
+            .hero-action-strip {
+                flex-wrap: wrap;
+                gap: 0.75rem;
+            }
+            .hero-action-strip .hero-cta-btn {
+                width: 100%;
+                justify-content: center;
+                margin-left: 0;
+            }
+        }
         @media (max-width: 380px) {
-            .nd-shop-header-wrap { padding-left: .75rem; padding-right: .75rem; }
-            .nd-header-actions { grid-template-columns: 2.45rem minmax(0,1fr) auto; }
-            .nd-round-action { width: 2.45rem !important; height: 2.45rem !important; }
-            #header-tracking-btn { max-width: 6.4rem !important; padding-left: .62rem !important; padding-right: .62rem !important; }
-            .nd-store-identity { grid-template-columns: 3.6rem minmax(0,1fr); gap: .62rem; padding: .65rem; }
-            .nd-store-logo-wrap .w-16.h-16 { width: 3.6rem !important; height: 3.6rem !important; }
-            .nd-store-name-row h1 { font-size: .91rem !important; }
-            .nd-made-fresh { display: none; }
-            .shop-subtitle { font-size: .62rem !important; }
-            .shop-meta-chip { font-size: .53rem !important; padding: .28rem .4rem !important; }
-            #mode-toggle-container > button { min-height: 3.52rem; }
+            .hero-storefront { padding: 1rem; }
+            .hero-logo-ring { width: 4.15rem; height: 4.15rem; }
+            .hero-shop-copy h1 { font-size: 1.06rem; }
+            .hero-kicker { font-size: 0.68rem; }
+            .hero-big-title { font-size: 1.98rem; }
+            .hero-big-title span { font-size: 1.62rem; }
+            .hero-tagline { font-size: 0.88rem; }
+            .hero-benefit-card div { font-size: 0.72rem; }
+            .hero-benefit-card i { font-size: 1.18rem; }
+            .hero-product-stage { min-height: 16rem; }
+            .hero-action-strip strong { font-size: 0.92rem; }
+            .hero-action-strip small { font-size: 0.72rem; }
+            .menu-image { width: 5.9rem !important; height: 5.9rem !important; }
         }
-    </style>
 
+    </style>
 </head>
-<body class="pb-32"> 
+<body class="pb-32 menu-page-active"> 
 
     <div class="app-shell max-w-md mx-auto min-h-screen relative overflow-hidden sm:border-x" style="background-color: var(--color-base); border-color: var(--color-border-soft);">
         
         <!-- HEADER -->
-        <header class="app-header sticky top-0 z-30" style="background-color: var(--color-base); backdrop-filter: blur(8px);">
-            <div class="nd-shop-header-wrap">
-                <div class="nd-header-actions">
-                    <button onclick="goBack()" class="nd-round-action transition" aria-label="ย้อนกลับ" title="ย้อนกลับ">
+        <header class="app-header sticky top-0 z-40">
+            <div class="px-4 pt-4 pb-2">
+                <div class="header-topbar hero-topbar">
+                    <button onclick="goBack()" class="hero-icon-btn flex items-center justify-center shrink-0 transition">
                         <i class="fa-solid fa-arrow-left text-sm"></i>
                     </button>
-
-                    <div class="nd-header-page-title" aria-hidden="true">
-                        <span><i class="fa-solid fa-leaf"></i> สั่งสดจากร้าน</span>
-                    </div>
-
-                    <button id="header-tracking-btn" onclick="handleTrackingClick()" class="transition font-medium flex items-center"></button>
+                    <button id="header-tracking-btn" onclick="handleTrackingClick()" class="hero-nav-pill transition font-medium flex items-center gap-2"></button>
                 </div>
-
-                <div class="nd-store-identity">
-                    <div class="nd-store-logo-wrap">
-                        <div class="w-16 h-16 rounded-full bg-white shadow-sm" style="border: 2px solid var(--color-accent-mint);">
-                            <img src="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8" class="w-full h-full rounded-full object-cover" alt="โลโก้ร้านหนุ่มดำเนิน มะพร้าวปั่น">
-                        </div>
-                        <span id="shop-status-badge" class="absolute px-2 py-0.5 text-[9px] font-bold text-white rounded-full shadow-sm whitespace-nowrap hidden"></span>
-                    </div>
-
-                    <div class="nd-store-copy">
-                        <div class="nd-store-name-row">
-                            <h1>หนุ่มดำเนิน มะพร้าวปั่น</h1>
-                            <span class="nd-made-fresh">ทำสด</span>
-                        </div>
-                        <div class="shop-subtitle">หอมมะพร้าวแท้ จากมะพร้าวน้ำหอมแท้</div>
-                        <div class="shop-meta-row">
-                            <span id="shop-hours-label" class="shop-meta-chip"><i class="fa-regular fa-clock"></i> 09:00-20:00</span>
-                            <a href="tel:0622467746" id="shop-phone-link" class="shop-meta-chip hover:underline"><i class="fa-solid fa-phone"></i> 062-246-7746</a>
-                            <span class="shop-meta-chip nd-location-chip"><i class="fa-solid fa-location-dot"></i> ทุ่งครุ</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="mode-toggle-container" class="mt-3 grid grid-cols-2 gap-1 p-1 rounded-2xl" style="background: var(--color-base-warm);">
-                    <button onclick="setMode('pickup')" id="mode-btn-pickup" class="mode-toggle-active px-3 py-2.5 rounded-xl text-center transition">
-                        <div class="text-xl leading-none mode-icon">🏪</div>
-                        <div class="text-xs font-semibold mt-1 mode-text">รับที่ร้าน / หน้าร้าน</div>
-                        <div class="text-[9px] mt-0.5 mode-subtext">ไม่มีค่าส่ง</div>
-                    </button>
-                    <button onclick="setMode('delivery')" id="mode-btn-delivery" class="mode-toggle-inactive px-3 py-2.5 rounded-xl text-center transition">
-                        <div class="text-xl leading-none mode-icon">🛵</div>
-                        <div class="text-xs font-semibold mt-1 mode-text">ส่งถึงบ้าน</div>
-                        <div class="text-[9px] mt-0.5 mode-subtext">คำนวณค่าส่งตามระยะ</div>
-                    </button>
-                </div>
-
-                <div id="delivery-pin-row" class="mt-3 hidden">
-                    <button id="header-pin-btn" onclick="goToMapPage()" class="w-full flex items-center gap-2 text-xs px-3 py-2 rounded-xl transition" style="background: var(--color-accent-blue); color: var(--color-text-dark); border: 1px solid var(--color-accent-blue-dark);">
-                        <i class="fa-solid fa-location-dot" style="color: var(--color-hot);"></i>
-                        <span id="header-distance" class="font-medium flex-1 text-left">แตะเพื่อปักหมุดและคำนวณค่าส่ง</span>
-                        <i class="fa-solid fa-chevron-right text-[10px] opacity-50"></i>
-                    </button>
-                </div>
-            </div>
-
-            <div id="category-tabs" class="flex px-4 gap-2 overflow-x-auto no-scrollbar whitespace-nowrap" style="border-bottom: 1px solid var(--color-border-soft);">
-                <!-- หมวดหมู่จะถูกสร้างอัตโนมัติจากข้อมูล menu.category ใน Firebase -->
             </div>
         </header>
 
         <!-- PAGE: MENU -->
         <section id="page-menu" class="page-section active-section">
+            <div class="menu-home-wrap">
+                <div class="hero-storefront">
+                    <div class="hero-leaf leaf-a"></div>
+                    <div class="hero-leaf leaf-b"></div>
 
-            <!-- Visual-only storefront hero. All IDs and ordering functions below remain the original system. -->
-            <div class="nd-home-hero" aria-label="แนะนำร้านหนุ่มดำเนิน มะพร้าวปั่น">
-                <div class="nd-hero-kicker"><i class="fa-solid fa-sparkles"></i> สดใหม่ทุกแก้ว</div>
-                <div class="nd-hero-title">หนุ่มดำเนิน<span>มะพร้าวปั่น</span></div>
-                <p class="nd-hero-copy">เฉาะด้วยมือ น้ำใหม่ หอมสดชื่น จากมะพร้าวน้ำหอมแท้</p>
-                <img id="nd-hero-product-image" class="nd-hero-product" src="https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=85&w=800&auto=format&fit=crop" alt="เมนูมะพร้าวแนะนำ" onerror="this.style.opacity='.16'">
-                <div class="nd-best-badge">เมนู<br>ขายดี<br>♥</div>
-                <div class="nd-trust-row">
-                    <div class="nd-trust-item"><i class="fa-solid fa-leaf"></i><span>มะพร้าวน้ำหอม<br>แท้ 100%</span></div>
-                    <div class="nd-trust-item"><i class="fa-regular fa-hand"></i><span>เฉาะด้วยมือ<br>ทุกลูก</span></div>
-                    <div class="nd-trust-item"><i class="fa-regular fa-snowflake"></i><span>สดใหม่<br>ทุกวัน</span></div>
-                </div>
-            </div>
-
-            <button type="button" class="nd-delivery-promo" onclick="setMode('delivery'); goToMapPage();">
-                <span class="nd-delivery-icon"><i class="fa-solid fa-motorcycle"></i></span>
-                <span class="flex-1 min-w-0">
-                    <strong>สั่งครบตามขั้น ร้านช่วยค่าส่ง</strong>
-                    <small>ปักหมุดเพื่อดูระยะและค่าส่งจริงของคุณ</small>
-                </span>
-                <span class="nd-delivery-action"><i class="fa-solid fa-location-dot"></i> ดูค่าส่ง</span>
-            </button>
-
-            <div id="nd-category-shell" class="nd-category-shell" aria-label="หมวดหมู่เมนู"></div>
-
-            <div class="nd-menu-heading">
-                <div>
-                    <div class="nd-menu-kicker">FRESH COCONUT MENU</div>
-                    <h2>เมนูทั้งหมด</h2>
-                </div>
-                <button type="button" onclick="document.getElementById('menu-list').scrollIntoView({behavior:'smooth',block:'start'})">ดูทั้งหมด <i class="fa-solid fa-chevron-right"></i></button>
-            </div>
-
-
-            <div id="pin-reminder-card" class="mx-5 mt-4 hidden">
-                <button onclick="goToMapPage()" class="w-full shimmer-bg border-2 border-dashed rounded-2xl p-3 flex items-center gap-3 transition active:scale-[0.98]" style="border-color: var(--color-accent-yellow-dark);">
-                    <div class="shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white shadow" style="background: #E8B86B;">
-                        <i class="fa-solid fa-location-dot text-lg"></i>
+                    <div class="hero-shop-row">
+                        <div class="hero-logo-ring">
+                            <img src="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8" alt="โลโก้ร้าน">
+                        </div>
+                        <div class="hero-shop-copy flex-1 min-w-0">
+                            <h1>หนุ่มดำเนิน มะพร้าวปั่น</h1>
+                            <div class="shop-subtitle">หอมมะพร้าวแท้ จากมะพร้าวน้ำหอมแท้</div>
+                            <div class="hero-location-line"><i class="fa-solid fa-location-dot"></i> ทุ่งครุ ประชาอุทิศ</div>
+                            <div class="hero-meta-row">
+                                <span id="shop-status-badge" class="hero-open-badge hidden"></span>
+                                <span id="shop-hours-label" class="hero-meta-chip"><i class="fa-regular fa-clock"></i> 09:00-20:00</span>
+                                <a href="tel:0622467746" id="shop-phone-link" class="hero-meta-chip hover:underline"><i class="fa-solid fa-phone"></i> 062-246-7746</a>
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex-1 text-left">
-                        <div class="font-display font-semibold text-sm" style="color: var(--color-text-dark);">📍 ปักหมุดเพื่อดูค่าส่ง</div>
-                        <div class="text-[11px] mt-0.5" style="color: var(--color-text-muted);">ค่าส่งคิดตามระยะทาง · ลดตามยอดสั่ง</div>
-                    </div>
-                    <i class="fa-solid fa-chevron-right text-xs" style="color: var(--color-text-muted);"></i>
-                </button>
-            </div>
 
-            <div id="menu-list" class="pb-4"></div>
+                    <div class="hero-main-grid">
+                        <div class="hero-copy-block">
+                            <div class="hero-kicker"><i class="fa-solid fa-sparkles"></i> สดใหม่ทุกแก้ว</div>
+                            <h2 class="hero-big-title">หนุ่มดำเนิน<span>มะพร้าวปั่น</span></h2>
+                            <p class="hero-tagline">เฉาะด้วยมือ น้ำใหม่ หอมสดชื่น จากมะพร้าวน้ำหอมแท้ คัดทุกแก้วให้พร้อมเสิร์ฟแบบน่ากดสั่ง</p>
+
+                            <div class="hero-benefit-grid">
+                                <div class="hero-benefit-card">
+                                    <i class="fa-solid fa-seedling"></i>
+                                    <div>มะพร้าวน้ำหอม<br>แท้ 100%</div>
+                                </div>
+                                <div class="hero-benefit-card">
+                                    <i class="fa-regular fa-hand"></i>
+                                    <div>เฉาะด้วยมือ<br>ทุกลูก</div>
+                                </div>
+                                <div class="hero-benefit-card">
+                                    <i class="fa-regular fa-snowflake"></i>
+                                    <div>สดใหม่<br>ทุกวัน</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="hero-product-stage">
+                            <div class="hero-product-backdrop"></div>
+                            <div class="hero-product-plinth"></div>
+                            <div class="hero-product-badge" id="hero-product-badge">เมนู<br>ขายดี</div>
+                            <img id="hero-main-image" src="https://images.unsplash.com/photo-1587049352846-4a222e784d38?q=80&w=800&auto=format&fit=crop" alt="เมนูแนะนำ">
+                            <div class="hero-product-label" id="hero-product-label"><i class="fa-solid fa-star"></i> พร้อมเสิร์ฟ</div>
+                        </div>
+                    </div>
+
+                    <div class="hero-action-strip">
+                        <div class="hero-action-icon"><i class="fa-solid fa-motorcycle"></i></div>
+                        <div>
+                            <strong>สั่งครบ 200.- จัดส่งฟรี!</strong>
+                            <small>เฉพาะระยะใกล้ · ภายในทุ่งครุ</small>
+                        </div>
+                        <button type="button" onclick="goToMapPage()" class="hero-cta-btn">ดูระยะจัดส่ง <i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+
+                    <div id="mode-toggle-container" class="hero-mode-panel mt-4 grid grid-cols-2 gap-1 p-1 rounded-2xl" style="background: var(--color-base-warm);">
+                        <button onclick="setMode('pickup')" id="mode-btn-pickup" class="mode-toggle-active px-3 py-2.5 rounded-xl text-center transition">
+                            <div class="text-xl leading-none mode-icon">🏪</div>
+                            <div class="text-xs font-semibold mt-1 mode-text">รับที่ร้าน/หน้าร้าน</div>
+                            <div class="text-[9px] mt-0.5 mode-subtext">ไม่มีค่าส่ง</div>
+                        </button>
+                        <button onclick="setMode('delivery')" id="mode-btn-delivery" class="mode-toggle-inactive px-3 py-2.5 rounded-xl text-center transition">
+                            <div class="text-xl leading-none mode-icon">🛵</div>
+                            <div class="text-xs font-semibold mt-1 mode-text">ส่งถึงบ้าน</div>
+                            <div class="text-[9px] mt-0.5 mode-subtext">คำนวณค่าส่งตามระยะ</div>
+                        </button>
+                    </div>
+
+                    <div id="delivery-pin-row" class="hero-pin-row mt-3 hidden">
+                        <button id="header-pin-btn" onclick="goToMapPage()" class="hero-pin-card transition">
+                            <div class="pin-icon"><i class="fa-solid fa-location-dot"></i></div>
+                            <div class="pin-copy">
+                                <strong id="header-distance">แตะเพื่อปักหมุดและคำนวณค่าส่ง</strong>
+                                <span>คำนวณค่าส่งจริงตามระยะทางของคุณ</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right text-[10px] opacity-50"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="pin-reminder-card" class="hidden">
+                    <button onclick="goToMapPage()" class="w-full shimmer-bg border-2 border-dashed rounded-2xl p-3 flex items-center gap-3 transition active:scale-[0.98]" style="border-color: var(--color-accent-yellow-dark);">
+                        <div class="shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white shadow" style="background: #E8B86B;">
+                            <i class="fa-solid fa-location-dot text-lg"></i>
+                        </div>
+                        <div class="flex-1 text-left">
+                            <div class="font-display font-semibold text-sm" style="color: var(--color-text-dark);">📍 ปักหมุดเพื่อดูค่าส่ง</div>
+                            <div class="text-[11px] mt-0.5" style="color: var(--color-text-muted);">ค่าส่งคิดตามระยะทาง · ลดตามยอดสั่ง</div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-xs" style="color: var(--color-text-muted);"></i>
+                    </button>
+                </div>
+
+                <div class="menu-heading-clean">
+                    <div class="menu-kicker">Coconut Menu</div>
+                    <h2 class="font-display text-xl font-semibold">เมนูแนะนำ</h2>
+                    <div class="menu-subcopy">เลือกหมวดเพื่อดูเมนูที่อยากสั่งได้เลย</div>
+                </div>
+
+                <div id="category-tabs" class="hero-category-tabs flex gap-2 overflow-x-auto no-scrollbar whitespace-nowrap">
+                    <!-- หมวดหมู่จะถูกสร้างอัตโนมัติจากข้อมูล menu.category ใน Firebase -->
+                </div>
+
+                <div id="menu-list" class="pb-4"></div>
+            </div>
         </section>
 
         <!-- PAGE: CART -->
@@ -1820,16 +1550,6 @@
                 </div>
             </div>
         </section>
-
-
-
-        <!-- Bottom navigation calls only existing ordering functions -->
-        <nav id="nd-bottom-nav" class="nd-bottom-nav" aria-label="เมนูนำทางหลัก">
-            <button type="button" class="nd-nav-btn nd-active" data-page="menu" onclick="showPage('menu')"><i class="fa-solid fa-house"></i><span>หน้าร้าน</span></button>
-            <button type="button" class="nd-nav-btn" onclick="document.getElementById('nd-category-shell').scrollIntoView({behavior:'smooth',block:'start'})"><i class="fa-solid fa-grip"></i><span>เมนู</span></button>
-            <button type="button" class="nd-nav-btn" data-page="cart" onclick="window.cart && window.cart.length ? showPage('cart') : Swal.fire({icon:'info',title:'ตะกร้ายังว่าง',text:'เลือกเมนูที่ชอบก่อนนะครับ'})"><i class="fa-solid fa-basket-shopping"></i><span id="nd-nav-count">0</span><span>ตะกร้า</span></button>
-            <button type="button" class="nd-nav-btn" data-page="tracking" onclick="handleTrackingClick()"><i class="fa-solid fa-location-dot"></i><span>ติดตาม</span></button>
-        </nav>
 
 
         <!-- STICKY FOOTER -->
@@ -2633,6 +2353,7 @@
                 window.updateShopStatusUI();
                 window.updateNextStepHint();
                 window.updatePinReminderCard();
+                window.updateHeroPreview();
             } else { Swal.fire('แจ้งเตือน', 'ไม่พบข้อมูลเมนูในระบบ', 'warning'); window.menuDB = []; }
         } catch (error) { console.error(error); Swal.fire('Error', 'ไม่สามารถเชื่อมต่อ Firebase ได้', 'error'); }
     });
@@ -2713,10 +2434,18 @@
             deliveryPinRow.classList.add('hidden');
         }
 
+        document.body.classList.toggle('menu-page-active', pageId === 'menu');
         const backBtn = document.querySelector('header button i.fa-arrow-left')?.parentElement;
         if(backBtn) {
-            if(pageId === 'menu') { backBtn.style.opacity = '0'; backBtn.style.pointerEvents = 'none'; } 
-            else { backBtn.style.opacity = '1'; backBtn.style.pointerEvents = 'auto'; }
+            if(pageId === 'menu') {
+                backBtn.style.display = 'none';
+                backBtn.style.opacity = '0';
+                backBtn.style.pointerEvents = 'none';
+            } else {
+                backBtn.style.display = 'flex';
+                backBtn.style.opacity = '1';
+                backBtn.style.pointerEvents = 'auto';
+            }
         }
         window.updateFooterState(pageId);
         if(pageId === 'address' && window.map) {
@@ -2819,6 +2548,34 @@
             }
         });
         window.renderMenu(cat);
+        window.updateHeroPreview(cat);
+    };
+
+    window.updateHeroPreview = function(cat = window.activeTab) {
+        const heroImage = document.getElementById('hero-main-image');
+        const heroLabel = document.getElementById('hero-product-label');
+        const heroBadge = document.getElementById('hero-product-badge');
+        if (!heroImage || !heroLabel || !heroBadge) return;
+
+        const visibleItems = (window.menuDB || []).filter(item => item && item.hidden !== true && item.stock !== false);
+        if (visibleItems.length === 0) return;
+
+        const activeItems = visibleItems.filter(item => cat === 'all' || item.category === cat);
+        const candidate = activeItems.find(item => item.badge)
+            || activeItems[0]
+            || visibleItems.find(item => item.category === 'recommend')
+            || visibleItems.find(item => item.category === 'coconut_smoothie')
+            || visibleItems[0];
+
+        if (!candidate) return;
+        const fallback = (window.shopSettings.menu && window.shopSettings.menu.defaultProductImage) || window.DEFAULT_SHOP_SETTINGS.menu.defaultProductImage;
+        heroImage.src = candidate.img || fallback;
+        heroImage.alt = candidate.name || 'เมนูแนะนำ';
+        heroLabel.innerHTML = `<i class="fa-solid fa-star"></i> ${candidate.name || 'พร้อมเสิร์ฟ'}`;
+
+        const badgeText = String(candidate.badge || (candidate.category === 'promotion' ? 'โปรโมชั่น' : candidate.category === 'recommend' ? 'แนะนำ' : 'เมนูขายดี'));
+        const badgeCompact = badgeText.replace(/\s+/g, '\n');
+        heroBadge.innerHTML = badgeCompact.length > 12 ? badgeText : badgeCompact;
     };
 
     window.isShopOpen = function() {
@@ -3789,80 +3546,5 @@
         } 
     };
 </script>
-
-    <script id="numdamnoen-visual-helper-v3">
-    (function () {
-        'use strict';
-
-        function moveCategoryDock() {
-            const tabs = document.getElementById('category-tabs');
-            const shell = document.getElementById('nd-category-shell');
-            if (tabs && shell && tabs.parentElement !== shell) shell.appendChild(tabs);
-        }
-
-        function syncHeroImage() {
-            const hero = document.getElementById('nd-hero-product-image');
-            if (!hero) return;
-            const item = Array.isArray(window.menuDB)
-                ? window.menuDB.find(x => x && x.hidden !== true && x.stock !== false && x.img)
-                : null;
-            if (item && item.img && hero.dataset.synced !== item.img) {
-                hero.src = item.img;
-                hero.dataset.synced = item.img;
-            }
-        }
-
-        function syncVisualState() {
-            moveCategoryDock();
-            syncHeroImage();
-
-            const current = document.querySelector('.page-section.active-section');
-            const currentPage = current ? current.id.replace('page-', '') : 'menu';
-            const nav = document.getElementById('nd-bottom-nav');
-            const footer = document.getElementById('sticky-footer');
-            const footerVisible = footer && !footer.classList.contains('hidden');
-
-            if (nav) {
-                nav.classList.toggle('nd-nav-hidden', currentPage !== 'menu' || footerVisible);
-                nav.querySelectorAll('[data-page]').forEach(btn => {
-                    btn.classList.toggle('nd-active', btn.dataset.page === currentPage);
-                });
-            }
-
-            const count = Array.isArray(window.cart) ? window.cart.reduce((sum, item) => sum + (Number(item.qty) || 0), 0) : 0;
-            const badge = document.getElementById('nd-nav-count');
-            if (badge) {
-                badge.textContent = count > 99 ? '99+' : String(count);
-                badge.style.display = count > 0 ? 'grid' : 'none';
-            }
-        }
-
-        function installObservers() {
-            const footer = document.getElementById('sticky-footer');
-            if (footer) new MutationObserver(syncVisualState).observe(footer, {attributes:true, childList:true, subtree:true});
-            document.querySelectorAll('.page-section').forEach(section => {
-                new MutationObserver(syncVisualState).observe(section, {attributes:true, attributeFilter:['class']});
-            });
-            const menuList = document.getElementById('menu-list');
-            if (menuList) new MutationObserver(syncVisualState).observe(menuList, {childList:true, subtree:true});
-        }
-
-        function boot() {
-            moveCategoryDock();
-            installObservers();
-            syncVisualState();
-            let rounds = 0;
-            const timer = setInterval(() => {
-                syncVisualState();
-                rounds += 1;
-                if (rounds > 40 || (Array.isArray(window.menuDB) && window.menuDB.length)) clearInterval(timer);
-            }, 500);
-        }
-
-        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, {once:true});
-        else boot();
-    })();
-    </script>
-
 </body>
 </html>
