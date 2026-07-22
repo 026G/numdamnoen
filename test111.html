@@ -1050,6 +1050,301 @@
             .menu-title { font-size:.76rem !important; }
             .menu-desc { font-size:.59rem !important; }
         }
+
+
+        /* =========================================================
+           HEADER REFINEMENT V4
+           ปรับเฉพาะหน้าตาส่วนหัว โดยคง ID / onclick / ระบบเดิมทั้งหมด
+           ========================================================= */
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            background: rgba(255, 253, 246, .94) !important;
+            border-bottom: 1px solid rgba(8, 123, 62, .08) !important;
+            box-shadow: 0 10px 28px rgba(4, 61, 34, .07) !important;
+            backdrop-filter: blur(20px) saturate(155%) !important;
+            -webkit-backdrop-filter: blur(20px) saturate(155%) !important;
+        }
+
+        .nd-shop-header-wrap {
+            position: relative;
+            overflow: hidden;
+            padding: .72rem .95rem .78rem;
+            background:
+                radial-gradient(circle at 100% 0%, rgba(214, 239, 188, .46), transparent 9rem),
+                linear-gradient(180deg, rgba(255,255,255,.98) 0%, rgba(250,252,243,.96) 100%);
+        }
+        .nd-shop-header-wrap::before {
+            content: "";
+            position: absolute;
+            width: 8.5rem;
+            height: 8.5rem;
+            right: -5.5rem;
+            bottom: -6.2rem;
+            border: 1.25rem solid rgba(8,123,62,.035);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .nd-header-actions {
+            position: relative;
+            z-index: 2;
+            display: grid;
+            grid-template-columns: 2.55rem minmax(0,1fr) auto;
+            align-items: center;
+            gap: .55rem;
+            min-height: 2.55rem;
+            margin-bottom: .62rem;
+        }
+        .nd-header-page-title {
+            min-width: 0;
+            text-align: center;
+            color: #456453;
+            font-size: .72rem;
+            font-weight: 800;
+            letter-spacing: .02em;
+        }
+        .nd-header-page-title span {
+            display: inline-flex;
+            align-items: center;
+            gap: .34rem;
+            padding: .32rem .62rem;
+            border-radius: 999px;
+            background: rgba(236,246,228,.78);
+            border: 1px solid rgba(8,123,62,.08);
+        }
+        .nd-header-page-title i { color: #19824A; font-size: .65rem; }
+
+        .nd-round-action,
+        #header-tracking-btn {
+            min-height: 2.55rem !important;
+            border-radius: 999px !important;
+            border: 1px solid rgba(8,123,62,.11) !important;
+            background: rgba(255,255,255,.94) !important;
+            color: var(--nd-green-dark) !important;
+            box-shadow: 0 7px 18px rgba(4,61,34,.065) !important;
+            transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
+        }
+        .nd-round-action {
+            width: 2.55rem !important;
+            height: 2.55rem !important;
+            display: inline-grid !important;
+            place-items: center;
+            padding: 0 !important;
+        }
+        #header-tracking-btn {
+            max-width: 7.25rem !important;
+            padding: .55rem .78rem !important;
+            justify-content: center;
+            gap: .38rem !important;
+            overflow: hidden;
+            white-space: nowrap;
+            font-size: .68rem !important;
+            font-weight: 800 !important;
+        }
+        .nd-round-action:active,
+        #header-tracking-btn:active {
+            transform: scale(.96);
+            box-shadow: 0 3px 9px rgba(4,61,34,.06) !important;
+        }
+
+        .nd-store-identity {
+            position: relative;
+            z-index: 2;
+            display: grid;
+            grid-template-columns: 4rem minmax(0,1fr);
+            align-items: center;
+            gap: .78rem;
+            padding: .72rem .75rem;
+            border-radius: 1.5rem;
+            background: rgba(255,255,255,.82);
+            border: 1px solid rgba(8,123,62,.10);
+            box-shadow: 0 12px 30px rgba(4,61,34,.06);
+        }
+        .nd-store-logo-wrap {
+            position: relative;
+            align-self: center;
+        }
+        .nd-store-logo-wrap .w-16.h-16 {
+            width: 4rem !important;
+            height: 4rem !important;
+            padding: .17rem !important;
+            border: 1px solid rgba(8,123,62,.18) !important;
+            background: #fff !important;
+            box-shadow: 0 8px 18px rgba(4,61,34,.10) !important;
+        }
+        .nd-store-logo-wrap img { background: #fff; }
+        #shop-status-badge {
+            left: 50% !important;
+            bottom: -.18rem !important;
+            transform: translateX(-50%) !important;
+            min-width: 3rem;
+            padding: .19rem .5rem !important;
+            border: 2px solid #fff !important;
+            font-size: .55rem !important;
+            text-align: center;
+            box-shadow: 0 6px 13px rgba(4,61,34,.16) !important;
+        }
+
+        .nd-store-copy { min-width: 0; }
+        .nd-store-name-row {
+            display: flex;
+            align-items: center;
+            gap: .48rem;
+            min-width: 0;
+        }
+        .nd-store-name-row h1 {
+            min-width: 0;
+            margin: 0 !important;
+            overflow: hidden;
+            color: var(--nd-green-dark) !important;
+            font-family: 'Mali', sans-serif;
+            font-size: 1.05rem !important;
+            font-weight: 700 !important;
+            line-height: 1.25 !important;
+            letter-spacing: -.035em;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .nd-made-fresh {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            gap: .24rem;
+            padding: .23rem .42rem;
+            border-radius: 999px;
+            color: #087B3E;
+            background: #EAF6DF;
+            border: 1px solid rgba(8,123,62,.09);
+            font-size: .52rem;
+            font-weight: 850;
+            line-height: 1;
+        }
+        .nd-made-fresh::before {
+            content: "";
+            width: .34rem;
+            height: .34rem;
+            border-radius: 50%;
+            background: #19A35A;
+            box-shadow: 0 0 0 .18rem rgba(25,163,90,.10);
+        }
+        .shop-subtitle {
+            margin-top: .14rem !important;
+            overflow: hidden;
+            color: #63776B !important;
+            font-size: .68rem !important;
+            font-weight: 650 !important;
+            line-height: 1.35 !important;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .shop-meta-row {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: .32rem !important;
+            margin-top: .46rem !important;
+            overflow: hidden;
+        }
+        .shop-meta-chip {
+            min-width: 0;
+            padding: .3rem .48rem !important;
+            border: 1px solid rgba(8,123,62,.09) !important;
+            background: #F2F8ED !important;
+            color: #254F38 !important;
+            font-size: .58rem !important;
+            font-weight: 750 !important;
+            line-height: 1 !important;
+            white-space: nowrap;
+            box-shadow: none !important;
+        }
+        .shop-meta-chip i { color: #138148; }
+        .nd-location-chip {
+            flex: 1 1 auto;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #mode-toggle-container {
+            position: relative;
+            z-index: 2;
+            margin-top: .58rem !important;
+            padding: .3rem !important;
+            gap: .3rem !important;
+            border: 1px solid rgba(8,123,62,.09) !important;
+            border-radius: 1.28rem !important;
+            background: rgba(235,244,229,.92) !important;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.9) !important;
+        }
+        #mode-toggle-container > button {
+            min-height: 3.78rem;
+            padding: .62rem .42rem !important;
+            border-radius: 1.02rem !important;
+            transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
+        }
+        #mode-toggle-container > button:active { transform: scale(.985); }
+        .mode-toggle-active {
+            color: #fff !important;
+            background: linear-gradient(135deg, #12864A 0%, #076638 100%) !important;
+            border: 1px solid rgba(4,84,43,.16) !important;
+            box-shadow: 0 9px 20px rgba(8,123,62,.20) !important;
+        }
+        .mode-toggle-inactive {
+            color: #63776B !important;
+            background: transparent !important;
+            border: 1px solid transparent !important;
+            box-shadow: none !important;
+        }
+        .mode-toggle-active .mode-icon,
+        .mode-toggle-active .mode-text,
+        .mode-toggle-active .mode-subtext { color: #fff !important; opacity: 1 !important; }
+        .mode-toggle-inactive .mode-icon { opacity: .66 !important; }
+        .mode-icon {
+            font-size: 1rem !important;
+            line-height: 1 !important;
+        }
+        .mode-text {
+            margin-top: .3rem !important;
+            font-size: .73rem !important;
+            font-weight: 800 !important;
+            line-height: 1.1 !important;
+        }
+        .mode-subtext {
+            margin-top: .2rem !important;
+            font-size: .56rem !important;
+            font-weight: 650 !important;
+            line-height: 1 !important;
+        }
+
+        #delivery-pin-row { margin-top: .55rem !important; }
+        #header-pin-btn {
+            min-height: 2.75rem !important;
+            padding: .65rem .75rem !important;
+            border: 1px solid rgba(8,123,62,.10) !important;
+            border-radius: 1rem !important;
+            background: rgba(255,255,255,.82) !important;
+            box-shadow: 0 7px 17px rgba(4,61,34,.05) !important;
+            color: #355E45 !important;
+        }
+
+        .app-header > #category-tabs {
+            padding-top: .25rem !important;
+            padding-bottom: .45rem !important;
+        }
+
+        @media (max-width: 380px) {
+            .nd-shop-header-wrap { padding-left: .75rem; padding-right: .75rem; }
+            .nd-header-actions { grid-template-columns: 2.45rem minmax(0,1fr) auto; }
+            .nd-round-action { width: 2.45rem !important; height: 2.45rem !important; }
+            #header-tracking-btn { max-width: 6.4rem !important; padding-left: .62rem !important; padding-right: .62rem !important; }
+            .nd-store-identity { grid-template-columns: 3.6rem minmax(0,1fr); gap: .62rem; padding: .65rem; }
+            .nd-store-logo-wrap .w-16.h-16 { width: 3.6rem !important; height: 3.6rem !important; }
+            .nd-store-name-row h1 { font-size: .91rem !important; }
+            .nd-made-fresh { display: none; }
+            .shop-subtitle { font-size: .62rem !important; }
+            .shop-meta-chip { font-size: .53rem !important; padding: .28rem .4rem !important; }
+            #mode-toggle-container > button { min-height: 3.52rem; }
+        }
     </style>
 
 </head>
@@ -1059,29 +1354,37 @@
         
         <!-- HEADER -->
         <header class="app-header sticky top-0 z-30" style="background-color: var(--color-base); backdrop-filter: blur(8px);">
-            <div class="px-4 py-3">
-                <div class="header-topbar">
-                    <button onclick="goBack()" class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition" style="background: white; color: var(--color-text-muted); border: 1px solid var(--color-border-soft);">
+            <div class="nd-shop-header-wrap">
+                <div class="nd-header-actions">
+                    <button onclick="goBack()" class="nd-round-action transition" aria-label="ย้อนกลับ" title="ย้อนกลับ">
                         <i class="fa-solid fa-arrow-left text-sm"></i>
                     </button>
-                    <button id="header-tracking-btn" onclick="handleTrackingClick()" class="text-[10px] px-2.5 py-1.5 rounded-xl transition font-medium flex items-center gap-1" style="background: white; color: var(--color-text-dark); border: 1px solid var(--color-border-soft);"></button>
+
+                    <div class="nd-header-page-title" aria-hidden="true">
+                        <span><i class="fa-solid fa-leaf"></i> สั่งสดจากร้าน</span>
+                    </div>
+
+                    <button id="header-tracking-btn" onclick="handleTrackingClick()" class="transition font-medium flex items-center"></button>
                 </div>
 
-                <div class="brand-card">
-                    <div class="flex items-center gap-3">
-                        <div class="shrink-0 relative">
-                            <div class="w-16 h-16 rounded-full bg-white shadow-sm" style="border: 2px solid var(--color-accent-mint);">
-                                <img src="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8" class="w-full h-full rounded-full object-cover">
-                            </div>
-                            <span id="shop-status-badge" class="absolute -bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 text-[9px] font-bold text-white rounded-full shadow-sm whitespace-nowrap hidden"></span>
+                <div class="nd-store-identity">
+                    <div class="nd-store-logo-wrap">
+                        <div class="w-16 h-16 rounded-full bg-white shadow-sm" style="border: 2px solid var(--color-accent-mint);">
+                            <img src="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8" class="w-full h-full rounded-full object-cover" alt="โลโก้ร้านหนุ่มดำเนิน มะพร้าวปั่น">
                         </div>
-                        <div class="flex-1 min-w-0">
-                            <h1 class="font-display text-lg font-semibold leading-tight" style="color: var(--color-primary);">หนุ่มดำเนิน มะพร้าวปั่น</h1>
-                            <div class="shop-subtitle">หอมมะพร้าวแท้ จากมะพร้าวน้ำหอมแท้</div>
-                            <div class="shop-meta-row">
-                                <span id="shop-hours-label" class="shop-meta-chip"><i class="fa-regular fa-clock"></i> 09:00-20:00</span>
-                                <a href="tel:0622467746" id="shop-phone-link" class="shop-meta-chip hover:underline"><i class="fa-solid fa-phone"></i> 062-246-7746</a>
-                            </div>
+                        <span id="shop-status-badge" class="absolute px-2 py-0.5 text-[9px] font-bold text-white rounded-full shadow-sm whitespace-nowrap hidden"></span>
+                    </div>
+
+                    <div class="nd-store-copy">
+                        <div class="nd-store-name-row">
+                            <h1>หนุ่มดำเนิน มะพร้าวปั่น</h1>
+                            <span class="nd-made-fresh">ทำสด</span>
+                        </div>
+                        <div class="shop-subtitle">หอมมะพร้าวแท้ จากมะพร้าวน้ำหอมแท้</div>
+                        <div class="shop-meta-row">
+                            <span id="shop-hours-label" class="shop-meta-chip"><i class="fa-regular fa-clock"></i> 09:00-20:00</span>
+                            <a href="tel:0622467746" id="shop-phone-link" class="shop-meta-chip hover:underline"><i class="fa-solid fa-phone"></i> 062-246-7746</a>
+                            <span class="shop-meta-chip nd-location-chip"><i class="fa-solid fa-location-dot"></i> ทุ่งครุ</span>
                         </div>
                     </div>
                 </div>
@@ -1089,7 +1392,7 @@
                 <div id="mode-toggle-container" class="mt-3 grid grid-cols-2 gap-1 p-1 rounded-2xl" style="background: var(--color-base-warm);">
                     <button onclick="setMode('pickup')" id="mode-btn-pickup" class="mode-toggle-active px-3 py-2.5 rounded-xl text-center transition">
                         <div class="text-xl leading-none mode-icon">🏪</div>
-                        <div class="text-xs font-semibold mt-1 mode-text">รับที่ร้าน/หน้าร้าน</div>
+                        <div class="text-xs font-semibold mt-1 mode-text">รับที่ร้าน / หน้าร้าน</div>
                         <div class="text-[9px] mt-0.5 mode-subtext">ไม่มีค่าส่ง</div>
                     </button>
                     <button onclick="setMode('delivery')" id="mode-btn-delivery" class="mode-toggle-inactive px-3 py-2.5 rounded-xl text-center transition">
