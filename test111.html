@@ -1344,6 +1344,13 @@
             .shop-meta-chip { font-size: .53rem !important; padding: .28rem .4rem !important; }
             #mode-toggle-container > button { min-height: 3.52rem; }
         }
+
+        /* ซ่อนเฉพาะส่วนหน้าแรกตามที่ระบุ โดยคงระบบและองค์ประกอบอื่นไว้ */
+        #page-menu .nd-home-hero,
+        #page-menu .nd-delivery-promo,
+        body:has(#page-menu.active-section) .nd-header-actions {
+            display: none !important;
+        }
     </style>
 
 </head>
