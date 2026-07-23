@@ -869,8 +869,8 @@
         #menu-list {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: .78rem;
-            padding: 0 .9rem 2rem !important;
+            gap: .62rem .56rem;
+            padding: 0 .72rem 2rem !important;
         }
         #menu-list > .section-divider { grid-column: 1 / -1; }
         #menu-list > div:not(.menu-card):not(.section-divider) { grid-column: 1 / -1; }
@@ -886,8 +886,8 @@
         .menu-card-inner {
             min-height: 100%;
             flex-direction: column !important;
-            gap: .65rem !important;
-            padding: .56rem !important;
+            gap: .36rem !important;
+            padding: .5rem !important;
             border-radius: 1.45rem !important;
             border-color: rgba(8,123,62,.10) !important;
             box-shadow: 0 10px 24px rgba(4,61,34,.09) !important;
@@ -921,14 +921,13 @@
             white-space:nowrap;
             text-overflow:ellipsis;
         }
-        .menu-card .flex-1.flex.flex-col { width:100%; padding:.05rem .18rem .15rem !important; }
+        .menu-card .flex-1.flex.flex-col { width:100%; padding:0 .14rem .12rem !important; }
         .menu-title {
-            min-height: 2.55rem;
+            min-height: 2.35rem;
             font-size: .83rem !important;
-            line-height: 1.45 !important;
+            line-height: 1.4 !important;
             color:#183E2A !important;
         }
-        .menu-desc { min-height:2.2rem; font-size:.64rem !important; line-height:1.45 !important; }
         .menu-original-price { font-size:.6rem !important; }
         .menu-price { font-size:1.14rem !important; color:var(--nd-green-dark) !important; }
         .add-btn {
@@ -1869,8 +1868,11 @@
     <div id="option-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex justify-center items-end sm:items-center z-50 transition-opacity">
         <div class="w-full max-w-md rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl max-h-[85vh] flex flex-col" style="background: var(--color-base);">
             <div class="flex justify-between items-start mb-4 pb-2" style="border-bottom: 1px solid var(--color-border-soft);">
-                <h3 id="modal-item-name" class="font-display text-xl font-semibold" style="color: var(--color-primary);">ชื่อเมนู</h3>
-                <button onclick="closeModal()" class="text-2xl" style="color: var(--color-text-muted);">×</button>
+                <div class="min-w-0 pr-4">
+                    <h3 id="modal-item-name" class="font-display text-xl font-semibold" style="color: var(--color-primary);">ชื่อเมนู</h3>
+                    <p id="modal-item-desc" class="hidden mt-1.5 text-sm leading-relaxed" style="color: var(--color-text-muted);"></p>
+                </div>
+                <button onclick="closeModal()" class="shrink-0 text-2xl" style="color: var(--color-text-muted);">×</button>
             </div>
             <div id="modal-options" class="flex-1 overflow-y-auto mb-4 pr-1 space-y-5 custom-scrollbar"></div>
             <div class="pt-2">
@@ -2960,9 +2962,8 @@
                     <div class="flex-1 flex flex-col justify-between py-0.5 min-w-0 relative z-[1]">
                         <div>
                             <h3 class="menu-title font-display font-semibold leading-tight" style="color: var(--color-primary);">${item.name}</h3>
-                            <p class="menu-desc text-xs line-clamp-2 mt-1" style="color: var(--color-text-muted);">${item.desc || ''}</p>
                         </div>
-                        <div class="flex items-end justify-between mt-2 gap-2">
+                        <div class="flex items-end justify-between mt-1 gap-2">
                             <div class="flex flex-col leading-none">
                                 ${item.originalPrice ? `<span class="menu-original-price line-through" style="color: var(--color-text-muted);">฿${item.originalPrice}</span>` : ''}
                                 <span class="menu-price font-display font-bold" style="${priceColorStyle}">฿${item.price}</span>
@@ -3004,6 +3005,10 @@
         window.currentItem = item; 
         window.currentBasePrice = item.price;
         document.getElementById('modal-item-name').innerText = item.name;
+        const descEl = document.getElementById('modal-item-desc');
+        const description = String(item.desc || '').trim();
+        descEl.innerText = description;
+        descEl.classList.toggle('hidden', !description);
         const container = document.getElementById('modal-options'); 
         container.innerHTML = '';
         if(item.options && item.options.length > 0) {
