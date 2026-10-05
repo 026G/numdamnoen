@@ -1,709 +1,685 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>หนุ่มดำเนิน - เมนูสั่งซื้อ</title>
-    <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8">
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-9P4HMHGDM2"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-9P4HMHGDM2');
-    </script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    
-    <style>
-        /* --- Styles หลัก --- */
-        body { font-family: 'Kanit', sans-serif; background-color: #f0fdf4; display: flex; flex-direction: column; align-items: center; padding: 40px 20px; color: #333; min-height: 100vh; }
-        
-        /* --- PROFILE AREA (แก้ไข: จัดเรียงแนวนอน โลโก้ซ้าย) --- */
-        .profile-area { 
-            display: flex;              /* ใช้ Flexbox จัดเรียงแนวนอน */
-            align-items: center;        /* จัดกึ่งกลางแนวตั้ง */
-            justify-content: flex-start; /* เริ่มต้นจากซ้าย */
-            text-align: left;           /* จัดข้อความชิดซ้าย */
-            gap: 15px;                  /* ระยะห่างระหว่างโลโก้กับข้อความ */
-            margin-bottom: 20px; 
-            position: relative; 
-            z-index: 2; 
-            width: 100%;
-            max-width: 420px;
-        }
-        
-        .profile-img { 
-            width: 90px;                /* ปรับขนาดให้พอดีกับแนวนอน */
-            height: 90px; 
-            border-radius: 50%; 
-            background-color: #fff; 
-            object-fit: cover; 
-            border: 3px solid #fff; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-            flex-shrink: 0;             /* ห้ามโลโก้หดตัว */
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#eef9f0">
+  <title>หนุ่มดำเนิน - ช่องทางสั่งซื้อ</title>
+  <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8">
 
-        .profile-info {                 /* กล่องข้อความด้านขวา */
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-9P4HMHGDM2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-9P4HMHGDM2');
+  </script>
 
-        h1 { 
-            font-size: clamp(16px, 4.5vw, 20px); 
-            white-space: nowrap; /* ห้ามขึ้นบรรทัดใหม่เด็ดขาด */
-            margin: 0 0 4px 0; 
-            font-weight: 600; 
-            color: #166534; 
-            display: flex; 
-            align-items: center; 
-            gap: 6px; 
-        }
-        
-        p { color: #666; margin: 0; font-size: 14px; line-height: 1.4;white-space: nowrap; }
-        
-        .status-text { 
-            display: flex; 
-            align-items: center; 
-            gap: 6px; 
-            font-size: 13px; 
-            color: #555; 
-            margin-top: 6px; 
-        }
-        
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: block; transition: background-color 0.3s; }
-        .dot-green { background-color: #22c55e; }
-        .dot-red { background-color: #ef4444; }
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-        /* --- VIDEO AD STYLE --- */
-        .video-container {
-            width: 100%;
-            max-width: 420px;
-            margin-top: 25px;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            background: white;
-            padding: 10px;
-            position: relative;
-        }
+  <style>
+    :root {
+      --bg: #f4fbf5;
+      --surface: rgba(255,255,255,.92);
+      --surface-strong: #ffffff;
+      --text: #17351f;
+      --muted: #708077;
+      --line: #deebe1;
+      --green: #1f7a3d;
+      --green-2: #2aa653;
+      --green-soft: #e9f7ed;
+      --shadow: 0 14px 35px rgba(45, 91, 57, .09);
+      --shadow-soft: 0 8px 20px rgba(45, 91, 57, .07);
+      --radius-xl: 30px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+    }
 
-        .video-label {
-            font-size: 15px;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: #166534;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding-left: 5px;
-        }
+    * { box-sizing: border-box; }
 
-        .youtube-wrapper {
-            position: relative;
-            padding-bottom: 56.25%; 
-            height: 0;
-            overflow: hidden;
-            border-radius: 12px;
-            background: #000;
-        }
-        
-        .youtube-wrapper iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none; /* ห้ามคลิกวิดีโอ */
-        }
+    html { scroll-behavior: smooth; }
 
-        /* --- TOGGLE BUTTON STYLE --- */
-        .coupon-trigger-btn {
-            background-color: #fff;
-            border: 2px dashed #00B900; 
-            color: #00B900;
-            padding: 12px 25px;
-            border-radius: 50px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 4px 6px rgba(0, 185, 0, 0.1);
-            transition: all 0.3s ease;
-            margin-bottom: 20px;
-            width: 100%;
-            max-width: 320px;
-            justify-content: center;
-            animation: bounce 2s infinite; 
-        }
-        
-        .coupon-trigger-btn:hover {
-            background-color: #e8fce8;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 185, 0, 0.2);
-        }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Kanit', sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 8% 5%, rgba(178, 234, 191, .46), transparent 27%),
+        radial-gradient(circle at 92% 15%, rgba(214, 245, 220, .68), transparent 25%),
+        linear-gradient(180deg, #f8fdf9 0%, var(--bg) 45%, #f9fbf9 100%);
+      padding: max(20px, env(safe-area-inset-top)) 16px max(28px, env(safe-area-inset-bottom));
+    }
 
-        .coupon-trigger-btn.active {
-            background-color: #00B900;
-            color: white;
-            border-style: solid;
-            animation: none; 
-        }
+    body::before,
+    body::after {
+      content: '';
+      position: fixed;
+      border-radius: 999px;
+      filter: blur(1px);
+      z-index: -1;
+      pointer-events: none;
+    }
 
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
-            40% {transform: translateY(-5px);}
-            60% {transform: translateY(-3px);}
-        }
+    body::before {
+      width: 150px;
+      height: 150px;
+      left: -70px;
+      bottom: 12%;
+      background: rgba(187, 231, 198, .33);
+    }
 
-        /* --- PROMO SECTION WRAPPER --- */
-        #promo-section-wrapper {
-            display: none; 
-            width: 100%;
-            max-width: 420px;
-            flex-direction: column;
-            align-items: center;
-            opacity: 0;
-            transform: translateY(-20px);
-            transition: opacity 0.4s ease, transform 0.4s ease;
-        }
+    body::after {
+      width: 110px;
+      height: 110px;
+      right: -55px;
+      top: 42%;
+      background: rgba(209, 241, 215, .5);
+    }
 
-        #promo-section-wrapper.show {
-            display: flex;
-            opacity: 1;
-            transform: translateY(0);
-        }
+    a { color: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
 
-        /* --- TAB FILTER STYLES --- */
-        .tab-container {
-            width: 100%;
-            margin-bottom: 15px;
-            position: sticky;
-            top: 10px;
-            z-index: 100;
-        }
+    .page {
+      width: min(100%, 480px);
+      margin: 0 auto;
+    }
 
-        .tab-nav {
-            display: flex;
-            justify-content: space-between;
-            background-color: rgba(255, 255, 255, 0.95);
-            padding: 5px;
-            border-radius: 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            backdrop-filter: blur(5px);
-            gap: 5px;
-        }
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 22px;
+      border: 1px solid rgba(255,255,255,.8);
+      border-radius: var(--radius-xl);
+      background: linear-gradient(145deg, rgba(255,255,255,.98), rgba(240,249,242,.96));
+      box-shadow: var(--shadow);
+    }
 
-        .tab-btn {
-            flex: 1;
-            border: none;
-            background: transparent;
-            padding: 10px 0;
-            border-radius: 25px;
-            font-family: 'Kanit', sans-serif;
-            font-size: 13px;
-            font-weight: 600;
-            color: #888;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            white-space: nowrap;
-        }
+    .hero::after {
+      content: '';
+      position: absolute;
+      width: 170px;
+      height: 170px;
+      border-radius: 50%;
+      right: -75px;
+      top: -75px;
+      background: linear-gradient(145deg, rgba(127, 211, 147, .20), rgba(199, 236, 207, .10));
+    }
 
-        .tab-btn.active {
-            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-            color: white;
-            transform: scale(1.02);
-        }
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      position: relative;
+      z-index: 1;
+    }
 
-        .tab-btn.active[data-target="grab"] { background: linear-gradient(45deg, #00B14F, #009e46); }
-        .tab-btn.active[data-target="lineman"] { background: linear-gradient(45deg, #10C110, #009900); }
-        .tab-btn.active[data-target="robinhood"] { background: linear-gradient(45deg, #76308B, #5a236b); }
+    .brand-logo {
+      width: 76px;
+      height: 76px;
+      object-fit: cover;
+      border-radius: 24px;
+      background: #fff;
+      border: 1px solid #e4efe6;
+      box-shadow: var(--shadow-soft);
+      flex-shrink: 0;
+    }
 
-        .tab-content {
-            display: none;
-            width: 100%;
-            animation: fadeIn 0.4s ease;
-        }
-        
-        .tab-content.active { display: block; }
+    .brand-copy { min-width: 0; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        /* --- CARD STYLES --- */
-        .promo-scroll-container {
-            width: 100%;
-            overflow-x: auto;
-            white-space: nowrap;
-            padding: 5px 5px 15px 5px;
-            scrollbar-width: none; 
-            -ms-overflow-style: none;
-            scroll-behavior: smooth;
-        }
-        .promo-scroll-container::-webkit-scrollbar { display: none; }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: var(--green-soft);
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 600;
+      margin-bottom: 7px;
+    }
 
-        .promo-card {
-            display: inline-block;
-            width: 160px;
-            height: 90px;
-            margin-right: 10px;
-            border-radius: 10px;
-            position: relative;
-            cursor: pointer;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-            overflow: hidden;
-            scroll-snap-align: start;
-            vertical-align: top;
-            text-decoration: none;
-            color: inherit;
-        }
-        .promo-card:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.12); }
+    h1 {
+      font-size: clamp(20px, 5.2vw, 25px);
+      line-height: 1.16;
+      margin: 0;
+      font-weight: 700;
+      letter-spacing: -.2px;
+    }
 
-        .promo-content {
-            height: 65%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            padding-top: 5px;
-        }
+    .tagline {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
 
-        .promo-badge {
-            position: absolute; top: 7px; right: 7px; background-color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 5; padding: 4px; overflow: hidden;
-        }
-        .promo-badge img { width: 100%; height: 100%; object-fit: contain; }
-        
-        .promo-text-sm { font-size: 10px; font-weight: 600; margin-bottom: 2px; opacity: 0.9; }
-        .promo-amount { font-size: 28px; font-weight: 800; line-height: 0.9; letter-spacing: -0.5px; }
-        .promo-unit { font-size: 14px; margin-left: 2px;}
-        
-        .promo-footer {
-            height: 35%; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font-weight: 600; font-size: 11px;
-        }
+    .status-card {
+      margin-top: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 13px 14px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.76);
+      border-radius: 17px;
+      position: relative;
+      z-index: 1;
+    }
 
-        /* --- THEME COLORS --- */
-        .card-lineman { background: #00B900; color: white; }
-        .card-lineman .promo-text-sm { color: #eaffea; }
-        .card-lineman .promo-amount { color: white; }
-        .card-lineman .promo-footer { background: #009000; color: white; }
+    .status-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
 
-        .card-grab { background: #fff; border: 1.5px solid #00B14F; color: #333; }
-        .card-grab .promo-content { height: 63%; } 
-        .card-grab .promo-text-sm { color: #666; }
-        .card-grab .promo-amount { color: #00B14F; }
-        .card-grab .promo-footer { background: #00B14F; color: white; }
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 5px rgba(34,197,94,.10);
+    }
 
-        .card-flash { background: linear-gradient(135deg, #FF512F 0%, #DD2476 100%); color: white; border: none; }
-        .card-flash .promo-text-sm { color: #ffd1d1; font-weight: bold; }
-        .card-flash .promo-amount { color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); }
-        .card-flash .promo-footer { background: rgba(0,0,0,0.15); color: white; justify-content: center; }
+    .dot-green { background: #22c55e; }
+    .dot-red { background: #ef4444; box-shadow: 0 0 0 5px rgba(239,68,68,.10); }
 
-        .card-cashback { background: #E8FCE8; border: 1.5px solid #00B900; color: #006800; }
-        .card-cashback .promo-amount { color: #00B900; }
-        .card-cashback .promo-footer { background: #cdf5cd; color: #006800; }
+    .status-text-main {
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
-        .card-robin { background: #76308B; color: white; border: none; }
-        .card-robin .promo-text-sm { color: #f3e8ff; }
-        .card-robin .promo-footer { background: #5a236b; color: white; }
+    .status-hours {
+      color: var(--muted);
+      font-size: 11px;
+      white-space: nowrap;
+    }
 
-        /* Link Buttons Styles */
-        .links-container { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
-        .link-btn { background-color: white; border: 1px solid #e5e7eb; padding: 12px 16px; border-radius: 16px; text-decoration: none; color: #333; display: flex; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,0.04); transition: all 0.2s ease; position: relative; overflow: hidden; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-        .link-btn:hover { transform: translateY(-3px); box-shadow: 0 6px 15px rgba(22, 101, 52, 0.15); border-color: #4ade80; }
-        .btn-logo-wrapper { width: 50px; height: 50px; margin-right: 15px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; border-radius: 12px; overflow: hidden; background-color: #f9fafb; }
-        .btn-logo-wrapper img { width: 100%; height: 100%; object-fit: contain; }
-        .btn-text { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
-        .btn-title { font-weight: 600; font-size: 16px; display: flex; align-items: center; flex-wrap: wrap; gap: 5px; line-height: 1.2; }
-        .btn-subtitle { font-size: 12px; color: #666; margin-top: 4px; display: flex; align-items: center; gap: 5px; }
-        .promo-tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: normal; display: inline-flex; align-items: center; gap: 3px; }
-        .tag-green { background-color: #e8fce8; color: #00B900; border: 1px solid #66d966; }
-        .tag-red { background-color: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
-        .tag-purple { background-color: #f3e8ff; color: #9333ea; border: 1px solid #e9d5ff; }
-        .btn-arrow { color: #ccc; font-size: 14px; margin-left: 10px; }
-        .rating { color: #f59e0b; font-size: 13px; font-weight: normal; display: flex; align-items: center; gap: 3px; }
-        .badge-corner { position: absolute; top: 0; right: 0; font-size: 9px; padding: 3px 8px; border-bottom-left-radius: 8px; color: white; font-weight: 400; z-index: 10; }
-        .bg-green { background-color: #10b981; }
-        .bg-orange { background-color: #f97316; }
+    .section-head {
+      margin: 26px 4px 13px;
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 12px;
+    }
 
-        /* Notification & Footer */
-        #copy-toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 50px; padding: 10px 20px; position: fixed; z-index: 999; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 13px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; gap: 8px; opacity: 0; transition: opacity 0.3s, bottom 0.3s; }
-        #copy-toast.show { visibility: visible; opacity: 1; bottom: 50px; }
-        #copy-toast i { color: #4ade80; font-size: 16px; }
-        .footer-area { margin-top: 40px; width: 100%; max-width: 420px; display: flex; flex-direction: column; align-items: center; gap: 15px; border-top: 1px dashed #ccc; padding-top: 20px; }
-        .social-icons { display: flex; gap: 15px; }
-        .social-btn { width: 45px; height: 45px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; text-decoration: none; color: #333; font-size: 22px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: transform 0.2s; }
-        .social-btn:hover { transform: scale(1.1); }
-        .contact-label { font-size: 14px; color: #888; margin-bottom: 5px; }
-        .bg-element { position: fixed; z-index: -1; opacity: 0.4; animation: float 6s ease-in-out infinite; pointer-events: none; }
-        @keyframes float { 0% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-15px) rotate(5deg); } 100% { transform: translateY(0px) rotate(0deg); } }
-    </style>
+    .section-head h2 {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.2;
+      font-weight: 700;
+    }
+
+    .section-head p {
+      margin: 4px 0 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .mini-label {
+      font-size: 11px;
+      color: var(--green);
+      background: var(--green-soft);
+      padding: 6px 9px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .order-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .order-card {
+      text-decoration: none;
+      display: grid;
+      grid-template-columns: 58px 1fr auto;
+      align-items: center;
+      gap: 13px;
+      min-height: 84px;
+      padding: 13px 14px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: var(--surface);
+      box-shadow: var(--shadow-soft);
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .order-card:active { transform: scale(.985); }
+
+    @media (hover:hover) {
+      .order-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 13px 28px rgba(45, 91, 57, .11);
+        border-color: #cfe2d3;
+      }
+    }
+
+    .app-logo {
+      width: 58px;
+      height: 58px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid #edf1ee;
+    }
+
+    .app-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 7px;
+    }
+
+    .app-logo.line { background: #06C755; border-color: #06C755; }
+    .app-logo.line i { color: #fff; font-size: 30px; }
+
+    .app-logo.robin {
+      background: linear-gradient(145deg, #7a3b8d, #5f2671);
+      color: #fff;
+      border: none;
+      font-size: 25px;
+      font-weight: 700;
+    }
+
+    .app-copy { min-width: 0; }
+
+    .app-title-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .app-title {
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .app-badge {
+      font-size: 9px;
+      font-weight: 600;
+      border-radius: 999px;
+      padding: 3px 7px;
+      line-height: 1.3;
+    }
+
+    .badge-green { background: #e8f8ed; color: #17843d; }
+    .badge-orange { background: #fff1e8; color: #c65d16; }
+    .badge-purple { background: #f3eaf8; color: #7d3d91; }
+
+    .app-subtitle {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .app-meta {
+      margin-top: 5px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      color: #8b9890;
+    }
+
+    .app-meta .star { color: #f2a81d; }
+
+    .order-arrow {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #f3f7f4;
+      color: #8ca092;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .direct-card {
+      margin-top: 15px;
+      border: 1px solid #bfe6c8;
+      background: linear-gradient(135deg, #f4fff6, #ffffff);
+    }
+
+    .direct-card .order-arrow {
+      background: #def5e4;
+      color: #16843d;
+    }
+
+    .trust-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 18px;
+    }
+
+    .trust-item {
+      min-height: 68px;
+      padding: 10px 8px;
+      text-align: center;
+      border: 1px solid var(--line);
+      border-radius: 17px;
+      background: rgba(255,255,255,.68);
+    }
+
+    .trust-item i {
+      color: var(--green-2);
+      font-size: 17px;
+      margin-bottom: 5px;
+    }
+
+    .trust-item b {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    .contact-box {
+      margin-top: 22px;
+      padding: 18px;
+      border-radius: 22px;
+      background: #1c4f2b;
+      color: #fff;
+      box-shadow: 0 12px 28px rgba(28,79,43,.17);
+    }
+
+    .contact-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .contact-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .contact-subtitle {
+      color: rgba(255,255,255,.70);
+      font-size: 11px;
+      margin-top: 3px;
+    }
+
+    .social-icons {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .social-btn {
+      width: 37px;
+      height: 37px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.13);
+      color: #fff;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .2s ease, transform .2s ease;
+    }
+
+    .social-btn:hover { background: rgba(255,255,255,.20); transform: translateY(-1px); }
+
+    .footer-note {
+      text-align: center;
+      color: #90a197;
+      font-size: 10px;
+      padding: 16px 0 2px;
+    }
+
+    #toast {
+      visibility: hidden;
+      opacity: 0;
+      position: fixed;
+      left: 50%;
+      bottom: 26px;
+      transform: translate(-50%, 12px);
+      z-index: 999;
+      background: rgba(21,42,27,.95);
+      color: #fff;
+      font-size: 12px;
+      padding: 10px 15px;
+      border-radius: 999px;
+      box-shadow: 0 8px 24px rgba(0,0,0,.2);
+      transition: .25s ease;
+      white-space: nowrap;
+    }
+
+    #toast.show {
+      visibility: visible;
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+
+    @media (max-width: 370px) {
+      body { padding-left: 11px; padding-right: 11px; }
+      .hero { padding: 18px; }
+      .brand-logo { width: 67px; height: 67px; border-radius: 20px; }
+      .order-card { grid-template-columns: 52px 1fr auto; padding: 12px; }
+      .app-logo { width: 52px; height: 52px; border-radius: 16px; }
+      .trust-item b { font-size: 10px; }
+    }
+  </style>
 </head>
 <body>
+  <main class="page">
+    <section class="hero">
+      <div class="brand-row">
+        <img
+          class="brand-logo"
+          src="https://lh3.googleusercontent.com/d/1m-0s_l84_t4R_zc43M7wtBKZJbFZXHhE"
+          alt="โลโก้ร้าน หนุ่มดำเนิน มะพร้าวปั่น"
+        >
 
-    <div id="copy-toast">
-        <i class="fa-solid fa-circle-check"></i> 
-        <span id="toast-msg">คัดลอกโค้ดเรียบร้อย!</span>
+        <div class="brand-copy">
+          <div class="eyebrow"><i class="fa-solid fa-circle-check"></i> ร้านค้าทางการ</div>
+          <h1>หนุ่มดำเนิน มะพร้าวปั่น</h1>
+          <p class="tagline">หอมมะพร้าวแท้ จากมะพร้าวน้ำหอม 100%</p>
+        </div>
+      </div>
+
+      <div class="status-card">
+        <div class="status-left">
+          <span id="shop-status-dot" class="status-dot dot-green"></span>
+          <div>
+            <div id="shop-status-text" class="status-text-main">กำลังตรวจสอบเวลา...</div>
+            <div class="status-hours">เวลาให้บริการ 10:00 - 20:00 น.</div>
+          </div>
+        </div>
+        <i class="fa-regular fa-clock" style="color:#8ba093"></i>
+      </div>
+    </section>
+
+    <div class="section-head">
+      <div>
+        <h2>เลือกช่องทางสั่งซื้อ</h2>
+        <p>แตะช่องทางที่สะดวก ระบบจะพาไปยังหน้าร้านทันที</p>
+      </div>
+      <span class="mini-label">สั่งง่ายขึ้น</span>
     </div>
 
-    <div class="profile-area">
-        <img src="https://lh3.googleusercontent.com/d/1j9sqxnSEJcCKIVZMfc20RlRP0zCU3YU8" class="profile-img" alt="โลโก้ร้าน"> 
-        <div class="profile-info">
-            <h1>
-                ร้าน หนุ่มดำเนิน มะพร้าวปั่น
-                <i class="fa-solid fa-circle-check" style="color: #1da1f2; font-size: 18px;" title="ร้านค้าทางการ"></i>
-            </h1>
-            <p>หอมมะพร้าวแท้ จากมะพร้าวน้ำหอม 100%</p>
-            <div class="status-text">
-                <span id="shop-status-dot" class="status-dot dot-green"></span> 
-                <span id="shop-status-text">กำลังตรวจสอบเวลา...</span>
-            </div>
+    <section class="order-list" aria-label="ช่องทางเดลิเวอรี่">
+      <a
+        class="order-card"
+        href="https://lin.ee/ViwZRRE?lmaff=1"
+        onclick="trackDelivery('LINE MAN')"
+      >
+        <div class="app-logo" style="background:#00B900;border-color:#00B900;">
+          <img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN">
         </div>
-    </div>
-    
-    <button class="coupon-trigger-btn" id="couponTriggerBtn" onclick="togglePromoSection()">
-        <i class="fa-solid fa-ticket"></i> เก็บโค้ดส่วนลด (Grab/Lineman)
-    </button>
-
-    <div id="promo-section-wrapper">
-        <div class="tab-container">
-            <div class="tab-nav">
-                <button class="tab-btn active" data-target="grab" onclick="openTab('grab')">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Grab_Logo.svg/512px-Grab_Logo.svg.png" width="16" alt=""> Grab
-                </button>
-                <button class="tab-btn" data-target="lineman" onclick="openTab('lineman')">
-                    <img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" width="16" alt=""> LINEMAN
-                </button>
-                <button class="tab-btn" data-target="robinhood" onclick="openTab('robinhood')">
-                    <i class="fa-solid fa-store" style="color: #76308B;"></i> Robinhood
-                </button>
-            </div>
+        <div class="app-copy">
+          <div class="app-title-row">
+            <span class="app-title">LINE MAN</span>
+            <span class="app-badge badge-green">ค่าส่งน่าสนใจ</span>
+          </div>
+          <div class="app-subtitle">เหมาะกับลูกค้าที่ต้องการเลือกโปรในแอปเอง</div>
+          <div class="app-meta"><i class="fa-solid fa-star star"></i> 5.0 <span>•</span> 1,258 รีวิว</div>
         </div>
+        <div class="order-arrow"><i class="fa-solid fa-arrow-up-right-from-square"></i></div>
+      </a>
 
-        <div id="grab" class="tab-content active">
-            <div class="promo-scroll-container">
-                <a href="https://r.grab.com/o/Jbe67vQb" 
-                   class="promo-card card-flash" onclick="handleClickApp('GrabFood')">
-                    <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1jSM7iYsrCthNKT-j7Y4JVcWMOMv3wZPA" alt="GrabFood"></div>
-                    <div class="promo-content">
-                        <div class="promo-text-sm"><i class="fa-solid fa-bolt"></i> ลดแรง 15 นาที</div>
-                        <div class="promo-amount">50<span class="promo-unit">.-</span></div>
-                    </div>
-                    <div class="promo-footer"><span>ขั้นต่ำ 180.- กดเลย!</span></div>
-                </a>
-
-                <a href="https://r.grab.com/o/Jbe67vQb" 
-                   class="promo-card card-cashback" onclick="handleClickApp('GrabFood')">
-                    <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1jSM7iYsrCthNKT-j7Y4JVcWMOMv3wZPA" alt="GrabFood"></div>
-                    <div class="promo-content">
-                        <div class="promo-text-sm">เงินคืน</div>
-                        <div class="promo-amount">200<span class="promo-unit">.-</span></div>
-                    </div>
-                    <div class="promo-footer"><span>ไม่มีขั้นต่ำ</span></div>
-                </a>
-
-                <a href="https://r.grab.com/o/Jbe67vQb" 
-                   class="promo-card card-grab" onclick="handleClickApp('GrabFood')">
-                    <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1jSM7iYsrCthNKT-j7Y4JVcWMOMv3wZPA" alt="GrabFood"></div>
-                    <div class="promo-content">
-                        <div class="promo-text-sm">ลดสูงสุด</div>
-                        <div class="promo-amount">100<span class="promo-unit">.-</span></div>
-                    </div>
-                    <div class="promo-footer"><span>ขั้นต่ำ 320.-</span></div>
-                </a>
-
-                <a href="https://r.grab.com/o/Jbe67vQb" 
-                   class="promo-card card-grab" onclick="handleClickApp('GrabFood')">
-                    <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1jSM7iYsrCthNKT-j7Y4JVcWMOMv3wZPA" alt="GrabFood"></div>
-                    <div class="promo-content">
-                        <div class="promo-text-sm">ลดเพิ่ม</div>
-                        <div class="promo-amount">80<span class="promo-unit">.-</span></div>
-                    </div>
-                    <div class="promo-footer"><span>ขั้นต่ำ 280.-</span></div>
-                </a>
-            </div>
+      <a
+        class="order-card"
+        href="https://r.grab.com/o/Jbe67vQb"
+        onclick="trackDelivery('GrabFood')"
+      >
+        <div class="app-logo">
+          <img src="https://lh3.googleusercontent.com/d/1jSM7iYsrCthNKT-j7Y4JVcWMOMv3wZPA" alt="GrabFood">
         </div>
-
-        <div id="lineman" class="tab-content">
-            <div class="promo-scroll-container">
-                <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="copyAndGo(event, 'LM69', 'https://wongn.ai/223eD4')">
-                    <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN"></div>
-                    <div class="promo-content">
-                        <div class="promo-text-sm"><i class="fa-solid fa-clock"></i> โปรเวลาทอง </div>
-                        <div class="promo-amount">50<span class="promo-unit">%</span></div>
-                    </div>
-                    <div class="promo-footer" style="font-size: 10px;"><span>Code: LM69</span></div>
-                </a>
-
-                <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="copyAndGo(event, 'SAVE100', 'https://wongn.ai/223eD4')">
-                    <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN"></div>
-                    <div class="promo-content">
-                        <div class="promo-text-sm">ลูกค้าใหม่</div>
-                        <div class="promo-amount">100<span class="promo-unit">.-</span></div>
-                    </div>
-                    <div class="promo-footer"><span>Code: SAVE100 | สูงสุด 100.-</span></div>
-                </a>
-
-                <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="copyAndGo(event, 'AROI', 'https://wongn.ai/223eD4')">
-                    <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN"></div>
-                    <div class="promo-content">
-                        <div class="promo-text-sm">ไม่มีขั้นต่ำ</div>
-                        <div class="promo-amount">100<span class="promo-unit">.-</span></div>
-                    </div>
-                    <div class="promo-footer"><span>Code: AROI | สูงสุด 100.-</span></div>
-                </a>
-                
-                <a href="https://wongn.ai/223eD4" class="promo-card card-lineman" onclick="handleClickApp('LINE MAN')">
-                    <div class="promo-badge"><img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN"></div>
-                    <div class="promo-content">
-                        <div class="promo-text-sm">ลดสูงสุด</div>
-                        <div class="promo-amount">70<span class="promo-unit">.-</span></div>
-                    </div>
-                    <div class="promo-footer"><span>ขั้นต่ำ 300.- | สูงสุด 70.-</span></div>
-                </a>
-            </div>
+        <div class="app-copy">
+          <div class="app-title-row">
+            <span class="app-title">GrabFood</span>
+            <span class="app-badge badge-orange">ส่งไว</span>
+          </div>
+          <div class="app-subtitle">เปิดดูราคาส่งและโปรโมชั่นล่าสุดได้ในแอป</div>
+          <div class="app-meta"><i class="fa-solid fa-star star"></i> 5.0 <span>•</span> 394 รีวิว</div>
         </div>
+        <div class="order-arrow"><i class="fa-solid fa-arrow-up-right-from-square"></i></div>
+      </a>
 
-        <div id="robinhood" class="tab-content">
-            <div class="promo-scroll-container">
-                <a href="https://static.robinhood.in.th/app_link.html?URI=robinhoodth://merchantlanding/id/22252" 
-                   class="promo-card card-robin" onclick="handleClickApp('Robinhood')">
-                    <div class="promo-badge"><img src="https://placehold.co/200x200/76308B/ffffff?text=RH" alt="Robinhood"></div>
-                    <div class="promo-content">
-                        <div class="promo-text-sm"><i class="fa-solid fa-heart"></i> ร้านใจดี</div>
-                        <div class="promo-amount">ลด 5<span class="promo-unit">%</span></div>
-                    </div>
-                    <div class="promo-footer"><span>กดสั่งเลย</span></div>
-                </a>
-                
-                <a href="https://static.robinhood.in.th/app_link.html?URI=robinhoodth://merchantlanding/id/22252" 
-                   class="promo-card card-robin" onclick="handleClickApp('Robinhood')">
-                    <div class="promo-badge"><img src="https://placehold.co/200x200/76308B/ffffff?text=RH" alt="Robinhood"></div>
-                    <div class="promo-content">
-                        <div class="promo-text-sm">ค่าส่งถูก</div>
-                        <div class="promo-amount" style="font-size: 22px;">เริ่มต้น 10.-</div>
-                    </div>
-                    <div class="promo-footer"><span>ระยะใกล้</span></div>
-                </a>
-            </div>
+      <a
+        class="order-card"
+        href="https://static.robinhood.in.th/app_link.html?URI=robinhoodth://merchantlanding/id/22252"
+        onclick="trackDelivery('Robinhood')"
+      >
+        <div class="app-logo robin">R</div>
+        <div class="app-copy">
+          <div class="app-title-row">
+            <span class="app-title">Robinhood</span>
+            <span class="app-badge badge-purple">อีกหนึ่งทางเลือก</span>
+          </div>
+          <div class="app-subtitle">เลือกสั่งผ่าน Robinhood ได้โดยตรง</div>
+          <div class="app-meta"><i class="fa-solid fa-star star"></i> 5.0 <span>•</span> 20 รีวิว</div>
         </div>
-    </div>
+        <div class="order-arrow"><i class="fa-solid fa-arrow-up-right-from-square"></i></div>
+      </a>
 
-    <div class="links-container">
-        <a id="btn-lineman" href="https://wongn.ai/223eD4" class="link-btn" onclick="handleClickApp('LINE MAN')">
-            <div class="badge-corner bg-green">🔥 ค่าส่งถูกสุด</div>
-            <div class="btn-logo-wrapper" style="background: #00B900;">
-                <img src="https://lh3.googleusercontent.com/d/1hWcLYiQIO28na3TT5R4nFZ2cNhSogRIx" alt="LINE MAN">
-            </div>
-            <div class="btn-text">
-                <span class="btn-title">สั่ง LINE MAN <span class="rating"><i class="fa-solid fa-star"></i> 5.0 (759)</span></span>
-                <span class="btn-subtitle">
-                    <span class="promo-tag tag-green"><i class="fa-solid fa-tag"></i> ใส่โค้ด 'AROI'</span>
-                    ✅ ค่าส่งถูกสุด ส่งฟรี
-                </span>
-            </div>
-            <i class="fa-solid fa-chevron-right btn-arrow"></i>
-        </a>
-
-        <a id="btn-grab" href="https://r.grab.com/o/Jbe67vQb" class="link-btn" onclick="handleClickApp('GrabFood')">
-            <div class="badge-corner bg-orange">ส่งไวสุด</div>
-            <div class="btn-logo-wrapper" style="background: white;">
-                <img src="https://lh3.googleusercontent.com/d/1jSM7iYsrCthNKT-j7Y4JVcWMOMv3wZPA" alt="GrabFood">
-            </div>
-            <div class="btn-text">
-                <span class="btn-title">สั่ง GrabFood <span class="rating"><i class="fa-solid fa-star"></i> 4.9 (294)</span></span>
-                <span class="btn-subtitle">
-                    <span class="promo-tag tag-red"><i class="fa-solid fa-tag"></i> เก็บโค้ดในแอพ</span>
-                    ✅ ค่าส่งถูก
-                </span>
-            </div>
-            <i class="fa-solid fa-chevron-right btn-arrow"></i>
-        </a>
-
-        <a id="btn-robinhood" href="https://static.robinhood.in.th/app_link.html?URI=robinhoodth://merchantlanding/id/22252" class="link-btn" onclick="handleClickApp('Robinhood')">
-            <div class="btn-logo-wrapper">
-                 <img src="https://placehold.co/200x200/76308B/ffffff?text=Robin\nhood" alt="Robinhood">
-            </div>
-            <div class="btn-text">
-                <span class="btn-title">สั่ง Robinhood <span class="rating"><i class="fa-solid fa-star"></i> 5.0 (20)</span></span>
-                <span class="btn-subtitle">
-                    <span class="promo-tag tag-purple"><i class="fa-solid fa-heart"></i> ร้านใจดีลดเพิ่ม 5%</span>
-                    ✅ ค่าส่งถูก
-                </span>
-            </div>
-            <i class="fa-solid fa-chevron-right btn-arrow"></i>
-        </a>
-
-        <a id="btn-lineoa" href="https://lin.ee/svRu5ks" class="link-btn" style="border: 2px solid #06C755; background-color: #fcfdfc;" onclick="handleClickApp('LINE OA')">
-            <div class="btn-logo-wrapper" style="background: transparent;">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" alt="LINE OA">
-            </div>
-            <div class="btn-text">
-                <span class="btn-title" style="color: #06C755;">ทักแชทสั่งร้านโดยตรง</span>
-                <span class="btn-subtitle">สั่ง 200.- ส่งฟรี (ระยะใกล้)</span>
-            </div>
-            <i class="fa-solid fa-comment-dots btn-arrow" style="color:#06C755"></i>
-        </a>
-
-    </div>
-
-    <div class="video-container">
-        <div class="video-label">
-            <i class="fa-solid fa-video"></i> ขนมทองม้วนสด ทำใหม่ทุกออเดอร์!!
+      <a
+        class="order-card direct-card"
+        href="https://lin.ee/svRu5ks"
+        onclick="trackDelivery('LINE OA')"
+      >
+        <div class="app-logo line"><i class="fa-brands fa-line"></i></div>
+        <div class="app-copy">
+          <div class="app-title-row">
+            <span class="app-title">สั่งกับร้านโดยตรง</span>
+            <span class="app-badge badge-green">LINE OA</span>
+          </div>
+          <div class="app-subtitle">ทักแชทร้าน เหมาะกับลูกค้าใกล้ร้านหรือออเดอร์พิเศษ</div>
+          <div class="app-meta"><i class="fa-solid fa-truck-fast"></i> สั่ง 200.- ส่งฟรีระยะใกล้</div>
         </div>
-        
-        <div class="youtube-wrapper">
-            <iframe 
-                src="https://www.youtube.com/embed/SdU5NTPXiQ4?autoplay=1&mute=1&loop=1&playlist=SdU5NTPXiQ4&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1" 
-                title="Tongmun Video" 
-                frameborder="0" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                allowfullscreen>
-            </iframe>
-        </div>
-    </div>
+        <div class="order-arrow"><i class="fa-solid fa-comment-dots"></i></div>
+      </a>
+    </section>
 
-    <div class="footer-area">
-        <div class="contact-label">ติดต่อสอบถามเพิ่มเติม</div>
+    <section class="trust-strip" aria-label="จุดเด่นของร้าน">
+      <div class="trust-item">
+        <i class="fa-solid fa-leaf"></i>
+        <b>มะพร้าวน้ำหอม<br>100%</b>
+      </div>
+      <div class="trust-item">
+        <i class="fa-solid fa-bottle-water"></i>
+        <b>เตรียมสด<br>ทุกวัน</b>
+      </div>
+      <div class="trust-item">
+        <i class="fa-solid fa-motorcycle"></i>
+        <b>เลือกส่งได้<br>หลายช่องทาง</b>
+      </div>
+    </section>
+
+    <section class="contact-box">
+      <div class="contact-top">
+        <div>
+          <div class="contact-title">ติดต่อร้าน</div>
+          <div class="contact-subtitle">โทร • Facebook • TikTok • แผนที่ร้าน</div>
+        </div>
         <div class="social-icons">
-            <a id="social-phone" href="tel:0622467746" class="social-btn" style="color: #00B900;" onclick="gtag('event', 'click_contact', {'type': 'phone'});"><i class="fa-solid fa-phone"></i></a>
-            <a id="social-facebook" href="https://facebook.com/NUMDAMNOEN" class="social-btn" style="color: #1877F2;" target="_blank" onclick="gtag('event', 'click_social', {'type': 'facebook'});"><i class="fa-brands fa-facebook"></i></a>
-            <a id="social-tiktok" href="https://tiktok.com/@numdamnoen" class="social-btn" style="color: #000000;" target="_blank" onclick="gtag('event', 'click_social', {'type': 'tiktok'});"><i class="fa-brands fa-tiktok"></i></a>
-            <a id="social-map" href="https://maps.app.goo.gl/vaAUR6ve7G5WwtjH8" class="social-btn" style="color: #000000;" target="_blank" onclick="gtag('event', 'click_social', {'type': 'googlemap'});"><i class="fa fa-map-marker"></i></a>
+          <a class="social-btn" href="tel:0622467746" aria-label="โทรหาร้าน" onclick="trackContact('phone')">
+            <i class="fa-solid fa-phone"></i>
+          </a>
+          <a class="social-btn" href="https://facebook.com/NUMDAMNOEN" target="_blank" rel="noopener" aria-label="Facebook" onclick="trackContact('facebook')">
+            <i class="fa-brands fa-facebook-f"></i>
+          </a>
+          <a class="social-btn" href="https://tiktok.com/@numdamnoen" target="_blank" rel="noopener" aria-label="TikTok" onclick="trackContact('tiktok')">
+            <i class="fa-brands fa-tiktok"></i>
+          </a>
+          <a class="social-btn" href="https://maps.app.goo.gl/vaAUR6ve7G5WwtjH8" target="_blank" rel="noopener" aria-label="Google Maps" onclick="trackContact('googlemap')">
+            <i class="fa-solid fa-location-dot"></i>
+          </a>
         </div>
-    </div>
+      </div>
+    </section>
 
-    <script>
-        // ฟังก์ชันเปิด/ปิด ส่วนลด
-        function togglePromoSection() {
-            var wrapper = document.getElementById('promo-section-wrapper');
-            var btn = document.getElementById('couponTriggerBtn');
-            
-            if (wrapper.classList.contains('show')) {
-                wrapper.classList.remove('show');
-                setTimeout(() => { wrapper.style.display = 'none'; }, 400); 
-                btn.classList.remove('active');
-                btn.innerHTML = '<i class="fa-solid fa-ticket"></i> เก็บโค้ดส่วนลด (Grab/Lineman)';
-                stopAutoScroll(); 
-            } else {
-                wrapper.style.display = 'flex';
-                setTimeout(() => { wrapper.classList.add('show'); }, 10); 
-                btn.classList.add('active');
-                btn.innerHTML = '<i class="fa-solid fa-xmark"></i> ปิดหน้าต่างโค้ดส่วนลด';
-                startAutoScroll(); 
-            }
-        }
+    <div class="footer-note">หนุ่มดำเนิน มะพร้าวปั่น • เลือกช่องทางที่สะดวกแล้วสั่งได้เลย</div>
+  </main>
 
-        function openTab(appName) {
-            var buttons = document.getElementsByClassName('tab-btn');
-            for (var i = 0; i < buttons.length; i++) {
-                buttons[i].classList.remove('active');
-            }
-            
-            var contents = document.getElementsByClassName('tab-content');
-            for (var i = 0; i < contents.length; i++) {
-                contents[i].classList.remove('active');
-            }
+  <div id="toast">กำลังเปิดช่องทางสั่งซื้อ...</div>
 
-            document.querySelector('.tab-btn[data-target="' + appName + '"]').classList.add('active');
-            document.getElementById(appName).classList.add('active');
+  <script>
+    function checkShopStatus() {
+      const now = new Date();
+      const hour = now.getHours();
+      const openHour = 10;
+      const closeHour = 20;
 
-            gtag('event', 'switch_tab', {'app_name': appName});
-            
-            startAutoScroll();
-        }
+      const dot = document.getElementById('shop-status-dot');
+      const text = document.getElementById('shop-status-text');
 
-        function checkShopStatus() {
-            const now = new Date();
-            const hour = now.getHours();
-            const openHour = 10;
-            const closeHour = 20;
-            const statusDot = document.getElementById('shop-status-dot');
-            const statusText = document.getElementById('shop-status-text');
+      if (hour >= openHour && hour < closeHour) {
+        dot.className = 'status-dot dot-green';
+        text.textContent = 'เปิดอยู่ • สั่งได้เลย';
+      } else {
+        dot.className = 'status-dot dot-red';
+        text.textContent = 'ปิดแล้ว • เปิด 10:00 น.';
+      }
+    }
 
-            if (hour >= openHour && hour < closeHour) {
-                statusDot.className = 'status-dot dot-green';
-                statusText.innerHTML = 'เปิดอยู่ • 10:00 - 20:00 น.';
-            } else {
-                statusDot.className = 'status-dot dot-red';
-                statusText.innerHTML = 'ปิดแล้ว • เปิด 10:00 น.';
-            }
-        }
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      window.clearTimeout(window.__toastTimer);
+      window.__toastTimer = window.setTimeout(() => toast.classList.remove('show'), 1800);
+    }
 
-        function copyAndGo(event, code, url) {
-            event.preventDefault(); 
-            gtag('event', 'copy_coupon', {'coupon_code': code, 'app_name': 'LINE MAN'});
-            navigator.clipboard.writeText(code).then(() => {
-                showToast("คัดลอก '" + code + "' แล้ว! กำลังเปิดแอพ...");
-                setTimeout(() => { window.location.href = url; }, 1200); 
-            }).catch(err => {
-                console.error('Copy failed', err);
-                window.location.href = url;
-            });
-        }
+    function trackDelivery(appName) {
+      if (typeof gtag === 'function') {
+        gtag('event', 'click_delivery', { app_name: appName });
+      }
+      showToast('กำลังเปิด ' + appName + '...');
+    }
 
-        function handleClickApp(appName) {
-            gtag('event', 'click_delivery', {'app_name': appName});
-            showToast("กำลังเปิด " + appName + "...");
-        }
+    function trackContact(type) {
+      if (typeof gtag === 'function') {
+        gtag('event', 'click_contact', { type: type });
+      }
+    }
 
-        function showToast(message) {
-            var x = document.getElementById("copy-toast");
-            var msg = document.getElementById("toast-msg");
-            msg.innerText = message;
-            x.className = "show"; 
-            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000); 
-        }
-
-        let scrollInterval;
-        
-        function getActiveContainer() {
-            const activeTab = document.querySelector('.tab-content.active');
-            return activeTab ? activeTab.querySelector('.promo-scroll-container') : null;
-        }
-
-        function startAutoScroll() {
-            clearInterval(scrollInterval);
-            var wrapper = document.getElementById('promo-section-wrapper');
-            if (!wrapper || !wrapper.classList.contains('show')) return;
-
-            scrollInterval = setInterval(() => {
-                const scrollContainer = getActiveContainer();
-                if (!scrollContainer) return;
-                const cardWidth = 170; 
-                const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
-                if (scrollContainer.scrollLeft >= maxScroll - 10) {
-                    scrollContainer.scrollTo({ left: 0, behavior: 'smooth' });
-                } else {
-                    scrollContainer.scrollBy({ left: cardWidth, behavior: 'smooth' });
-                }
-            }, 3500);
-        }
-
-        function stopAutoScroll() {
-            clearInterval(scrollInterval);
-        }
-
-        document.querySelectorAll('.promo-scroll-container').forEach(container => {
-            container.addEventListener('touchstart', stopAutoScroll);
-            container.addEventListener('touchend', startAutoScroll);
-            container.addEventListener('mouseenter', stopAutoScroll);
-            container.addEventListener('mouseleave', startAutoScroll);
-        });
-
-        checkShopStatus();
-    </script>
-    <i class="fa-solid fa-leaf bg-element" style="color:#bbf7d0; font-size: 80px; top: 10%; left: -20px; animation-delay: 0s;"></i>
-    <i class="fa-solid fa-leaf bg-element" style="color:#bbf7d0; font-size: 60px; bottom: 15%; right: -10px; animation-delay: 2s; transform: scaleX(-1);"></i>
+    checkShopStatus();
+    setInterval(checkShopStatus, 60000);
+  </script>
 </body>
 </html>
